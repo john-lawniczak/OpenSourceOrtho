@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opensource-ortho"
+version = "0.1.0"
+description = "Open-source orthodontic treatment-planning research toolkit for clear-aligner workflows."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [
+  { name = "OpenSource Ortho contributors" }
+]
+dependencies = [
+  "pydantic>=2.7",
+  "typing-extensions>=4.12"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6"
+]
+providers = [
+  "openai>=1.0"
+]
+
+[project.scripts]
+orthoplan = "orthoplan.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+

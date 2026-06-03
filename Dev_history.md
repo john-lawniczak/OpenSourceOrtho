@@ -1,0 +1,40 @@
+# Development History
+
+This file tracks status notes intended to be updated alongside commits. Claude Code hooks in `.claude/settings.json` call `tools/update_dev_status.py` after `git commit` commands run inside Claude Code.
+
+## Current Status
+
+- Project scaffold created.
+- Safety boundary documented before implementation.
+- Core data model, finding vocabulary, and provider interfaces scaffolded.
+- Visual progress representation elevated to a primary product requirement.
+- Architecture, reference, and movement-cap docs added.
+- First provider adapter target: OpenAI.
+- Second provider adapter target: Claude Code.
+
+## Entries
+
+### 2026-06-03 - Scaffold
+
+- Created initial repository structure for OpenSource Ortho.
+- Added safety-first README and SAFETY boundary.
+- Added development-status automation docs and Claude Code hook scaffold.
+- Added optional `.githooks/post-commit` hook for non-Claude commits.
+- Set the initial OpenAI provider adapter default to `gpt-5.5`.
+
+### 2026-06-03 - Visualization Priority
+
+- Added `UI_DESIGN.md` to define the visual accuracy and UI design contract.
+- Added cumulative stage-frame data structures for future UI viewers.
+
+### 2026-06-03 - Architecture Review
+
+- Added `ARCHITECTURE.md` with the plain-language upload-to-visualization workflow.
+- Added `OPEN_SOURCE_REFERENCES.md` to separate permissive open-source dependencies from proprietary workflow references.
+- Added configurable `MovementCaps` and a deterministic movement-cap evaluator.
+- Improved commit-status hooks so generated dev-history notes are amended into the new commit instead of leaving the tree dirty.
+
+### 2026-06-03T23:41:54+00:00 - Commit b2f2ce1
+
+- Commit subject: Scaffold safety-first orthodontic planning toolkit
+- Status: development history hook observed a commit from Claude Code.
