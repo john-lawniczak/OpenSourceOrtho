@@ -202,6 +202,16 @@ Tasks:
 - support per-tooth mesh asset references
 - keep all mesh provenance explicit
 
+Progress:
+
+- ~~extract bounding box, vertex/face counts, watertight/winding status~~ done (`inspect_stl` + optional `trimesh`; `MeshQualityReport`).
+- ~~malformed-mesh and scale-ambiguity warnings as deterministic findings~~ done (`evaluation/rules/mesh_quality.py`, aggregated by `evaluation/engine.run_rules`, surfaced via api/CLI/UI).
+- ~~per-tooth mesh asset references and imported segmentation~~ done (`SegmentedToothMesh`, `segmentation/manual.py`, `segmentation/imports.import_segmented_meshes`).
+
+Open decision (blocks rotation rendering):
+
+- A per-tooth **local frame** (tooth long axis + mesiodistal/buccolingual axes) is what flips `rotation_renderable` to true. Estimating it from a crown-only surface (e.g. PCA of segmented vertices) is itself a geometric assumption and must be labeled as such, never implying root direction. Needs a decision on the estimation method and its safety framing before implementation; until then rotation stays tabular-only.
+
 Exit criteria:
 
 - uploaded STL metadata is available to plan and UI

@@ -15,7 +15,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from orthoplan.evaluation.rules.movement_caps import evaluate_movement_caps
+from orthoplan.evaluation.engine import run_rules
 from orthoplan.model.gaps import data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.timeline import project_timeline
@@ -55,7 +55,7 @@ def _frame_dict(frame: StageProgressFrame) -> dict[str, Any]:
 def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
     """Evaluate a validated plan with the canonical engine."""
 
-    findings = evaluate_movement_caps(plan)
+    findings = run_rules(plan)
     frames = build_stage_progress_frames(plan)
     timeline = project_timeline(plan)
     return {

@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-03 - Phase 3 Mesh Validation and Segmentation Import
+
+- Added `evaluation/rules/mesh_quality.py`: deterministic, lint-passed NOTICE findings for degenerate triangles, non-watertight/inconsistent-winding meshes, and confirmed-but-implausible scale.
+- Added `evaluation/engine.run_rules()` as the single deterministic-rule aggregator; api and CLI now run the full rule set (movement caps + mesh quality) through it.
+- Added `segmentation/imports.import_segmented_meshes()`: inspect one STL per tooth and return plan-ready mesh assets + tooth links, rejecting two teeth that resolve to identical mesh content.
+- Added tests for mesh-quality findings and segmentation import (53 tests; maintainability passes).
+- Documented the open decision that a per-tooth local frame (needed to flip `rotation_renderable`) requires a safety-framed estimation method before implementation.
+
 ### 2026-06-03 - Wire UI to the Python Engine
 
 - Added `orthoplan/api.py` (`evaluate_plan`/`evaluate_plan_payload`): the single, pure, never-raising evaluation entry point returning lint-gated findings, data gaps, the timeline projection, and `StageProgressFrame` data; validation errors are returned as data.
@@ -144,4 +152,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T03:03:02+00:00 - Commit Status
 
 - Commit subject: Wire UI to Python engine via api.py + dev server
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T03:07:09+00:00 - Commit Status
+
+- Commit subject: Phase 3: mesh-quality findings rule + segmentation import
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T03:07:09+00:00 - Commit Status
+
+- Commit subject: Phase 3: mesh-quality findings rule + segmentation import
 - Status: development history hook observed and recorded this commit workflow.

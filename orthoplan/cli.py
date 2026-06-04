@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from orthoplan.evaluation.rules.movement_caps import evaluate_movement_caps
+from orthoplan.evaluation.engine import run_rules
 from orthoplan.io.serialization import plan_to_json, read_plan, write_plan
 from orthoplan.io.stl_import import inspect_stl
 from orthoplan.model.assets import MeshProvenance, bounding_box_sanity
@@ -73,7 +73,7 @@ def _cmd_inspect_stl(args: argparse.Namespace) -> int:
 def _cmd_plan_summary(args: argparse.Namespace) -> int:
     plan = read_plan(args.path)
     projection = project_timeline(plan)
-    findings = evaluate_movement_caps(plan)
+    findings = run_rules(plan)
     print(f"Plan: {plan.title} ({plan.id})")
     print(f"Numbering: {plan.numbering_system}  Frame: {plan.coordinate_frame.name}")
     print(f"Stages: {len(plan.stages)}  Scans: {len(plan.scans)}")
