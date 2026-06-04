@@ -20,6 +20,23 @@ Model output is untrusted. It must pass `lint_finding()` (the single safety gate
 quarantined on failure via `quarantine_findings()` rather than crashing the pipeline. Verdict
 language is scanned across every text field, not just the title and message.
 
+## Advisory Pipeline
+
+The model advisory layer lives in `orthoplan/evaluation/advisory.py` and is
+**opt-in** - it runs only when a caller passes a provider (e.g. `orthoplan advise`
+or `request_advisory(plan, provider)`). The default evaluation path
+(`api.evaluate_plan`) never calls a model.
+
+Flow: `build_advisory_request(plan)` injects the safety boundary, the declared
+`DataAvailability`, the configured `MovementCaps`, and a strict JSON output
+schema. The provider's text is parsed into `AdvisoryResponse` (markdown fences
+tolerated), each item becomes a `Finding(provenance=MODEL)`, and the batch goes
+through `quarantine_findings` - the same `lint_finding` gate as deterministic
+findings. Unparseable output, verdict language, model-sourced `mechanics`
+findings, and warnings missing a data gap or clinician question are rejected as
+data (`AdvisoryResult.parse_error` / `.rejected`), never raised. Accepted
+findings always render with the `[ADVISORY - unverified]` prefix.
+
 ## First Adapter
 
 The first remote model adapter is `OpenAIProvider` in `orthoplan/evaluation/providers/openai_provider.py`.

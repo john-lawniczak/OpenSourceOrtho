@@ -41,6 +41,11 @@ def build_parser() -> argparse.ArgumentParser:
     serve = sub.add_parser("serve", help="run the local UI dev server")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
+
+    advise = sub.add_parser("advise", help="run the optional model advisory layer over a plan")
+    advise.add_argument("path")
+    advise.add_argument("--provider", choices=["openai", "claude-code"], default="openai")
+    advise.add_argument("--model", default=None, help="override the provider's default model")
     return parser
 
 
@@ -97,11 +102,44 @@ def _cmd_serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def _build_provider(name: str, model: str | None):
+    if name == "openai":
+        from orthoplan.evaluation.providers.openai_provider import OpenAIProvider
+
+        return OpenAIProvider(model=model) if model else OpenAIProvider()
+    from orthoplan.evaluation.providers.claude_code_provider import ClaudeCodeProvider
+
+    return ClaudeCodeProvider(model=model) if model else ClaudeCodeProvider()
+
+
+def _cmd_advise(args: argparse.Namespace) -> int:
+    from orthoplan.evaluation.advisory import request_advisory
+
+    plan = read_plan(args.path)
+    try:
+        provider = _build_provider(args.provider, args.model)
+        result = request_advisory(plan, provider)
+    except (RuntimeError, OSError) as exc:
+        print(f"advise error: {exc}", file=sys.stderr)
+        return 2
+
+    if result.parse_error:
+        print(f"Advisory rejected (unparseable): {result.parse_error}")
+    print(f"Accepted advisory findings: {len(result.accepted)} (provider={result.provider})")
+    for finding in result.accepted:
+        print(f"  {finding.render().splitlines()[0]}")
+    print(f"Rejected by lint: {len(result.rejected)}")
+    for rejection in result.rejected:
+        print(f"  - {rejection.reason}")
+    return 0
+
+
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
     "inspect-stl": _cmd_inspect_stl,
     "plan-summary": _cmd_plan_summary,
     "serve": _cmd_serve,
+    "advise": _cmd_advise,
 }
 
 

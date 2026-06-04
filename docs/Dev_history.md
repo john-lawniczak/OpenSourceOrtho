@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Phase 5: Model Advisory Layer
+
+- Added `orthoplan/evaluation/advisory.py`: a strict `AdvisoryItem`/`AdvisoryResponse` schema, `parse_advisory` (tolerates markdown fences), and `request_advisory(plan, provider)` that converts model output to `Finding(provenance=MODEL)` and runs it through `quarantine_findings` (the same `lint_finding` gate). Parse failures and lint rejections are returned as data (`AdvisoryResult.parse_error` / `.rejected`); it never raises on bad model output.
+- `prompt.build_advisory_request` injects the safety boundary, declared `DataAvailability`, configured `MovementCaps`, and the JSON output schema; the model is told not to use verdict words or the `mechanics` category, with the lint gate as defense-in-depth.
+- Added the opt-in `orthoplan advise` CLI command (clean error without a provider/key). The default `api.evaluate_plan` never calls a model.
+- Added `tests/test_advisory.py` (valid, verdict, model-mechanics, warning-missing-fields, invalid JSON, schema mismatch, fenced, mixed batch). Accepted advisories always render with the `[ADVISORY - unverified]` prefix. Updated `docs/OpenAI_Agents.md` and the CLI walkthrough.
+- 92 Python tests + 11 JS tests pass; maintainability passes. Phase 5 exit criteria met.
+
 ### 2026-06-04 - Phase 4 Rules + Phase 7 CLI Walkthrough & Screenshots
 
 - Phase 4 deterministic rules (`evaluation/rules/plan_checks.py`, registered in `engine.run_rules`): `evaluate_root_sensitive_movement` (WARNING when tip/torque/intrusion is planned without roots or CBCT), `evaluate_segmentation_presence` (NOTICE when movement is planned with no per-tooth segmentation), and `evaluate_no_movement` (INFO when stages have only zero deltas). Other planned checks (stage contiguity, duplicate tooth, mixed numbering/frame) are already enforced at the model layer; timeline outliers deferred (needs a cited band, not an invented threshold). Added `tests/test_plan_checks.py`.
@@ -263,4 +271,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:23:20+00:00 - Commit Status
 
 - Commit subject: Phase 4 deterministic rules + Phase 7 CLI walkthrough & screenshots
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:33:07+00:00 - Commit Status
+
+- Commit subject: Phase 5: model advisory layer
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:33:07+00:00 - Commit Status
+
+- Commit subject: Phase 5: model advisory layer
 - Status: development history hook observed and recorded this commit workflow.

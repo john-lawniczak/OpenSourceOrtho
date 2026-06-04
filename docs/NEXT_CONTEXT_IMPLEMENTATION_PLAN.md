@@ -255,19 +255,20 @@ Goals:
 - Claude Code adapter remains optional
 - model output cannot bypass linting
 
-Tasks:
+Tasks (done):
 
-- define structured model response schema
-- parse model advisories into `Finding`
-- reject unlintable findings
-- inject `DataAvailability`, `MovementCaps`, and safety boundary into prompt
-- add fixtures for banned output
+- ~~structured model response schema~~ `AdvisoryItem`/`AdvisoryResponse` in `evaluation/advisory.py`.
+- ~~parse model advisories into `Finding`~~ `parse_advisory` + `_to_finding` (markdown fences tolerated).
+- ~~reject unlintable findings~~ `request_advisory` runs `quarantine_findings`; bad items are returned in `AdvisoryResult.rejected`, parse failures in `.parse_error`. Never raises.
+- ~~inject `DataAvailability`, `MovementCaps`, safety boundary into prompt~~ `prompt.build_advisory_request`.
+- ~~fixtures for banned output~~ `tests/test_advisory.py` (verdict, model-mechanics, warning-missing-fields, invalid JSON, schema mismatch, fenced, mixed batch).
+- Added `orthoplan advise` CLI command (opt-in; clean error without a provider/key).
 
-Exit criteria:
+Exit criteria (met):
 
-- model advisory layer can be disabled
-- no generated finding renders without linting
-- advisory findings are prefixed and provenance-tagged
+- model advisory layer can be disabled — it only runs when a provider is passed; the default `api.evaluate_plan` never calls a model.
+- no generated finding renders without linting — every item goes through `quarantine_findings`.
+- advisory findings are prefixed and provenance-tagged — `provenance=MODEL`, `render()` prefixes `[ADVISORY - unverified]`.
 
 ### Phase 6 - Visualization Fidelity
 

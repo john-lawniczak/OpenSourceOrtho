@@ -96,6 +96,26 @@ orthoplan serve            # http://127.0.0.1:8000
 Serves the browser UI and the `/api/evaluate` endpoint the UI calls. See
 [../ui/README.md](../ui/README.md).
 
+## 5. Optional model advisory
+
+The advisory layer is **off by default**. It runs only when you ask for it and a
+provider is configured:
+
+```bash
+pip install -e ".[providers]"
+export OPENAI_API_KEY=...        # provider credentials
+orthoplan advise examples/basic_plan.json --provider openai
+```
+
+Model output is parsed into a strict schema and run through the same
+`lint_finding` gate as deterministic findings. Unsafe or malformed advisories are
+rejected, not shown; accepted ones render with an `[ADVISORY - unverified]`
+prefix. Without a provider/key it exits cleanly:
+
+```
+advise error: OPENAI_API_KEY is required for OpenAIProvider
+```
+
 ## Example plans
 
 Two synthetic plans ship under [../examples/](../examples/README.md):
