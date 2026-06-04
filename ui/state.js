@@ -26,6 +26,14 @@ export const state = {
     rotation_deg: 2.0,
     intrusion_extrusion_mm: 0.1,
   },
+  printExport: {
+    enabled: false,
+    export_format: "stl",
+    delivery_email: "",
+    model_material: "validated dental model resin",
+    thermoforming_material: "clinician-selected aligner sheet material",
+    safety_acknowledged: false,
+  },
   rows: [
     { stage: 0, tooth: "11", x: 0.2, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 },
     { stage: 1, tooth: "11", x: 0.1, y: 0.1, z: 0, tip: 0, torque: 0, rotation: 0 },

@@ -1,0 +1,72 @@
+# How To Use OpenSource Ortho
+
+OpenSource Ortho is a research/developer toolkit for staged tooth-movement planning,
+measurement checks, visualization, acquisition advice, and handoff reports. It is not a
+medical device and does not approve treatment.
+
+## 1. Start The App
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+orthoplan serve
+```
+
+Open `http://127.0.0.1:8000`.
+
+## 2. Basic Workflow
+
+1. Upload or reference an STL surface scan.
+2. Confirm scan units before trusting millimeter measurements.
+3. Declare available records: segmentation, roots, CBCT, periodontal status, occlusion,
+   photos, radiographs, and clinician notes.
+4. Enter staged movement values using FDI tooth IDs.
+5. Review findings, data gaps, acquisition advice, timeline, progress preview, and print
+   export readiness.
+6. Generate a handoff report:
+
+```bash
+orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out report.json
+```
+
+## 3. Printing And Aligner Manufacturing Boundary
+
+The app can store print-export intent and report whether handoff metadata is ready. It does
+not yet generate final printable meshes, email files, or manufacture aligners.
+
+For physical workflows:
+
+- Print dental models only with validated dental model resin/materials and a calibrated printer.
+- Confirm units and scale before any printer-scale export.
+- Remove supports, clean, cure, and smooth printed dental models according to material and
+  printer instructions before thermoforming.
+- Clear aligners are commonly thermoformed from clinician-selected aligner sheet materials
+  such as PETG, TPU/polyurethane blends, EVA-family sheets, or other approved orthodontic
+  thermoforming materials. Material choice and process validation matter.
+- Do not assume ordinary hobby resin, general-purpose plastic, or an unvalidated sheet is
+  safe for intraoral use.
+- Do not trim, heat, polish, or otherwise alter aligner plastic unless the material
+  instructions and clinician-supervised process allow it.
+
+Any real patient workflow requires licensed clinician oversight, validated materials,
+sterilization/cleaning procedures, and applicable regulatory compliance.
+
+## 4. Helpful Commands
+
+```bash
+orthoplan new-plan --id demo --out demo.json
+orthoplan plan-summary examples/basic_plan.json
+orthoplan acquisition examples/basic_plan.json
+orthoplan report examples/basic_plan.json --out report.json
+pytest
+```
+
+## 5. What The App Does Not Do
+
+- It does not diagnose.
+- It does not decide a plan is safe, approved, or clinically acceptable.
+- It does not infer roots, bone, periodontal status, occlusion, or treatment goals when those
+  data are missing.
+- It does not currently export final mesh files for direct printing.
+- It does not authorize anyone to manufacture or wear aligners.

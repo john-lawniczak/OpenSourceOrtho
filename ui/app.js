@@ -46,6 +46,12 @@ document.body.addEventListener("input", (event) => {
       row[field] = Number.isFinite(num) ? num : 0;
     }
   }
+  if (target.id === "printEnabled") state.printExport.enabled = target.checked;
+  if (target.id === "printFormat") state.printExport.export_format = target.value;
+  if (target.id === "printEmail") state.printExport.delivery_email = target.value;
+  if (target.id === "modelMaterial") state.printExport.model_material = target.value;
+  if (target.id === "thermoformingMaterial") state.printExport.thermoforming_material = target.value;
+  if (target.id === "printSafety") state.printExport.safety_acknowledged = target.checked;
   renderAll();
 });
 

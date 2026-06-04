@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Print Export, How-To, and LLM Review Guidance
+
+- Added `PrintExportSettings` to the treatment settings model and `orthoplan.printing` readiness output for clinician-supervised model printing/thermoforming handoff metadata.
+- Exposed `print_export` in API evaluation output and the UI review panel; the UI now includes print-export settings and a first-user Getting Started panel.
+- Added root `HOW_TO.md` with workflow, printing/material boundaries, and commands, plus `docs/LLM_PROMPTS.md` with safety-framed optional LLM review prompts.
+- Updated architecture and safety docs for print/manufacturing boundaries and optional parallel LLM/sub-agent review.
+- Added print export tests and regenerated synthetic example plans for the expanded settings schema.
+
 ### 2026-06-04 - Measurement Truth + Acquisition Advisor Sequence
 
 - Expanded Measurement Truth Lab coverage with file-backed synthetic STL bounds checks, PCA tolerance checks, and property-style cumulative transform tests.
@@ -330,4 +338,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:58:38+00:00 - Commit Status
 
 - Commit subject: Add acquisition advisor and measurement truth coverage
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T21:05:30+00:00 - Commit Status
+
+- Commit subject: Add print export readiness and user guidance
 - Status: development history hook observed and recorded this commit workflow.

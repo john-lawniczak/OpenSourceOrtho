@@ -36,6 +36,15 @@
     },
     "timeline": {
       "wear_interval_days": 14
+    },
+    "print_export": {
+      "enabled": false,
+      "export_format": "stl",
+      "delivery_email": null,
+      "model_material": "validated dental model resin",
+      "thermoforming_material": "clinician-selected aligner sheet material",
+      "safety_acknowledged": false,
+      "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material and clinical process explicitly allow it."
     }
   },
   "scans": [],

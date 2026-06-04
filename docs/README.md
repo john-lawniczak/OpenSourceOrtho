@@ -13,9 +13,12 @@ This directory holds the project docs that should evolve with the product.
 - [SOURCES_AND_RECOMMENDED_SOFTWARE.md](SOURCES_AND_RECOMMENDED_SOFTWARE.md) - source ledger for monitoring upstream references over time
 - [NEXT_CONTEXT_IMPLEMENTATION_PLAN.md](NEXT_CONTEXT_IMPLEMENTATION_PLAN.md) - temporary phased implementation plan for the next coding window
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance
+- [LLM_PROMPTS.md](LLM_PROMPTS.md) - safe optional LLM review prompt templates
 - [Dev_history.md](Dev_history.md) - development history and commit-status notes
 
-The UI prototype lives at [../ui/](../ui/README.md), synthetic example plans at [../examples/](../examples/README.md), and contributor setup in [../CONTRIBUTING.md](../CONTRIBUTING.md).
+The user how-to lives at [../HOW_TO.md](../HOW_TO.md), the UI prototype lives at
+[../ui/](../ui/README.md), synthetic example plans at [../examples/](../examples/README.md),
+and contributor setup in [../CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Maintenance Rule
 

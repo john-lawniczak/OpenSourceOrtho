@@ -12,6 +12,7 @@ Browser prototype for the data-model workflow:
 5. timeline projection
 6. progress preview
 7. plan-shaped JSON output
+8. print-export readiness metadata
 
 ## Run it
 
@@ -23,6 +24,8 @@ python3 -m orthoplan.server        # or: orthoplan serve
 ```
 
 Then open `http://127.0.0.1:8000`.
+
+The Upload step includes a short Getting Started panel for first-time users.
 
 ## Engine is the single source of truth
 
@@ -61,6 +64,14 @@ Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
 To update it, replace `ui/vendor/three.module.js` and `ui/vendor/OrbitControls.js`
 with a matching pinned pair.
+
+## Print Export
+
+The Settings step has print-export fields for format, delivery email, dental model
+material, thermoforming material, and safety acknowledgement. The Review step renders
+backend readiness status from `print_export`. This is metadata for clinician-supervised
+model printing/thermoforming workflows only; the UI does not generate final printable
+meshes or authorize aligner manufacturing.
 
 ## Tests
 

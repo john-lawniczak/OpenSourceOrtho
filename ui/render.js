@@ -58,6 +58,14 @@ export function renderAll() {
     rotation_deg: numberValue("capRotation"),
     intrusion_extrusion_mm: numberValue("capVertical"),
   };
+  state.printExport = {
+    enabled: el("printEnabled").checked,
+    export_format: el("printFormat").value,
+    delivery_email: el("printEmail").value,
+    model_material: el("modelMaterial").value,
+    thermoforming_material: el("thermoformingMaterial").value,
+    safety_acknowledged: el("printSafety").checked,
+  };
   renderSteps();
   renderMetadata();
   renderRows();
@@ -163,6 +171,7 @@ function renderEvaluation(result) {
   el("stageValue").textContent = slider.value;
   drawCanvas();
   updateViewer(result);
+  renderPrintExport(result.print_export);
 }
 
 function dataGapMarkup(result) {
@@ -225,6 +234,7 @@ function renderEngineErrors(errors) {
     .map((message) => `<li class="warning"><strong>Plan rejected</strong><p>${escapeHtml(message)}</p></li>`)
     .join("");
   el("timelineText").textContent = "Plan invalid - fix the errors above to re-evaluate.";
+  el("printExportStatus").innerHTML = "";
 }
 
 function renderEngineOffline() {
@@ -235,7 +245,29 @@ function renderEngineOffline() {
   el("dataGapList").innerHTML = "";
   el("acquisitionCaveat").textContent = "";
   el("acquisitionList").innerHTML = "";
+  el("printExportStatus").innerHTML = "";
   el("timelineText").textContent = "Engine offline - no projection available.";
+}
+
+function renderPrintExport(status) {
+  if (!status) {
+    el("printExportStatus").innerHTML = "";
+    return;
+  }
+  const blockers = status.blockers?.length
+    ? `<ul>${status.blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : "<p>Export metadata is ready for handoff review.</p>";
+  const artifacts = status.artifacts?.length
+    ? `<p>${escapeHtml(status.artifacts.map((item) => item.filename).join(", "))}</p>`
+    : "";
+  el("printExportStatus").innerHTML = `
+    <p><strong>${status.ready ? "Ready" : "Not ready"}</strong></p>
+    ${blockers}
+    ${artifacts}
+    <p>${escapeHtml(status.model_material)}</p>
+    <p>${escapeHtml(status.thermoforming_material)}</p>
+    <p>${escapeHtml(status.caveat)}</p>
+  `;
 }
 
 function drawCanvas() {

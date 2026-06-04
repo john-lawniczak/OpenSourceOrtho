@@ -12,6 +12,7 @@ OpenSource Ortho is a Python-first planning and visualization toolkit. The first
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
 7. The UI renders current, staged, and planned positions from those cumulative frames.
 8. Deterministic rules run first. Model providers such as OpenAI or Claude Code may add advisory findings, but all findings pass through `lint_finding()`.
+9. Optional print-export metadata records intended file format, delivery email, materials, safety acknowledgement, and export blockers for clinician-supervised model printing workflows.
 
 ## Language and Stack
 
@@ -125,6 +126,18 @@ include an optional HMAC-SHA256 signature. It does not include mesh bytes. The g
 reproducible research/clinician review: the artifact ties inputs to engine behavior and makes
 provenance auditable without claiming clinical approval.
 
+## Print Export Architecture
+
+`TreatmentSettings.print_export` records export intent: format (`stl`/`3mf`), optional
+delivery email, model material, thermoforming material, post-processing notes, and a safety
+acknowledgement. `orthoplan.printing.build_print_export_status()` turns that intent into a
+readiness object with blockers and planned artifact filenames.
+
+Current scope is metadata/readiness only. The app does not yet generate final printable
+meshes, email files, or authorize aligner manufacturing. Future export code should live in a
+separate IO/printing adapter that consumes validated plan geometry and emits files plus hashes
+for the handoff report.
+
 ## Acquisition Advisor
 
 `orthoplan/evaluation/acquisition.py` computes deterministic marginal data-acquisition
@@ -132,6 +145,15 @@ impact. For each applicable missing modality, it builds a counterfactual plan wi
 availability flag filled, reruns `run_rules()`, and diffs findings/data gaps. The output says
 which absence-of-data findings would clear, which suppressed checks would run, and which gap
 entries would close. It never predicts what the acquired data would show.
+
+## Parallel Agent Review
+
+Parallel LLM/sub-agent review can be useful as an optional second-opinion layer: one agent may
+summarize geometric consistency, another may inspect data gaps, another may review print/export
+readiness, and another may produce clinician questions. This is not necessary for the core
+application to be correct, because deterministic rules remain the source of truth. Any
+agent-generated output must enter as advisory text, pass the same lint/quarantine boundary, and
+must never suppress, overwrite, or weaken deterministic findings.
 
 ## Movement Settings
 

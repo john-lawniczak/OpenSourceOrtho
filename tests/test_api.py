@@ -143,6 +143,15 @@ def test_acquisition_advice_is_included_in_engine_output() -> None:
     assert any(impact["modality"] == "roots" for impact in advice["impacts"])
 
 
+def test_print_export_status_is_included_in_engine_output() -> None:
+    result = evaluate_plan_payload(_base_payload())
+    status = result["print_export"]
+    assert status["enabled"] is False
+    assert status["ready"] is False
+    assert "print export is disabled" in status["blockers"]
+    assert "clinician-supervised" in status["caveat"]
+
+
 def test_unverified_scan_units_gate_cap_evaluation() -> None:
     payload = _base_payload(
         scans=[{"asset": {"id": "a", "format": "stl", "vertex_count": 0, "face_count": 0}}],

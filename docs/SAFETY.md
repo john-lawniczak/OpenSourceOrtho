@@ -78,6 +78,17 @@ This is not clinical advice. "Would clear" means the engine would no longer flag
 absence of that data; it does not mean a movement, patient, or plan is safe or clinically
 acceptable. The advisor predicts nothing about what newly acquired data would show.
 
+## Printing And Manufacturing Boundary
+
+Print export settings and readiness checks are handoff metadata only. They do not make a plan
+manufacture-ready and do not authorize anyone to print, thermoform, or wear aligners. Physical
+workflows require clinician supervision, confirmed scale, validated dental model materials,
+appropriate thermoforming sheets, post-processing controls, cleaning/sterilization procedures,
+and applicable regulatory compliance.
+
+The app may list planned model artifact filenames and blockers. It must not claim that hobby
+printer materials, unvalidated resins, or ordinary plastics are appropriate for intraoral use.
+
 ## Regulatory Note
 
 This document is not legal advice. Anyone using or modifying this project for clinical workflows is responsible for professional, legal, privacy, and regulatory obligations in their jurisdiction.

@@ -11,6 +11,10 @@ export function planJson() {
     settings: {
       movement_caps: { default: state.caps, per_tooth_overrides: {} },
       timeline: { wear_interval_days: numberValue("wearInterval") },
+      print_export: {
+        ...state.printExport,
+        delivery_email: state.printExport.delivery_email || null,
+      },
     },
     scans: scanPayload(),
     mesh_assets: [],

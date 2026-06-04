@@ -20,6 +20,7 @@ from orthoplan.evaluation.engine import run_rules
 from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.timeline import project_timeline
+from orthoplan.printing import build_print_export_status
 from orthoplan.viz.progress import build_stage_progress_frames
 
 
@@ -45,6 +46,7 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
         "acquisition_advice": acquisition_advice(plan).model_dump(),
         "findings": [finding.model_dump() for finding in findings],
         "timeline": timeline.model_dump(),
+        "print_export": build_print_export_status(plan).model_dump(),
         "frames": [frame.ui_dict() for frame in frames],
         # Approximate per-tooth frames (keyed by FDI value) for a 3D viewer to
         # orient rotation. Empty unless segmentation supplied local frames.

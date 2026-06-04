@@ -29,6 +29,7 @@ from orthoplan.model.plan import (
 from orthoplan.model.settings import (
     AxisCaps,
     MovementCaps,
+    PrintExportSettings,
     TimelineSettings,
     TreatmentSettings,
 )
@@ -49,6 +50,7 @@ __all__ = [
     "MeshQualityReport",
     "MeshUnits",
     "MovementCaps",
+    "PrintExportSettings",
     "SegmentedToothMesh",
     "Stage",
     "TimelineSettings",

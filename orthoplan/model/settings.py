@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 CAPS_REFERENCE = (
@@ -66,6 +68,36 @@ class TimelineSettings(BaseModel):
     wear_interval_days: int = Field(default=14, gt=0)
 
 
+class PrintExportSettings(BaseModel):
+    """Requested 3D-print/thermoforming handoff settings.
+
+    This stores export intent and process metadata only. It does not make a plan
+    clinically approved or manufacture-ready.
+    """
+
+    enabled: bool = False
+    export_format: Literal["stl", "3mf"] = "stl"
+    delivery_email: str | None = None
+    model_material: str = "validated dental model resin"
+    thermoforming_material: str = "clinician-selected aligner sheet material"
+    safety_acknowledged: bool = False
+    post_processing_notes: str = (
+        "Cure and clean printed models per material instructions; remove supports and "
+        "smooth model artifacts before thermoforming. Do not alter aligner plastic unless "
+        "the material and clinical process explicitly allow it."
+    )
+
+    @field_validator("delivery_email")
+    @classmethod
+    def delivery_email_is_basic_address(cls, value: str | None) -> str | None:
+        if value is None or value == "":
+            return None
+        if "@" not in value or value.startswith("@") or value.endswith("@"):
+            raise ValueError("delivery_email must look like an email address")
+        return value
+
+
 class TreatmentSettings(BaseModel):
     movement_caps: MovementCaps = Field(default_factory=MovementCaps)
     timeline: TimelineSettings = Field(default_factory=TimelineSettings)
+    print_export: PrintExportSettings = Field(default_factory=PrintExportSettings)

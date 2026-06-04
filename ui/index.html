@@ -61,6 +61,16 @@
             <h2>Upload STL</h2>
             <p>Surface scan geometry only. Units must be confirmed before cap checks.</p>
           </div>
+          <div class="howto-panel">
+            <h2>Getting Started</h2>
+            <ol>
+              <li>Upload or reference a surface STL and confirm units before using millimeter checks.</li>
+              <li>Declare which records are available; missing data limits what the engine can assess.</li>
+              <li>Enter staged tooth movement, then review findings, acquisition advice, and report/export status.</li>
+              <li>For physical workflows, print dental models only with validated materials and clinician supervision; aligner sheets are normally thermoformed over models, not simply printed and worn.</li>
+              <li>Use validated dental model resin and clinician-selected thermoforming sheets such as PETG, TPU/polyurethane, or EVA-family materials; clean, cure, remove supports, and smooth printed models per material instructions.</li>
+            </ol>
+          </div>
           <div class="upload-row">
             <label class="upload-target" for="stlFile">
               <span class="upload-icon" aria-hidden="true">↑</span>
@@ -109,6 +119,28 @@
             <label>Tip/Torque deg<input id="capAngular" type="number" min="0.1" step="0.1" value="1.0" /></label>
             <label>Rotation deg<input id="capRotation" type="number" min="0.1" step="0.1" value="2.0" /></label>
             <label>Vertical mm<input id="capVertical" type="number" min="0.01" step="0.01" value="0.10" /></label>
+          </div>
+          <div class="print-settings">
+            <h2>Print Export</h2>
+            <label class="toggle">
+              <span>Prepare print handoff metadata</span>
+              <input id="printEnabled" type="checkbox" />
+            </label>
+            <div class="field-grid">
+              <label>Format
+                <select id="printFormat">
+                  <option value="stl">STL</option>
+                  <option value="3mf">3MF</option>
+                </select>
+              </label>
+              <label>Delivery email<input id="printEmail" placeholder="optional" /></label>
+              <label>Model material<input id="modelMaterial" value="validated dental model resin" /></label>
+              <label>Aligner material<input id="thermoformingMaterial" value="clinician-selected aligner sheet material" /></label>
+            </div>
+            <label class="toggle">
+              <span>I understand this is for clinician-supervised model printing/thermoforming, not authorization to manufacture or wear aligners.</span>
+              <input id="printSafety" type="checkbox" />
+            </label>
           </div>
         </section>
 
@@ -169,6 +201,8 @@
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Each warrants clinician review against the listed data gaps; nothing here indicates a plan is safe, approved, or clinically acceptable.</p>
               <ul id="findingList"></ul>
+              <h2>Print Export</h2>
+              <div id="printExportStatus" class="status-block"></div>
               <h2>Plan JSON</h2>
               <textarea id="planJson" readonly></textarea>
             </aside>
