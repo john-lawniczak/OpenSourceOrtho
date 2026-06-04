@@ -2,6 +2,8 @@
 
 This project should compose from permissively licensed open-source libraries and use commercial products only as workflow references.
 
+For the living source ledger and monitoring cadence, see [SOURCES_AND_RECOMMENDED_SOFTWARE.md](SOURCES_AND_RECOMMENDED_SOFTWARE.md).
+
 ## Do Not Fork Or Copy
 
 BlueSkyPlan is marketed as free dental planning software, but free does not mean open source. Its download page requires agreement to terms and a license agreement. Treat it as proprietary unless a clear OSI-approved source license is found.
@@ -64,4 +66,3 @@ MeshLab / CloudCompare
 - PyVista: https://pyvista.org/
 - VTK: https://github.com/Kitware/VTK
 - pydicom: https://github.com/pydicom/pydicom
-

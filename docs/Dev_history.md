@@ -42,6 +42,12 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Added a Claude Code hook to run the maintainability check during commit workflows.
 - Added OpenAI agent guidance for composable code changes.
 
+### 2026-06-04 - Documentation Organization
+
+- Moved project docs into `docs/` to keep the repository root focused.
+- Added `docs/README.md` as the documentation index.
+- Added `docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md` as a living source ledger for upstream references, recommended software, and monitoring cadence.
+
 ### 2026-06-03T23:41:54+00:00 - Commit b2f2ce1
 
 - Commit subject: Scaffold safety-first orthodontic planning toolkit
@@ -50,4 +56,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T00:53:12+00:00 - Commit ca2c1bb
 
 - Commit subject: Add maintainability guardrails
+- Status: development history hook observed a commit from Claude Code.
+
+### 2026-06-04T00:57:53+00:00 - Commit 64fac08
+
+- Commit subject: Organize documentation under docs
 - Status: development history hook observed a commit from Claude Code.

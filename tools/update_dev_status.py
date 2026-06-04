@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEV_HISTORY = ROOT / "Dev_history.md"
+DEV_HISTORY = ROOT / "docs" / "Dev_history.md"
 
 
 def git_value(*args: str) -> str:
@@ -40,4 +40,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

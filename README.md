@@ -2,9 +2,11 @@
 
 OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows.
 
+Most project documentation lives in [docs/](docs/README.md).
+
 It is not an Invisalign clone, medical device, diagnostic system, treatment approval system, or substitute for a licensed clinician. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, and advisory evaluation under explicitly declared data limitations.
 
-Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying clinical approval. See [UI_DESIGN.md](UI_DESIGN.md).
+Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying clinical approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
 
 ## Boundary
 
@@ -24,7 +26,7 @@ The software may not:
 - invent clinical thresholds
 - replace clinician review, consent, supervision, or regulatory obligations
 
-See [SAFETY.md](SAFETY.md) before using or contributing.
+See [docs/SAFETY.md](docs/SAFETY.md) before using or contributing.
 
 ## How It Works
 
@@ -37,11 +39,11 @@ The first workflow is simple:
 5. Render cumulative progress frames in the UI.
 6. Export findings that clearly separate rule checks, model advisories, and data gaps.
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for the plain-language system overview.
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 
 ## Maintainability
 
-The project should stay modular and composable as it grows. Follow [MAINTAINABILITY.md](MAINTAINABILITY.md) for file-size guardrails, directory ownership, review checklist, and the maintainability check script.
+The project should stay modular and composable as it grows. Follow [docs/MAINTAINABILITY.md](docs/MAINTAINABILITY.md) for file-size guardrails, directory ownership, review checklist, and the maintainability check script.
 
 ## Initial Build Order
 
@@ -58,7 +60,7 @@ The project should stay modular and composable as it grows. Follow [MAINTAINABIL
 
 ## References
 
-Commercial software such as BlueSkyPlan and ClinCheck may be studied as workflow references only. Do not fork, copy, reverse engineer, or import proprietary source, assets, terminology, or private workflows. See [OPEN_SOURCE_REFERENCES.md](OPEN_SOURCE_REFERENCES.md).
+Commercial software such as BlueSkyPlan and ClinCheck may be studied as workflow references only. Do not fork, copy, reverse engineer, or import proprietary source, assets, terminology, or private workflows. See [docs/OPEN_SOURCE_REFERENCES.md](docs/OPEN_SOURCE_REFERENCES.md) and [docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md](docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md).
 
 ## Development
 
@@ -71,7 +73,7 @@ pytest
 
 ## Repository Status
 
-Development history and commit-status notes live in [Dev_history.md](Dev_history.md). Claude Code project hooks are scaffolded under `.claude/` to append a lightweight status entry after `git commit` commands run inside Claude Code. The normal Git `post-commit` hook records the new commit status and amends the just-created commit with that note, guarded against recursion.
+Development history and commit-status notes live in [docs/Dev_history.md](docs/Dev_history.md). Claude Code project hooks are scaffolded under `.claude/` to append a lightweight status entry after `git commit` commands run inside Claude Code. The normal Git `post-commit` hook records the new commit status and amends the just-created commit with that note, guarded against recursion.
 
 For normal Git commits, initialize the repo and opt into the included hook path:
 

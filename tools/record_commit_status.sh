@@ -8,10 +8,9 @@ fi
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 python3 "$ROOT/tools/update_dev_status.py"
 
-if git -C "$ROOT" diff --quiet -- Dev_history.md; then
+if git -C "$ROOT" diff --quiet -- docs/Dev_history.md; then
   exit 0
 fi
 
-git -C "$ROOT" add Dev_history.md
+git -C "$ROOT" add docs/Dev_history.md
 OPEN_SOURCE_ORTHO_AMENDING=1 git -C "$ROOT" commit --amend --no-edit
-
