@@ -385,3 +385,19 @@ td input {
   line-height: 1.4;
   color: #5c6b73;
 }
+
+.finding-gap,
+.finding-question {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #5c6b73;
+}
+
+.finding-question {
+  font-style: italic;
+}
+
+#findingList li {
+  margin-bottom: 10px;
+}

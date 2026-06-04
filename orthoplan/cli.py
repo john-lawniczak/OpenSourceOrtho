@@ -37,6 +37,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     summary = sub.add_parser("plan-summary", help="summarize a serialized plan")
     summary.add_argument("path")
+
+    serve = sub.add_parser("serve", help="run the local UI dev server")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
     return parser
 
 
@@ -86,10 +90,18 @@ def _cmd_plan_summary(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_serve(args: argparse.Namespace) -> int:
+    from orthoplan.server import serve
+
+    serve(host=args.host, port=args.port)
+    return 0
+
+
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
     "inspect-stl": _cmd_inspect_stl,
     "plan-summary": _cmd_plan_summary,
+    "serve": _cmd_serve,
 }
 
 

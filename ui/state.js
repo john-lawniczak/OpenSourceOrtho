@@ -4,6 +4,10 @@ export const state = {
   file: null,
   scanUnits: "unverified",
   scanArch: "",
+  // Latest response from the Python engine (POST /api/evaluate). The UI never
+  // computes findings, gaps, timeline, or frames itself.
+  lastEval: null,
+  engineError: null,
   availability: {
     intraoral_scan: true,
     segmented_teeth: false,
@@ -67,52 +71,15 @@ export function maxStage() {
   return Math.max(0, ...stages());
 }
 
-export function cumulativeRows(stageIndex) {
-  const totals = new Map();
-  for (const row of state.rows.filter((item) => item.stage <= stageIndex)) {
-    const current = totals.get(row.tooth) || { x: 0, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 };
-    totals.set(row.tooth, {
-      x: current.x + row.x,
-      y: current.y + row.y,
-      z: current.z + row.z,
-      tip: current.tip + row.tip,
-      torque: current.torque + row.torque,
-      rotation: current.rotation + row.rotation,
-    });
+export async function evaluatePlan(payload) {
+  const response = await fetch("/api/evaluate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["engine request failed"]).join("; "));
   }
-  return totals;
-}
-
-export function dataGaps() {
-  const gaps = [];
-  if (!state.availability.roots) gaps.push("roots unavailable");
-  if (!state.availability.cbct) gaps.push("CBCT unavailable");
-  if (!state.availability.periodontal_status) gaps.push("periodontal status unavailable");
-  if (!state.availability.occlusion_scan) gaps.push("occlusion scan unavailable");
-  if (!state.availability.clinician_notes) gaps.push("clinician notes unavailable");
-  if (state.file && state.scanUnits === "unverified") {
-    gaps.push("scan units unverified; geometry scale cannot be trusted until confirmed");
-  }
-  return gaps;
-}
-
-export function findings() {
-  if (state.file && state.scanUnits === "unverified") {
-    return ["Movement-cap evaluation skipped: scan units unverified"];
-  }
-  const results = [];
-  for (const row of state.rows) {
-    const horizontal = Math.hypot(row.x, row.y);
-    if (horizontal > state.caps.linear_mm) results.push(`Stage ${row.stage} tooth ${row.tooth}: linear cap`);
-    if (Math.abs(row.z) > state.caps.intrusion_extrusion_mm) {
-      results.push(`Stage ${row.stage} tooth ${row.tooth}: vertical cap`);
-    }
-    if (Math.abs(row.tip) > state.caps.angular_deg || Math.abs(row.torque) > state.caps.angular_deg) {
-      results.push(`Stage ${row.stage} tooth ${row.tooth}: angular cap`);
-    }
-    if (Math.abs(row.rotation) > state.caps.rotation_deg) {
-      results.push(`Stage ${row.stage} tooth ${row.tooth}: rotation cap`);
-    }
-  }
-  return results;
+  return response.json();
 }

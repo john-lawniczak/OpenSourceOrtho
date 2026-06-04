@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-03 - Wire UI to the Python Engine
+
+- Added `orthoplan/api.py` (`evaluate_plan`/`evaluate_plan_payload`): the single, pure, never-raising evaluation entry point returning lint-gated findings, data gaps, the timeline projection, and `StageProgressFrame` data; validation errors are returned as data.
+- Added `orthoplan/server.py`, a localhost stdlib dev server that serves `ui/` and exposes `POST /api/evaluate` (binds 127.0.0.1, caps body size, refuses path traversal), plus an `orthoplan serve` CLI subcommand.
+- Rewired the UI to consume the engine: removed the JavaScript reimplementations of findings/data-gaps/cumulative poses; the canvas now renders the engine's frames, findings show their data gap and clinician question, and an "engine offline" state replaces any silent fallback.
+- Added `tests/test_api.py` (valid output, safety fields, invalid-FDI and non-contiguous-stage errors, scale gate). 46 tests; maintainability passes.
+
 ### 2026-06-03 - Post-Implementation Audit Fixes
 
 - Hardened mesh-linkage validation: a `ToothDelta` may now only reference the mesh segmented to its OWN tooth (prevents moving another tooth's geometry), and duplicate mesh asset ids across scans/mesh_assets are rejected.
@@ -127,4 +134,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T02:23:32+00:00 - Commit Status
 
 - Commit subject: Audit fixes: mesh-link integrity, UI XSS/contract hardening
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T03:02:23+00:00 - Commit Status
+
+- Commit subject: Wire UI to Python engine via api.py + dev server
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T03:03:02+00:00 - Commit Status
+
+- Commit subject: Wire UI to Python engine via api.py + dev server
 - Status: development history hook observed and recorded this commit workflow.

@@ -1,12 +1,8 @@
 import {
   availabilityLabels,
-  cumulativeRows,
-  dataGaps,
   el,
-  findings,
-  maxStage,
+  evaluatePlan,
   numberValue,
-  stages,
   state,
   toothPositions,
 } from "./state.js";
@@ -30,16 +26,41 @@ export function renderAll() {
   renderSteps();
   renderMetadata();
   renderRows();
-  renderFindings();
-  renderTimeline();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
+  el("stageValue").textContent = el("stageSlider").value;
+  scheduleEvaluate();
   drawCanvas();
+}
+
+let evaluateTimer = null;
+
+function scheduleEvaluate() {
+  if (evaluateTimer) clearTimeout(evaluateTimer);
+  evaluateTimer = setTimeout(runEvaluate, 150);
+}
+
+async function runEvaluate() {
+  try {
+    const result = await evaluatePlan(planJson());
+    state.engineError = null;
+    if (result.ok === false) {
+      state.lastEval = null;
+      renderEngineErrors(result.errors || ["plan was rejected by the engine"]);
+    } else {
+      state.lastEval = result;
+      renderEvaluation(result);
+    }
+  } catch (error) {
+    state.lastEval = null;
+    state.engineError = error.message;
+    renderEngineOffline();
+  }
 }
 
 export function renderAvailability() {
   el("availabilityGrid").innerHTML = Object.entries(availabilityLabels).map(([key, label]) => `
     <label class="toggle">
-      <span>${label}</span>
+      <span>${escapeHtml(label)}</span>
       <input type="checkbox" data-availability="${key}" ${state.availability[key] ? "checked" : ""} />
     </label>
   `).join("");
@@ -81,28 +102,57 @@ function renderMetadata() {
     .join("");
 }
 
-function renderFindings() {
-  el("dataGapList").innerHTML = dataGaps().map((gap) => `<li>${escapeHtml(gap)}</li>`).join("");
-  const items = findings();
-  el("findingList").innerHTML = items.length
-    ? items.map((finding) => `<li class="warning">${escapeHtml(finding)}</li>`).join("")
+function renderEvaluation(result) {
+  el("dataGapList").innerHTML = result.data_gaps.map((gap) => `<li>${escapeHtml(gap)}</li>`).join("");
+
+  el("findingList").innerHTML = result.findings.length
+    ? result.findings.map(findingMarkup).join("")
     : "<li>No deterministic findings</li>";
+
+  const t = result.timeline;
+  el("timelineText").textContent =
+    `${t.stage_count} stage(s), ${t.projected_duration_days} projected day(s) ` +
+    `(~${t.projected_duration_weeks} weeks) at ${t.wear_interval_days}-day wear. ${t.caveat}`;
+
+  const slider = el("stageSlider");
+  const lastStage = Math.max(0, result.frames.length - 1);
+  slider.max = String(lastStage);
+  if (Number(slider.value) > lastStage) slider.value = String(lastStage);
+  el("stageValue").textContent = slider.value;
+  drawCanvas();
 }
 
-function renderTimeline() {
-  const stageCount = stages().length;
-  const days = stageCount * numberValue("wearInterval");
-  el("timelineText").textContent = `${stageCount} stage(s), ${days} projected day(s). Projection excludes refinements, compliance variation, clinical pauses, and clinician-directed changes.`;
-  const slider = el("stageSlider");
-  slider.max = String(maxStage());
-  if (Number(slider.value) > maxStage()) slider.value = String(maxStage());
-  el("stageValue").textContent = slider.value;
+function findingMarkup(finding) {
+  const question = finding.clinician_question
+    ? `<p class="finding-question">${escapeHtml(finding.clinician_question)}</p>`
+    : "";
+  const gap = finding.data_gap ? `<p class="finding-gap">${escapeHtml(finding.data_gap)}</p>` : "";
+  return `<li class="${escapeHtml(finding.severity)}">
+    <strong>${escapeHtml(finding.title)}</strong>
+    <p>${escapeHtml(finding.message)}</p>${gap}${question}
+  </li>`;
+}
+
+function renderEngineErrors(errors) {
+  el("findingList").innerHTML = errors
+    .map((message) => `<li class="warning"><strong>Plan rejected</strong><p>${escapeHtml(message)}</p></li>`)
+    .join("");
+  el("timelineText").textContent = "Plan invalid - fix the errors above to re-evaluate.";
+}
+
+function renderEngineOffline() {
+  el("findingList").innerHTML =
+    "<li class=\"warning\"><strong>Evaluation engine offline</strong>" +
+    "<p>Start it with <code>python -m orthoplan.server</code> (or <code>orthoplan serve</code>) " +
+    "and open this page from that server. Findings are computed by the Python engine only.</p></li>";
+  el("dataGapList").innerHTML = "";
+  el("timelineText").textContent = "Engine offline - no projection available.";
 }
 
 function drawCanvas() {
   const canvas = el("archCanvas");
   const ctx = canvas.getContext("2d");
-  const totals = cumulativeRows(Number(el("stageSlider").value || 0));
+  const totals = poseTotals(Number(el("stageSlider").value || 0));
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#fbfdfe";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -128,6 +178,17 @@ function drawCanvas() {
       }
     }
   }
+}
+
+// Cumulative translation comes from the engine's frames, not a JS recomputation.
+function poseTotals(stageIndex) {
+  const totals = new Map();
+  const frame = state.lastEval?.frames?.[stageIndex];
+  if (!frame) return totals;
+  for (const pose of frame.poses) {
+    totals.set(pose.tooth, { x: pose.translate_x_mm, y: pose.translate_y_mm, z: pose.translate_z_mm });
+  }
+  return totals;
 }
 
 function drawTooth(ctx, x, y, label, fill, text) {

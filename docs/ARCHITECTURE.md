@@ -30,6 +30,8 @@ The likely future split:
 - Three.js or VTK/PyVista: interactive 3D visualization
 - Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
 
+The browser UI never reimplements the engine. `orthoplan/api.py` exposes a single pure evaluation entry point, and `orthoplan/server.py` serves it over `POST /api/evaluate`. The UI sends plan-shaped JSON and renders the returned findings, data gaps, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy.
+
 The first UI prototype is a static browser workspace under `ui/`. It mirrors
 the Python data contract but does not yet run backend STL inspection.
 
