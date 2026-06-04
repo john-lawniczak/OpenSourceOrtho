@@ -1,5 +1,8 @@
 # Phase 2 UI Prototype
 
+![Stage builder](../docs/images/stage-builder.png)
+![3D progress review](../docs/images/review-3d.png)
+
 Browser prototype for the data-model workflow:
 
 1. STL upload metadata
@@ -82,4 +85,12 @@ pytest tests/e2e -q
 ```
 
 All three suites (Python, JS, e2e) run in CI on every push and pull request.
+
+The screenshots above are generated headlessly (no patient data) and can be
+regenerated after UI changes:
+
+```bash
+pip install -e ".[e2e]" && python -m playwright install chromium
+python tools/capture_screenshots.py    # writes docs/images/*.png
+```
 

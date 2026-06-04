@@ -228,16 +228,18 @@ Goals:
 - every finding remains linted
 - data gaps stay visible
 
-Rules to add:
+Rules to add (status):
 
-- stage index consistency
-- duplicate tooth movement
-- missing segmentation
-- movement caps per axis
-- estimated timeline outliers
-- missing roots/CBCT when movement type could be root-sensitive
-- coordinate frame mismatch
-- unsupported numbering system mismatch
+- stage index consistency — enforced at the MODEL layer (contiguity validator); no runtime rule needed.
+- duplicate tooth movement — enforced at the MODEL layer (Stage `unique_teeth`); no runtime rule needed.
+- ~~missing segmentation~~ done: `evaluate_segmentation_presence` (NOTICE when movement is planned with no per-tooth segmentation).
+- ~~movement caps per axis~~ done (Phase 1/3: Euclidean horizontal + separate vertical).
+- ~~missing roots/CBCT when movement is root-sensitive~~ done: `evaluate_root_sensitive_movement` (WARNING for tip/torque/intrusion without roots or CBCT).
+- coordinate frame mismatch / unsupported numbering — enforced at the MODEL layer (validators); no runtime rule needed.
+- estimated timeline outliers — deferred: needs a cited/configured plausible band rather than an invented threshold.
+- also added: `evaluate_no_movement` (INFO when stages exist but all deltas are zero).
+
+All rules are registered in `evaluation/engine.run_rules()` and covered by `tests/test_plan_checks.py`.
 
 Exit criteria:
 
@@ -324,8 +326,10 @@ Progress:
 - ~~synthetic example plans~~ done: `examples/generate_examples.py` + checked-in `basic_plan.json` / `segmented_plan.json`, validated by `tests/test_examples.py`.
 - ~~contribution guide~~ done: `CONTRIBUTING.md`.
 - ~~dependency license audit~~ done: `docs/LICENSE_AUDIT.md`.
+- ~~CLI walkthrough~~ done: `docs/CLI_WALKTHROUGH.md` (real output).
+- ~~screenshots~~ done: `docs/images/*.png`, regenerable via `tools/capture_screenshots.py`.
 
-Still open: CLI walkthrough doc and screenshots / generated fixture images.
+Phase 7 readiness items are complete. Remaining big pieces overall: Phase 5 (model advisory layer).
 
 Exit criteria:
 

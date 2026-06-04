@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Phase 4 Rules + Phase 7 CLI Walkthrough & Screenshots
+
+- Phase 4 deterministic rules (`evaluation/rules/plan_checks.py`, registered in `engine.run_rules`): `evaluate_root_sensitive_movement` (WARNING when tip/torque/intrusion is planned without roots or CBCT), `evaluate_segmentation_presence` (NOTICE when movement is planned with no per-tooth segmentation), and `evaluate_no_movement` (INFO when stages have only zero deltas). Other planned checks (stage contiguity, duplicate tooth, mixed numbering/frame) are already enforced at the model layer; timeline outliers deferred (needs a cited band, not an invented threshold). Added `tests/test_plan_checks.py`.
+- `plan-summary` now labels output "Findings:" (it lists all rule findings, not just caps).
+- Phase 7: `docs/CLI_WALKTHROUGH.md` with real command output; `tools/capture_screenshots.py` (Playwright) regenerates `docs/images/stage-builder.png` and `review-3d.png` headlessly with no patient data; screenshots embedded in `ui/README.md`. Tightened the 3D viewer camera/grid so proxies read better.
+- 83 Python tests + 11 JS tests pass; maintainability passes. Phase 7 readiness items complete.
+
 ### 2026-06-04 - Phase 7: Examples, Contribution Guide, License Audit
 
 - Added synthetic example plans under `examples/`: a generator (`generate_examples.py`, fixed timestamp for stable output) plus checked-in `basic_plan.json` (trips the linear cap) and `segmented_plan.json` (per-tooth approximate frame, `rotation_renderable` true). `tests/test_examples.py` asserts they load, evaluate, and stay in sync with the generator.
@@ -246,4 +253,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:13:39+00:00 - Commit Status
 
 - Commit subject: Phase 7 readiness: example plans, contribution guide, license audit
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:23:20+00:00 - Commit Status
+
+- Commit subject: Phase 4 deterministic rules + Phase 7 CLI walkthrough & screenshots
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:23:20+00:00 - Commit Status
+
+- Commit subject: Phase 4 deterministic rules + Phase 7 CLI walkthrough & screenshots
 - Status: development history hook observed and recorded this commit workflow.

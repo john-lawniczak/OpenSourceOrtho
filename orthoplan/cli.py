@@ -84,7 +84,7 @@ def _cmd_plan_summary(args: argparse.Namespace) -> int:
         f"{projection.wear_interval_days}-day wear. {projection.caveat}"
     )
     print(f"Data gaps: {', '.join(data_gaps(plan)) or 'none declared'}")
-    print(f"Movement-cap findings: {len(findings)}")
+    print(f"Findings: {len(findings)}")
     for finding in findings:
         print(f"  - {finding.render().splitlines()[0]}")
     return 0

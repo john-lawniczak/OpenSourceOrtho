@@ -46,17 +46,17 @@ export function createViewer(container) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xfbfdfe);
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
-  camera.position.set(0, 70, 70);
+  camera.position.set(0, 46, 52);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.target.set(0, 0, 6);
+  controls.target.set(0, 0, 4);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.65);
   dir.position.set(40, 80, 40);
   scene.add(dir);
-  scene.add(new THREE.GridHelper(120, 24, 0xdbe3e7, 0xeef2f4));
+  scene.add(new THREE.GridHelper(90, 18, 0xdbe3e7, 0xeef2f4));
 
   const proxies = new THREE.Group();
   scene.add(proxies);
