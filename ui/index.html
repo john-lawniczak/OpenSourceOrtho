@@ -148,9 +148,11 @@
                 </label>
               </div>
               <canvas id="archCanvas" width="900" height="520" aria-label="Tooth progress preview"></canvas>
+              <p class="viewer-caveat">Crown-surface translation only. Tip, torque, and rotation are recorded but not rendered as orientation in this scan frame, and the crown-centroid pivot is a visualization assumption, not root position.</p>
             </section>
             <aside class="review-side">
               <h2>Findings</h2>
+              <p class="findings-caveat">Observational cap checks only. Each warrants clinician review against the listed data gaps; nothing here indicates a plan is safe, approved, or clinically acceptable.</p>
               <ul id="findingList"></ul>
               <h2>Plan JSON</h2>
               <textarea id="planJson" readonly></textarea>

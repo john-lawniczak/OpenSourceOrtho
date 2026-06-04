@@ -55,7 +55,8 @@ export function el(id) {
 }
 
 export function numberValue(id) {
-  return Number(el(id).value || 0);
+  const value = Number(el(id).value);
+  return Number.isFinite(value) ? value : 0;
 }
 
 export function stages() {

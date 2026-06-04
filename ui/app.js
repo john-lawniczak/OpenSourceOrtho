@@ -31,7 +31,12 @@ document.body.addEventListener("input", (event) => {
   if (target.dataset.row) {
     const row = state.rows[Number(target.dataset.row)];
     const field = target.dataset.field;
-    row[field] = field === "tooth" ? target.value : Number(target.value || 0);
+    if (field === "tooth") {
+      row[field] = target.value;
+    } else {
+      const num = Number(target.value);
+      row[field] = Number.isFinite(num) ? num : 0;
+    }
   }
   renderAll();
 });

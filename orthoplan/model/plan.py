@@ -153,19 +153,25 @@ class TreatmentPlan(BaseModel):
     @model_validator(mode="after")
     def deltas_match_plan_identity(self) -> TreatmentPlan:
         frame_name = self.coordinate_frame.name
-        seen_links: set[str] = set()
-        asset_ids = self.asset_ids
+
+        # Asset ids must be unique across scans and mesh assets; otherwise a
+        # segmented-mesh link would resolve ambiguously to two different assets.
+        all_asset_ids = [scan.asset.id for scan in self.scans] + [a.id for a in self.mesh_assets]
+        if len(all_asset_ids) != len(set(all_asset_ids)):
+            raise ValueError("duplicate mesh asset id across scans/mesh_assets")
+        asset_ids = set(all_asset_ids)
+
+        # Build the canonical tooth -> mesh map while rejecting duplicate links.
+        tooth_to_mesh: dict[str, str] = {}
         for link in self.tooth_meshes:
-            if link.tooth.value in seen_links:
+            if link.tooth.value in tooth_to_mesh:
                 raise ValueError(f"duplicate segmented tooth mesh: {link.tooth.value}")
             if link.mesh_asset_id not in asset_ids:
                 raise ValueError(
                     "segmented tooth mesh references unknown mesh asset "
                     f"{link.mesh_asset_id!r}"
                 )
-            seen_links.add(link.tooth.value)
-
-        mesh_ids = {link.mesh_asset_id for link in self.tooth_meshes}
+            tooth_to_mesh[link.tooth.value] = link.mesh_asset_id
 
         for stage in self.stages:
             for delta in stage.deltas:
@@ -179,9 +185,11 @@ class TreatmentPlan(BaseModel):
                         "mixed coordinate frames are rejected: plan frame is "
                         f"{frame_name!r}, delta frame is {delta.coordinate_frame!r}"
                     )
-                if delta.mesh_asset_id and delta.mesh_asset_id not in mesh_ids:
+                # A delta may only reference the mesh segmented to its OWN tooth,
+                # so a delta can never move another tooth's geometry.
+                if delta.mesh_asset_id and tooth_to_mesh.get(delta.tooth.value) != delta.mesh_asset_id:
                     raise ValueError(
                         "tooth delta references unknown segmented mesh asset "
-                        f"{delta.mesh_asset_id!r}"
+                        f"{delta.mesh_asset_id!r} for tooth {delta.tooth.value}"
                     )
         return self

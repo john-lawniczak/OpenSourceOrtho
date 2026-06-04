@@ -14,8 +14,10 @@ export function planJson() {
     scans: scanPayload(),
     mesh_assets: [],
     tooth_meshes: [],
-    stages: stages().map((stage) => ({
-      index: stage,
+    // Reindex to contiguous 0..n-1 so the exported plan satisfies the Python
+    // TreatmentPlan contiguity invariant even if UI stage numbers have gaps.
+    stages: stages().map((stage, index) => ({
+      index,
       deltas: state.rows.filter((row) => row.stage === stage).map(deltaPayload),
     })),
   };

@@ -105,3 +105,31 @@ def test_segmented_tooth_mesh_requires_known_asset() -> None:
             id="missing-asset",
             tooth_meshes=[SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="missing")],
         )
+
+
+def test_delta_cannot_reference_another_tooths_mesh() -> None:
+    # mesh-21 is segmented to tooth 21; a delta for tooth 11 must not use it.
+    asset = MeshAsset(id="mesh-21", format="stl-binary", vertex_count=3, face_count=1)
+    with pytest.raises(ValueError, match="unknown segmented mesh"):
+        TreatmentPlan(
+            id="wrong-tooth",
+            mesh_assets=[asset],
+            tooth_meshes=[SegmentedToothMesh(tooth=ToothId(value="21"), mesh_asset_id="mesh-21")],
+            stages=[
+                Stage(
+                    index=0,
+                    deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="mesh-21")],
+                )
+            ],
+        )
+
+
+def test_duplicate_asset_ids_are_rejected() -> None:
+    with pytest.raises(ValueError, match="duplicate mesh asset id"):
+        TreatmentPlan(
+            id="dupe-asset",
+            mesh_assets=[
+                MeshAsset(id="same", format="stl-binary", vertex_count=3, face_count=1),
+                MeshAsset(id="same", format="stl-binary", vertex_count=3, face_count=1),
+            ],
+        )

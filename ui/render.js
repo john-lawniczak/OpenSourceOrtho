@@ -12,6 +12,12 @@ import {
 } from "./state.js";
 import { planJson } from "./plan.js";
 
+const HTML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+}
+
 export function renderAll() {
   state.scanUnits = el("scanUnits").value;
   state.scanArch = el("scanArch").value;
@@ -50,8 +56,8 @@ function renderSteps() {
 function renderRows() {
   el("stageRows").innerHTML = state.rows.map((row, index) => `
     <tr>
-      <td><input data-row="${index}" data-field="stage" type="number" min="0" value="${row.stage}" /></td>
-      <td><input data-row="${index}" data-field="tooth" value="${row.tooth}" maxlength="2" /></td>
+      <td><input data-row="${index}" data-field="stage" type="number" min="0" value="${escapeHtml(row.stage)}" /></td>
+      <td><input data-row="${index}" data-field="tooth" value="${escapeHtml(row.tooth)}" maxlength="2" /></td>
       <td><input data-row="${index}" data-field="x" type="number" step="0.01" value="${row.x}" /></td>
       <td><input data-row="${index}" data-field="y" type="number" step="0.01" value="${row.y}" /></td>
       <td><input data-row="${index}" data-field="z" type="number" step="0.01" value="${row.z}" /></td>
@@ -70,14 +76,16 @@ function renderMetadata() {
     ["Units", state.scanUnits],
     ["Arch", state.scanArch || "unknown"],
   ] : [["File", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"]];
-  el("scanMetadata").innerHTML = items.map(([key, value]) => `<div><dt>${key}</dt><dd>${value}</dd></div>`).join("");
+  el("scanMetadata").innerHTML = items
+    .map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`)
+    .join("");
 }
 
 function renderFindings() {
-  el("dataGapList").innerHTML = dataGaps().map((gap) => `<li>${gap}</li>`).join("");
+  el("dataGapList").innerHTML = dataGaps().map((gap) => `<li>${escapeHtml(gap)}</li>`).join("");
   const items = findings();
   el("findingList").innerHTML = items.length
-    ? items.map((finding) => `<li class="warning">${finding}</li>`).join("")
+    ? items.map((finding) => `<li class="warning">${escapeHtml(finding)}</li>`).join("")
     : "<li>No deterministic findings</li>";
 }
 

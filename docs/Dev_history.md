@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-03 - Post-Implementation Audit Fixes
+
+- Hardened mesh-linkage validation: a `ToothDelta` may now only reference the mesh segmented to its OWN tooth (prevents moving another tooth's geometry), and duplicate mesh asset ids across scans/mesh_assets are rejected.
+- UI prototype: escaped all dynamic `innerHTML` injection (file name, tooth, gaps, findings) to close an XSS vector; reindexed exported stages to contiguous 0..n-1 so UI output always satisfies the Python plan contract; hardened numeric inputs against `NaN`.
+- UI prototype: added safety caveats by the viewer (translation-only, rotation not rendered, crown-centroid pivot is a visualization assumption) and by Findings (observational, requires clinician review).
+- Added regression tests for wrong-tooth mesh references and duplicate asset ids (41 tests; maintainability passes).
+
 ### 2026-06-03 - Scaffold
 
 - Created initial repository structure for OpenSource Ortho.
@@ -110,4 +117,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T01:44:40+00:00 - Commit Status
 
 - Commit subject: Add Phase 2 UI prototype and mesh linkage
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T02:22:30+00:00 - Commit Status
+
+- Commit subject: Audit fixes: mesh-link integrity, UI XSS/contract hardening
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T02:23:32+00:00 - Commit Status
+
+- Commit subject: Audit fixes: mesh-link integrity, UI XSS/contract hardening
 - Status: development history hook observed and recorded this commit workflow.

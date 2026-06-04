@@ -377,3 +377,11 @@ td input {
     grid-template-columns: 1fr;
   }
 }
+
+.viewer-caveat,
+.findings-caveat {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #5c6b73;
+}
