@@ -39,6 +39,7 @@ def test_handoff_report_binds_plan_engine_and_evaluation() -> None:
     assert report["evaluation"]["ok"] is True
     assert report["evaluation"]["data_gap_actions"]
     assert report["evaluation"]["findings"]
+    assert report["review"]["status"] == "generated"
 
 
 def test_evaluation_digest_is_stable_for_same_plan_and_differs_for_changes() -> None:
@@ -59,3 +60,17 @@ def test_report_json_is_sorted_for_reproducible_handoff() -> None:
     second = report_to_json(report)
     assert first == second
     assert first.splitlines()[1].startswith('  "created_at"')
+
+
+def test_report_can_include_reviewer_and_hmac_signature() -> None:
+    report = build_handoff_report(
+        _plan(),
+        created_at=datetime(2026, 6, 4, 12, 0, tzinfo=UTC),
+        reviewer="Dr. Example",
+        signing_key="secret",
+    )
+
+    assert report["review"]["reviewer"] == "Dr. Example"
+    assert report["signature"]["algorithm"] == "HMAC-SHA256"
+    assert report["signature"]["scope"] == "report_sha256"
+    assert len(report["signature"]["value"]) == 64

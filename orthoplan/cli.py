@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 from orthoplan.evaluation.engine import run_rules
@@ -50,6 +51,15 @@ def build_parser() -> argparse.ArgumentParser:
     report = sub.add_parser("report", help="generate a reproducible handoff report")
     report.add_argument("path")
     report.add_argument("--out", default=None, help="write report JSON to this path")
+    report.add_argument("--reviewer", default=None, help="reviewer name/id to include in report")
+    report.add_argument(
+        "--signing-key-env",
+        default=None,
+        help="environment variable containing an HMAC signing key",
+    )
+
+    acquisition = sub.add_parser("acquisition", help="rank missing data by deterministic impact")
+    acquisition.add_argument("path")
     return parser
 
 
@@ -57,7 +67,9 @@ def _cmd_new_plan(args: argparse.Namespace) -> int:
     plan = TreatmentPlan(
         id=args.id,
         title=args.title,
-        settings=TreatmentSettings(timeline=TimelineSettings(wear_interval_days=args.wear_interval)),
+        settings=TreatmentSettings(
+            timeline=TimelineSettings(wear_interval_days=args.wear_interval)
+        ),
     )
     if args.out:
         write_plan(plan, args.out)
@@ -154,7 +166,10 @@ def _cmd_report(args: argparse.Namespace) -> int:
         print(f"report error: {exc}", file=sys.stderr)
         return 2
 
-    body = report_to_json(build_handoff_report(plan))
+    signing_key = os.environ.get(args.signing_key_env) if args.signing_key_env else None
+    body = report_to_json(
+        build_handoff_report(plan, reviewer=args.reviewer, signing_key=signing_key)
+    )
     if args.out:
         from pathlib import Path
 
@@ -165,6 +180,42 @@ def _cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_acquisition(args: argparse.Namespace) -> int:
+    from orthoplan.evaluation.acquisition import acquisition_advice
+
+    try:
+        plan = read_plan(args.path)
+    except (OSError, ValueError) as exc:
+        print(f"acquisition error: {exc}", file=sys.stderr)
+        return 2
+
+    advice = acquisition_advice(plan)
+    print(f"Acquisition advisor for: {plan.title} ({plan.id})")
+    print(
+        f"Baseline: {advice.baseline_finding_count} finding(s), "
+        f"{len(advice.baseline_data_gaps)} data gap(s)."
+    )
+    print(advice.caveat)
+    if not advice.impacts:
+        print("No missing data modalities are currently applicable.")
+        return 0
+    for index, impact in enumerate(advice.impacts, start=1):
+        print(f"\n{index}. {impact.label} [{impact.modality}] score {impact.priority_score:.1f}")
+        print(f"   Acquire: {impact.acquisition}")
+        if impact.closes_data_gaps:
+            print(f"   Closes gaps: {', '.join(impact.closes_data_gaps)}")
+        if impact.resolves:
+            print("   Would clear absence-of-data finding(s):")
+            for finding in impact.resolves:
+                print(f"     - {finding.severity.upper()}: {finding.title}")
+        if impact.surfaces:
+            print("   Would unlock currently-suppressed check(s):")
+            for finding in impact.surfaces:
+                print(f"     - {finding.severity.upper()}: {finding.title}")
+        print(f"   Note: {impact.note}")
+    return 0
+
+
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
     "inspect-stl": _cmd_inspect_stl,
@@ -172,6 +223,7 @@ _COMMANDS = {
     "serve": _cmd_serve,
     "advise": _cmd_advise,
     "report": _cmd_report,
+    "acquisition": _cmd_acquisition,
 }
 
 

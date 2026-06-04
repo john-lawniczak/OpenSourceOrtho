@@ -120,9 +120,18 @@ source before rotation can be rendered.
 
 `orthoplan report PLAN.json` emits a deterministic handoff artifact. The report includes the
 engine version, canonical plan hash, stable evaluation hash, input metadata, findings,
-data-gap actions, timeline, progress frames, and a report hash. It does not include mesh
-bytes. The goal is reproducible research/clinician review: the artifact ties inputs to engine
-behavior and makes provenance auditable without claiming clinical approval.
+data-gap actions, timeline, progress frames, review metadata, and a report hash. It can also
+include an optional HMAC-SHA256 signature. It does not include mesh bytes. The goal is
+reproducible research/clinician review: the artifact ties inputs to engine behavior and makes
+provenance auditable without claiming clinical approval.
+
+## Acquisition Advisor
+
+`orthoplan/evaluation/acquisition.py` computes deterministic marginal data-acquisition
+impact. For each applicable missing modality, it builds a counterfactual plan with only that
+availability flag filled, reruns `run_rules()`, and diffs findings/data gaps. The output says
+which absence-of-data findings would clear, which suppressed checks would run, and which gap
+entries would close. It never predicts what the acquired data would show.
 
 ## Movement Settings
 

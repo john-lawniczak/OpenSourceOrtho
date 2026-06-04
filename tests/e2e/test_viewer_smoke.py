@@ -66,3 +66,47 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
             browser.close()
 
     assert not errors, f"uncaught page errors: {errors}"
+
+
+def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> None:
+    with sync_playwright() as pw:
+        try:
+            browser = pw.chromium.launch(headless=True)
+        except Exception as exc:  # noqa: BLE001 - browser binary may be missing
+            pytest.skip(f"playwright chromium unavailable: {exc}")
+
+        page = browser.new_page(viewport={"width": 1280, "height": 900})
+        errors: list[str] = []
+        page.on("pageerror", lambda exc: errors.append(str(exc)))
+        try:
+            page.goto(server_url, wait_until="networkidle")
+            page.click('button.step[data-step="review"]')
+            page.wait_for_selector("#findingList li", timeout=15000)
+
+            acquisition = page.locator("#acquisitionList").inner_text()
+            assert "Root data" in acquisition or "CBCT" in acquisition
+
+            page.click('button.dim[data-dim="2d"]')
+            non_background = page.locator("#archCanvas").evaluate(
+                """canvas => {
+                  const ctx = canvas.getContext('2d');
+                  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                  let changed = 0;
+                  for (let i = 0; i < data.length; i += 4) {
+                    if (!(data[i] === 251 && data[i + 1] === 253 && data[i + 2] === 254)) changed++;
+                  }
+                  return changed;
+                }"""
+            )
+            assert non_background > 1000
+
+            page.click('button.step[data-step="stages"]')
+            page.fill('input[data-row="0"][data-field="tooth"]', "99")
+            page.click('button.step[data-step="review"]')
+            page.wait_for_function(
+                "() => document.querySelector('#findingList')?.innerText.includes('Plan rejected')"
+            )
+        finally:
+            browser.close()
+
+    assert not errors, f"uncaught page errors: {errors}"

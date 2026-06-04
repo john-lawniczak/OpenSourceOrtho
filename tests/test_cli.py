@@ -61,11 +61,28 @@ def test_cli_advise_handles_invalid_plan_without_traceback(
 
 def test_cli_report_emits_handoff_report(monkeypatch, capsys, tmp_path: Path) -> None:
     plan_path = tmp_path / "plan.json"
-    monkeypatch.setattr(sys, "argv", ["orthoplan", "new-plan", "--id", "report-plan", "--out", str(plan_path)])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["orthoplan", "new-plan", "--id", "report-plan", "--out", str(plan_path)],
+    )
     assert cli.main() == 0
     capsys.readouterr()
 
-    monkeypatch.setattr(sys, "argv", ["orthoplan", "report", str(plan_path)])
+    monkeypatch.setenv("REPORT_KEY", "secret")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "orthoplan",
+            "report",
+            str(plan_path),
+            "--reviewer",
+            "Dr. Test",
+            "--signing-key-env",
+            "REPORT_KEY",
+        ],
+    )
     assert cli.main() == 0
 
     payload = json.loads(capsys.readouterr().out)
@@ -73,6 +90,8 @@ def test_cli_report_emits_handoff_report(monkeypatch, capsys, tmp_path: Path) ->
     assert payload["plan"]["id"] == "report-plan"
     assert len(payload["evaluation_sha256"]) == 64
     assert len(payload["report_sha256"]) == 64
+    assert payload["review"]["reviewer"] == "Dr. Test"
+    assert payload["signature"]["algorithm"] == "HMAC-SHA256"
 
 
 def test_cli_report_handles_invalid_plan_without_traceback(
@@ -87,3 +106,36 @@ def test_cli_report_handles_invalid_plan_without_traceback(
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "report error" in captured.err
+
+
+def test_cli_acquisition_prints_ranked_advice(monkeypatch, capsys, tmp_path: Path) -> None:
+    plan_path = tmp_path / "plan.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["orthoplan", "new-plan", "--id", "acq-plan", "--out", str(plan_path)],
+    )
+    assert cli.main() == 0
+    capsys.readouterr()
+
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "acquisition", str(plan_path)])
+    assert cli.main() == 0
+
+    output = capsys.readouterr().out
+    assert "Acquisition advisor for" in output
+    assert "Baseline:" in output
+    assert "Root data" in output
+
+
+def test_cli_acquisition_handles_invalid_plan_without_traceback(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    path = tmp_path / "bad-plan.json"
+    path.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "acquisition", str(path)])
+
+    assert cli.main() == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "acquisition error" in captured.err

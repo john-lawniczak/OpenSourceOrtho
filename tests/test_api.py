@@ -134,6 +134,15 @@ def test_data_gap_actions_explain_limited_capabilities() -> None:
     assert "root movement assessment" in root_action["blocked_capabilities"]
 
 
+def test_acquisition_advice_is_included_in_engine_output() -> None:
+    result = evaluate_plan_payload(_base_payload())
+    advice = result["acquisition_advice"]
+    assert advice["baseline_finding_count"] == len(result["findings"])
+    assert advice["baseline_data_gaps"] == result["data_gaps"]
+    assert advice["impacts"]
+    assert any(impact["modality"] == "roots" for impact in advice["impacts"])
+
+
 def test_unverified_scan_units_gate_cap_evaluation() -> None:
     payload = _base_payload(
         scans=[{"asset": {"id": "a", "format": "stl", "vertex_count": 0, "face_count": 0}}],

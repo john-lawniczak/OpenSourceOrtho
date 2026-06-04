@@ -24,6 +24,7 @@ The first production-grade UI should include:
 - displacement vectors and rotation values; rendered rotation only with trusted anatomical frames
 - rule findings panel tied to highlighted geometry
 - data-availability panel that remains visible during plan review
+- acquisition advisor panel showing what missing data would change or unlock
 - exportable visual report with the same safety boundary language
 
 ## Accuracy Requirements

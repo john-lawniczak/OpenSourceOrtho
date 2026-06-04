@@ -145,6 +145,7 @@ function renderMetadata() {
 
 function renderEvaluation(result) {
   el("dataGapList").innerHTML = dataGapMarkup(result);
+  renderAcquisitionAdvice(result.acquisition_advice);
 
   el("findingList").innerHTML = result.findings.length
     ? result.findings.map(findingMarkup).join("")
@@ -177,6 +178,37 @@ function dataGapMarkup(result) {
   return result.data_gaps.map((gap) => `<li>${escapeHtml(gap)}</li>`).join("");
 }
 
+function renderAcquisitionAdvice(advice) {
+  if (!advice) {
+    el("acquisitionCaveat").textContent = "";
+    el("acquisitionList").innerHTML = "";
+    return;
+  }
+  el("acquisitionCaveat").textContent = advice.caveat || "";
+  const impacts = Array.isArray(advice.impacts) ? advice.impacts.slice(0, 4) : [];
+  el("acquisitionList").innerHTML = impacts.length
+    ? impacts.map(acquisitionMarkup).join("")
+    : "<li>No missing data modalities are currently applicable.</li>";
+}
+
+function acquisitionMarkup(impact) {
+  const closed = impact.closes_data_gaps?.length
+    ? `<p>Closes: ${escapeHtml(impact.closes_data_gaps.join(", "))}</p>`
+    : "";
+  const resolves = impact.resolves?.length
+    ? `<p>Clears: ${escapeHtml(impact.resolves.map((finding) => finding.title).join("; "))}</p>`
+    : "";
+  const surfaces = impact.surfaces?.length
+    ? `<p>Unlocks: ${escapeHtml(impact.surfaces.map((finding) => finding.title).join("; "))}</p>`
+    : "";
+  return `<li>
+    <strong>${escapeHtml(impact.label)} (${Number(impact.priority_score || 0).toFixed(1)})</strong>
+    <p>${escapeHtml(impact.acquisition)}</p>
+    ${closed}${resolves}${surfaces}
+    <p>${escapeHtml(impact.note)}</p>
+  </li>`;
+}
+
 function findingMarkup(finding) {
   const question = finding.clinician_question
     ? `<p class="finding-question">${escapeHtml(finding.clinician_question)}</p>`
@@ -201,6 +233,8 @@ function renderEngineOffline() {
     "<p>Start it with <code>python -m orthoplan.server</code> (or <code>orthoplan serve</code>) " +
     "and open this page from that server. Findings are computed by the Python engine only.</p></li>";
   el("dataGapList").innerHTML = "";
+  el("acquisitionCaveat").textContent = "";
+  el("acquisitionList").innerHTML = "";
   el("timelineText").textContent = "Engine offline - no projection available.";
 }
 

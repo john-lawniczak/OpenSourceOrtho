@@ -67,6 +67,17 @@ The gate enforces that:
 Every model-sourced finding must also carry model provenance, remain observational and
 conditional, include data gaps when relevant, and avoid invented thresholds.
 
+## Acquisition Advisor Boundary
+
+The acquisition advisor is deterministic data-acquisition support. It toggles one missing
+availability flag at a time, reruns the deterministic engine, and reports which
+absence-of-data findings would clear, which suppressed checks would become assessable, and
+which data-gap entries would close.
+
+This is not clinical advice. "Would clear" means the engine would no longer flag the
+absence of that data; it does not mean a movement, patient, or plan is safe or clinically
+acceptable. The advisor predicts nothing about what newly acquired data would show.
+
 ## Regulatory Note
 
 This document is not legal advice. Anyone using or modifying this project for clinical workflows is responsible for professional, legal, privacy, and regulatory obligations in their jurisdiction.

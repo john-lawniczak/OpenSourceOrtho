@@ -1,7 +1,7 @@
 # Implementation Plan — Acquisition Advisor (deterministic data-gap impact)
 
-> **Status:** proposed (not yet implemented).
-> **Owner module (proposed):** `orthoplan/evaluation/acquisition.py`.
+> **Status:** implemented in `orthoplan/evaluation/acquisition.py`.
+> **Owner module:** `orthoplan/evaluation/acquisition.py`.
 > **One-liner:** Turn the passive "data gaps" list into deterministic decision
 > support: for each missing data modality, compute exactly which deterministic
 > findings it would *resolve* and which currently-suppressed checks it would

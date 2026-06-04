@@ -99,15 +99,27 @@ Serves the browser UI and the `/api/evaluate` endpoint the UI calls. See
 ## 5. Reproducible handoff report
 
 ```bash
-orthoplan report examples/basic_plan.json --out /tmp/basic-report.json
+orthoplan report examples/basic_plan.json --reviewer "Dr. Example" --out /tmp/basic-report.json
 ```
 
 The report is deterministic JSON with the engine version, canonical plan hash,
 stable evaluation hash, input metadata, findings, data-gap actions, timeline,
-progress frames, and a report hash. It does not include mesh bytes or imply
-clinical approval.
+progress frames, review metadata, and a report hash. If `--signing-key-env` is
+provided, the report includes an HMAC-SHA256 signature over the report hash. It
+does not include mesh bytes or imply clinical approval.
 
-## 6. Optional model advisory
+## 6. Acquisition advisor
+
+```bash
+orthoplan acquisition examples/basic_plan.json
+```
+
+Ranks missing data by deterministic marginal impact: which absence-of-data
+findings would clear, which currently suppressed checks would run, and which
+data-gap entries would close. This toggles availability only; it predicts
+nothing about what newly acquired data would show.
+
+## 7. Optional model advisory
 
 The advisory layer is **off by default**. It runs only when you ask for it and a
 provider is configured:

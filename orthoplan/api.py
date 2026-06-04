@@ -15,6 +15,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
 from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
@@ -41,6 +42,7 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
         "scale_confirmed": plan.scale_confirmed,
         "data_gaps": data_gaps(plan),
         "data_gap_actions": [action.model_dump() for action in data_gap_actions(plan)],
+        "acquisition_advice": acquisition_advice(plan).model_dump(),
         "findings": [finding.model_dump() for finding in findings],
         "timeline": timeline.model_dump(),
         "frames": [frame.ui_dict() for frame in frames],

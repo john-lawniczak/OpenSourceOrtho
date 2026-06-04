@@ -31,9 +31,10 @@ tooth poses itself. On every edit it sends the plan-shaped JSON to
 `POST /api/evaluate`, and renders exactly what `orthoplan.api.evaluate_plan`
 returns - the same deterministic rules, lint-gated findings (with their data
 gap and clinician question), data-gap actions, timeline projection, and
-`StageProgressFrame` data used everywhere else. Cumulative movement in the
-canvas comes from the engine's frames, and rotation is shown only as tabular
-values unless the engine receives a trusted non-approximate anatomical frame.
+acquisition advice, timeline projection, and `StageProgressFrame` data used
+everywhere else. Cumulative movement in the canvas comes from the engine's
+frames, and rotation is shown only as tabular values unless the engine receives
+a trusted non-approximate anatomical frame.
 
 If the engine is unreachable (e.g. the page was opened via `file://`), the UI
 shows an "engine offline" message instead of silently falling back to a second,
@@ -74,9 +75,10 @@ cd ui && node --test        # or, from the repo root: node --test 'ui/*.test.js'
 The DOM modules (`render.js`, `plan.js`) import these helpers from `core.js`
 rather than defining them inline, so the tested code is the shipped code.
 
-A headless-browser smoke test (`tests/e2e/test_viewer_smoke.py`) verifies the
-3D viewer actually mounts a sized WebGL canvas with no page errors. It is
-skipped unless Playwright is installed:
+A headless-browser smoke/visual-regression test (`tests/e2e/test_viewer_smoke.py`)
+verifies the 3D viewer mounts a sized WebGL canvas, the acquisition panel renders,
+the 2D canvas has non-background movement pixels, and invalid stage input reaches
+the engine rejection state. It is skipped unless Playwright is installed:
 
 ```bash
 pip install -e ".[e2e]" && python -m playwright install chromium

@@ -20,6 +20,7 @@ The software may:
 - import, export, and visualize dental mesh data
 - check internal consistency against user-configured movement caps
 - surface observational findings, data gaps, and clinician handoff questions
+- rank missing data by deterministic acquisition impact
 - run local or remote model providers for advisory review
 - generate reproducible handoff reports tying inputs to engine version and findings
 

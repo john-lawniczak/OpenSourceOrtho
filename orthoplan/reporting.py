@@ -11,6 +11,7 @@ unless a future workflow explicitly packages them.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 from datetime import UTC, datetime
 from typing import Any
@@ -37,7 +38,13 @@ def plan_digest(plan: TreatmentPlan) -> str:
     return sha256_text(canonical_json(payload))
 
 
-def build_handoff_report(plan: TreatmentPlan, *, created_at: datetime | None = None) -> dict[str, Any]:
+def build_handoff_report(
+    plan: TreatmentPlan,
+    *,
+    created_at: datetime | None = None,
+    reviewer: str | None = None,
+    signing_key: str | None = None,
+) -> dict[str, Any]:
     evaluation = evaluate_plan(plan)
     plan_payload = json.loads(plan_to_json(plan, indent=None))
     report_time = created_at or datetime.now(UTC)
@@ -58,8 +65,26 @@ def build_handoff_report(plan: TreatmentPlan, *, created_at: datetime | None = N
         },
         "evaluation": evaluation,
         "evaluation_sha256": sha256_text(canonical_json(evaluation)),
+        "review": {
+            "reviewer": reviewer,
+            "status": "generated",
+            "note": (
+                "Generated report; clinician review and signature are separate "
+                "from engine output."
+            ),
+        },
     }
     report["report_sha256"] = sha256_text(canonical_json(report))
+    if signing_key:
+        report["signature"] = {
+            "algorithm": "HMAC-SHA256",
+            "scope": "report_sha256",
+            "value": hmac.new(
+                signing_key.encode("utf-8"),
+                report["report_sha256"].encode("utf-8"),
+                hashlib.sha256,
+            ).hexdigest(),
+        }
     return report
 
 

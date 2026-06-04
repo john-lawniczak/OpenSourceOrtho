@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Measurement Truth + Acquisition Advisor Sequence
+
+- Expanded Measurement Truth Lab coverage with file-backed synthetic STL bounds checks, PCA tolerance checks, and property-style cumulative transform tests.
+- Implemented `orthoplan/evaluation/acquisition.py`: deterministic counterfactual acquisition advice that reruns `run_rules`, diffs findings/data gaps, ranks marginal impact, and stays verdict-free.
+- Added `orthoplan acquisition`, embedded `acquisition_advice` in API output, and rendered an "Acquire Next" UI panel from backend output only.
+- Added optional reviewer metadata and HMAC-SHA256 signatures to handoff reports.
+- Expanded e2e coverage to check acquisition panel rendering, 2D canvas pixels, and API rejection states when Playwright is available.
+
 ### 2026-06-04 - Phase 8: Trust and Measurement Readiness
 
 - Downgraded approximate PCA tooth frames: they remain exposed as metadata, but no longer make rotation renderable. Rotation rendering now requires a non-approximate trusted anatomical frame or a globally resolved anatomical coordinate frame.
@@ -317,4 +325,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:48:32+00:00 - Commit Status
 
 - Commit subject: Phase 8 trust and measurement readiness
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:58:38+00:00 - Commit Status
+
+- Commit subject: Add acquisition advisor and measurement truth coverage
 - Status: development history hook observed and recorded this commit workflow.
