@@ -4,6 +4,8 @@ OpenSource Ortho is an open-source orthodontic treatment-planning research toolk
 
 Most project documentation lives in [docs/](docs/README.md).
 
+The first static UI prototype lives in [ui/](ui/README.md).
+
 It is not an Invisalign clone, medical device, diagnostic system, treatment approval system, or substitute for a licensed clinician. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, and advisory evaluation under explicitly declared data limitations.
 
 Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying clinical approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).

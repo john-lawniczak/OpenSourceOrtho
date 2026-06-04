@@ -43,6 +43,7 @@ trimesh
 
 - permissive mesh-processing library
 - useful for STL/OBJ loading, mesh transforms, bounds, normals, measurements, and repair workflows
+- available as an optional `mesh` extra; current code only uses it opportunistically for quality metadata when installed
 
 DentalSegmentator / Slicer dental AI extensions
 

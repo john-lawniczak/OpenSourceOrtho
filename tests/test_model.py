@@ -2,7 +2,16 @@ from __future__ import annotations
 
 import pytest
 
-from orthoplan.model import Arch, Stage, ToothDelta, ToothId, TreatmentPlan
+from orthoplan.model import (
+    Arch,
+    MeshAsset,
+    SegmentedToothMesh,
+    Stage,
+    ToothDelta,
+    ToothId,
+    TreatmentPlan,
+)
+from orthoplan.segmentation import link_tooth_mesh
 
 
 def test_stage_rejects_duplicate_teeth() -> None:
@@ -40,4 +49,59 @@ def test_mixed_coordinate_frame_is_rejected() -> None:
                     deltas=[ToothDelta(tooth=ToothId(value="11"), coordinate_frame="other")],
                 )
             ],
+        )
+
+
+def test_segmented_tooth_mesh_link_can_be_referenced_by_delta() -> None:
+    asset = MeshAsset(id="mesh-11", format="stl-binary", vertex_count=3, face_count=1)
+    link = link_tooth_mesh(tooth=ToothId(value="11"), mesh_asset=asset)
+
+    plan = TreatmentPlan(
+        id="linked",
+        mesh_assets=[asset],
+        tooth_meshes=[link],
+        stages=[
+            Stage(
+                index=0,
+                deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="mesh-11")],
+            )
+        ],
+    )
+
+    assert plan.segmented_tooth_values == {"11"}
+
+
+def test_unknown_delta_mesh_link_is_rejected() -> None:
+    with pytest.raises(ValueError, match="unknown segmented mesh"):
+        TreatmentPlan(
+            id="bad-link",
+            stages=[
+                Stage(
+                    index=0,
+                    deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="missing")],
+                )
+            ],
+        )
+
+
+def test_duplicate_segmented_tooth_mesh_is_rejected() -> None:
+    with pytest.raises(ValueError, match="duplicate segmented tooth"):
+        TreatmentPlan(
+            id="dupe-link",
+            mesh_assets=[
+                MeshAsset(id="mesh-a", format="stl-binary", vertex_count=3, face_count=1),
+                MeshAsset(id="mesh-b", format="stl-binary", vertex_count=3, face_count=1),
+            ],
+            tooth_meshes=[
+                SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="mesh-a"),
+                SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="mesh-b"),
+            ],
+        )
+
+
+def test_segmented_tooth_mesh_requires_known_asset() -> None:
+    with pytest.raises(ValueError, match="unknown mesh asset"):
+        TreatmentPlan(
+            id="missing-asset",
+            tooth_meshes=[SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="missing")],
         )

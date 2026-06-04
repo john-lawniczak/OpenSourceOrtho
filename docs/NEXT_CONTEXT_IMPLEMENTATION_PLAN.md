@@ -113,6 +113,8 @@ Exit criteria:
 
 ### Phase 2 - UI Prototype For Data Model Workflow
 
+Status: initial static prototype added under `ui/`.
+
 Goal: build the first modern, straightforward UI journey around the Phase 1 model.
 
 Recommended stack:
@@ -174,6 +176,13 @@ Exit criteria:
 - controls are modern but restrained
 - no text overlap on desktop or mobile
 - data gaps are always visible during review
+
+Next UI work:
+
+- connect the static UI to Python-generated plan JSON fixtures
+- add browser-based visual regression checks
+- replace approximate browser-only STL metadata with backend `inspect_stl` results when a service layer exists
+- add per-tooth mesh selection once manual segmentation assets are available
 
 ### Phase 3 - Mesh IO and Segmentation Workflow
 
@@ -397,4 +406,3 @@ Timeline display:
 - How should manual segmentation be represented before real segmentation tooling? (open; `ToothDelta.mesh_asset_id` is reserved for the linkage)
 - ~~Should timeline defaults assume 7/10/14-day wear?~~ Resolved: 14-day default, configurable.
 - What minimum synthetic mesh fixture is enough for early UI development? (tests use a one-triangle synthetic binary STL; a fuller arch fixture is still TBD)
-

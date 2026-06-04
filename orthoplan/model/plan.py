@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from orthoplan.model.assets import UploadedScan
+from orthoplan.model.assets import MeshAsset, MeshProvenance, UploadedScan
 from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame
 from orthoplan.model.settings import TreatmentSettings
 
@@ -107,6 +107,15 @@ class DataAvailability(BaseModel):
     clinician_notes: bool = False
 
 
+class SegmentedToothMesh(BaseModel):
+    """Link a canonical tooth id to a mesh asset produced by segmentation."""
+
+    tooth: ToothId
+    mesh_asset_id: str
+    source: MeshProvenance = MeshProvenance.MANUAL
+    notes: str | None = None
+
+
 class TreatmentPlan(BaseModel):
     id: str
     title: str = "Untitled plan"
@@ -115,6 +124,8 @@ class TreatmentPlan(BaseModel):
     data: DataAvailability = Field(default_factory=DataAvailability)
     settings: TreatmentSettings = Field(default_factory=TreatmentSettings)
     scans: list[UploadedScan] = Field(default_factory=list)
+    mesh_assets: list[MeshAsset] = Field(default_factory=list)
+    tooth_meshes: list[SegmentedToothMesh] = Field(default_factory=list)
     stages: list[Stage] = Field(default_factory=list)
 
     @property
@@ -122,6 +133,14 @@ class TreatmentPlan(BaseModel):
         """True when cap evaluation may run: no scans, or all scan units confirmed."""
 
         return all(scan.units_confirmed for scan in self.scans)
+
+    @property
+    def segmented_tooth_values(self) -> set[str]:
+        return {link.tooth.value for link in self.tooth_meshes}
+
+    @property
+    def asset_ids(self) -> set[str]:
+        return {scan.asset.id for scan in self.scans} | {asset.id for asset in self.mesh_assets}
 
     @field_validator("stages")
     @classmethod
@@ -134,6 +153,20 @@ class TreatmentPlan(BaseModel):
     @model_validator(mode="after")
     def deltas_match_plan_identity(self) -> TreatmentPlan:
         frame_name = self.coordinate_frame.name
+        seen_links: set[str] = set()
+        asset_ids = self.asset_ids
+        for link in self.tooth_meshes:
+            if link.tooth.value in seen_links:
+                raise ValueError(f"duplicate segmented tooth mesh: {link.tooth.value}")
+            if link.mesh_asset_id not in asset_ids:
+                raise ValueError(
+                    "segmented tooth mesh references unknown mesh asset "
+                    f"{link.mesh_asset_id!r}"
+                )
+            seen_links.add(link.tooth.value)
+
+        mesh_ids = {link.mesh_asset_id for link in self.tooth_meshes}
+
         for stage in self.stages:
             for delta in stage.deltas:
                 if delta.tooth.system != self.numbering_system:
@@ -145,5 +178,10 @@ class TreatmentPlan(BaseModel):
                     raise ValueError(
                         "mixed coordinate frames are rejected: plan frame is "
                         f"{frame_name!r}, delta frame is {delta.coordinate_frame!r}"
+                    )
+                if delta.mesh_asset_id and delta.mesh_asset_id not in mesh_ids:
+                    raise ValueError(
+                        "tooth delta references unknown segmented mesh asset "
+                        f"{delta.mesh_asset_id!r}"
                     )
         return self

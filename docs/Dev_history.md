@@ -96,7 +96,18 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Added regression coverage for malformed STL uploads, CLI error handling, shared scan-unit data gaps, and movement-cap override validation.
 - Hardened metadata-only STL inspection against oversized files and inconsistent ASCII facet/vertex data.
 
+### 2026-06-04 - Phase 2 UI Prototype
+
+- Added explicit segmented tooth-to-mesh linkage for manual/imported segmentation workflows.
+- Added mesh quality reporting with internal STL checks and optional `trimesh` support.
+- Added a static Phase 2 UI prototype under `ui/` for STL upload metadata, data availability, movement caps, stage entry, timeline projection, findings, and progress preview.
+
 ### 2026-06-04T01:32:42+00:00 - Commit Status
 
 - Commit subject: Implement Phase 1 data model workflow
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T01:44:40+00:00 - Commit Status
+
+- Commit subject: Add Phase 2 UI prototype and mesh linkage
 - Status: development history hook observed and recorded this commit workflow.

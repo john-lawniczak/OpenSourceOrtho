@@ -27,6 +27,8 @@ def test_inspect_stl_reports_unverified_units_and_counts(tmp_path: Path) -> None
     assert asset.format == "stl-binary"
     assert asset.face_count == 1
     assert asset.vertex_count == 3
+    assert asset.quality is not None
+    assert asset.quality.degenerate_faces == 0
     assert asset.units is MeshUnits.UNVERIFIED
     # reference is redacted to a basename: no directory (patient name) survives.
     assert asset.reference == "scan.stl"
@@ -107,3 +109,14 @@ def test_inspect_stl_rejects_oversized_file_before_reading(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="too large"):
         inspect_stl(path, max_bytes=4)
+
+
+def test_inspect_stl_reports_degenerate_faces(tmp_path: Path) -> None:
+    stl = tmp_path / "degenerate.stl"
+    _write_binary_stl(stl, [(0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)])
+
+    asset = inspect_stl(stl)
+
+    assert asset.quality is not None
+    assert asset.quality.degenerate_faces == 1
+    assert asset.quality.notes

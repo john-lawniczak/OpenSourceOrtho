@@ -63,6 +63,16 @@ def redact_reference(raw_path: str) -> str:
     return os.path.basename(raw_path.replace("\\", "/").rstrip("/"))
 
 
+class MeshQualityReport(BaseModel):
+    """Observational mesh quality metadata from inspection."""
+
+    inspector: str = "internal-stl"
+    watertight: bool | None = None
+    winding_consistent: bool | None = None
+    degenerate_faces: int | None = None
+    notes: list[str] = Field(default_factory=list)
+
+
 class MeshAsset(BaseModel):
     """Redacted metadata for an uploaded mesh. Bytes are not stored."""
 
@@ -73,6 +83,7 @@ class MeshAsset(BaseModel):
     vertex_count: int = Field(ge=0)
     face_count: int = Field(ge=0)
     bounds: BoundingBox | None = None
+    quality: MeshQualityReport | None = None
     sha256: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # Optional relative/local reference only. Never absolute, never PHI.

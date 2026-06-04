@@ -25,6 +25,9 @@ dev = [
 providers = [
   "openai>=1.0"
 ]
+mesh = [
+  "trimesh>=4.0"
+]
 
 [project.scripts]
 orthoplan = "orthoplan.cli:main"
@@ -35,4 +38,3 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-

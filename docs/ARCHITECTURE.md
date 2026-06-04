@@ -30,6 +30,9 @@ The likely future split:
 - Three.js or VTK/PyVista: interactive 3D visualization
 - Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
 
+The first UI prototype is a static browser workspace under `ui/`. It mirrors
+the Python data contract but does not yet run backend STL inspection.
+
 ## Core Objects
 
 `TreatmentPlan`
@@ -121,4 +124,3 @@ Initial heuristic defaults (`AxisCaps`):
 These defaults are based on commonly cited clear-aligner staging ranges and should be treated as starting points for research tooling only. The software must never claim that a movement within these values is safe.
 
 Timeline is an arithmetic projection, not a clinical estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, clinical pauses, and clinician-directed changes.
-

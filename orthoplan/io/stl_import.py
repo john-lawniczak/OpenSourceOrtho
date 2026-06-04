@@ -15,6 +15,7 @@ from orthoplan.model.assets import (
     BoundingBox,
     MeshAsset,
     MeshProvenance,
+    MeshQualityReport,
     MeshUnits,
     redact_reference,
 )
@@ -72,6 +73,56 @@ def _bounds(vertices: list[Vec3]) -> BoundingBox | None:
     )
 
 
+def _triangle_area(a: Vec3, b: Vec3, c: Vec3) -> float:
+    ab = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+    ac = (c[0] - a[0], c[1] - a[1], c[2] - a[2])
+    cross = (
+        ab[1] * ac[2] - ab[2] * ac[1],
+        ab[2] * ac[0] - ab[0] * ac[2],
+        ab[0] * ac[1] - ab[1] * ac[0],
+    )
+    return 0.5 * (cross[0] ** 2 + cross[1] ** 2 + cross[2] ** 2) ** 0.5
+
+
+def _internal_quality(face_count: int, vertices: list[Vec3]) -> MeshQualityReport:
+    degenerate = 0
+    for index in range(0, len(vertices), 3):
+        if index + 2 < len(vertices) and _triangle_area(*vertices[index : index + 3]) == 0:
+            degenerate += 1
+
+    notes: list[str] = []
+    if degenerate:
+        notes.append(f"{degenerate} degenerate triangle(s) detected")
+    if len(vertices) != face_count * 3:
+        notes.append("facet and vertex counts differ from the expected STL triangle layout")
+
+    return MeshQualityReport(
+        inspector="internal-stl",
+        degenerate_faces=degenerate,
+        notes=notes,
+    )
+
+
+def _trimesh_quality(path: Path, fallback: MeshQualityReport) -> MeshQualityReport:
+    try:
+        import trimesh
+    except ImportError:
+        return fallback
+
+    try:
+        mesh = trimesh.load_mesh(path, file_type="stl", process=False)
+    except Exception as exc:  # pragma: no cover - depends on optional backend behavior.
+        return fallback.model_copy(update={"notes": [*fallback.notes, f"trimesh unavailable: {exc}"]})
+
+    return fallback.model_copy(
+        update={
+            "inspector": "internal-stl+trimesh",
+            "watertight": bool(getattr(mesh, "is_watertight", False)),
+            "winding_consistent": bool(getattr(mesh, "is_winding_consistent", False)),
+        }
+    )
+
+
 def inspect_stl(
     path: str | Path,
     *,
@@ -97,6 +148,7 @@ def inspect_stl(
     if len(vertices) < face_count * 3:
         raise ValueError("STL facet and vertex counts are inconsistent")
 
+    quality = _trimesh_quality(path, _internal_quality(face_count, vertices))
     return MeshAsset(
         id=sha256[:16],
         format=fmt,
@@ -105,6 +157,7 @@ def inspect_stl(
         vertex_count=len(vertices),
         face_count=face_count,
         bounds=_bounds(vertices),
+        quality=quality,
         sha256=sha256,
         reference=redact_reference(str(path)),
     )

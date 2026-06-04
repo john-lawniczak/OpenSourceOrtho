@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenSource Ortho Planner</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Plan workflow">
+        <div class="brand-block">
+          <span class="brand-mark" aria-hidden="true">OSO</span>
+          <div>
+            <h1>OpenSource Ortho</h1>
+            <p>Draft aligner-style planning workspace</p>
+          </div>
+        </div>
+
+        <nav class="step-list" aria-label="Workflow steps">
+          <button class="step is-active" data-step="upload" type="button">Upload</button>
+          <button class="step" data-step="availability" type="button">Data</button>
+          <button class="step" data-step="settings" type="button">Settings</button>
+          <button class="step" data-step="stages" type="button">Stages</button>
+          <button class="step" data-step="review" type="button">Review</button>
+        </nav>
+
+        <section class="data-gap-panel" aria-label="Data gaps">
+          <h2>Data Gaps</h2>
+          <ul id="dataGapList"></ul>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <label for="planTitle">Plan Title</label>
+            <input id="planTitle" value="Draft aligner plan" />
+          </div>
+          <div>
+            <label for="planId">Plan ID</label>
+            <input id="planId" value="draft-001" />
+          </div>
+          <div>
+            <label for="wearInterval">Wear Days</label>
+            <input id="wearInterval" type="number" min="1" value="14" />
+          </div>
+        </header>
+
+        <section class="panel is-active" id="panel-upload">
+          <div class="panel-heading">
+            <h2>Upload STL</h2>
+            <p>Surface scan geometry only. Units must be confirmed before cap checks.</p>
+          </div>
+          <div class="upload-row">
+            <label class="upload-target" for="stlFile">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <span id="uploadLabel">Choose STL file</span>
+              <input id="stlFile" type="file" accept=".stl" />
+            </label>
+            <div class="field-grid compact">
+              <label>
+                Units
+                <select id="scanUnits">
+                  <option value="unverified">Unverified</option>
+                  <option value="mm">mm</option>
+                  <option value="cm">cm</option>
+                  <option value="inch">inch</option>
+                  <option value="meter">meter</option>
+                </select>
+              </label>
+              <label>
+                Arch
+                <select id="scanArch">
+                  <option value="">Unknown</option>
+                  <option value="maxillary">Maxillary</option>
+                  <option value="mandibular">Mandibular</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <dl class="metadata-grid" id="scanMetadata"></dl>
+        </section>
+
+        <section class="panel" id="panel-availability">
+          <div class="panel-heading">
+            <h2>Data Availability</h2>
+            <p>Only declared data is available to the plan.</p>
+          </div>
+          <div class="toggle-grid" id="availabilityGrid"></div>
+        </section>
+
+        <section class="panel" id="panel-settings">
+          <div class="panel-heading">
+            <h2>Movement Settings</h2>
+            <p>Configurable heuristics, not clinical approval.</p>
+          </div>
+          <div class="field-grid">
+            <label>Linear mm<input id="capLinear" type="number" min="0.01" step="0.01" value="0.25" /></label>
+            <label>Tip/Torque deg<input id="capAngular" type="number" min="0.1" step="0.1" value="1.0" /></label>
+            <label>Rotation deg<input id="capRotation" type="number" min="0.1" step="0.1" value="2.0" /></label>
+            <label>Vertical mm<input id="capVertical" type="number" min="0.01" step="0.01" value="0.10" /></label>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-stages">
+          <div class="panel-heading split">
+            <div>
+              <h2>Stage Builder</h2>
+              <p>FDI tooth IDs, millimeters, and degrees.</p>
+            </div>
+            <button class="primary-action" id="addStage" type="button">Add Stage</button>
+          </div>
+          <div class="stage-table-wrap">
+            <table class="stage-table">
+              <thead>
+                <tr>
+                  <th>Stage</th>
+                  <th>Tooth</th>
+                  <th>X mm</th>
+                  <th>Y mm</th>
+                  <th>Z mm</th>
+                  <th>Tip</th>
+                  <th>Torque</th>
+                  <th>Rotation</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="stageRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-review">
+          <div class="review-grid">
+            <section class="review-main">
+              <div class="panel-heading">
+                <h2>Progress Preview</h2>
+                <p id="timelineText"></p>
+              </div>
+              <div class="viewer-toolbar">
+                <button class="mode is-active" data-view="current" type="button">Current</button>
+                <button class="mode" data-view="planned" type="button">Planned</button>
+                <button class="mode" data-view="overlay" type="button">Overlay</button>
+                <label class="stage-slider">
+                  Stage <span id="stageValue">0</span>
+                  <input id="stageSlider" type="range" min="0" max="0" value="0" />
+                </label>
+              </div>
+              <canvas id="archCanvas" width="900" height="520" aria-label="Tooth progress preview"></canvas>
+            </section>
+            <aside class="review-side">
+              <h2>Findings</h2>
+              <ul id="findingList"></ul>
+              <h2>Plan JSON</h2>
+              <textarea id="planJson" readonly></textarea>
+            </aside>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
