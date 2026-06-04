@@ -15,6 +15,12 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-03 - Audit Fixes: Dev Server Hardening and UI Race
+
+- Dev server: malformed `Content-Length` now returns a clean 400 instead of dropping the connection; empty body is 400 (was 413); `do_GET`/`do_POST` are wrapped so an unexpected error returns a 500 JSON instead of a reset/traceback; added a 30s request timeout so a client that declares but never sends a body cannot hang a worker thread.
+- UI: added a monotonic request token to `runEvaluate` so a slow in-flight `/api/evaluate` response can no longer overwrite a newer one (stale-render race).
+- Added `tests/test_server.py` (index serving, path-traversal 404, valid evaluate, invalid-JSON/empty-body/malformed-Content-Length 400, oversized 413, unknown-endpoint 404). 61 tests; maintainability passes.
+
 ### 2026-06-03 - Phase 3 Mesh Validation and Segmentation Import
 
 - Added `evaluation/rules/mesh_quality.py`: deterministic, lint-passed NOTICE findings for degenerate triangles, non-watertight/inconsistent-winding meshes, and confirmed-but-implausible scale.
@@ -162,4 +168,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T03:07:09+00:00 - Commit Status
 
 - Commit subject: Phase 3: mesh-quality findings rule + segmentation import
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T03:15:35+00:00 - Commit Status
+
+- Commit subject: Harden dev server and fix UI evaluation race
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T03:16:23+00:00 - Commit Status
+
+- Commit subject: Harden dev server and fix UI evaluation race
 - Status: development history hook observed and recorded this commit workflow.

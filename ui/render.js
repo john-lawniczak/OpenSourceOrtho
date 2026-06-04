@@ -33,6 +33,8 @@ export function renderAll() {
 }
 
 let evaluateTimer = null;
+// Monotonic token so a slow in-flight request can never overwrite a newer one.
+let evaluateToken = 0;
 
 function scheduleEvaluate() {
   if (evaluateTimer) clearTimeout(evaluateTimer);
@@ -40,8 +42,10 @@ function scheduleEvaluate() {
 }
 
 async function runEvaluate() {
+  const token = ++evaluateToken;
   try {
     const result = await evaluatePlan(planJson());
+    if (token !== evaluateToken) return; // a newer evaluation superseded this one
     state.engineError = null;
     if (result.ok === false) {
       state.lastEval = null;
@@ -51,6 +55,7 @@ async function runEvaluate() {
       renderEvaluation(result);
     }
   } catch (error) {
+    if (token !== evaluateToken) return;
     state.lastEval = null;
     state.engineError = error.message;
     renderEngineOffline();
