@@ -21,6 +21,7 @@ The software may:
 - check internal consistency against user-configured movement caps
 - surface observational findings, data gaps, and clinician handoff questions
 - run local or remote model providers for advisory review
+- generate reproducible handoff reports tying inputs to engine version and findings
 
 The software may not:
 
@@ -41,7 +42,7 @@ The first workflow is simple:
 3. Create a staged `TreatmentPlan` with per-tooth movement deltas.
 4. Check each stage against clinician-configured movement caps.
 5. Render cumulative progress frames in the UI.
-6. Export findings that clearly separate rule checks, model advisories, and data gaps.
+6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 

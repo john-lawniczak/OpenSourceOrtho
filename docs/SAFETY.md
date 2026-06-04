@@ -29,9 +29,10 @@ biomechanical or clinical one. Visualization pivots (crown centroid) are explici
 assumptions and never imply knowledge of root or bone position.
 
 Per-tooth local frames (`ToothLocalFrame`) derived from crown-surface PCA are approximate
-visualization aids: their axes are ordered by geometric variance, not anatomy, and they do
-not represent mesiodistal/buccolingual/long axes or root direction. They exist only so a 3D
-viewer can render rotation with that caveat.
+metadata only: their axes are ordered by geometric variance, not anatomy, and they do not
+represent mesiodistal/buccolingual/long axes or root direction. PCA frames do not authorize
+rotation rendering. Rotation is renderable only when the engine receives a non-approximate,
+trusted anatomical frame or a global frame with resolved anatomical axes.
 
 ## Privacy Posture
 
@@ -69,4 +70,3 @@ conditional, include data gaps when relevant, and avoid invented thresholds.
 ## Regulatory Note
 
 This document is not legal advice. Anyone using or modifying this project for clinical workflows is responsible for professional, legal, privacy, and regulatory obligations in their jurisdiction.
-

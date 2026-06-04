@@ -46,6 +46,10 @@ def build_parser() -> argparse.ArgumentParser:
     advise.add_argument("path")
     advise.add_argument("--provider", choices=["openai", "claude-code"], default="openai")
     advise.add_argument("--model", default=None, help="override the provider's default model")
+
+    report = sub.add_parser("report", help="generate a reproducible handoff report")
+    report.add_argument("path")
+    report.add_argument("--out", default=None, help="write report JSON to this path")
     return parser
 
 
@@ -141,12 +145,33 @@ def _cmd_advise(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_report(args: argparse.Namespace) -> int:
+    from orthoplan.reporting import build_handoff_report, report_to_json
+
+    try:
+        plan = read_plan(args.path)
+    except (OSError, ValueError) as exc:
+        print(f"report error: {exc}", file=sys.stderr)
+        return 2
+
+    body = report_to_json(build_handoff_report(plan))
+    if args.out:
+        from pathlib import Path
+
+        Path(args.out).write_text(body + "\n", encoding="utf-8")
+        print(f"Wrote handoff report to {args.out}")
+    else:
+        print(body)
+    return 0
+
+
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
     "inspect-stl": _cmd_inspect_stl,
     "plan-summary": _cmd_plan_summary,
     "serve": _cmd_serve,
     "advise": _cmd_advise,
+    "report": _cmd_report,
 }
 
 

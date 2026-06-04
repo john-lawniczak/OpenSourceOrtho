@@ -8,7 +8,7 @@ from orthoplan.model.assets import (
     bounding_box_sanity,
     redact_reference,
 )
-from orthoplan.model.gaps import data_gaps
+from orthoplan.model.gaps import DataGapAction, data_gap_actions, data_gaps
 from orthoplan.model.geometry import (
     SCAN_FRAME,
     AnatomicalDirection,
@@ -42,6 +42,7 @@ __all__ = [
     "BoundingBox",
     "CoordinateFrame",
     "DataAvailability",
+    "DataGapAction",
     "Handedness",
     "MeshAsset",
     "MeshProvenance",
@@ -58,6 +59,7 @@ __all__ = [
     "TreatmentSettings",
     "UploadedScan",
     "bounding_box_sanity",
+    "data_gap_actions",
     "data_gaps",
     "redact_reference",
 ]

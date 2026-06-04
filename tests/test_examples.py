@@ -23,8 +23,9 @@ def test_basic_example_loads_and_trips_a_cap() -> None:
     assert any("linear cap" in finding["title"] for finding in result["findings"])
 
 
-def test_segmented_example_has_renderable_rotation() -> None:
+def test_segmented_example_exposes_approximate_frame_without_rendering_rotation() -> None:
     result = evaluate_plan(read_plan(EXAMPLES / "segmented_plan.json"))
     assert result["ok"] is True
     assert "11" in result["tooth_frames"]
-    assert result["frames"][0]["poses"][0]["rotation_renderable"] is True
+    assert result["tooth_frames"]["11"]["approximate"] is True
+    assert result["frames"][0]["poses"][0]["rotation_renderable"] is False

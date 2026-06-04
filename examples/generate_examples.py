@@ -62,7 +62,7 @@ def basic_plan() -> TreatmentPlan:
 
 def segmented_plan() -> TreatmentPlan:
     """A plan exercising segmentation: a confirmed-units scan, a per-tooth mesh
-    with an approximate local frame, and a rotation that becomes renderable."""
+    with an approximate local frame, and rotation values that stay tabular."""
     scan = MeshAsset(
         id="example-arch-scan",
         format="stl-binary",

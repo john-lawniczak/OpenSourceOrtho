@@ -110,9 +110,9 @@ class DataAvailability(BaseModel):
 class SegmentedToothMesh(BaseModel):
     """Link a canonical tooth id to a mesh asset produced by segmentation.
 
-    ``local_frame`` is an optional, approximate per-tooth frame (see
-    ToothLocalFrame). When present it lets a 3D viewer render rotation; when
-    absent, rotation stays non-renderable.
+    ``local_frame`` is an optional per-tooth frame (see ToothLocalFrame).
+    Approximate PCA frames are metadata only; rotation rendering requires a
+    trusted non-approximate frame.
     """
 
     tooth: ToothId

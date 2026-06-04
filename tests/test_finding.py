@@ -11,6 +11,7 @@ from orthoplan.evaluation import (
     lint_finding,
     quarantine_findings,
 )
+from orthoplan.evaluation.finding import VERDICT_PATTERNS
 
 
 def _finding(**overrides: object) -> Finding:
@@ -36,6 +37,24 @@ def test_verdict_scan_covers_all_text_fields() -> None:
     finding = _finding(clinician_question="Is the patient a good candidate?")
     with pytest.raises(FindingLintError, match="clinician_question"):
         lint_finding(finding)
+
+
+@pytest.mark.parametrize("field", ["title", "message", "data_gap", "clinician_question", "reference"])
+@pytest.mark.parametrize("verdict", VERDICT_PATTERNS)
+def test_verdict_language_is_rejected_in_every_text_field(field: str, verdict: str) -> None:
+    finding = _finding(**{field: f"Observed finding: {verdict.upper()}."})
+    with pytest.raises(FindingLintError, match=field):
+        lint_finding(finding)
+
+
+def test_quarantine_rejects_adversarial_verdict_batch_without_accepting_any() -> None:
+    findings = [
+        _finding(message=f"The plan is {verdict}.")
+        for verdict in VERDICT_PATTERNS
+    ]
+    accepted, rejected = quarantine_findings(findings)
+    assert accepted == []
+    assert len(rejected) == len(VERDICT_PATTERNS)
 
 
 def test_negated_words_are_not_falsely_flagged() -> None:

@@ -57,3 +57,33 @@ def test_cli_advise_handles_invalid_plan_without_traceback(
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "advise error" in captured.err
+
+
+def test_cli_report_emits_handoff_report(monkeypatch, capsys, tmp_path: Path) -> None:
+    plan_path = tmp_path / "plan.json"
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "new-plan", "--id", "report-plan", "--out", str(plan_path)])
+    assert cli.main() == 0
+    capsys.readouterr()
+
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "report", str(plan_path)])
+    assert cli.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["schema"] == "orthoplan-report-v1"
+    assert payload["plan"]["id"] == "report-plan"
+    assert len(payload["evaluation_sha256"]) == 64
+    assert len(payload["report_sha256"]) == 64
+
+
+def test_cli_report_handles_invalid_plan_without_traceback(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    path = tmp_path / "bad-plan.json"
+    path.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "report", str(path)])
+
+    assert cli.main() == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "report error" in captured.err

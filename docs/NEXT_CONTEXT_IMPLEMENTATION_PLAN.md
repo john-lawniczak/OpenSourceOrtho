@@ -210,9 +210,12 @@ Progress:
 
 Per-tooth frame (resolved 2026-06-04):
 
-- Decision: derive an **approximate** per-tooth `ToothLocalFrame` from crown-surface PCA (`planning/mesh_frame.py`, pure-Python Jacobi eigensolver), attach it on `SegmentedToothMesh` during `import_segmented_meshes`, and flip `rotation_renderable` per tooth in `build_stage_progress_frames` when a frame is present.
-- Safety framing: the frame is labeled `approximate=True`, `source="pca-crown"`, with a standing note that axes are ordered by geometric variance, NOT anatomy, and say nothing about root direction. The 2D preview still renders translation only; the flag and frame exist for a future 3D viewer to consume with that caveat.
-- Still open: mapping PCA axes to true anatomical tip/torque/long-axis requires landmarks or registration (out of scope until segmentation provides them).
+- Revised in Phase 8: approximate crown-surface PCA frames remain attached as `ToothLocalFrame`
+  metadata (`approximate=True`, `source="pca-crown"`), but they no longer flip
+  `rotation_renderable`. Rendered rotation now requires a non-approximate trusted anatomical
+  frame or a globally resolved anatomical coordinate frame.
+- Still open: mapping PCA axes to true anatomical tip/torque/long-axis requires landmarks,
+  registration, or another validated frame source.
 
 Exit criteria:
 
@@ -289,7 +292,7 @@ Tasks:
 Progress:
 
 - ~~`StageProgressFrame` -> frontend JSON; current/planned/overlay; displacement vectors~~ done (engine `frames` via `/api/evaluate`; `ui/viewer3d.js`).
-- ~~3D viewer~~ done: Three.js (vendored r169, MIT, import map, offline) renders abstract proxy teeth from `frames[].poses[]` with a stage scrubber, orbit controls, exaggeration control, and a 2D fallback. Rotation drawn only when `rotation_renderable`, about the approximate `tooth_frames` PCA frame, heavily caveated.
+- ~~3D viewer~~ done: Three.js (vendored r169, MIT, import map, offline) renders schematic proxy teeth from `frames[].poses[]` with a stage scrubber, orbit controls, exaggeration control, and a 2D fallback. Rotation is drawn only when `rotation_renderable`; approximate PCA `tooth_frames` are metadata only.
 
 Still open:
 

@@ -96,7 +96,18 @@ orthoplan serve            # http://127.0.0.1:8000
 Serves the browser UI and the `/api/evaluate` endpoint the UI calls. See
 [../ui/README.md](../ui/README.md).
 
-## 5. Optional model advisory
+## 5. Reproducible handoff report
+
+```bash
+orthoplan report examples/basic_plan.json --out /tmp/basic-report.json
+```
+
+The report is deterministic JSON with the engine version, canonical plan hash,
+stable evaluation hash, input metadata, findings, data-gap actions, timeline,
+progress frames, and a report hash. It does not include mesh bytes or imply
+clinical approval.
+
+## 6. Optional model advisory
 
 The advisory layer is **off by default**. It runs only when you ask for it and a
 provider is configured:
@@ -123,4 +134,4 @@ both `orthoplan plan-summary` and `orthoplan advise`.
 
 Two synthetic plans ship under [../examples/](../examples/README.md):
 `basic_plan.json` (trips the linear cap) and `segmented_plan.json` (per-tooth
-approximate frame, renderable rotation).
+approximate PCA frame metadata; rotation remains non-renderable by default).

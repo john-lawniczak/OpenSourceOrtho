@@ -43,11 +43,14 @@ def build_stage_progress_frames(plan: TreatmentPlan) -> list[StageProgressFrame]
 
     frame_name = plan.coordinate_frame.name
     gaps = data_gaps(plan)
-    # Rotation is renderable for a tooth when an (approximate) per-tooth local
-    # frame exists for it, or if the global frame ever resolves tip/torque.
+    # Rotation is renderable only when the global frame resolves tip/torque or
+    # a per-tooth frame is explicitly non-approximate. PCA crown frames remain
+    # useful metadata, but they are not trusted anatomical orientation.
     global_convertible = plan.coordinate_frame.tip_torque_convertible
     teeth_with_frame = {
-        link.tooth.value for link in plan.tooth_meshes if link.local_frame is not None
+        link.tooth.value
+        for link in plan.tooth_meshes
+        if link.local_frame is not None and not link.local_frame.approximate
     }
 
     def renderable(tooth_value: str) -> bool:

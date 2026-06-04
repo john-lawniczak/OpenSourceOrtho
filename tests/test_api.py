@@ -73,7 +73,7 @@ def test_non_contiguous_stages_are_rejected_as_errors() -> None:
     assert any("contiguous" in message for message in result["errors"])
 
 
-def test_tooth_frames_exposed_for_3d_viewer() -> None:
+def test_approximate_tooth_frames_are_exposed_but_do_not_render_rotation() -> None:
     asset = MeshAsset(id="m11", format="stl-binary", vertex_count=3, face_count=1)
     plan = TreatmentPlan(
         id="rot",
@@ -92,12 +92,46 @@ def test_tooth_frames_exposed_for_3d_viewer() -> None:
     result = evaluate_plan(plan)
     assert "11" in result["tooth_frames"]
     assert result["tooth_frames"]["11"]["approximate"] is True
+    assert result["frames"][0]["poses"][0]["rotation_renderable"] is False
+
+
+def test_trusted_tooth_frame_allows_rotation_rendering() -> None:
+    asset = MeshAsset(id="m11", format="stl-binary", vertex_count=3, face_count=1)
+    plan = TreatmentPlan(
+        id="rot",
+        mesh_assets=[asset],
+        tooth_meshes=[
+            SegmentedToothMesh(
+                tooth=ToothId(value="11"),
+                mesh_asset_id="m11",
+                local_frame=ToothLocalFrame(
+                    origin=(0, 0, 0),
+                    axes=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+                    source="trusted-anatomical-frame",
+                    approximate=False,
+                ),
+            )
+        ],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="m11")])],
+    )
+
+    result = evaluate_plan(plan)
+
+    assert result["tooth_frames"]["11"]["approximate"] is False
     assert result["frames"][0]["poses"][0]["rotation_renderable"] is True
 
 
 def test_tooth_frames_empty_without_local_frames() -> None:
     result = evaluate_plan_payload(_base_payload())
     assert result["tooth_frames"] == {}
+
+
+def test_data_gap_actions_explain_limited_capabilities() -> None:
+    result = evaluate_plan_payload(_base_payload())
+    assert result["data_gap_actions"]
+    root_action = next(action for action in result["data_gap_actions"] if action["gap"] == "roots unavailable")
+    assert "Root position" in root_action["impact"]
+    assert "root movement assessment" in root_action["blocked_capabilities"]
 
 
 def test_unverified_scan_units_gate_cap_evaluation() -> None:

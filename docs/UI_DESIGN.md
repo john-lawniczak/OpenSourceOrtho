@@ -6,7 +6,7 @@ Visual representation is a primary product requirement for OpenSource Ortho. The
 
 The UI must show what the system actually knows:
 
-- display real or synthetic mesh geometry, not decorative stand-ins
+- display real or synthetic mesh geometry when available; otherwise make schematic proxies unmistakably schematic
 - label whether geometry is patient-derived, imported, model-segmented, manual, or synthetic
 - show current, planned, and staged positions in the same coordinate frame
 - make cumulative movement visible across stages
@@ -21,7 +21,7 @@ The first production-grade UI should include:
 - stage timeline with scrubber and exact stage index
 - before / current / planned overlay mode
 - per-tooth movement table linked to the 3D selection
-- displacement vectors and rotation indicators
+- displacement vectors and rotation values; rendered rotation only with trusted anatomical frames
 - rule findings panel tied to highlighted geometry
 - data-availability panel that remains visible during plan review
 - exportable visual report with the same safety boundary language
@@ -36,6 +36,7 @@ The viewer must not silently approximate away clinically relevant uncertainty.
 - Any interpolation between stages must be labeled as visualization interpolation, not treatment data.
 - Measurements must include units and source.
 - Missing anatomical data must be visible when it affects interpretation.
+- Approximate PCA tooth frames are metadata/debug aids, not enough to render tip, torque, or long-axis rotation.
 
 ## Design Tone
 
@@ -57,4 +58,3 @@ Use a proven 3D stack for mesh display. Good candidates:
 - Heavyweight clinical/research host: 3D Slicer extension
 
 The data contract should live in Python first so every UI consumes the same stage-frame representation.
-

@@ -1,9 +1,8 @@
-// 3D progress viewer. Renders ABSTRACT per-tooth proxies (not the real scanned
+// 3D progress viewer. Renders schematic per-tooth proxies (not the real scanned
 // mesh - we never store or serve mesh bytes) positioned from the engine's
-// frames[].poses[]. Translation is exact; rotation is applied only when the
-// engine marks a pose rotation_renderable, using the APPROXIMATE per-tooth PCA
-// frame, and is labeled as such in the UI. Movement is exaggerated for
-// visibility (the caller shows the factor).
+// frames[].poses[]. Translation is exact and exaggerated for visibility (the
+// caller shows the factor). PCA tooth frames are metadata only; rotation is
+// applied only when the engine has marked the pose renderable.
 
 import * as THREE from "three";
 import { OrbitControls } from "./vendor/OrbitControls.js";

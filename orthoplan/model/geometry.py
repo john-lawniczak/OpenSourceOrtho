@@ -97,10 +97,10 @@ class ToothLocalFrame(BaseModel):
     """A per-tooth local frame derived from segmented crown geometry.
 
     Phase 3 derives this from PCA of the crown mesh, so it is explicitly an
-    APPROXIMATE visualization aid. ``axes`` are the principal directions ordered
-    by descending variance, not resolved anatomical axes. Its presence lets a
-    3D viewer render rotation, with the standing caveat that the frame is
-    approximate and never implies root position or biomechanics.
+    APPROXIMATE metadata/debug aid. ``axes`` are the principal directions ordered
+    by descending variance, not resolved anatomical axes. Approximate frames do
+    not authorize rendered rotation; a trusted frame must set
+    ``approximate=False``.
     """
 
     model_config = ConfigDict(frozen=True)

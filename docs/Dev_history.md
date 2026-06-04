@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Phase 8: Trust and Measurement Readiness
+
+- Downgraded approximate PCA tooth frames: they remain exposed as metadata, but no longer make rotation renderable. Rotation rendering now requires a non-approximate trusted anatomical frame or a globally resolved anatomical coordinate frame.
+- Added structured `data_gap_actions` to the evaluation API so missing data carries impact, next step, and blocked-capability fields instead of only passive gap strings. The UI sidebar now renders these actions.
+- Added `orthoplan/reporting.py` and `orthoplan report`: deterministic handoff JSON with engine version, canonical plan hash, stable evaluation hash, input metadata, evaluated findings, data-gap actions, progress frames, and report hash.
+- Added measurement-readiness golden tests for cumulative translation and movement-cap math, plus table-driven safety invariant tests that reject verdict language across every text field.
+- Updated safety, architecture, UI, walkthrough, and README docs to match the stricter visualization and handoff contracts.
+
 ### 2026-06-04 - Post-Implementation Audit: Provider/CLI Hardening
 
 - Reviewed the recent Phase 4/5/6/7 implementation set with a merge-readiness focus.
@@ -40,7 +48,7 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ### 2026-06-04 - Phase 7: Examples, Contribution Guide, License Audit
 
-- Added synthetic example plans under `examples/`: a generator (`generate_examples.py`, fixed timestamp for stable output) plus checked-in `basic_plan.json` (trips the linear cap) and `segmented_plan.json` (per-tooth approximate frame, `rotation_renderable` true). `tests/test_examples.py` asserts they load, evaluate, and stay in sync with the generator.
+- Added synthetic example plans under `examples/`: a generator (`generate_examples.py`, fixed timestamp for stable output) plus checked-in `basic_plan.json` (trips the linear cap) and `segmented_plan.json` (per-tooth approximate frame; later Phase 8 changed this to non-renderable rotation). `tests/test_examples.py` asserts they load, evaluate, and stay in sync with the generator.
 - Added `CONTRIBUTING.md`: setup, the exact CI checks, the non-negotiable safety rules (no patient data, no verdict language, deterministic rules own mechanics, geometry-not-biomechanics, UI never reimplements the engine), module ownership table, and dependency policy.
 - Added `docs/LICENSE_AUDIT.md`: per-dependency licenses verified from installed metadata/PyPI (all permissive: MIT/BSD/Apache-2.0/PSF; no copyleft), including the vendored Three.js (MIT) and the build-only Chromium. Linked from the docs index.
 
@@ -54,7 +62,7 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04 - Phase 6: Three.js 3D Progress Viewer
 
 - Added `ui/viewer3d.js`: a Three.js scene rendering abstract per-tooth proxies from the engine's `frames[].poses[]`, with orbit controls, current/planned/overlay modes, a stage scrubber, displacement vectors, and a movement-exaggeration control. No scanned mesh bytes are served, so proxies (not real geometry) are rendered by design.
-- Rotation is drawn ONLY where the engine sets `rotation_renderable`, oriented by the approximate per-tooth PCA frame now exposed as `tooth_frames` in `/api/evaluate`. The on-screen caveat states the frame is approximate/non-anatomical, movement is exaggerated, and the pivot is a visualization assumption.
+- Rotation was initially drawn where the engine set `rotation_renderable`, oriented by the approximate per-tooth PCA frame exposed as `tooth_frames` in `/api/evaluate`. Phase 8 superseded this: PCA frames remain metadata only and no longer authorize rendered rotation.
 - Three.js r169 (MIT) and OrbitControls are vendored under `ui/vendor/` and loaded via an import map, so the app runs offline with no runtime external calls.
 - Added pure helpers to `ui/core.js` (`degToRad`, `displacement`, `rotationApplications`) with Node tests, and `tooth_frames` API tests. Added a 2D fallback when WebGL is unavailable. 70 Python + 11 JS tests; maintainability passes.
 - Not yet automated: headless-browser rendering verification (wiring verified via Node import of Three + served-asset checks).
@@ -63,7 +71,7 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 - Contract parity: added `ui_dict()` to `ToothPose`/`StageProgressFrame` derived from `model_dump` so the UI frame contract can never silently drop a model field; `api.py` uses it; added parity tests asserting `ui_dict` keys == model fields.
 - JS unit tests: extracted DOM-free logic to `ui/core.js` (HTML escaping, contiguous stage reindex, frame pose extraction, async stale-response token guard); `render.js`/`plan.js` now import it; added `ui/core.test.js` (8 tests, `node --test`) and `ui/package.json` (`type: module`).
-- Rotation rendering (decision: PCA-derived, labeled approximate): added `ToothLocalFrame` (geometry) and `planning/mesh_frame.py` (pure-Python Jacobi PCA, returns None for degenerate clouds); `read_stl_geometry` exposes vertices in one read; `import_segmented_meshes` attaches an approximate frame per tooth; `build_stage_progress_frames` now flips `rotation_renderable` per tooth when a frame exists. Frame is labeled approximate/non-anatomical; the 2D preview stays translation-only.
+- Rotation rendering (original decision, superseded by Phase 8): added `ToothLocalFrame` (geometry) and `planning/mesh_frame.py` (pure-Python Jacobi PCA, returns None for degenerate clouds); `read_stl_geometry` exposes vertices in one read; `import_segmented_meshes` attaches an approximate frame per tooth. Phase 8 changed PCA frames to metadata-only, so they no longer flip `rotation_renderable`.
 - 68 Python tests + 8 JS tests; maintainability passes. Updated SAFETY, plan, and this log.
 
 ### 2026-06-03 - Audit Fixes: Dev Server Hardening and UI Race
@@ -304,4 +312,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:41:23+00:00 - Commit Status
 
 - Commit subject: Add Acquisition Advisor implementation plan
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:48:32+00:00 - Commit Status
+
+- Commit subject: Phase 8 trust and measurement readiness
 - Status: development history hook observed and recorded this commit workflow.

@@ -21,7 +21,7 @@ def test_progress_frames_are_cumulative() -> None:
     assert frames[1].poses[0].translate_x_mm == 0.5
 
 
-def test_rotation_renderable_flips_per_tooth_with_local_frame() -> None:
+def test_pca_local_frame_does_not_make_rotation_renderable() -> None:
     from orthoplan.model import SegmentedToothMesh, ToothLocalFrame
     from orthoplan.model.assets import MeshAsset
 
@@ -49,9 +49,42 @@ def test_rotation_renderable_flips_per_tooth_with_local_frame() -> None:
     )
     frames = build_stage_progress_frames(plan)
     poses = {p.tooth.value: p for p in frames[0].poses}
-    assert poses["11"].rotation_renderable is True  # has an (approximate) frame
+    assert poses["11"].rotation_renderable is False  # PCA frame is approximate only
     assert poses["21"].rotation_renderable is False  # no frame
-    assert frames[0].rotation_renderable is True  # any renderable -> frame-level true
+    assert frames[0].rotation_renderable is False
+
+
+def test_non_approximate_local_frame_makes_rotation_renderable() -> None:
+    from orthoplan.model import SegmentedToothMesh, ToothLocalFrame
+    from orthoplan.model.assets import MeshAsset
+
+    asset = MeshAsset(id="m11", format="stl-binary", vertex_count=3, face_count=1)
+    link = SegmentedToothMesh(
+        tooth=ToothId(value="11"),
+        mesh_asset_id="m11",
+        local_frame=ToothLocalFrame(
+            origin=(0, 0, 0),
+            axes=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            source="trusted-anatomical-frame",
+            approximate=False,
+        ),
+    )
+    plan = TreatmentPlan(
+        id="rot-trusted",
+        mesh_assets=[asset],
+        tooth_meshes=[link],
+        stages=[
+            Stage(
+                index=0,
+                deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="m11", rotate_tip_deg=3.0)],
+            )
+        ],
+    )
+
+    frames = build_stage_progress_frames(plan)
+
+    assert frames[0].poses[0].rotation_renderable is True
+    assert frames[0].rotation_renderable is True
 
 
 def test_progress_frames_mark_rotation_not_renderable_in_scan_frame() -> None:

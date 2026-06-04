@@ -29,11 +29,11 @@ Then open `http://127.0.0.1:8000`.
 The UI does **not** compute findings, data gaps, the timeline, or cumulative
 tooth poses itself. On every edit it sends the plan-shaped JSON to
 `POST /api/evaluate`, and renders exactly what `orthoplan.api.evaluate_plan`
-returns — the same deterministic rules, lint-gated findings (with their data
-gap and clinician question), timeline projection, and `StageProgressFrame`
-data used everywhere else. Cumulative movement in the canvas comes from the
-engine's frames, and rotation is shown only as tabular values because the
-Phase 1 scan frame reports `rotation_renderable=false`.
+returns - the same deterministic rules, lint-gated findings (with their data
+gap and clinician question), data-gap actions, timeline projection, and
+`StageProgressFrame` data used everywhere else. Cumulative movement in the
+canvas comes from the engine's frames, and rotation is shown only as tabular
+values unless the engine receives a trusted non-approximate anatomical frame.
 
 If the engine is unreachable (e.g. the page was opened via `file://`), the UI
 shows an "engine offline" message instead of silently falling back to a second,
@@ -48,14 +48,13 @@ The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
 toggle (2D canvas is the fallback when WebGL is unavailable). Important honesty
 constraints, surfaced in the on-screen caveat:
 
-- It renders **abstract proxy teeth, not the scanned mesh.** We never store or
+- It renders **schematic proxy teeth, not the scanned mesh.** We never store or
   serve mesh bytes, so the viewer cannot show real crown geometry.
 - Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
   movement is visible next to ~10 mm teeth.
-- Rotation is drawn **only** where the engine sets `rotation_renderable`, about
-  the **approximate** crown-surface PCA frame (`tooth_frames` in the API). The
-  axes are ordered by variance, not anatomy; this is not a tip/torque/long-axis
-  measurement and says nothing about root position.
+- Rotation is drawn **only** where the engine sets `rotation_renderable`. The
+  approximate crown-surface PCA frame (`tooth_frames` in the API) is metadata
+  only; by itself it does not authorize rendered rotation.
 
 Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
@@ -93,4 +92,3 @@ regenerated after UI changes:
 pip install -e ".[e2e]" && python -m playwright install chromium
 python tools/capture_screenshots.py    # writes docs/images/*.png
 ```
-

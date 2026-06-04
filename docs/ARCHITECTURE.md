@@ -30,7 +30,7 @@ The likely future split:
 - Three.js or VTK/PyVista: interactive 3D visualization
 - Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
 
-The browser UI never reimplements the engine. `orthoplan/api.py` exposes a single pure evaluation entry point, and `orthoplan/server.py` serves it over `POST /api/evaluate`. The UI sends plan-shaped JSON and renders the returned findings, data gaps, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders abstract per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable, oriented by the approximate `tooth_frames` returned alongside the frames.
+The browser UI never reimplements the engine. `orthoplan/api.py` exposes a single pure evaluation entry point, and `orthoplan/server.py` serves it over `POST /api/evaluate`. The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
 
 The first UI prototype is a static browser workspace under `ui/`. It mirrors
 the Python data contract but does not yet run backend STL inspection.
@@ -111,6 +111,18 @@ A plan does not deform a tooth mesh. It applies rigid transforms to segmented to
 Translation accumulates as a true vector sum (translation is commutative), so cumulative translation is geometrically correct. For example, if tooth 11 moves `0.2 mm` in stage 0 and `0.3 mm` in stage 1, the stage-1 frame shows `0.5 mm`.
 
 Rotation is different. Summed Euler components (tip/torque/rotation) are not a composable rigid rotation, and converting them to a renderable transform requires per-tooth anatomical axes that the Phase 1 scan frame does not resolve. So frames report cumulative rotation values but flag `rotation_renderable=False`; a UI must not build a rotation matrix from a non-renderable pose. This is why `build_stage_progress_frames()` exists and why transform composition lives in `planning/transforms.py`.
+
+Approximate crown-surface PCA frames are not enough to change that flag. A future real-mesh
+orientation path must supply non-approximate anatomical frames or another validated frame
+source before rotation can be rendered.
+
+## Handoff Reports
+
+`orthoplan report PLAN.json` emits a deterministic handoff artifact. The report includes the
+engine version, canonical plan hash, stable evaluation hash, input metadata, findings,
+data-gap actions, timeline, progress frames, and a report hash. It does not include mesh
+bytes. The goal is reproducible research/clinician review: the artifact ties inputs to engine
+behavior and makes provenance auditable without claiming clinical approval.
 
 ## Movement Settings
 

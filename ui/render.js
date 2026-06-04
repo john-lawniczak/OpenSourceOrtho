@@ -144,7 +144,7 @@ function renderMetadata() {
 }
 
 function renderEvaluation(result) {
-  el("dataGapList").innerHTML = result.data_gaps.map((gap) => `<li>${escapeHtml(gap)}</li>`).join("");
+  el("dataGapList").innerHTML = dataGapMarkup(result);
 
   el("findingList").innerHTML = result.findings.length
     ? result.findings.map(findingMarkup).join("")
@@ -162,6 +162,19 @@ function renderEvaluation(result) {
   el("stageValue").textContent = slider.value;
   drawCanvas();
   updateViewer(result);
+}
+
+function dataGapMarkup(result) {
+  if (Array.isArray(result.data_gap_actions) && result.data_gap_actions.length) {
+    return result.data_gap_actions.map((action) => `
+      <li>
+        <strong>${escapeHtml(action.gap)}</strong>
+        <p>${escapeHtml(action.impact)}</p>
+        <p>${escapeHtml(action.next_step)}</p>
+      </li>
+    `).join("");
+  }
+  return result.data_gaps.map((gap) => `<li>${escapeHtml(gap)}</li>`).join("");
 }
 
 function findingMarkup(finding) {

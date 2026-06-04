@@ -10,8 +10,8 @@ not churn between regenerations.
 
 - `basic_plan.json` — a few stages, no scans, one movement that trips the linear cap.
 - `segmented_plan.json` — a confirmed-units scan plus a per-tooth mesh with an
-  approximate local frame, so `rotation_renderable` is true and `tooth_frames`
-  is populated.
+  approximate local frame. `tooth_frames` is populated, but rotation remains
+  non-renderable because PCA frames are not trusted anatomical frames.
 
 ## Try them
 
