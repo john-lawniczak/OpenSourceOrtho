@@ -48,6 +48,11 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Added `docs/README.md` as the documentation index.
 - Added `docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md` as a living source ledger for upstream references, recommended software, and monitoring cadence.
 
+### 2026-06-04 - Next Context Plan
+
+- Added `docs/NEXT_CONTEXT_IMPLEMENTATION_PLAN.md` as the phased implementation handoff for the next coding context.
+- Prioritized the next iteration around the full data-model workflow: STL upload, uploaded scan metadata, treatment plan, timeline estimate, stages, tooth deltas, data availability, movement caps, and UI controls.
+
 ### 2026-06-03T23:41:54+00:00 - Commit Status
 
 - Commit subject: Scaffold safety-first orthodontic planning toolkit
@@ -66,4 +71,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T00:58:58+00:00 - Commit Status
 
 - Commit subject: Fix dev history commit status format
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T01:01:28+00:00 - Commit Status
+
+- Commit subject: Add phased implementation plan
 - Status: development history hook observed and recorded this commit workflow.
