@@ -1,5 +1,7 @@
 # OpenSource Ortho
 
+[![CI](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml/badge.svg)](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml)
+
 OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows.
 
 Most project documentation lives in [docs/](docs/README.md).

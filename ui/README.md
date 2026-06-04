@@ -72,3 +72,14 @@ cd ui && node --test        # or, from the repo root: node --test 'ui/*.test.js'
 The DOM modules (`render.js`, `plan.js`) import these helpers from `core.js`
 rather than defining them inline, so the tested code is the shipped code.
 
+A headless-browser smoke test (`tests/e2e/test_viewer_smoke.py`) verifies the
+3D viewer actually mounts a sized WebGL canvas with no page errors. It is
+skipped unless Playwright is installed:
+
+```bash
+pip install -e ".[e2e]" && python -m playwright install chromium
+pytest tests/e2e -q
+```
+
+All three suites (Python, JS, e2e) run in CI on every push and pull request.
+

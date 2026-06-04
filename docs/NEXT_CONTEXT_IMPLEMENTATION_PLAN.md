@@ -317,6 +317,13 @@ Tasks:
 - add dependency license audit
 - add CI
 
+Progress:
+
+- ~~add CI~~ done: `.github/workflows/ci.yml` runs Python (`pytest` + maintainability), JS (`node --test`), and a Playwright 3D-viewer smoke on every push/PR.
+- Packaging fixed (`pip install -e .` now resolves `orthoplan` via Hatchling); editable install + suite verified on a clean Python 3.11 venv.
+
+Still open: synthetic example plans, CLI walkthrough, screenshots, contribution guide, dependency license audit.
+
 Exit criteria:
 
 - new contributor can run tests and inspect an example plan

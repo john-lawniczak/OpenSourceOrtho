@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Phase 7: CI + Headless Viewer Smoke
+
+- Added `.github/workflows/ci.yml` with three jobs that gate every push and PR: Python (`pytest -q` + maintainability `--strict`, Python 3.12), JS (`node --test` in `ui/`), and an e2e Playwright job.
+- Added `tests/e2e/test_viewer_smoke.py`: loads the dev server in headless Chromium and asserts the Three.js viewer mounts a sized WebGL canvas with no uncaught page errors. Skips cleanly when Playwright is absent, so the default `pytest` stays green (`70 passed, 1 skipped`).
+- Verified for real in a clean Python 3.11 venv: editable install + the full suite, and the Playwright smoke actually passed in headless Chromium (closing the prior "render not browser-verified" caveat).
+- Fixed packaging: added `[tool.hatch.build.targets.wheel] packages = ["orthoplan"]` so `pip install -e .` resolves the package (previously unset). Added the `e2e` optional dependency (`playwright`).
+
 ### 2026-06-04 - Phase 6: Three.js 3D Progress Viewer
 
 - Added `ui/viewer3d.js`: a Three.js scene rendering abstract per-tooth proxies from the engine's `frames[].poses[]`, with orbit controls, current/planned/overlay modes, a stage scrubber, displacement vectors, and a movement-exaggeration control. No scanned mesh bytes are served, so proxies (not real geometry) are rendered by design.
@@ -213,4 +220,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T19:59:24+00:00 - Commit Status
 
 - Commit subject: Phase 6: Three.js 3D progress viewer
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:06:34+00:00 - Commit Status
+
+- Commit subject: Phase 7: CI + headless 3D-viewer smoke test
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:06:34+00:00 - Commit Status
+
+- Commit subject: Phase 7: CI + headless 3D-viewer smoke test
 - Status: development history hook observed and recorded this commit workflow.
