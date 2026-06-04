@@ -48,6 +48,18 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Added `docs/README.md` as the documentation index.
 - Added `docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md` as a living source ledger for upstream references, recommended software, and monitoring cadence.
 
+### 2026-06-03 - Phase 1 Data-Model Core
+
+- Replaced free-form `coordinate_frame` strings with a typed `CoordinateFrame` (`model/geometry.py`); `z` is occlusogingival, tip/torque/rotation flagged non-renderable when anatomical axes are unavailable.
+- Made `ToothId` canonical FDI with validation; derived `arch` from the FDI quadrant and dropped the redundant stored `arch`; plan creation rejects mixed numbering systems and mixed frames.
+- Moved cumulative pose composition into `planning/transforms.py` (crown-centroid pivot, true translation vector sum, rotation reported but `rotation_renderable=False`); `viz/progress.py` now consumes it instead of computing it.
+- Centralized data-gap text in `model/gaps.py` (was duplicated between viz and the cap rule).
+- Reworked `MovementCaps` into `AxisCaps` (`default` + reserved `per_tooth_overrides`); cap rule now uses Euclidean horizontal magnitude, a separate vertical cap, and is gated on confirmed scan units.
+- Added `model/assets.py` (`MeshAsset`/`UploadedScan`, `MeshUnits` defaulting to `unverified`, redacted relative references, absolute-path rejection) and metadata-only `io/stl_import.py` (no mesh bytes stored).
+- Consolidated the safety gate into `lint_finding()`: verdict scan across all text fields with word-boundary matching, model-sourced `mechanics` findings forbidden, and `quarantine_findings()` so invalid model output is rejected, not crashed. Construction is no longer the gate.
+- Added arithmetic `planning/timeline.py` (inputs only, computed duration, standing caveat), JSON serialization helpers (`io/serialization.py`), and CLI subcommands `new-plan`, `inspect-stl`, `plan-summary`.
+- Updated ARCHITECTURE, SAFETY (geometry-not-biomechanics + privacy posture), MAINTAINABILITY, OpenAI_Agents, and references docs to match. Tests expanded to 26; maintainability check passes.
+
 ### 2026-06-04 - Next Context Plan
 
 - Added `docs/NEXT_CONTEXT_IMPLEMENTATION_PLAN.md` as the phased implementation handoff for the next coding context.
@@ -76,4 +88,15 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T01:01:28+00:00 - Commit Status
 
 - Commit subject: Add phased implementation plan
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04 - Phase 1 Data Model Review
+
+- Reviewed the Phase 1 data-model workflow changes before merge.
+- Added regression coverage for malformed STL uploads, CLI error handling, shared scan-unit data gaps, and movement-cap override validation.
+- Hardened metadata-only STL inspection against oversized files and inconsistent ASCII facet/vertex data.
+
+### 2026-06-04T01:32:42+00:00 - Commit Status
+
+- Commit subject: Implement Phase 1 data model workflow
 - Status: development history hook observed and recorded this commit workflow.

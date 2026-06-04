@@ -3,8 +3,10 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from orthoplan.model.assets import UploadedScan
+from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame
 from orthoplan.model.settings import TreatmentSettings
 
 
@@ -13,29 +15,67 @@ class Arch(StrEnum):
     MANDIBULAR = "mandibular"
 
 
-NumberingSystem = Literal["FDI", "Universal", "Palmer"]
+# Phase 1 uses canonical internal FDI identity. Display conversion to Universal
+# or Palmer is deferred; mixed numbering is rejected rather than normalized.
+NumberingSystem = Literal["FDI"]
+
+# FDI quadrant -> arch. Permanent (1-4) and primary (5-8) quadrants supported.
+_MAXILLARY_QUADRANTS = {"1", "2", "5", "6"}
+_MANDIBULAR_QUADRANTS = {"3", "4", "7", "8"}
 
 
 class ToothId(BaseModel):
+    """Canonical FDI tooth identity (two-digit notation, e.g. ``11``)."""
+
     model_config = ConfigDict(frozen=True)
 
     system: NumberingSystem = "FDI"
-    value: str = Field(min_length=1)
+    value: str = Field(min_length=2, max_length=2)
+
+    @field_validator("value")
+    @classmethod
+    def valid_fdi_value(cls, value: str) -> str:
+        if not value.isdigit():
+            raise ValueError(f"FDI tooth id must be two digits, got {value!r}")
+        quadrant, tooth = value[0], value[1]
+        if quadrant not in (_MAXILLARY_QUADRANTS | _MANDIBULAR_QUADRANTS):
+            raise ValueError(f"FDI quadrant must be 1-8, got {quadrant!r} in {value!r}")
+        if tooth not in {"1", "2", "3", "4", "5", "6", "7", "8"}:
+            raise ValueError(f"FDI tooth position must be 1-8, got {tooth!r} in {value!r}")
+        return value
+
+    @property
+    def quadrant(self) -> str:
+        return self.value[0]
+
+    @property
+    def arch(self) -> Arch:
+        return Arch.MAXILLARY if self.quadrant in _MAXILLARY_QUADRANTS else Arch.MANDIBULAR
 
 
 class ToothDelta(BaseModel):
-    """A proposed tooth movement in explicit units."""
+    """A proposed tooth movement in explicit units within a named frame.
+
+    ``arch`` is derived from the FDI tooth id, not stored, so the two can never
+    contradict. Rotations (tip/torque/rotation) are authored values; whether
+    they can be rendered depends on the plan coordinate frame (see geometry).
+    """
 
     tooth: ToothId
-    arch: Arch
     translate_x_mm: float = 0.0
     translate_y_mm: float = 0.0
     translate_z_mm: float = 0.0
     rotate_tip_deg: float = 0.0
     rotate_torque_deg: float = 0.0
     rotate_rotation_deg: float = 0.0
-    coordinate_frame: str = "scan-local-right-handed"
+    coordinate_frame: str = SCAN_FRAME.name
     source: Literal["manual", "imported", "model", "synthetic"] = "manual"
+    # Reserved linkage to a per-tooth segmented mesh asset (populated in later phases).
+    mesh_asset_id: str | None = None
+
+    @property
+    def arch(self) -> Arch:
+        return self.tooth.arch
 
 
 class Stage(BaseModel):
@@ -46,9 +86,9 @@ class Stage(BaseModel):
     @field_validator("deltas")
     @classmethod
     def unique_teeth(cls, deltas: list[ToothDelta]) -> list[ToothDelta]:
-        seen: set[tuple[str, str]] = set()
+        seen: set[str] = set()
         for delta in deltas:
-            key = (delta.tooth.system, delta.tooth.value)
+            key = delta.tooth.value
             if key in seen:
                 raise ValueError(f"duplicate tooth delta in stage: {key}")
             seen.add(key)
@@ -71,9 +111,17 @@ class TreatmentPlan(BaseModel):
     id: str
     title: str = "Untitled plan"
     numbering_system: NumberingSystem = "FDI"
+    coordinate_frame: CoordinateFrame = SCAN_FRAME
     data: DataAvailability = Field(default_factory=DataAvailability)
     settings: TreatmentSettings = Field(default_factory=TreatmentSettings)
+    scans: list[UploadedScan] = Field(default_factory=list)
     stages: list[Stage] = Field(default_factory=list)
+
+    @property
+    def scale_confirmed(self) -> bool:
+        """True when cap evaluation may run: no scans, or all scan units confirmed."""
+
+        return all(scan.units_confirmed for scan in self.scans)
 
     @field_validator("stages")
     @classmethod
@@ -82,3 +130,20 @@ class TreatmentPlan(BaseModel):
         if indexes != list(range(len(stages))):
             raise ValueError("stage indexes must be contiguous and start at 0")
         return stages
+
+    @model_validator(mode="after")
+    def deltas_match_plan_identity(self) -> TreatmentPlan:
+        frame_name = self.coordinate_frame.name
+        for stage in self.stages:
+            for delta in stage.deltas:
+                if delta.tooth.system != self.numbering_system:
+                    raise ValueError(
+                        "mixed numbering systems are rejected: plan uses "
+                        f"{self.numbering_system}, delta uses {delta.tooth.system}"
+                    )
+                if delta.coordinate_frame != frame_name:
+                    raise ValueError(
+                        "mixed coordinate frames are rejected: plan frame is "
+                        f"{frame_name!r}, delta frame is {delta.coordinate_frame!r}"
+                    )
+        return self

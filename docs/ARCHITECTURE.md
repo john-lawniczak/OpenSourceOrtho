@@ -54,23 +54,45 @@ The likely future split:
 - coordinate frame
 - movement source
 
+`ToothId`
+
+- canonical FDI identity in Phase 1 (two-digit notation)
+- `arch` is derived from the FDI quadrant, never stored separately, so the two can never contradict
+- mixed numbering systems are rejected at plan creation rather than silently normalized
+
+`CoordinateFrame`
+
+- typed, named frame replacing the former free-form string
+- declares axis semantics: `z` is the occlusogingival (vertical) axis; `x`/`y` span the horizontal plane
+- per-tooth mesiodistal/buccolingual axes are unresolved at the global scan level, so tip/torque/rotation are not renderable in Phase 1
+
 `MovementCaps`
 
-- clinician-configurable per-stage caps
+- clinician-configurable per-stage caps held in an `AxisCaps` block (`default`)
+- `per_tooth_overrides` is reserved so tooth-class-specific caps can be added later without changing the rule interface
+- horizontal `linear_mm` caps the Euclidean magnitude of x/y movement; `intrusion_extrusion_mm` caps vertical movement separately
 - default values are literature/vendor heuristics, not medical clearance
-- rules compare stage deltas to these caps
+- caps are not evaluated until scan units are confirmed (see STL Upload)
 
 `StageProgressFrame`
 
 - cumulative tooth positions at a stage
+- carries `rotation_renderable` and a crown-centroid pivot label
 - data gaps attached for the UI
-- designed so the UI does not recalculate treatment movement differently from the engine
+- designed so the UI does not recalculate treatment movement differently from the engine; transform composition lives in `planning/transforms.py`, and `viz` only consumes it
 
 ## STL Upload
 
 The initial user upload should be an STL of an intraoral scan. STL contains surface geometry only. It does not contain roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT anatomy.
 
 That means the UI must show these data gaps. A surface scan can support crown-surface visualization and staged crown movement, but it cannot prove root position, bone safety, or periodontal suitability.
+
+STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
+
+- mesh bytes are never stored in the serialized plan; only redacted metadata and an optional relative reference are kept
+- absolute paths and directory structure (which often carry patient names) are stripped
+- STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- a bounding-box sanity check can warn about implausible scale, but never infers units
 
 ## How The Plan Moves Teeth
 
@@ -79,19 +101,24 @@ A plan does not deform a tooth mesh. It applies rigid transforms to segmented to
 - translation along x/y/z in millimeters
 - tip, torque, and rotation in degrees
 - cumulative movement from stage 0 through the selected stage
+- the visualization pivot is the crown centroid, an explicit visualization assumption and not a biomechanical claim about root position
 
-For example, if tooth 11 moves `0.2 mm` in stage 0 and `0.3 mm` in stage 1, the stage-1 visualization frame shows `0.5 mm` cumulative movement. This is why `build_stage_progress_frames()` exists.
+Translation accumulates as a true vector sum (translation is commutative), so cumulative translation is geometrically correct. For example, if tooth 11 moves `0.2 mm` in stage 0 and `0.3 mm` in stage 1, the stage-1 frame shows `0.5 mm`.
+
+Rotation is different. Summed Euler components (tip/torque/rotation) are not a composable rigid rotation, and converting them to a renderable transform requires per-tooth anatomical axes that the Phase 1 scan frame does not resolve. So frames report cumulative rotation values but flag `rotation_renderable=False`; a UI must not build a rotation matrix from a non-renderable pose. This is why `build_stage_progress_frames()` exists and why transform composition lives in `planning/transforms.py`.
 
 ## Movement Settings
 
 Movement settings are guardrails, not clinical approval. Defaults should be conservative and configurable by the treating clinician.
 
-Initial heuristic defaults:
+Initial heuristic defaults (`AxisCaps`):
 
-- linear movement: `0.25 mm` per stage
-- angular movement: `1.0 degree` per stage
+- linear movement: `0.25 mm` per stage (Euclidean magnitude of horizontal x/y movement)
+- angular movement: `1.0 degree` per stage (tip and torque)
 - rotation: `2.0 degrees` per stage
-- intrusion/extrusion: `0.10 mm` per stage
+- intrusion/extrusion: `0.10 mm` per stage (vertical, evaluated separately)
 
 These defaults are based on commonly cited clear-aligner staging ranges and should be treated as starting points for research tooling only. The software must never claim that a movement within these values is safe.
+
+Timeline is an arithmetic projection, not a clinical estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, clinical pauses, and clinician-directed changes.
 

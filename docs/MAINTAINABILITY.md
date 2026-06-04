@@ -40,6 +40,8 @@ Do not split files only to satisfy a number. Split when it improves names, owner
 - stable domain objects and settings
 - no provider SDK imports
 - no UI rendering code
+- owns the single data-gap derivation (`model/gaps.py`) so rules and viz never duplicate gap text
+- owns typed coordinate frames (`model/geometry.py`); coordinate frames are never free-form strings
 
 `orthoplan/io/`
 
@@ -50,6 +52,8 @@ Do not split files only to satisfy a number. Split when it improves names, owner
 `orthoplan/planning/`
 
 - staging, setup, transforms, collision helpers
+- owns cumulative pose composition (`planning/transforms.py`) and timeline projection (`planning/timeline.py`)
+- viz consumes these contracts; viz must not recompute movement or rotation renderability
 - no LLM calls
 - no UI framework dependencies
 

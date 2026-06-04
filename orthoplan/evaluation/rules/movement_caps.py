@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from math import hypot
+
 from orthoplan.evaluation.finding import (
     Finding,
     FindingCategory,
@@ -8,32 +10,41 @@ from orthoplan.evaluation.finding import (
     lint_finding,
 )
 from orthoplan.model import TreatmentPlan
+from orthoplan.model.gaps import SURFACE_SCAN_LIMITATION
 from orthoplan.model.plan import ToothDelta
-from orthoplan.model.settings import MovementCaps
+from orthoplan.model.settings import AxisCaps
+
+_CLINICIAN_QUESTION = (
+    "Does the treating clinician want to adjust staging, attachments, IPR, "
+    "or require additional imaging before relying on this movement proposal?"
+)
 
 
 def evaluate_movement_caps(plan: TreatmentPlan) -> list[Finding]:
-    findings: list[Finding] = []
-    caps = plan.settings.movement_caps
+    if not plan.scale_confirmed:
+        return [_scale_unconfirmed_notice()]
 
+    caps = plan.settings.movement_caps
+    findings: list[Finding] = []
     for stage in plan.stages:
         for delta in stage.deltas:
-            findings.extend(_delta_cap_findings(stage.index, delta, caps))
-
+            findings.extend(_delta_cap_findings(stage.index, delta, caps.caps_for(delta.tooth.value)))
     return findings
 
 
-def _delta_cap_findings(stage_index: int, delta: ToothDelta, caps: MovementCaps) -> list[Finding]:
+def _delta_cap_findings(stage_index: int, delta: ToothDelta, caps: AxisCaps) -> list[Finding]:
     tooth_label = f"{delta.tooth.system} {delta.tooth.value}"
     findings: list[Finding] = []
 
-    if _exceeds_horizontal_cap(delta, caps):
+    horizontal = hypot(delta.translate_x_mm, delta.translate_y_mm)
+    if horizontal > caps.linear_mm:
         findings.append(
             _cap_warning(
                 title=f"Stage {stage_index} exceeds configured linear cap",
                 message=(
-                    f"Tooth {tooth_label} has horizontal movement greater than "
-                    f"the configured {caps.linear_mm} mm per-stage cap."
+                    f"Tooth {tooth_label} has horizontal movement of {horizontal:.3f} mm "
+                    f"(resultant magnitude), greater than the configured {caps.linear_mm} mm "
+                    "per-stage cap."
                 ),
                 reference=caps.reference,
             )
@@ -51,7 +62,7 @@ def _delta_cap_findings(stage_index: int, delta: ToothDelta, caps: MovementCaps)
             )
         )
 
-    if _exceeds_angular_cap(delta, caps):
+    if abs(delta.rotate_tip_deg) > caps.angular_deg or abs(delta.rotate_torque_deg) > caps.angular_deg:
         findings.append(
             _cap_warning(
                 title=f"Stage {stage_index} exceeds configured angular cap",
@@ -78,14 +89,6 @@ def _delta_cap_findings(stage_index: int, delta: ToothDelta, caps: MovementCaps)
     return findings
 
 
-def _exceeds_horizontal_cap(delta: ToothDelta, caps: MovementCaps) -> bool:
-    return abs(delta.translate_x_mm) > caps.linear_mm or abs(delta.translate_y_mm) > caps.linear_mm
-
-
-def _exceeds_angular_cap(delta: ToothDelta, caps: MovementCaps) -> bool:
-    return abs(delta.rotate_tip_deg) > caps.angular_deg or abs(delta.rotate_torque_deg) > caps.angular_deg
-
-
 def _cap_warning(title: str, message: str, reference: str) -> Finding:
     return lint_finding(
         Finding(
@@ -94,11 +97,26 @@ def _cap_warning(title: str, message: str, reference: str) -> Finding:
             provenance=FindingProvenance.RULE,
             title=title,
             message=message,
-            data_gap="Surface scan geometry does not show roots, bone, or periodontal status.",
-            clinician_question=(
-                "Does the treating clinician want to adjust staging, attachments, IPR, "
-                "or require additional imaging before relying on this movement proposal?"
-            ),
+            data_gap=SURFACE_SCAN_LIMITATION,
+            clinician_question=_CLINICIAN_QUESTION,
             reference=reference,
+        )
+    )
+
+
+def _scale_unconfirmed_notice() -> Finding:
+    return lint_finding(
+        Finding(
+            severity=FindingSeverity.NOTICE,
+            category=FindingCategory.DATA_GAP,
+            provenance=FindingProvenance.RULE,
+            title="Movement-cap evaluation skipped: scan units unverified",
+            message=(
+                "One or more uploaded scans have unverified units, so per-stage "
+                "movement caps cannot be compared in millimeters. Confirm scan units "
+                "to enable cap evaluation."
+            ),
+            data_gap="Scan units are unverified; declared geometry scale cannot be trusted.",
+            clinician_question="Has the treating clinician confirmed the scan units and scale?",
         )
     )

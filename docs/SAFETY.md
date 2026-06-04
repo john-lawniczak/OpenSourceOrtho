@@ -20,19 +20,46 @@ OpenSource Ortho must not state or imply:
 - roots, bone, periodontal structures, pathology, or airway status are acceptable when those data are unavailable
 - a movement threshold is authoritative unless it is either user-configured or cited
 
+## Geometry, Not Biomechanics
+
+OpenSource Ortho models crown-surface geometry only. It does not model force levels,
+anchorage, attachment or IPR mechanics, tooth-movement feasibility, or root-resorption
+risk. A proposed movement that fits within configured caps is a geometric statement, not a
+biomechanical or clinical one. Visualization pivots (crown centroid) are explicit display
+assumptions and never imply knowledge of root or bone position.
+
+## Privacy Posture
+
+Intraoral STL scans are patient-derived data. The toolkit:
+
+- never stores mesh bytes in serialized plans; only redacted asset metadata is kept
+- strips directory structure and rejects absolute paths and parent-directory traversal,
+  because clinical export paths routinely embed patient names or DOB
+- treats scan units as unverified until the user confirms them
+
+Retention and deletion guarantees are out of scope for Phase 1 and are the responsibility of
+the deploying party; this is noted here so it is not mistaken for a solved problem.
+
 ## LLM Boundary
 
-Model-generated findings are untrusted advisory text. They must pass the same linting path as deterministic findings before being displayed or exported.
+Model-generated findings are untrusted advisory text. `lint_finding()` is the single safety
+gate: it is enforced as a pipeline stage, not at object construction, so a malformed model
+finding is rejected and quarantined rather than crashing the pipeline. Use
+`quarantine_findings()` for batches of untrusted findings.
 
-Every model-sourced finding must:
+The gate enforces that:
 
-- carry model provenance
-- remain observational and conditional
-- include data gaps when relevant
-- avoid verdict language
-- avoid invented thresholds
+- verdict language is scanned across ALL text fields (title, message, data gap, clinician
+  question, reference), with word-boundary matching so negated forms (e.g. "unsafe") are not
+  falsely flagged and positive-sounding clearances (e.g. "good candidate", "within normal
+  limits") are caught
+- model-sourced `mechanics` findings are forbidden; deterministic rules own mechanics. Models
+  may comment on data gaps, education, or clinician questions only
+- warning findings must include both a data gap and a clinician question
+- mechanics findings must reference a configured cap or citation
 
-Warnings must include both a data gap and a clinician question.
+Every model-sourced finding must also carry model provenance, remain observational and
+conditional, include data gaps when relevant, and avoid invented thresholds.
 
 ## Regulatory Note
 

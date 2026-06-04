@@ -31,6 +31,23 @@ Exit criteria:
 - dev-history hook writes to `docs/Dev_history.md`
 - docs explain the STL-to-plan flow clearly
 
+### Phase 1 Decisions (Locked)
+
+These were resolved before implementation and are now reflected in code:
+
+1. **Pivot**: crown centroid is the visualization pivot, labeled a visualization assumption, not biomechanics. No root-apex or bracket estimation.
+2. **Coordinate frame**: typed `CoordinateFrame` (global scan frame + optional per-tooth local frame). `z` is occlusogingival. Tip/torque/rotation are marked non-renderable when anatomical axes are unavailable, never guessed.
+3. **Linear caps**: Euclidean magnitude for horizontal movement, separate vertical intrusion/extrusion cap. `AxisCaps` supports future per-tooth overrides.
+4. **Tooth identity**: canonical FDI; mixed numbering systems rejected at plan creation. `arch` derived from FDI quadrant.
+5. **Scale**: STL units `unverified` by default; user must confirm units before cap evaluation runs. Bounding-box checks are warnings only, never unit inference.
+6. **Privacy**: no STL bytes in serialized plans; redacted relative references only; absolute paths and traversal rejected.
+7. **Lint gate**: `lint_finding()` is the single gate; construction is not. Invalid model findings are quarantined, not crashed.
+8. **Timeline**: arithmetic projection, inputs only (stage count + wear interval); duration computed; standing caveat.
+9. **Mechanics**: model-sourced `mechanics` findings forbidden; deterministic rules own mechanics.
+10. **Defaults**: FDI numbering, 14-day wear interval.
+
+Status: the data-model core (identity, frame, transforms, caps, lint, assets, timeline, serialization, CLI) is implemented and tested. Remaining Phase 1 polish and the UI prototype (Phase 2) follow.
+
 ### Phase 1 - Full Data Model Workflow
 
 This is the next coding target.
@@ -289,18 +306,21 @@ Start here in the next context window:
 
 ## Suggested Data Model Shape
 
-`MeshAsset`
+> Implemented shape (supersedes the original sketch; duration is computed, not stored, and no
+> absolute path or mesh bytes are kept).
+
+`MeshAsset` (`orthoplan/model/assets.py`)
 
 - `id`
-- `path`
 - `format`
-- `provenance`
+- `provenance` (`MeshProvenance` enum)
+- `units` (`MeshUnits`, defaults to `unverified`)
 - `vertex_count`
 - `face_count`
-- `bounds_mm`
-- `units`
+- `bounds` (`BoundingBox`, in the asset's declared units — not assumed mm)
 - `created_at`
 - `sha256`
+- `reference` (optional, relative/redacted only — never absolute, never PHI)
 
 `UploadedScan`
 
@@ -309,22 +329,18 @@ Start here in the next context window:
 - `source`
 - `notes`
 
-`PlanTimeline`
+`TimelineSettings` (inputs only; duration computed by `planning/timeline.py`)
 
-- `stage_count`
-- `wear_interval_days`
-- `estimated_duration_days`
-- `estimated_duration_weeks`
-- `retainer_phase_included`
+- `wear_interval_days` (default 14)
 
 `TreatmentPlan`
 
 - `id`
 - `title`
-- `numbering_system`
+- `numbering_system` (FDI)
+- `coordinate_frame` (`CoordinateFrame`)
 - `data`
-- `settings`
-- `timeline`
+- `settings` (movement caps + timeline)
 - `scans`
 - `stages`
 
@@ -375,10 +391,10 @@ Timeline display:
 
 ## Questions To Resolve Later
 
-- Should the first UI be web-first or Python desktop-first?
-- Should `trimesh` be added immediately for STL metadata, or should we start with a tiny internal binary/ascii STL inspector?
-- What tooth-numbering system should be default for the intended first users?
-- How should manual segmentation be represented before we have real segmentation tooling?
-- Should timeline defaults assume 7-day, 10-day, or 14-day wear intervals?
-- What minimum synthetic mesh fixture is enough for early UI development?
+- Should the first UI be web-first or Python desktop-first? (open)
+- ~~Should `trimesh` be added immediately, or start with a tiny internal STL inspector?~~ Resolved: started with the internal binary/ascii inspector in `io/stl_import.py`; `trimesh` deferred to Phase 3.
+- ~~What tooth-numbering system should be default?~~ Resolved: FDI (canonical internal identity).
+- How should manual segmentation be represented before real segmentation tooling? (open; `ToothDelta.mesh_asset_id` is reserved for the linkage)
+- ~~Should timeline defaults assume 7/10/14-day wear?~~ Resolved: 14-day default, configurable.
+- What minimum synthetic mesh fixture is enough for early UI development? (tests use a one-triangle synthetic binary STL; a fuller arch fixture is still TBD)
 

@@ -14,6 +14,11 @@ They must not:
 - infer unavailable anatomy
 - override deterministic rule findings
 - suppress data gaps
+- emit `mechanics` findings (forbidden for model provenance in Phase 1; deterministic rules own mechanics)
+
+Model output is untrusted. It must pass `lint_finding()` (the single safety gate) and is
+quarantined on failure via `quarantine_findings()` rather than crashing the pipeline. Verdict
+language is scanned across every text field, not just the title and message.
 
 ## First Adapter
 

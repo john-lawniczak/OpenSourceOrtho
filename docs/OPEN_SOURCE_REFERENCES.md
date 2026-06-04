@@ -55,6 +55,21 @@ MeshLab / CloudCompare
 - useful references for mesh inspection and repair workflows
 - watch licenses carefully if embedding or linking; prefer them as external tools unless license review is complete
 
+## License Traps To Watch
+
+- **Separate three licenses for any AI tool**: code license, model-weight license, and dataset
+  license are often different. Code can be MIT while weights/datasets are CC-BY-NC or carry a
+  research-only EULA. Check all three before using DentalSegmentator or any segmentation model.
+- **3D Slicer ecosystem copyleft**: Slicer core is BSD, but individual extensions and some
+  bundled components are GPL. Distributing a Slicer extension can pull copyleft obligations into
+  anything linked with it.
+- **trimesh optional backends**: trimesh itself is MIT, but optional acceleration/format backends
+  it can pull in carry varied licenses. Pin and audit only the backends actually imported.
+- **Trademarks**: "Invisalign", "ClinCheck", and "SmartTrack" are trademarks. Use them only as
+  nominative references in prose, never in code identifiers, UI labels, or product naming.
+- **Sample datasets**: STL/CBCT sample scans often carry patient-consent or dataset licenses.
+  Phase 1 uses synthetic fixtures only; do not check in third-party patient scans.
+
 ## Source Links To Recheck During Implementation
 
 - BlueSkyPlan download/license page: https://www.blueskybio.digital/page/download-software
