@@ -29,3 +29,31 @@ def test_cli_inspect_stl_handles_invalid_file_without_traceback(
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "inspect-stl error" in captured.err
+
+
+def test_cli_plan_summary_handles_invalid_plan_without_traceback(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    path = tmp_path / "bad-plan.json"
+    path.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "plan-summary", str(path)])
+
+    assert cli.main() == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "plan-summary error" in captured.err
+
+
+def test_cli_advise_handles_invalid_plan_without_traceback(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    path = tmp_path / "bad-plan.json"
+    path.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "advise", str(path)])
+
+    assert cli.main() == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "advise error" in captured.err

@@ -76,7 +76,11 @@ def _cmd_inspect_stl(args: argparse.Namespace) -> int:
 
 
 def _cmd_plan_summary(args: argparse.Namespace) -> int:
-    plan = read_plan(args.path)
+    try:
+        plan = read_plan(args.path)
+    except (OSError, ValueError) as exc:
+        print(f"plan-summary error: {exc}", file=sys.stderr)
+        return 2
     projection = project_timeline(plan)
     findings = run_rules(plan)
     print(f"Plan: {plan.title} ({plan.id})")
@@ -115,11 +119,14 @@ def _build_provider(name: str, model: str | None):
 def _cmd_advise(args: argparse.Namespace) -> int:
     from orthoplan.evaluation.advisory import request_advisory
 
-    plan = read_plan(args.path)
     try:
+        plan = read_plan(args.path)
         provider = _build_provider(args.provider, args.model)
         result = request_advisory(plan, provider)
     except (RuntimeError, OSError) as exc:
+        print(f"advise error: {exc}", file=sys.stderr)
+        return 2
+    except ValueError as exc:
         print(f"advise error: {exc}", file=sys.stderr)
         return 2
 

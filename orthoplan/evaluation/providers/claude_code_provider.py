@@ -23,10 +23,12 @@ class ClaudeCodeProvider:
             )
         except FileNotFoundError as exc:
             raise RuntimeError("Claude Code CLI command was not found") from exc
+        except subprocess.CalledProcessError as exc:
+            detail = (exc.stderr or exc.stdout or str(exc)).strip()
+            raise RuntimeError(f"Claude Code provider failed: {detail}") from exc
 
         return ModelResponse(
             text=completed.stdout.strip(),
             model=self.model,
             provider=self.name,
         )
-

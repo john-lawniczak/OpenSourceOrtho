@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Post-Implementation Audit: Provider/CLI Hardening
+
+- Reviewed the recent Phase 4/5/6/7 implementation set with a merge-readiness focus.
+- Fixed local test collection for bare `pytest` by adding the repo root to pytest's configured `pythonpath`.
+- Hardened `plan-summary` and `advise` so malformed plan files return clean CLI errors instead of tracebacks.
+- Hardened OpenAI and Claude Code provider adapters so SDK/subprocess failures are converted into `RuntimeError` for the advisory CLI boundary.
+- Added regression tests for malformed CLI plan input and provider failure normalization.
+
 ### 2026-06-04 - Phase 5: Model Advisory Layer
 
 - Added `orthoplan/evaluation/advisory.py`: a strict `AdvisoryItem`/`AdvisoryResponse` schema, `parse_advisory` (tolerates markdown fences), and `request_advisory(plan, provider)` that converts model output to `Finding(provenance=MODEL)` and runs it through `quarantine_findings` (the same `lint_finding` gate). Parse failures and lint rejections are returned as data (`AdvisoryResult.parse_error` / `.rejected`); it never raises on bad model output.
@@ -281,4 +289,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:33:07+00:00 - Commit Status
 
 - Commit subject: Phase 5: model advisory layer
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:38:10+00:00 - Commit Status
+
+- Commit subject: Audit harden advisory CLI and providers
 - Status: development history hook observed and recorded this commit workflow.

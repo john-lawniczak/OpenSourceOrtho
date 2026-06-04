@@ -47,8 +47,12 @@ The adapter is intentionally narrow:
 - returns provider-neutral `ModelResponse`
 - does not own clinical policy
 - does not bypass `lint_finding()`
+- converts SDK/CLI execution failures into `RuntimeError` so `orthoplan advise`
+  exits cleanly instead of surfacing provider tracebacks
 
-Default model: `gpt-5.5`, based on current OpenAI model guidance checked during the initial scaffold on 2026-06-03.
+Default model: `gpt-5.5`, based on current OpenAI model guidance checked during
+the initial scaffold on 2026-06-03 and rechecked during the 2026-06-04
+post-implementation audit.
 
 ## Commit Status
 

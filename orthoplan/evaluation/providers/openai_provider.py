@@ -21,11 +21,14 @@ class OpenAIProvider:
             raise RuntimeError("OPENAI_API_KEY is required for OpenAIProvider")
 
         client = OpenAI()
-        response = client.responses.create(
-            model=self.model,
-            input=[
-                {"role": "system", "content": request.system},
-                {"role": "user", "content": request.prompt},
-            ],
-        )
+        try:
+            response = client.responses.create(
+                model=self.model,
+                input=[
+                    {"role": "system", "content": request.system},
+                    {"role": "user", "content": request.prompt},
+                ],
+            )
+        except Exception as exc:
+            raise RuntimeError(f"OpenAIProvider request failed: {exc}") from exc
         return ModelResponse(text=response.output_text, model=self.model, provider=self.name)

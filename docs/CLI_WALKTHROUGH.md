@@ -116,6 +116,9 @@ prefix. Without a provider/key it exits cleanly:
 advise error: OPENAI_API_KEY is required for OpenAIProvider
 ```
 
+Malformed plan JSON is also reported as a CLI error rather than a traceback for
+both `orthoplan plan-summary` and `orthoplan advise`.
+
 ## Example plans
 
 Two synthetic plans ship under [../examples/](../examples/README.md):
