@@ -15,6 +15,12 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Phase 7: Examples, Contribution Guide, License Audit
+
+- Added synthetic example plans under `examples/`: a generator (`generate_examples.py`, fixed timestamp for stable output) plus checked-in `basic_plan.json` (trips the linear cap) and `segmented_plan.json` (per-tooth approximate frame, `rotation_renderable` true). `tests/test_examples.py` asserts they load, evaluate, and stay in sync with the generator.
+- Added `CONTRIBUTING.md`: setup, the exact CI checks, the non-negotiable safety rules (no patient data, no verdict language, deterministic rules own mechanics, geometry-not-biomechanics, UI never reimplements the engine), module ownership table, and dependency policy.
+- Added `docs/LICENSE_AUDIT.md`: per-dependency licenses verified from installed metadata/PyPI (all permissive: MIT/BSD/Apache-2.0/PSF; no copyleft), including the vendored Three.js (MIT) and the build-only Chromium. Linked from the docs index.
+
 ### 2026-06-04 - Phase 7: CI + Headless Viewer Smoke
 
 - Added `.github/workflows/ci.yml` with three jobs that gate every push and PR: Python (`pytest -q` + maintainability `--strict`, Python 3.12), JS (`node --test` in `ui/`), and an e2e Playwright job.
@@ -230,4 +236,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T20:06:34+00:00 - Commit Status
 
 - Commit subject: Phase 7: CI + headless 3D-viewer smoke test
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:13:39+00:00 - Commit Status
+
+- Commit subject: Phase 7 readiness: example plans, contribution guide, license audit
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T20:13:39+00:00 - Commit Status
+
+- Commit subject: Phase 7 readiness: example plans, contribution guide, license audit
 - Status: development history hook observed and recorded this commit workflow.

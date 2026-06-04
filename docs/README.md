@@ -9,12 +9,13 @@ This directory holds the project docs that should evolve with the product.
 - [UI_DESIGN.md](UI_DESIGN.md) - visualization and interface accuracy contract
 - [MAINTAINABILITY.md](MAINTAINABILITY.md) - composability, code hygiene, and file-size guardrails
 - [OPEN_SOURCE_REFERENCES.md](OPEN_SOURCE_REFERENCES.md) - open-source dependencies and proprietary reference boundaries
+- [LICENSE_AUDIT.md](LICENSE_AUDIT.md) - per-dependency license audit and compatibility
 - [SOURCES_AND_RECOMMENDED_SOFTWARE.md](SOURCES_AND_RECOMMENDED_SOFTWARE.md) - source ledger for monitoring upstream references over time
 - [NEXT_CONTEXT_IMPLEMENTATION_PLAN.md](NEXT_CONTEXT_IMPLEMENTATION_PLAN.md) - temporary phased implementation plan for the next coding window
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance
 - [Dev_history.md](Dev_history.md) - development history and commit-status notes
 
-The Phase 2 static UI prototype lives outside this directory at [../ui/](../ui/README.md).
+The UI prototype lives at [../ui/](../ui/README.md), synthetic example plans at [../examples/](../examples/README.md), and contributor setup in [../CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Maintenance Rule
 

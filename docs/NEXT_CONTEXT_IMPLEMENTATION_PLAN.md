@@ -321,8 +321,11 @@ Progress:
 
 - ~~add CI~~ done: `.github/workflows/ci.yml` runs Python (`pytest` + maintainability), JS (`node --test`), and a Playwright 3D-viewer smoke on every push/PR.
 - Packaging fixed (`pip install -e .` now resolves `orthoplan` via Hatchling); editable install + suite verified on a clean Python 3.11 venv.
+- ~~synthetic example plans~~ done: `examples/generate_examples.py` + checked-in `basic_plan.json` / `segmented_plan.json`, validated by `tests/test_examples.py`.
+- ~~contribution guide~~ done: `CONTRIBUTING.md`.
+- ~~dependency license audit~~ done: `docs/LICENSE_AUDIT.md`.
 
-Still open: synthetic example plans, CLI walkthrough, screenshots, contribution guide, dependency license audit.
+Still open: CLI walkthrough doc and screenshots / generated fixture images.
 
 Exit criteria:
 
