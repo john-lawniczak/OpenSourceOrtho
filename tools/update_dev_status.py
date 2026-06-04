@@ -23,13 +23,12 @@ def git_value(*args: str) -> str:
 
 def main() -> int:
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
-    commit = git_value("rev-parse", "--short", "HEAD")
     subject = git_value("log", "-1", "--pretty=%s")
 
     entry = (
-        f"\n### {now} - Commit {commit}\n\n"
+        f"\n### {now} - Commit Status\n\n"
         f"- Commit subject: {subject}\n"
-        "- Status: development history hook observed a commit from Claude Code.\n"
+        "- Status: development history hook observed and recorded this commit workflow.\n"
     )
 
     with DEV_HISTORY.open("a", encoding="utf-8") as handle:

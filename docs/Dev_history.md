@@ -48,17 +48,22 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Added `docs/README.md` as the documentation index.
 - Added `docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md` as a living source ledger for upstream references, recommended software, and monitoring cadence.
 
-### 2026-06-03T23:41:54+00:00 - Commit b2f2ce1
+### 2026-06-03T23:41:54+00:00 - Commit Status
 
 - Commit subject: Scaffold safety-first orthodontic planning toolkit
-- Status: development history hook observed a commit from Claude Code.
+- Status: development history hook observed and recorded this commit workflow.
 
-### 2026-06-04T00:53:12+00:00 - Commit ca2c1bb
+### 2026-06-04T00:53:12+00:00 - Commit Status
 
 - Commit subject: Add maintainability guardrails
-- Status: development history hook observed a commit from Claude Code.
+- Status: development history hook observed and recorded this commit workflow.
 
-### 2026-06-04T00:57:53+00:00 - Commit 64fac08
+### 2026-06-04T00:57:53+00:00 - Commit Status
 
 - Commit subject: Organize documentation under docs
-- Status: development history hook observed a commit from Claude Code.
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T00:58:58+00:00 - Commit Status
+
+- Commit subject: Fix dev history commit status format
+- Status: development history hook observed and recorded this commit workflow.
