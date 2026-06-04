@@ -39,6 +39,10 @@ The first workflow is simple:
 
 Read [ARCHITECTURE.md](ARCHITECTURE.md) for the plain-language system overview.
 
+## Maintainability
+
+The project should stay modular and composable as it grows. Follow [MAINTAINABILITY.md](MAINTAINABILITY.md) for file-size guardrails, directory ownership, review checklist, and the maintainability check script.
+
 ## Initial Build Order
 
 1. Safety and scope docs.

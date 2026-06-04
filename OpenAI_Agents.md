@@ -31,3 +31,17 @@ Default model: `gpt-5.5`, based on current OpenAI model guidance checked during 
 ## Commit Status
 
 When provider behavior changes, update this file and [Dev_history.md](Dev_history.md) in the same commit.
+
+## Maintainability Agent Guidance
+
+OpenAI agents working in this repository should preserve long-term composability.
+
+Before proposing or applying code changes, check:
+
+- whether the change belongs in `model`, `io`, `planning`, `evaluation`, or `viz`
+- whether provider-specific SDK code is isolated behind a provider adapter
+- whether deterministic rules remain separate from model-generated advisory text
+- whether new UI-facing code consumes explicit frame contracts instead of recalculating movement
+- whether files, functions, or classes are growing past the thresholds in [MAINTAINABILITY.md](MAINTAINABILITY.md)
+
+Prefer small, typed modules and focused tests. Do not create large multipurpose files that mix IO, planning, evaluation, and rendering concerns.

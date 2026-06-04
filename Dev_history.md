@@ -9,6 +9,7 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Core data model, finding vocabulary, and provider interfaces scaffolded.
 - Visual progress representation elevated to a primary product requirement.
 - Architecture, reference, and movement-cap docs added.
+- Maintainability and composability guardrails added.
 - First provider adapter target: OpenAI.
 - Second provider adapter target: Claude Code.
 
@@ -34,7 +35,19 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Added configurable `MovementCaps` and a deterministic movement-cap evaluator.
 - Improved commit-status hooks so generated dev-history notes are amended into the new commit instead of leaving the tree dirty.
 
+### 2026-06-04 - Maintainability Guardrails
+
+- Added `MAINTAINABILITY.md` to define module ownership, file-size thresholds, and review hygiene.
+- Added `tools/check_maintainability.py` for lightweight code-size and structure checks.
+- Added a Claude Code hook to run the maintainability check during commit workflows.
+- Added OpenAI agent guidance for composable code changes.
+
 ### 2026-06-03T23:41:54+00:00 - Commit b2f2ce1
 
 - Commit subject: Scaffold safety-first orthodontic planning toolkit
+- Status: development history hook observed a commit from Claude Code.
+
+### 2026-06-04T00:53:12+00:00 - Commit ca2c1bb
+
+- Commit subject: Add maintainability guardrails
 - Status: development history hook observed a commit from Claude Code.
