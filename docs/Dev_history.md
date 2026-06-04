@@ -344,3 +344,8 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 - Commit subject: Add print export readiness and user guidance
 - Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T21:13:35+00:00 - Commit Status
+
+- Commit subject: Document measurement lab and next readiness work
+- Status: development history hook observed and recorded this commit workflow.

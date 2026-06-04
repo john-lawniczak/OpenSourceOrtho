@@ -340,3 +340,312 @@ Target: parity with existing modules' rigor (positive + negative + edge cases).
   and enforced by tests.
 - All suites green in CI (Python, JS, e2e); maintainability `--strict` passes.
 - Docs (CLI walkthrough, SAFETY, plan, Dev_history) updated in the same change set.
+
+---
+
+# Companion Implementation Plan - Measurement Truth Lab
+
+> **Status:** partially seeded; needs full implementation.
+> **Owner module (proposed):** `orthoplan/validation/measurement_lab.py`.
+> **One-liner:** Build a reproducible benchmark harness that proves OpenSource Ortho
+> recovers known geometric measurements from synthetic STL fixtures, known transforms,
+> expected movement/cap outputs, and explicit tolerances.
+
+---
+
+## A. Problem & why this is the right companion feature
+
+The Acquisition Advisor improves data sufficiency, but the project also needs proof that
+the measurements it does make are correct. The current test suite has seed coverage for
+cumulative movement, movement caps, STL bounds, and PCA tolerance. That is not yet a full
+measurement-validation lab.
+
+The Measurement Truth Lab should become the project’s public evidence layer:
+
+- synthetic fixtures with known geometry and no patient data
+- known transforms applied to known tooth-like meshes
+- expected millimeter/degree outputs with tolerances
+- canonical reports that bind fixture input hashes to engine output
+- visual snapshots that prove schematic/mesh renderers show the expected movement
+
+This is the fastest path from "credible prototype" to "serious research tool."
+
+---
+
+## B. Core concept - fixture -> transform -> expected output
+
+Each lab case is a structured fixture:
+
+```python
+class MeasurementTruthCase(BaseModel):
+    id: str
+    description: str
+    fixture_kind: Literal["stl", "plan", "segmented_mesh"]
+    input_assets: list[MeshAsset]
+    plan: TreatmentPlan
+    expected_frames: list[ExpectedStageFrame]
+    expected_findings: list[ExpectedFinding]
+    tolerances: MeasurementTolerances
+```
+
+The harness runs the normal engine path:
+
+```
+case.plan -> evaluate_plan(plan)
+          -> build_stage_progress_frames(plan)
+          -> run_rules(plan)
+          -> optional handoff report
+```
+
+Then it compares actual outputs to the expected values. Nothing gets a special validation-only
+code path. The lab must use the same public API that the CLI/UI/reporting use.
+
+---
+
+## C. Fixture families
+
+### C1. Bounds and scale fixtures
+
+Purpose: prove STL import reads vertices, face count, bounding boxes, scale warnings, and
+unit-confirmation gates correctly.
+
+Cases:
+
+- ASCII STL with known min/max bounds
+- binary STL with known min/max bounds
+- degenerate triangle fixture
+- implausible mm span fixture
+- unverified-units fixture that suppresses cap evaluation
+- confirmed-units fixture that unlocks cap evaluation
+
+Expected outputs:
+
+- vertex count
+- face count
+- bounding box min/max
+- max span
+- mesh quality notes
+- `scale_confirmed`
+- movement-cap finding presence/absence
+
+### C2. Cumulative translation fixtures
+
+Purpose: prove staged translation is exact vector summation.
+
+Cases:
+
+- single tooth, multiple stages
+- multiple teeth with independent stage histories
+- positive/negative x/y/z movement
+- zero-delta stages
+- gapped UI stage inputs reindexed to contiguous model stages
+
+Expected outputs:
+
+- exact cumulative `translate_x_mm`, `translate_y_mm`, `translate_z_mm`
+- per-stage frame order
+- stable tooth sorting
+
+### C3. Rotation and coordinate-frame fixtures
+
+Purpose: prove rotation values are reported honestly and rendered only when eligible.
+
+Cases:
+
+- scan-local frame: rotation values present, `rotation_renderable=False`
+- approximate PCA frame: `tooth_frames` populated, `rotation_renderable=False`
+- trusted anatomical frame: `rotation_renderable=True`
+- global anatomical frame with mesiodistal/buccolingual/occlusogingival axes
+- mismatched coordinate frame rejected by the model
+
+Expected outputs:
+
+- rotation component totals
+- `rotation_renderable` flags
+- trusted vs approximate frame behavior
+- validation errors for unsafe frame mixing
+
+### C4. Segmentation linkage fixtures
+
+Purpose: prove mesh/tooth identity cannot drift.
+
+Cases:
+
+- delta references its own segmented mesh
+- delta references another tooth’s mesh -> validation error
+- duplicate segmented mesh content -> import error
+- duplicate mesh asset IDs -> validation error
+- segmentation present suppresses abstract-proxy data-gap finding
+
+Expected outputs:
+
+- validation errors
+- `segmented_tooth_values`
+- segmentation notices present/absent
+- artifact provenance
+
+### C5. Rule/cap fixtures
+
+Purpose: prove cap math and finding vocabulary remain stable.
+
+Cases:
+
+- horizontal Euclidean cap (`sqrt(x^2 + y^2)`)
+- vertical cap independent of horizontal movement
+- tip/torque angular cap
+- long-axis rotation cap
+- per-tooth cap override
+- unverified-units suppression and confirmed-units surfacing
+
+Expected outputs:
+
+- finding title/category/severity
+- cap reference
+- data gap and clinician question fields
+- numeric formatting tolerance
+
+### C6. Report reproducibility fixtures
+
+Purpose: prove lab cases can be handed off and replayed.
+
+Cases:
+
+- same plan -> same plan hash and evaluation hash
+- changed movement -> changed evaluation hash
+- reviewer metadata included
+- optional HMAC signature present and stable for fixed timestamp/key
+
+Expected outputs:
+
+- `plan.sha256`
+- `evaluation_sha256`
+- `report_sha256`
+- signature fields
+
+---
+
+## D. Data model and module layout
+
+Proposed files:
+
+- `orthoplan/validation/__init__.py`
+- `orthoplan/validation/measurement_lab.py`
+- `tests/fixtures/measurement_truth/` (generated or checked-in tiny synthetic STLs)
+- `tests/test_measurement_truth_lab.py`
+
+Suggested models:
+
+```python
+class MeasurementTolerances(BaseModel):
+    linear_mm: float = 1e-6
+    angular_deg: float = 1e-6
+    bounds_mm: float = 1e-6
+
+class ExpectedToothPose(BaseModel):
+    tooth: str
+    translate_x_mm: float = 0.0
+    translate_y_mm: float = 0.0
+    translate_z_mm: float = 0.0
+    rotate_tip_deg: float = 0.0
+    rotate_torque_deg: float = 0.0
+    rotate_rotation_deg: float = 0.0
+    rotation_renderable: bool = False
+
+class ExpectedStageFrame(BaseModel):
+    stage_index: int
+    poses: list[ExpectedToothPose]
+
+class MeasurementTruthResult(BaseModel):
+    case_id: str
+    passed: bool
+    failures: list[str]
+```
+
+The harness should be pure Python and dependency-light. If optional mesh libraries are used,
+cases must skip cleanly when the optional dependency is unavailable.
+
+---
+
+## E. CLI and report surface
+
+Add:
+
+```bash
+orthoplan measurement-lab
+orthoplan measurement-lab --case bounds-known-ascii
+orthoplan measurement-lab --json
+```
+
+Output should show:
+
+- case ID
+- fixture hashes
+- pass/fail status
+- tolerance used
+- exact mismatches
+
+Reports should optionally embed a compact `measurement_lab` section:
+
+```json
+{
+  "case_id": "golden-translation-001",
+  "passed": true,
+  "tolerances": {"linear_mm": 0.000001}
+}
+```
+
+---
+
+## F. UI / visual regression surface
+
+The UI does not need a full lab dashboard at first. Useful v1:
+
+- show measurement-lab status in docs and reports
+- add Playwright visual regression snapshots for:
+  - stage editing changes movement
+  - 2D canvas has expected non-background pixels
+  - 3D canvas mounts
+  - invalid input shows API rejection state
+  - acquisition panel renders
+
+Future v2:
+
+- a read-only "Validation" panel showing fixture pass/fail
+- downloadable validation report
+- visual overlays comparing expected vs actual stage positions
+
+---
+
+## G. Acceptance criteria
+
+1. At least one fixture in each family C1-C6.
+2. Fixture outputs compare against tolerances, not broad string snapshots.
+3. No patient data; every fixture is synthetic and documented.
+4. The lab uses public engine/API/report functions, not duplicated logic.
+5. Failing cases produce actionable mismatch messages.
+6. `pytest`, JS tests, maintainability, and e2e smoke/visual regression remain green.
+7. Docs describe the lab as evidence of geometric correctness, not clinical validity.
+
+---
+
+## H. Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Lab becomes a parallel engine | Use existing public API only; no duplicated movement logic. |
+| Synthetic fixtures overfit simple geometry | Include multiple fixture families and future real-world open datasets when legally safe. |
+| Tolerances hide real errors | Keep strict defaults; require explicit tolerance per case. |
+| Visual tests become flaky | Prefer deterministic camera/viewport and pixel-count assertions before full screenshot diffs. |
+| Users confuse measurement proof with clinical proof | Docs must say this proves geometric calculations only. |
+
+---
+
+## I. Next implementation sequence
+
+1. Create `orthoplan/validation/measurement_lab.py` with models, runner, and two cases:
+   known STL bounds + cumulative translation.
+2. Add CLI `orthoplan measurement-lab`.
+3. Add fixture family coverage C1-C6.
+4. Add report embedding for lab status.
+5. Add Playwright visual regression snapshots.
+6. Update docs and `TODO.md` when complete.
