@@ -1,4 +1,4 @@
-"""Reproducible clinician/research handoff reports.
+"""Reproducible research handoff reports.
 
 Reports are canonical JSON artifacts: they bind the plan payload to the engine
 version, evaluated findings, data-gap actions, and content hashes. The
@@ -69,8 +69,7 @@ def build_handoff_report(
             "reviewer": reviewer,
             "status": "generated",
             "note": (
-                "Generated report; clinician review and signature are separate "
-                "from engine output."
+                "Generated report; review status and signature are separate from engine output."
             ),
         },
     }

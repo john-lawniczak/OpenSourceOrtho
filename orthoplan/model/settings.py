@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 CAPS_REFERENCE = (
-    "Heuristic defaults from clear-aligner staging literature; clinician must configure."
+    "Heuristic defaults from clear-aligner staging literature; user-configurable."
 )
 
 
@@ -20,7 +20,7 @@ class AxisCaps(BaseModel):
     - ``angular_deg`` caps tip and torque.
     - ``rotation_deg`` caps long-axis rotation.
 
-    Defaults are conservative planning heuristics, not clinical clearance.
+    Defaults are planning heuristics, not clearance.
     """
 
     linear_mm: float = Field(default=0.25, gt=0)
@@ -62,7 +62,7 @@ class TimelineSettings(BaseModel):
     """Inputs for the arithmetic timeline projection.
 
     Only inputs are stored. Duration is computed dynamically (see
-    planning.timeline) so a clinical-looking estimate is never persisted.
+    planning.timeline) so an outcome-looking estimate is never persisted.
     """
 
     wear_interval_days: int = Field(default=14, gt=0)
@@ -72,19 +72,19 @@ class PrintExportSettings(BaseModel):
     """Requested 3D-print/thermoforming handoff settings.
 
     This stores export intent and process metadata only. It does not make a plan
-    clinically approved or manufacture-ready.
+    approved, safe, or manufacture-ready.
     """
 
     enabled: bool = False
     export_format: Literal["stl", "3mf"] = "stl"
     delivery_email: str | None = None
     model_material: str = "validated dental model resin"
-    thermoforming_material: str = "clinician-selected aligner sheet material"
+    thermoforming_material: str = "user-selected aligner sheet material"
     safety_acknowledged: bool = False
     post_processing_notes: str = (
         "Cure and clean printed models per material instructions; remove supports and "
         "smooth model artifacts before thermoforming. Do not alter aligner plastic unless "
-        "the material and clinical process explicitly allow it."
+        "the material instructions and chosen process explicitly allow it."
     )
 
     @field_validator("delivery_email")

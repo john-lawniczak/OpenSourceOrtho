@@ -76,15 +76,15 @@ Plan: Synthetic example - basic staged plan (example-basic)
 Numbering: FDI  Frame: scan-local
 Stages: 2  Scans: 0
 Scale confirmed: True
-Timeline projection: 28 days (~4.0 weeks) at 14-day wear. Projection excludes refinements, compliance variation, clinical pauses, and clinician-directed changes.
-Data gaps: roots unavailable, CBCT unavailable, periodontal status unavailable, occlusion scan unavailable, clinician notes unavailable
+Timeline projection: 28 days (~4.0 weeks) at 14-day wear. Projection excludes refinements, compliance variation, pauses, and user-directed changes.
+Data gaps: roots unavailable, CBCT unavailable, periodontal status unavailable, occlusion scan unavailable, treatment notes unavailable
 Findings: 2
   - WARNING: Stage 1 exceeds configured linear cap
   - NOTICE: Movement planned without per-tooth segmentation
 ```
 
 The same deterministic rules run here, in the UI (`/api/evaluate`), and in tests
-- there is one engine. Timeline is an arithmetic projection, never a clinical
+- there is one engine. Timeline is an arithmetic projection, never a completion
 estimate, and always carries its caveat.
 
 ## 4. Serve the UI
@@ -105,8 +105,7 @@ orthoplan report examples/basic_plan.json --reviewer "Dr. Example" --out /tmp/ba
 The report is deterministic JSON with the engine version, canonical plan hash,
 stable evaluation hash, input metadata, findings, data-gap actions, timeline,
 progress frames, review metadata, and a report hash. If `--signing-key-env` is
-provided, the report includes an HMAC-SHA256 signature over the report hash. It
-does not include mesh bytes or imply clinical approval.
+provided, the report includes an HMAC-SHA256 signature over the report hash.
 
 ## 6. Acquisition advisor
 
@@ -119,7 +118,28 @@ findings would clear, which currently suppressed checks would run, and which
 data-gap entries would close. This toggles availability only; it predicts
 nothing about what newly acquired data would show.
 
-## 7. Optional model advisory
+## 7. Measurement Truth Lab
+
+```bash
+orthoplan measurement-lab
+orthoplan measurement-lab --case cumulative-translation --json
+```
+
+Runs the built-in synthetic validation cases through the same public engine paths
+used by the CLI, API, reporting, and visualization frame contracts. Failures print
+the exact expected-vs-actual mismatch.
+
+## 8. Print package export
+
+```bash
+orthoplan print-package examples/basic_plan.json --out print-output --zip --email-draft
+```
+
+Writes stage proxy STL files, a deterministic manifest, and optional zip/email
+draft. Generated files are informational outputs from the supplied plan data and
+physical use is the user's own responsibility and risk.
+
+## 9. Optional model advisory
 
 The advisory layer is **off by default**. It runs only when you ask for it and a
 provider is configured:

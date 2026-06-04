@@ -21,7 +21,7 @@ from orthoplan.model.plan import TreatmentPlan, UploadedScan
 
 ACQUISITION_CAVEAT = (
     "This estimates what the deterministic engine could assess if data were available. "
-    "It is not a clinical recommendation and predicts nothing about what the data would show."
+    "It is not a treatment recommendation and predicts nothing about what the data would show."
 )
 
 SEVERITY_WEIGHT = {"warning": 3.0, "notice": 2.0, "info": 1.0}
@@ -91,7 +91,7 @@ _MODALITIES = (
     _Modality(
         "cbct",
         "CBCT (3D root/bone imaging)",
-        "Acquire CBCT or equivalent 3D root/bone imaging when clinically indicated.",
+        "Acquire CBCT or equivalent 3D root/bone imaging when it is part of the chosen records.",
         lambda p: not p.data.cbct,
         lambda p: _with_data(p, cbct=True),
     ),
@@ -118,8 +118,8 @@ _MODALITIES = (
     ),
     _Modality(
         "photos",
-        "Clinical photos",
-        "Attach clinical photos for human review context.",
+        "Photos",
+        "Attach photos for human review context.",
         lambda p: not p.data.photos,
         lambda p: _with_data(p, photos=True),
     ),
@@ -132,8 +132,8 @@ _MODALITIES = (
     ),
     _Modality(
         "clinician_notes",
-        "Clinician notes",
-        "Attach clinician notes, treatment goals, or the explicit review question.",
+        "Treatment notes",
+        "Attach treatment notes, goals, or the explicit review question.",
         lambda p: not p.data.clinician_notes,
         lambda p: _with_data(p, clinician_notes=True),
     ),

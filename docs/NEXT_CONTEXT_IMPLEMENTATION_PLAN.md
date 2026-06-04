@@ -8,7 +8,7 @@ Build OpenSource Ortho into a safety-boundary-first, visually accurate, composab
 
 The product should let a user upload an STL intraoral scan, create or inspect a staged `TreatmentPlan`, configure movement caps, view data gaps, and scrub through estimated tooth movement in a modern, straightforward UI.
 
-The system must never imply clinical approval, diagnosis, treatment suitability, or root/bone safety from STL surface data alone.
+The system must never imply approval, diagnosis, treatment suitability, or root/bone safety from STL surface data alone.
 
 ## Long Strategy
 
@@ -134,7 +134,7 @@ First UI screens:
    - clear safety/data limitation note
 
 2. Data Availability
-   - toggles for intraoral scan, segmented teeth, roots, CBCT, periodontal status, occlusion scan, photos, radiographs, clinician notes
+   - toggles for intraoral scan, segmented teeth, roots, CBCT, periodontal status, occlusion scan, photos, radiographs, treatment notes
    - visible explanation that disabled data cannot be inferred
 
 3. Movement Settings
@@ -248,7 +248,7 @@ Exit criteria:
 
 - rules run without any model provider
 - findings are stable and testable
-- warning findings include data gap and clinician question
+- warning findings include data gap and follow-up question
 
 ### Phase 5 - Model Advisory Layer
 
@@ -415,7 +415,7 @@ Data availability controls:
 - occlusion scan
 - photos
 - radiographs
-- clinician notes
+- treatment notes
 
 Timeline display:
 

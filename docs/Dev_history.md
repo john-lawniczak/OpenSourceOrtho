@@ -17,7 +17,7 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ### 2026-06-04 - Print Export, How-To, and LLM Review Guidance
 
-- Added `PrintExportSettings` to the treatment settings model and `orthoplan.printing` readiness output for clinician-supervised model printing/thermoforming handoff metadata.
+- Added `PrintExportSettings` to the treatment settings model and `orthoplan.printing` readiness output for user-directed model printing/thermoforming handoff metadata.
 - Exposed `print_export` in API evaluation output and the UI review panel; the UI now includes print-export settings and a first-user Getting Started panel.
 - Added root `HOW_TO.md` with workflow, printing/material boundaries, and commands, plus `docs/LLM_PROMPTS.md` with safety-framed optional LLM review prompts.
 - Updated architecture and safety docs for print/manufacturing boundaries and optional parallel LLM/sub-agent review.
@@ -108,14 +108,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 - Added `orthoplan/api.py` (`evaluate_plan`/`evaluate_plan_payload`): the single, pure, never-raising evaluation entry point returning lint-gated findings, data gaps, the timeline projection, and `StageProgressFrame` data; validation errors are returned as data.
 - Added `orthoplan/server.py`, a localhost stdlib dev server that serves `ui/` and exposes `POST /api/evaluate` (binds 127.0.0.1, caps body size, refuses path traversal), plus an `orthoplan serve` CLI subcommand.
-- Rewired the UI to consume the engine: removed the JavaScript reimplementations of findings/data-gaps/cumulative poses; the canvas now renders the engine's frames, findings show their data gap and clinician question, and an "engine offline" state replaces any silent fallback.
+- Rewired the UI to consume the engine: removed the JavaScript reimplementations of findings/data-gaps/cumulative poses; the canvas now renders the engine's frames, findings show their data gap and follow-up question, and an "engine offline" state replaces any silent fallback.
 - Added `tests/test_api.py` (valid output, safety fields, invalid-FDI and non-contiguous-stage errors, scale gate). 46 tests; maintainability passes.
 
 ### 2026-06-03 - Post-Implementation Audit Fixes
 
 - Hardened mesh-linkage validation: a `ToothDelta` may now only reference the mesh segmented to its OWN tooth (prevents moving another tooth's geometry), and duplicate mesh asset ids across scans/mesh_assets are rejected.
 - UI prototype: escaped all dynamic `innerHTML` injection (file name, tooth, gaps, findings) to close an XSS vector; reindexed exported stages to contiguous 0..n-1 so UI output always satisfies the Python plan contract; hardened numeric inputs against `NaN`.
-- UI prototype: added safety caveats by the viewer (translation-only, rotation not rendered, crown-centroid pivot is a visualization assumption) and by Findings (observational, requires clinician review).
+- UI prototype: added safety caveats by the viewer (translation-only, rotation not rendered, crown-centroid pivot is a visualization assumption) and by Findings (observational, interpret against listed data gaps).
 - Added regression tests for wrong-tooth mesh references and duplicate asset ids (41 tests; maintainability passes).
 
 ### 2026-06-03 - Scaffold
@@ -348,4 +348,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T21:13:35+00:00 - Commit Status
 
 - Commit subject: Document measurement lab and next readiness work
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T21:29:50+00:00 - Commit Status
+
+- Commit subject: Add trust and measurement readiness features
 - Status: development history hook observed and recorded this commit workflow.

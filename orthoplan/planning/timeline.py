@@ -1,6 +1,6 @@
 """Arithmetic timeline projection.
 
-This is deliberately not a clinical estimate. It multiplies the stage count by
+This is deliberately not a completion estimate. It multiplies the stage count by
 the configured wear interval and reports the result with a standing caveat. No
 duration is stored on the plan; it is computed on demand from inputs only.
 """
@@ -12,8 +12,8 @@ from pydantic import BaseModel
 from orthoplan.model.plan import TreatmentPlan
 
 PROJECTION_CAVEAT = (
-    "Projection excludes refinements, compliance variation, clinical pauses, "
-    "and clinician-directed changes."
+    "Projection excludes refinements, compliance variation, pauses, "
+    "and user-directed changes."
 )
 
 

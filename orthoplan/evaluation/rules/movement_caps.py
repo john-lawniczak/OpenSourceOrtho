@@ -15,8 +15,8 @@ from orthoplan.model.plan import ToothDelta
 from orthoplan.model.settings import AxisCaps
 
 _CLINICIAN_QUESTION = (
-    "Does the treating clinician want to adjust staging, attachments, IPR, "
-    "or require additional imaging before relying on this movement proposal?"
+    "Should staging, attachments, IPR, or additional imaging be considered before "
+    "relying on this movement proposal?"
 )
 
 
@@ -117,6 +117,6 @@ def _scale_unconfirmed_notice() -> Finding:
                 "to enable cap evaluation."
             ),
             data_gap="Scan units are unverified; declared geometry scale cannot be trusted.",
-            clinician_question="Has the treating clinician confirmed the scan units and scale?",
+            clinician_question="Have the scan units and scale been confirmed?",
         )
     )

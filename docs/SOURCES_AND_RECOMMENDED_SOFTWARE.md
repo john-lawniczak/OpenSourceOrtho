@@ -6,7 +6,7 @@ Last recorded source review: 2026-06-04.
 
 ## How To Use This File
 
-- Recheck sources before adopting a library, model, dataset, workflow, or clinical heuristic.
+- Recheck sources before adopting a library, model, dataset, workflow, or treatment heuristic.
 - Treat commercial products as references only unless a clear permissive license exists.
 - Record the date reviewed when a source affects implementation.
 - Watch for license changes, deprecations, regulatory notes, model-weight restrictions, and new open-source alternatives.
@@ -57,7 +57,7 @@ PyVista / VTK
 SlicerCMF
 
 - Use as a dental/craniofacial workflow reference.
-- Study interaction patterns and data flow, not proprietary clinical claims.
+- Study interaction patterns and data flow, not proprietary treatment claims.
 
 pydicom
 

@@ -77,8 +77,8 @@ def evaluate_root_sensitive_movement(plan: TreatmentPlan) -> list[Finding]:
                 ),
                 data_gap="Root and bone position are unavailable (no roots/CBCT).",
                 clinician_question=(
-                    "Does the treating clinician want root/bone imaging (e.g. CBCT) before "
-                    "relying on these tip, torque, or vertical movements?"
+                    "Should root/bone imaging (e.g. CBCT) be available before relying on "
+                    "these tip, torque, or vertical movements?"
                 ),
             )
         )

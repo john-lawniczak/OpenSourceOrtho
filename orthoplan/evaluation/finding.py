@@ -106,7 +106,7 @@ def lint_finding(finding: Finding) -> Finding:
         if not finding.data_gap:
             raise FindingLintError("warning findings must include a data gap")
         if not finding.clinician_question:
-            raise FindingLintError("warning findings must include a clinician question")
+            raise FindingLintError("warning findings must include a follow-up question")
 
     if finding.category == FindingCategory.MECHANICS and not finding.reference:
         raise FindingLintError(

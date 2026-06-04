@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from orthoplan.model import (
@@ -14,6 +16,7 @@ from orthoplan.model import (
     UploadedScan,
 )
 from orthoplan.printing import build_print_export_status
+from orthoplan.printing import export_print_package
 
 
 def _plan(settings: TreatmentSettings) -> TreatmentPlan:
@@ -58,9 +61,32 @@ def test_print_export_status_becomes_ready_with_confirmed_inputs() -> None:
     assert status.ready is True
     assert status.delivery_email == "user@example.com"
     assert status.artifacts[0].filename == "print-plan-stage-00-model.stl"
-    assert "clinician-supervised" in status.caveat
+    assert "user's own responsibility" in status.caveat
 
 
 def test_print_export_email_validation_is_basic_but_enforced() -> None:
     with pytest.raises(ValueError, match="email"):
         PrintExportSettings(delivery_email="not-an-address")
+
+
+def test_export_print_package_writes_stl_manifest_zip_and_email(tmp_path) -> None:
+    settings = TreatmentSettings(
+        print_export=PrintExportSettings(
+            enabled=True,
+            safety_acknowledged=True,
+            delivery_email="user@example.com",
+        )
+    )
+
+    result = export_print_package(
+        _plan(settings),
+        tmp_path,
+        make_zip=True,
+        make_email_draft=True,
+    )
+
+    assert result.artifact_paths
+    assert result.artifact_paths[0].endswith(".stl")
+    assert "facet normal" in Path(result.artifact_paths[0]).read_text(encoding="utf-8")
+    assert result.zip_path and Path(result.zip_path).is_file()
+    assert result.email_draft_path and Path(result.email_draft_path).is_file()

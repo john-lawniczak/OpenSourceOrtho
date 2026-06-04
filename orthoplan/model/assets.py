@@ -4,8 +4,8 @@ Privacy posture (Phase 1):
 
 - Mesh bytes are NEVER stored in serialized plan JSON. Only redacted metadata
   and an optional relative/local reference are kept.
-- Absolute paths and parent-directory traversal are rejected, because clinical
-  export paths routinely embed patient names or DOB.
+- Absolute paths and parent-directory traversal are rejected, because file paths
+  can embed patient names or DOB.
 - STL files carry no units; units default to ``UNVERIFIED`` and must be
   confirmed by the user before cap evaluation runs.
 """

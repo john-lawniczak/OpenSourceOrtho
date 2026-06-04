@@ -9,15 +9,15 @@ from orthoplan.model.plan import TreatmentPlan
 
 BOUNDARY_PROMPT = """You are an advisory reviewer for OpenSource Ortho.
 
-You must not approve, clear, diagnose, or determine clinical safety.
+You must not approve, clear, diagnose, or determine safety.
 You may only provide observational, conditional findings under the supplied data limitations.
 Do not invent thresholds. Reference configured caps or cited literature only.
-Warnings must include a data gap and a clinician-facing question.
+Warnings must include a data gap and a follow-up question.
 """
 
 # Output contract injected into the system prompt. The schema, lint gate, and
 # the model's instructions all agree: no verdict language, no mechanics, and
-# warnings must carry a data gap and a clinician question.
+# warnings must carry a data gap and a follow-up question.
 ADVISORY_FORMAT = """Respond with ONLY a JSON object of this exact shape:
 
 {"findings": [
@@ -26,7 +26,7 @@ ADVISORY_FORMAT = """Respond with ONLY a JSON object of this exact shape:
    "title": "short title",
    "message": "observational, conditional statement",
    "data_gap": "what relevant data is missing (required for warnings)",
-   "clinician_question": "a question for the treating clinician (required for warnings)"}
+   "clinician_question": "a follow-up question (required for warnings)"}
 ]}
 
 Rules:

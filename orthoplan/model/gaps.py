@@ -26,7 +26,7 @@ class DataGapAction(BaseModel):
 
 
 def data_gaps(plan: TreatmentPlan) -> list[str]:
-    """Observational list of clinically relevant data the plan does not have."""
+    """Observational list of interpretation-relevant data the plan does not have."""
 
     data = plan.data
     gaps: list[str] = []
@@ -39,7 +39,7 @@ def data_gaps(plan: TreatmentPlan) -> list[str]:
     if not data.occlusion_scan:
         gaps.append("occlusion scan unavailable")
     if not data.clinician_notes:
-        gaps.append("clinician notes unavailable")
+        gaps.append("treatment notes unavailable")
     for scan in plan.scans:
         if note := bounding_box_sanity(scan.asset):
             gaps.append(note)
@@ -51,7 +51,7 @@ def data_gap_actions(plan: TreatmentPlan) -> list[DataGapAction]:
 
     These actions do not diagnose or decide treatment. They connect each data
     gap to the measurements or visualizations it limits, so callers can downgrade
-    features and hand clinicians concrete questions.
+    features and produce concrete follow-up questions.
     """
 
     data = plan.data
@@ -113,9 +113,9 @@ def _occlusion_action() -> DataGapAction:
 
 def _notes_action() -> DataGapAction:
     return DataGapAction(
-        gap="clinician notes unavailable",
-        impact="The engine has no treatment goals, contraindications, or clinician rationale.",
-        next_step="Attach clinician notes or explicitly document the review question.",
+        gap="treatment notes unavailable",
+        impact="The engine has no treatment goals, constraints, or documented rationale.",
+        next_step="Attach treatment notes or explicitly document the review question.",
         blocked_capabilities=["goal-aware review"],
     )
 

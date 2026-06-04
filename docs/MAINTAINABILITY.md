@@ -1,6 +1,6 @@
 # Maintainability and Composability
 
-OpenSource Ortho should stay modular enough that clinical-safety boundaries, mesh processing, planning logic, model adapters, and UI contracts can evolve independently.
+OpenSource Ortho should stay modular enough that safety boundaries, mesh processing, planning logic, model adapters, and UI contracts can evolve independently.
 
 ## Design Rules
 
@@ -46,7 +46,7 @@ Do not split files only to satisfy a number. Split when it improves names, owner
 `orthoplan/io/`
 
 - import/export adapters
-- no clinical rule decisions
+- no deterministic rule decisions
 - no model-provider calls
 
 `orthoplan/planning/`
@@ -66,7 +66,7 @@ Do not split files only to satisfy a number. Split when it improves names, owner
 
 - visualization data contracts and rendering adapters
 - should consume `TreatmentPlan` and `StageProgressFrame`
-- should not recalculate clinical policy
+- should not recalculate policy
 
 `tests/`
 
@@ -81,7 +81,7 @@ Before committing, ask:
 - Did this change keep safety, planning, IO, provider, and UI responsibilities separate?
 - Are movement units and coordinate frames explicit?
 - Did any model/provider code bypass deterministic linting?
-- Did any UI or docs imply clinical approval?
+- Did any UI or docs imply approval or readiness?
 - Did any file grow large enough that future edits will become harder?
 - Are tests focused on the behavior that could regress?
 
@@ -98,4 +98,3 @@ Use strict mode in CI or before large commits:
 ```bash
 python3 tools/check_maintainability.py --strict
 ```
-

@@ -20,10 +20,10 @@ The Acquisition Advisor computes the **marginal information value** of each
 missing modality by re-running the existing deterministic engine against a
 counterfactual plan in which that one gap is "filled," then diffing the result.
 It is decision support for *data acquisition* ("CBCT would let the engine assess
-3 currently-unassessable movements"), never a clinical recommendation.
+3 currently-unassessable movements"), never a treatment recommendation.
 
 This is high-leverage because it is:
-- **Deterministic & pure** — a function over `run_rules` + `data_gaps`; no model, no new clinical claims.
+- **Deterministic & pure** — a function over `run_rules` + `data_gaps`; no model, no new treatment claims.
 - **Accretive** — reuses the engine, the `DataAvailability` model, and the scale gate verbatim. New deterministic rules automatically participate.
 - **On-mission & safe-by-construction** — it advises which *data* to get; it never predicts what that data would show.
 
@@ -69,9 +69,9 @@ These are what keep the feature inside the project's boundary. Each maps to a te
    absence of this data" / "would become assessable," never "would be safe/acceptable."
 2. **No fabrication.** The counterfactual only flips *availability* (a boolean,
    or scan-units confirmed). It never invents movement values, geometry, or rule outcomes.
-3. **Acquisition advice, not clinical advice.** Output describes which data to
-   acquire and what the *engine* could then assess. It never tells a clinician
-   what to do clinically and never diagnoses.
+3. **Acquisition advice, not treatment advice.** Output describes which data to
+   acquire and what the *engine* could then assess. It never says what to do
+   with the data and never diagnoses.
 4. **Verdict-free.** All generated strings must pass the existing verdict-word
    check (`orthoplan.evaluation.finding._VERDICT_RE`). A test asserts this over
    every string the advisor can emit.
@@ -96,7 +96,7 @@ satisfied is not advice).
 | `segmented_teeth` | `data.segmented_teeth = True` | `not data.segmented_teeth` |
 | `photos` | `data.photos = True` | `not data.photos` |
 | `radiographs` | `data.radiographs = True` | `not data.radiographs` |
-| `clinician_notes` | `data.clinician_notes = True` | `not data.clinician_notes` |
+| `treatment_notes` | treatment-notes availability flag | treatment notes unavailable |
 | `scan_units_confirmed` | every `scan.asset.units = MeshUnits.MM` | plan has scans AND `not plan.scale_confirmed` |
 
 Notes:
@@ -130,7 +130,7 @@ class GapImpact(BaseModel):
     surfaces: list[FindingRef]        # findings unlocked by enabling a suppressed rule
     closes_data_gaps: list[str]       # data_gaps() entries removed
     unlocks_assessment: bool          # True if a previously-suppressed rule now runs
-    priority_score: float             # deterministic, heuristic ranking weight (NOT clinical priority)
+    priority_score: float             # deterministic, heuristic ranking weight (NOT treatment priority)
     note: str                         # caveat-bearing, verdict-free explanation
 
 class AcquisitionAdvice(BaseModel):
@@ -151,7 +151,7 @@ priority = sum(SEVERITY_WEIGHT[f.severity] for f in resolves)
          + sum(SEVERITY_WEIGHT[f.severity] for f in surfaces)
          + len(closes_data_gaps) * 0.5
 ```
-Documented as a ranking heuristic for "what changes the most," **not** a clinical
+Documented as a ranking heuristic for "what changes the most," **not** a treatment
 priority. Weights live as module constants so they are inspectable/configurable.
 
 ---
@@ -189,7 +189,7 @@ cheap, so it is negligible.
   `TreatmentPlan` (`model.plan`). No import cycle (evaluation already sits above model;
   nothing imports `acquisition`).
 - **Export:** add the public names to `orthoplan/evaluation/__init__.py`.
-- **No new clinical claims**, so this is NOT a `Finding`/rule and does not emit
+- **No new treatment claims**, so this is NOT a `Finding`/rule and does not emit
   through `lint_finding` — but its strings are verdict-checked by test (§3.4).
 - Keep the module under the 250-line maintainability target; split toggles into a
   small `_MODALITIES` table if it grows.
@@ -205,7 +205,7 @@ baseline, then each modality ranked, e.g.:
 ```
 Acquisition advisor for: Synthetic example - basic staged plan
 Baseline: 2 findings, 5 data gaps. (This estimates what the ENGINE could assess
-if data were available; it is not a clinical recommendation and predicts nothing
+if data were available; it is not a treatment recommendation and predicts nothing
 about what the data would show.)
 
 1. CBCT (3D root/bone imaging)  [score 3.0]
@@ -266,7 +266,7 @@ Each milestone is independently shippable, CI-gated, and committed separately.
 - **No-dependency gap:** filling `photos` closes the (none, since photos isn't in
   `data_gaps`) — confirm it reports "no deterministic finding depends on it" and
   only closes a gap entry if one exists. (Audit which flags appear in `data_gaps`;
-  `periodontal_status`/`occlusion_scan`/`clinician_notes` do, `photos`/`radiographs` do not.)
+  `periodontal_status`/`occlusion_scan`/treatment notes do, `photos`/`radiographs` do not.)
 - **Applicability:** already-available modalities are absent from `impacts`;
   `scan_units_confirmed` absent when there are no scans or scale already confirmed.
 - **Determinism:** same plan → byte-identical `model_dump()`; ordering stable.
@@ -309,7 +309,7 @@ Target: parity with existing modules' rigor (positive + negative + edge cases).
 
 ## 13. Non-goals (v1)
 
-- No diagnosis, no clinical prioritization, no prediction of what acquired data shows.
+- No diagnosis, no treatment prioritization, no prediction of what acquired data shows.
 - No multi-gap combinatorial bundles (single-modality marginal impact only).
 - No cost/time/$ modeling of acquisition.
 - No model/LLM involvement (deterministic only; the LLM layer may later *explain*
@@ -345,7 +345,7 @@ Target: parity with existing modules' rigor (positive + negative + edge cases).
 
 # Companion Implementation Plan - Measurement Truth Lab
 
-> **Status:** partially seeded; needs full implementation.
+> **Status:** v1 implemented; expand fixture depth and visual/e2e coverage next.
 > **Owner module (proposed):** `orthoplan/validation/measurement_lab.py`.
 > **One-liner:** Build a reproducible benchmark harness that proves OpenSource Ortho
 > recovers known geometric measurements from synthetic STL fixtures, known transforms,
@@ -501,7 +501,7 @@ Expected outputs:
 
 - finding title/category/severity
 - cap reference
-- data gap and clinician question fields
+- data gap and follow-up question fields
 - numeric formatting tolerance
 
 ### C6. Report reproducibility fixtures
@@ -624,7 +624,7 @@ Future v2:
 4. The lab uses public engine/API/report functions, not duplicated logic.
 5. Failing cases produce actionable mismatch messages.
 6. `pytest`, JS tests, maintainability, and e2e smoke/visual regression remain green.
-7. Docs describe the lab as evidence of geometric correctness, not clinical validity.
+7. Docs describe the lab as evidence of geometric correctness, not real-world validity.
 
 ---
 
@@ -636,7 +636,7 @@ Future v2:
 | Synthetic fixtures overfit simple geometry | Include multiple fixture families and future real-world open datasets when legally safe. |
 | Tolerances hide real errors | Keep strict defaults; require explicit tolerance per case. |
 | Visual tests become flaky | Prefer deterministic camera/viewport and pixel-count assertions before full screenshot diffs. |
-| Users confuse measurement proof with clinical proof | Docs must say this proves geometric calculations only. |
+| Users confuse measurement proof with overall proof | Docs must say this proves geometric calculations only. |
 
 ---
 

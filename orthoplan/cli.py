@@ -4,7 +4,14 @@ import argparse
 import os
 import sys
 
+from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.cli_packages import (
+    add_measurement_lab_parser,
+    add_print_package_parser,
+    cmd_measurement_lab,
+    cmd_print_package,
+)
 from orthoplan.io.serialization import plan_to_json, read_plan, write_plan
 from orthoplan.io.stl_import import inspect_stl
 from orthoplan.model.assets import MeshProvenance, bounding_box_sanity
@@ -60,6 +67,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     acquisition = sub.add_parser("acquisition", help="rank missing data by deterministic impact")
     acquisition.add_argument("path")
+    acquisition.add_argument("--json", action="store_true", help="emit acquisition advice as JSON")
+
+    add_print_package_parser(sub)
+    add_measurement_lab_parser(sub)
     return parser
 
 
@@ -99,6 +110,7 @@ def _cmd_plan_summary(args: argparse.Namespace) -> int:
         return 2
     projection = project_timeline(plan)
     findings = run_rules(plan)
+    advice = acquisition_advice(plan)
     print(f"Plan: {plan.title} ({plan.id})")
     print(f"Numbering: {plan.numbering_system}  Frame: {plan.coordinate_frame.name}")
     print(f"Stages: {len(plan.stages)}  Scans: {len(plan.scans)}")
@@ -109,6 +121,7 @@ def _cmd_plan_summary(args: argparse.Namespace) -> int:
         f"{projection.wear_interval_days}-day wear. {projection.caveat}"
     )
     print(f"Data gaps: {', '.join(data_gaps(plan)) or 'none declared'}")
+    print(f"Acquisition advice: {len(advice.impacts)} applicable item(s)")
     print(f"Findings: {len(findings)}")
     for finding in findings:
         print(f"  - {finding.render().splitlines()[0]}")
@@ -190,6 +203,9 @@ def _cmd_acquisition(args: argparse.Namespace) -> int:
         return 2
 
     advice = acquisition_advice(plan)
+    if args.json:
+        print(advice.model_dump_json(indent=2))
+        return 0
     print(f"Acquisition advisor for: {plan.title} ({plan.id})")
     print(
         f"Baseline: {advice.baseline_finding_count} finding(s), "
@@ -224,6 +240,8 @@ _COMMANDS = {
     "advise": _cmd_advise,
     "report": _cmd_report,
     "acquisition": _cmd_acquisition,
+    "print-package": cmd_print_package,
+    "measurement-lab": cmd_measurement_lab,
 }
 
 

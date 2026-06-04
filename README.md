@@ -10,9 +10,9 @@ New users can start with [HOW_TO.md](HOW_TO.md).
 
 The first static UI prototype lives in [ui/](ui/README.md).
 
-It is not an Invisalign clone, medical device, diagnostic system, treatment approval system, or substitute for a licensed clinician. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, and advisory evaluation under explicitly declared data limitations.
+It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
 
-Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying clinical approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
+Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
 
 ## Boundary
 
@@ -21,7 +21,7 @@ The software may:
 - represent proposed tooth movements and staged aligner-style plans
 - import, export, and visualize dental mesh data
 - check internal consistency against user-configured movement caps
-- surface observational findings, data gaps, and clinician handoff questions
+- surface observational findings, data gaps, and handoff questions
 - rank missing data by deterministic acquisition impact
 - run local or remote model providers for advisory review
 - generate reproducible handoff reports tying inputs to engine version and findings
@@ -29,10 +29,10 @@ The software may:
 The software may not:
 
 - diagnose disease or malocclusion
-- decide whether treatment is clinically safe, suitable, approved, or complete
+- decide whether treatment is safe, suitable, approved, or complete
 - infer unseen anatomy such as roots, bone, periodontal status, or CBCT findings
-- invent clinical thresholds
-- replace clinician review, consent, supervision, or regulatory obligations
+- invent unsupported thresholds
+- replace user judgment, consent, responsibility, or regulatory obligations
 
 See [docs/SAFETY.md](docs/SAFETY.md) before using or contributing.
 
@@ -43,7 +43,7 @@ The first workflow is simple:
 1. Upload an STL intraoral scan.
 2. Segment the arch into individual tooth meshes.
 3. Create a staged `TreatmentPlan` with per-tooth movement deltas.
-4. Check each stage against clinician-configured movement caps.
+4. Check each stage against user-configured movement caps.
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 

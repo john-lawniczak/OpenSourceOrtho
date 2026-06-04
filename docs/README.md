@@ -4,7 +4,7 @@ This directory holds the project docs that should evolve with the product.
 
 ## Core Docs
 
-- [SAFETY.md](SAFETY.md) - capability boundary and clinical-safety language
+- [SAFETY.md](SAFETY.md) - capability boundary and safety language
 - [ARCHITECTURE.md](ARCHITECTURE.md) - plain-language system flow and technical layout
 - [UI_DESIGN.md](UI_DESIGN.md) - visualization and interface accuracy contract
 - [MAINTAINABILITY.md](MAINTAINABILITY.md) - composability, code hygiene, and file-size guardrails

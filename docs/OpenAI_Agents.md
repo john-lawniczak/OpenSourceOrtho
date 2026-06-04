@@ -4,7 +4,7 @@ This document tracks how OpenSource Ortho should use OpenAI-compatible agentic m
 
 ## Role
 
-OpenAI-backed agents are advisory reviewers only. They may summarize plan data, identify configured-rule findings already present in the report, and suggest clinician questions under declared data limitations.
+OpenAI-backed agents are advisory reviewers only. They may summarize plan data, identify configured-rule findings already present in the report, and suggest follow-up questions under declared data limitations.
 
 They must not:
 
@@ -33,7 +33,7 @@ schema. The provider's text is parsed into `AdvisoryResponse` (markdown fences
 tolerated), each item becomes a `Finding(provenance=MODEL)`, and the batch goes
 through `quarantine_findings` - the same `lint_finding` gate as deterministic
 findings. Unparseable output, verdict language, model-sourced `mechanics`
-findings, and warnings missing a data gap or clinician question are rejected as
+findings, and warnings missing a data gap or follow-up question are rejected as
 data (`AdvisoryResult.parse_error` / `.rejected`), never raised. Accepted
 findings always render with the `[ADVISORY - unverified]` prefix.
 
@@ -45,7 +45,7 @@ The adapter is intentionally narrow:
 
 - accepts a provider-neutral `ModelRequest`
 - returns provider-neutral `ModelResponse`
-- does not own clinical policy
+- does not own deterministic policy
 - does not bypass `lint_finding()`
 - converts SDK/CLI execution failures into `RuntimeError` so `orthoplan advise`
   exits cleanly instead of surfacing provider tracebacks

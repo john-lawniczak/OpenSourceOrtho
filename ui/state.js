@@ -31,7 +31,7 @@ export const state = {
     export_format: "stl",
     delivery_email: "",
     model_material: "validated dental model resin",
-    thermoforming_material: "clinician-selected aligner sheet material",
+    thermoforming_material: "user-selected aligner sheet material",
     safety_acknowledged: false,
   },
   rows: [
@@ -49,7 +49,7 @@ export const availabilityLabels = {
   occlusion_scan: "Occlusion scan",
   photos: "Photos",
   radiographs: "Radiographs",
-  clinician_notes: "Clinician notes",
+  clinician_notes: "Treatment notes",
 };
 
 export const toothPositions = {

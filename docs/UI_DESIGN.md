@@ -1,6 +1,6 @@
 # UI and Visualization Design
 
-Visual representation is a primary product requirement for OpenSource Ortho. The interface must help users understand proposed tooth movement accurately without implying clinical approval.
+Visual representation is a primary product requirement for OpenSource Ortho. The interface must help users understand proposed tooth movement accurately without implying approval.
 
 ## Visualization Contract
 
@@ -11,8 +11,8 @@ The UI must show what the system actually knows:
 - show current, planned, and staged positions in the same coordinate frame
 - make cumulative movement visible across stages
 - expose units for translations and rotations
-- show data gaps near the affected visualization, especially missing roots, CBCT, occlusion, periodontal status, and clinician notes
-- avoid colors or badges that imply safe, approved, cleared, or clinically acceptable
+- show data gaps near the affected visualization, especially missing roots, CBCT, occlusion, periodontal status, and treatment notes
+- avoid colors or badges that imply safe, approved, cleared, or acceptable
 
 ## Core Views
 
@@ -29,7 +29,7 @@ The first production-grade UI should include:
 
 ## Accuracy Requirements
 
-The viewer must not silently approximate away clinically relevant uncertainty.
+The viewer must not silently approximate away measurement-relevant uncertainty.
 
 - Mesh transforms must be derived from the `TreatmentPlan` stage data.
 - Stage displays must use cumulative transforms, not just per-stage deltas.
@@ -56,6 +56,6 @@ Use a proven 3D stack for mesh display. Good candidates:
 
 - Python-first prototype: PyVista/VTK
 - Web UI: Three.js with explicit transform and measurement layers
-- Heavyweight clinical/research host: 3D Slicer extension
+- Heavyweight research host: 3D Slicer extension
 
 The data contract should live in Python first so every UI consumes the same stage-frame representation.

@@ -1,6 +1,6 @@
 # Architecture
 
-OpenSource Ortho is a Python-first planning and visualization toolkit. The first milestone is not a polished clinical product; it is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI.
+OpenSource Ortho is a Python-first planning and visualization toolkit. The first milestone is not a polished production product; it is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI.
 
 ## Simple Flow
 
@@ -8,11 +8,11 @@ OpenSource Ortho is a Python-first planning and visualization toolkit. The first
 2. The mesh is imported and labeled with provenance: patient-derived, imported, manual, model-generated, or synthetic.
 3. Teeth are segmented into individual tooth meshes. The first implementation should be manual or imported segmentation; machine learning can come later.
 4. A `TreatmentPlan` stores each stage. Each `Stage` contains `ToothDelta` values for individual teeth.
-5. The planning layer checks each stage against clinician-configured `MovementCaps`.
+5. The planning layer checks each stage against user-configured `MovementCaps`.
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
 7. The UI renders current, staged, and planned positions from those cumulative frames.
 8. Deterministic rules run first. Model providers such as OpenAI or Claude Code may add advisory findings, but all findings pass through `lint_finding()`.
-9. Optional print-export metadata records intended file format, delivery email, materials, safety acknowledgement, and export blockers for clinician-supervised model printing workflows.
+9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
 
 ## Language and Stack
 
@@ -74,7 +74,7 @@ the Python data contract but does not yet run backend STL inspection.
 
 `MovementCaps`
 
-- clinician-configurable per-stage caps held in an `AxisCaps` block (`default`)
+- user-configurable per-stage caps held in an `AxisCaps` block (`default`)
 - `per_tooth_overrides` is reserved so tooth-class-specific caps can be added later without changing the rule interface
 - horizontal `linear_mm` caps the Euclidean magnitude of x/y movement; `intrusion_extrusion_mm` caps vertical movement separately
 - default values are literature/vendor heuristics, not medical clearance
@@ -123,8 +123,8 @@ source before rotation can be rendered.
 engine version, canonical plan hash, stable evaluation hash, input metadata, findings,
 data-gap actions, timeline, progress frames, review metadata, and a report hash. It can also
 include an optional HMAC-SHA256 signature. It does not include mesh bytes. The goal is
-reproducible research/clinician review: the artifact ties inputs to engine behavior and makes
-provenance auditable without claiming clinical approval.
+reproducible review: the artifact ties inputs to engine behavior and makes provenance auditable
+without claiming approval.
 
 ## Print Export Architecture
 
@@ -133,10 +133,10 @@ delivery email, model material, thermoforming material, post-processing notes, a
 acknowledgement. `orthoplan.printing.build_print_export_status()` turns that intent into a
 readiness object with blockers and planned artifact filenames.
 
-Current scope is metadata/readiness only. The app does not yet generate final printable
-meshes, email files, or authorize aligner manufacturing. Future export code should live in a
-separate IO/printing adapter that consumes validated plan geometry and emits files plus hashes
-for the handoff report.
+`orthoplan print-package PLAN.json --out DIR` generates stage proxy STL files from the current
+plan frames, a manifest, an optional zip package, and an optional `.eml` email draft. These are
+objective geometry outputs from the supplied plan data. Material choice, printing,
+post-processing, and any physical use are the user's responsibility and risk.
 
 ## Acquisition Advisor
 
@@ -150,14 +150,14 @@ entries would close. It never predicts what the acquired data would show.
 
 Parallel LLM/sub-agent review can be useful as an optional second-opinion layer: one agent may
 summarize geometric consistency, another may inspect data gaps, another may review print/export
-readiness, and another may produce clinician questions. This is not necessary for the core
+readiness, and another may produce handoff questions. This is not necessary for the core
 application to be correct, because deterministic rules remain the source of truth. Any
 agent-generated output must enter as advisory text, pass the same lint/quarantine boundary, and
 must never suppress, overwrite, or weaken deterministic findings.
 
 ## Movement Settings
 
-Movement settings are guardrails, not clinical approval. Defaults should be conservative and configurable by the treating clinician.
+Movement settings are guardrails, not approval. Defaults are configurable.
 
 Initial heuristic defaults (`AxisCaps`):
 
@@ -168,4 +168,4 @@ Initial heuristic defaults (`AxisCaps`):
 
 These defaults are based on commonly cited clear-aligner staging ranges and should be treated as starting points for research tooling only. The software must never claim that a movement within these values is safe.
 
-Timeline is an arithmetic projection, not a clinical estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, clinical pauses, and clinician-directed changes.
+Timeline is an arithmetic projection, not an outcome estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, pauses, and user-directed changes.

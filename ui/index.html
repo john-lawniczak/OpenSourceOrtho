@@ -67,8 +67,8 @@
               <li>Upload or reference a surface STL and confirm units before using millimeter checks.</li>
               <li>Declare which records are available; missing data limits what the engine can assess.</li>
               <li>Enter staged tooth movement, then review findings, acquisition advice, and report/export status.</li>
-              <li>For physical workflows, print dental models only with validated materials and clinician supervision; aligner sheets are normally thermoformed over models, not simply printed and worn.</li>
-              <li>Use validated dental model resin and clinician-selected thermoforming sheets such as PETG, TPU/polyurethane, or EVA-family materials; clean, cure, remove supports, and smooth printed models per material instructions.</li>
+              <li>For physical workflows, use validated materials, confirmed scale, and calibrated equipment; aligner sheets are normally thermoformed over models, not simply printed and worn.</li>
+              <li>Use dental model resin and selected thermoforming sheets such as PETG, TPU/polyurethane, or EVA-family materials; clean, cure, remove supports, and smooth printed models per material instructions.</li>
             </ol>
           </div>
           <div class="upload-row">
@@ -112,7 +112,7 @@
         <section class="panel" id="panel-settings">
           <div class="panel-heading">
             <h2>Movement Settings</h2>
-            <p>Configurable heuristics, not clinical approval.</p>
+            <p>Configurable heuristics, not approval.</p>
           </div>
           <div class="field-grid">
             <label>Linear mm<input id="capLinear" type="number" min="0.01" step="0.01" value="0.25" /></label>
@@ -135,10 +135,10 @@
               </label>
               <label>Delivery email<input id="printEmail" placeholder="optional" /></label>
               <label>Model material<input id="modelMaterial" value="validated dental model resin" /></label>
-              <label>Aligner material<input id="thermoformingMaterial" value="clinician-selected aligner sheet material" /></label>
+              <label>Aligner material<input id="thermoformingMaterial" value="user-selected aligner sheet material" /></label>
             </div>
             <label class="toggle">
-              <span>I understand this is for clinician-supervised model printing/thermoforming, not authorization to manufacture or wear aligners.</span>
+              <span>I understand print/package output is informational and any physical use is my own responsibility and risk.</span>
               <input id="printSafety" type="checkbox" />
             </label>
           </div>
@@ -199,7 +199,7 @@
             </section>
             <aside class="review-side">
               <h2>Findings</h2>
-              <p class="findings-caveat">Observational cap checks only. Each warrants clinician review against the listed data gaps; nothing here indicates a plan is safe, approved, or clinically acceptable.</p>
+              <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>
               <h2>Print Export</h2>
               <div id="printExportStatus" class="status-block"></div>

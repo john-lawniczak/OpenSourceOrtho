@@ -33,7 +33,7 @@ The UI does **not** compute findings, data gaps, the timeline, or cumulative
 tooth poses itself. On every edit it sends the plan-shaped JSON to
 `POST /api/evaluate`, and renders exactly what `orthoplan.api.evaluate_plan`
 returns - the same deterministic rules, lint-gated findings (with their data
-gap and clinician question), data-gap actions, timeline projection, and
+gap and follow-up question), data-gap actions, timeline projection, and
 acquisition advice, timeline projection, and `StageProgressFrame` data used
 everywhere else. Cumulative movement in the canvas comes from the engine's
 frames, and rotation is shown only as tabular values unless the engine receives
@@ -68,10 +68,10 @@ with a matching pinned pair.
 ## Print Export
 
 The Settings step has print-export fields for format, delivery email, dental model
-material, thermoforming material, and safety acknowledgement. The Review step renders
-backend readiness status from `print_export`. This is metadata for clinician-supervised
-model printing/thermoforming workflows only; the UI does not generate final printable
-meshes or authorize aligner manufacturing.
+material, thermoforming material, and acknowledgement. The Review step renders backend
+readiness status from `print_export`. `orthoplan print-package` generates stage proxy STL
+files, a manifest, optional zip package, and optional email draft from the supplied plan
+data.
 
 ## Tests
 

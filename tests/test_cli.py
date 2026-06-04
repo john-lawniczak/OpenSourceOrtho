@@ -127,6 +127,23 @@ def test_cli_acquisition_prints_ranked_advice(monkeypatch, capsys, tmp_path: Pat
     assert "Root data" in output
 
 
+def test_cli_acquisition_json(monkeypatch, capsys, tmp_path: Path) -> None:
+    plan_path = tmp_path / "plan.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["orthoplan", "new-plan", "--id", "acq-json", "--out", str(plan_path)],
+    )
+    assert cli.main() == 0
+    capsys.readouterr()
+
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "acquisition", str(plan_path), "--json"])
+    assert cli.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["impacts"]
+
+
 def test_cli_acquisition_handles_invalid_plan_without_traceback(
     monkeypatch, capsys, tmp_path: Path
 ) -> None:
@@ -139,3 +156,36 @@ def test_cli_acquisition_handles_invalid_plan_without_traceback(
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "acquisition error" in captured.err
+
+
+def test_cli_print_package_writes_files(monkeypatch, capsys, tmp_path: Path) -> None:
+    plan_path = tmp_path / "plan.json"
+    out_dir = tmp_path / "print"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["orthoplan", "new-plan", "--id", "print-cli", "--out", str(plan_path)],
+    )
+    assert cli.main() == 0
+    capsys.readouterr()
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "orthoplan",
+            "print-package",
+            str(plan_path),
+            "--out",
+            str(out_dir),
+            "--zip",
+            "--email-draft",
+        ],
+    )
+    assert cli.main() == 0
+
+    output = capsys.readouterr().out
+    assert "Wrote print package manifest" in output
+    assert (out_dir / "print-cli-print-manifest.json").is_file()
+    assert (out_dir / "print-cli-print-package.zip").is_file()
+    assert (out_dir / "print-cli-print-package.eml").is_file()

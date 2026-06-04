@@ -5,7 +5,7 @@ lint-passed `Finding`s so malformed-mesh and scale-ambiguity warnings flow
 through the same engine, api, and UI as every other finding.
 
 These are NOTICE-level, observational, and never imply the mesh is unusable -
-they surface what inspection saw so a clinician/technician can decide.
+they surface what inspection saw so a reviewer or technician can decide.
 """
 
 from __future__ import annotations

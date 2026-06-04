@@ -149,7 +149,7 @@ def test_print_export_status_is_included_in_engine_output() -> None:
     assert status["enabled"] is False
     assert status["ready"] is False
     assert "print export is disabled" in status["blockers"]
-    assert "clinician-supervised" in status["caveat"]
+    assert "user's own responsibility" in status["caveat"]
 
 
 def test_unverified_scan_units_gate_cap_evaluation() -> None:
