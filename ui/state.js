@@ -1,6 +1,7 @@
 export const state = {
   activeStep: "upload",
   view: "current",
+  dim: "3d",
   file: null,
   scanUnits: "unverified",
   scanArch: "",

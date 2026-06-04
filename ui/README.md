@@ -39,6 +39,26 @@ divergent implementation.
 Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
 remains the source of truth for mesh inspection.
 
+## 3D viewer
+
+The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
+toggle (2D canvas is the fallback when WebGL is unavailable). Important honesty
+constraints, surfaced in the on-screen caveat:
+
+- It renders **abstract proxy teeth, not the scanned mesh.** We never store or
+  serve mesh bytes, so the viewer cannot show real crown geometry.
+- Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
+  movement is visible next to ~10 mm teeth.
+- Rotation is drawn **only** where the engine sets `rotation_renderable`, about
+  the **approximate** crown-surface PCA frame (`tooth_frames` in the API). The
+  axes are ordered by variance, not anatomy; this is not a tip/torque/long-axis
+  measurement and says nothing about root position.
+
+Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
+map, so the app runs fully offline with no runtime calls to any external host.
+To update it, replace `ui/vendor/three.module.js` and `ui/vendor/OrbitControls.js`
+with a matching pinned pair.
+
 ## Tests
 
 Pure, DOM-free UI logic lives in `core.js` (HTML escaping, contiguous stage

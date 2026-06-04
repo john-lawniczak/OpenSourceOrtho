@@ -283,6 +283,17 @@ Tasks:
 - add selected-tooth detail panel
 - add screenshot/exportable report path
 
+Progress:
+
+- ~~`StageProgressFrame` -> frontend JSON; current/planned/overlay; displacement vectors~~ done (engine `frames` via `/api/evaluate`; `ui/viewer3d.js`).
+- ~~3D viewer~~ done: Three.js (vendored r169, MIT, import map, offline) renders abstract proxy teeth from `frames[].poses[]` with a stage scrubber, orbit controls, exaggeration control, and a 2D fallback. Rotation drawn only when `rotation_renderable`, about the approximate `tooth_frames` PCA frame, heavily caveated.
+
+Still open:
+
+- Selected-tooth detail panel and screenshot/export path.
+- The viewer renders abstract proxies (no scanned mesh bytes are served by design); real-mesh rendering would be a separate decision about serving patient geometry.
+- Browser/WebGL rendering is verified by wiring + Node import of Three + served-asset checks, NOT yet by an automated headless-browser test.
+
 Exit criteria:
 
 - progress scrubber is deterministic

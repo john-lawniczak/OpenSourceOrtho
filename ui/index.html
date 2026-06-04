@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OpenSource Ortho Planner</title>
     <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three.module.js" } }
+    </script>
   </head>
   <body>
     <main class="app-shell">
@@ -142,13 +145,19 @@
                 <button class="mode is-active" data-view="current" type="button">Current</button>
                 <button class="mode" data-view="planned" type="button">Planned</button>
                 <button class="mode" data-view="overlay" type="button">Overlay</button>
+                <span class="dim-toggle">
+                  <button class="dim is-active" data-dim="3d" type="button">3D</button>
+                  <button class="dim" data-dim="2d" type="button">2D</button>
+                </span>
+                <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="40" /></label>
                 <label class="stage-slider">
                   Stage <span id="stageValue">0</span>
                   <input id="stageSlider" type="range" min="0" max="0" value="0" />
                 </label>
               </div>
-              <canvas id="archCanvas" width="900" height="520" aria-label="Tooth progress preview"></canvas>
-              <p class="viewer-caveat">This 2D preview shows crown-surface translation only. Tip, torque, and rotation are recorded but not drawn as orientation here. Any per-tooth rotation frame in the data is an approximate crown-surface PCA estimate, not anatomical axes, and the crown-centroid pivot is a visualization assumption, never root position.</p>
+              <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+              <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
+              <p class="viewer-caveat">Abstract proxy teeth, not the scanned mesh. Translation is to scale ×exaggeration (shown above) for visibility. Rotation is drawn only where the engine marks it renderable, about an approximate crown-surface PCA frame (axes ordered by variance, not anatomy) — it is not a tip/torque/long-axis measurement and says nothing about root position. The crown-centroid pivot is a visualization assumption.</p>
             </section>
             <aside class="review-side">
               <h2>Findings</h2>

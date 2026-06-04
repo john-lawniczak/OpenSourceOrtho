@@ -32,6 +32,38 @@ export function framePoseTotals(frame) {
   return totals;
 }
 
+export function degToRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+// Displacement vector for a pose, scaled by an honesty-flagged exaggeration so
+// sub-mm movement is visible next to ~10 mm teeth. The caller labels the factor.
+export function displacement(pose, exaggeration = 1) {
+  return {
+    x: (pose.translate_x_mm || 0) * exaggeration,
+    y: (pose.translate_y_mm || 0) * exaggeration,
+    z: (pose.translate_z_mm || 0) * exaggeration,
+  };
+}
+
+// Rotation as axis-angle applications about the APPROXIMATE per-tooth frame.
+// Returns [] when rotation is not renderable or no frame is available, so a
+// viewer never invents an orientation. The tip/torque/rotation -> axis[0/1/2]
+// mapping is an approximate visualization convention, not anatomy.
+export function rotationApplications(pose, frame) {
+  if (!pose || !pose.rotation_renderable || !frame || !Array.isArray(frame.axes)) {
+    return [];
+  }
+  const pairs = [
+    [frame.axes[0], pose.rotate_tip_deg],
+    [frame.axes[1], pose.rotate_torque_deg],
+    [frame.axes[2], pose.rotate_rotation_deg],
+  ];
+  return pairs
+    .filter(([axis, deg]) => Array.isArray(axis) && deg)
+    .map(([axis, deg]) => ({ axis, angleRad: degToRad(deg) }));
+}
+
 // Monotonic token so a slow async result can be discarded if a newer one started.
 export function createLatest() {
   let token = 0;

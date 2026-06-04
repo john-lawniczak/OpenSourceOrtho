@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Phase 6: Three.js 3D Progress Viewer
+
+- Added `ui/viewer3d.js`: a Three.js scene rendering abstract per-tooth proxies from the engine's `frames[].poses[]`, with orbit controls, current/planned/overlay modes, a stage scrubber, displacement vectors, and a movement-exaggeration control. No scanned mesh bytes are served, so proxies (not real geometry) are rendered by design.
+- Rotation is drawn ONLY where the engine sets `rotation_renderable`, oriented by the approximate per-tooth PCA frame now exposed as `tooth_frames` in `/api/evaluate`. The on-screen caveat states the frame is approximate/non-anatomical, movement is exaggerated, and the pivot is a visualization assumption.
+- Three.js r169 (MIT) and OrbitControls are vendored under `ui/vendor/` and loaded via an import map, so the app runs offline with no runtime external calls.
+- Added pure helpers to `ui/core.js` (`degToRad`, `displacement`, `rotationApplications`) with Node tests, and `tooth_frames` API tests. Added a 2D fallback when WebGL is unavailable. 70 Python + 11 JS tests; maintainability passes.
+- Not yet automated: headless-browser rendering verification (wiring verified via Node import of Three + served-asset checks).
+
 ### 2026-06-04 - Risk Burndown: JS Tests, Contract Parity, Approximate Rotation Frame
 
 - Contract parity: added `ui_dict()` to `ToothPose`/`StageProgressFrame` derived from `model_dump` so the UI frame contract can never silently drop a model field; `api.py` uses it; added parity tests asserting `ui_dict` keys == model fields.
@@ -195,4 +203,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T19:45:47+00:00 - Commit Status
 
 - Commit subject: Burn down top risks: JS tests, contract parity, approximate rotation frame
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04 - Commit Status
+
+- Commit subject: Phase 6: Three.js 3D progress viewer
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T19:59:24+00:00 - Commit Status
+
+- Commit subject: Phase 6: Three.js 3D progress viewer
 - Status: development history hook observed and recorded this commit workflow.

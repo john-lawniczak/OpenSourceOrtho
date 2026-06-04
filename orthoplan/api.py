@@ -43,6 +43,13 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
         "findings": [finding.model_dump() for finding in findings],
         "timeline": timeline.model_dump(),
         "frames": [frame.ui_dict() for frame in frames],
+        # Approximate per-tooth frames (keyed by FDI value) for a 3D viewer to
+        # orient rotation. Empty unless segmentation supplied local frames.
+        "tooth_frames": {
+            link.tooth.value: link.local_frame.model_dump()
+            for link in plan.tooth_meshes
+            if link.local_frame is not None
+        },
     }
 
 

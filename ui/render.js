@@ -7,7 +7,47 @@ import {
   toothPositions,
 } from "./state.js";
 import { createLatest, escapeHtml, framePoseTotals } from "./core.js";
+import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
+
+let viewer = null;
+let viewerFailed = false;
+
+function ensureViewer() {
+  if (viewer || viewerFailed) return viewer;
+  try {
+    viewer = createViewer(el("viewer3d"));
+  } catch (error) {
+    viewerFailed = true;
+    el("viewer3d").hidden = true;
+    el("archCanvas").hidden = false;
+    state.dim = "2d";
+  }
+  return viewer;
+}
+
+// Called by the 3D/2D toggle. Falls back to 2D if WebGL is unavailable.
+export function setDimension(dim) {
+  state.dim = dim;
+  const use3d = dim === "3d" && !viewerFailed;
+  el("viewer3d").hidden = !use3d;
+  el("archCanvas").hidden = use3d;
+  renderAll();
+}
+
+function updateViewer(result) {
+  if (state.dim !== "3d") return;
+  const v = ensureViewer();
+  if (!v) return;
+  v.resize();
+  v.update({
+    frames: result.frames,
+    toothFrames: result.tooth_frames,
+    stageIndex: Number(el("stageSlider").value || 0),
+    view: state.view,
+    exaggeration: numberValue("exaggeration") || 1,
+  });
+}
 
 export function renderAll() {
   state.scanUnits = el("scanUnits").value;
@@ -25,6 +65,7 @@ export function renderAll() {
   el("stageValue").textContent = el("stageSlider").value;
   scheduleEvaluate();
   drawCanvas();
+  if (state.lastEval) updateViewer(state.lastEval);
 }
 
 let evaluateTimer = null;
@@ -120,6 +161,7 @@ function renderEvaluation(result) {
   if (Number(slider.value) > lastStage) slider.value = String(lastStage);
   el("stageValue").textContent = slider.value;
   drawCanvas();
+  updateViewer(result);
 }
 
 function findingMarkup(finding) {

@@ -1,5 +1,5 @@
 import { el, maxStage, state } from "./state.js";
-import { renderAll, renderAvailability } from "./render.js";
+import { renderAll, renderAvailability, setDimension } from "./render.js";
 
 document.querySelectorAll(".step").forEach((button) => {
   button.addEventListener("click", () => {
@@ -14,6 +14,14 @@ document.querySelectorAll(".mode").forEach((button) => {
     document.querySelectorAll(".mode").forEach((item) => item.classList.remove("is-active"));
     button.classList.add("is-active");
     renderAll();
+  });
+});
+
+document.querySelectorAll(".dim").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".dim").forEach((item) => item.classList.remove("is-active"));
+    button.classList.add("is-active");
+    setDimension(button.dataset.dim);
   });
 });
 

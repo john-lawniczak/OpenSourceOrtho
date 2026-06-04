@@ -39,6 +39,12 @@ pydicom
 - MIT-licensed Python DICOM library
 - useful only if CBCT/DICOM support is added
 
+Three.js
+
+- MIT-licensed WebGL 3D library
+- used by the browser UI's 3D progress viewer; vendored pinned (r169) under `ui/vendor/` and loaded via an import map so the app runs offline with no runtime CDN calls
+- renders abstract proxy geometry only (we never serve scanned mesh bytes)
+
 trimesh
 
 - permissive mesh-processing library

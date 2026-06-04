@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createLatest, escapeHtml, framePoseTotals, stageBuckets } from "./core.js";
+import {
+  createLatest,
+  degToRad,
+  displacement,
+  escapeHtml,
+  framePoseTotals,
+  rotationApplications,
+  stageBuckets,
+} from "./core.js";
 
 test("escapeHtml neutralizes HTML metacharacters", () => {
   assert.equal(
@@ -57,6 +65,30 @@ test("framePoseTotals tolerates missing/empty frames", () => {
   assert.equal(framePoseTotals(undefined).size, 0);
   assert.equal(framePoseTotals(null).size, 0);
   assert.equal(framePoseTotals({}).size, 0);
+});
+
+test("displacement scales translation by the exaggeration factor", () => {
+  assert.deepEqual(
+    displacement({ translate_x_mm: 0.2, translate_y_mm: 0, translate_z_mm: -0.1 }, 10),
+    { x: 2, y: 0, z: -1 },
+  );
+});
+
+test("rotationApplications returns nothing when rotation is not renderable", () => {
+  const frame = { axes: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] };
+  assert.deepEqual(rotationApplications({ rotation_renderable: false, rotate_tip_deg: 5 }, frame), []);
+  assert.deepEqual(rotationApplications({ rotation_renderable: true, rotate_tip_deg: 5 }, null), []);
+});
+
+test("rotationApplications maps nonzero components onto the frame axes", () => {
+  const frame = { axes: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] };
+  const apps = rotationApplications(
+    { rotation_renderable: true, rotate_tip_deg: 90, rotate_torque_deg: 0, rotate_rotation_deg: 0 },
+    frame,
+  );
+  assert.equal(apps.length, 1); // only the nonzero tip component
+  assert.deepEqual(apps[0].axis, [1, 0, 0]);
+  assert.ok(Math.abs(apps[0].angleRad - degToRad(90)) < 1e-12);
 });
 
 test("createLatest only treats the newest token as current", () => {

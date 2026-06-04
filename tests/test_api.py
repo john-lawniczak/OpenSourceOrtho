@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from orthoplan.api import evaluate_plan_payload
+from orthoplan.api import evaluate_plan, evaluate_plan_payload
+from orthoplan.model import (
+    MeshAsset,
+    SegmentedToothMesh,
+    Stage,
+    ToothDelta,
+    ToothId,
+    ToothLocalFrame,
+    TreatmentPlan,
+)
 
 
 def _base_payload(**overrides: object) -> dict:
@@ -62,6 +71,33 @@ def test_non_contiguous_stages_are_rejected_as_errors() -> None:
     result = evaluate_plan_payload(payload)
     assert result["ok"] is False
     assert any("contiguous" in message for message in result["errors"])
+
+
+def test_tooth_frames_exposed_for_3d_viewer() -> None:
+    asset = MeshAsset(id="m11", format="stl-binary", vertex_count=3, face_count=1)
+    plan = TreatmentPlan(
+        id="rot",
+        mesh_assets=[asset],
+        tooth_meshes=[
+            SegmentedToothMesh(
+                tooth=ToothId(value="11"),
+                mesh_asset_id="m11",
+                local_frame=ToothLocalFrame(
+                    origin=(0, 0, 0), axes=((1, 0, 0), (0, 1, 0), (0, 0, 1))
+                ),
+            )
+        ],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="m11")])],
+    )
+    result = evaluate_plan(plan)
+    assert "11" in result["tooth_frames"]
+    assert result["tooth_frames"]["11"]["approximate"] is True
+    assert result["frames"][0]["poses"][0]["rotation_renderable"] is True
+
+
+def test_tooth_frames_empty_without_local_frames() -> None:
+    result = evaluate_plan_payload(_base_payload())
+    assert result["tooth_frames"] == {}
 
 
 def test_unverified_scan_units_gate_cap_evaluation() -> None:
