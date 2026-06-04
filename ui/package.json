@@ -1,0 +1,9 @@
+{
+  "name": "opensource-ortho-ui",
+  "private": true,
+  "type": "module",
+  "description": "Static UI prototype + DOM-free core logic with Node unit tests.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

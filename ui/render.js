@@ -6,13 +6,8 @@ import {
   state,
   toothPositions,
 } from "./state.js";
+import { createLatest, escapeHtml, framePoseTotals } from "./core.js";
 import { planJson } from "./plan.js";
-
-const HTML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
-}
 
 export function renderAll() {
   state.scanUnits = el("scanUnits").value;
@@ -34,7 +29,7 @@ export function renderAll() {
 
 let evaluateTimer = null;
 // Monotonic token so a slow in-flight request can never overwrite a newer one.
-let evaluateToken = 0;
+const evalLatest = createLatest();
 
 function scheduleEvaluate() {
   if (evaluateTimer) clearTimeout(evaluateTimer);
@@ -42,10 +37,10 @@ function scheduleEvaluate() {
 }
 
 async function runEvaluate() {
-  const token = ++evaluateToken;
+  const token = evalLatest.next();
   try {
     const result = await evaluatePlan(planJson());
-    if (token !== evaluateToken) return; // a newer evaluation superseded this one
+    if (!evalLatest.isCurrent(token)) return; // a newer evaluation superseded this one
     state.engineError = null;
     if (result.ok === false) {
       state.lastEval = null;
@@ -55,7 +50,7 @@ async function runEvaluate() {
       renderEvaluation(result);
     }
   } catch (error) {
-    if (token !== evaluateToken) return;
+    if (!evalLatest.isCurrent(token)) return;
     state.lastEval = null;
     state.engineError = error.message;
     renderEngineOffline();
@@ -157,7 +152,8 @@ function renderEngineOffline() {
 function drawCanvas() {
   const canvas = el("archCanvas");
   const ctx = canvas.getContext("2d");
-  const totals = poseTotals(Number(el("stageSlider").value || 0));
+  const stageIndex = Number(el("stageSlider").value || 0);
+  const totals = framePoseTotals(state.lastEval?.frames?.[stageIndex]);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#fbfdfe";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -183,17 +179,6 @@ function drawCanvas() {
       }
     }
   }
-}
-
-// Cumulative translation comes from the engine's frames, not a JS recomputation.
-function poseTotals(stageIndex) {
-  const totals = new Map();
-  const frame = state.lastEval?.frames?.[stageIndex];
-  if (!frame) return totals;
-  for (const pose of frame.poses) {
-    totals.set(pose.tooth, { x: pose.translate_x_mm, y: pose.translate_y_mm, z: pose.translate_z_mm });
-  }
-  return totals;
 }
 
 function drawTooth(ctx, x, y, label, fill, text) {

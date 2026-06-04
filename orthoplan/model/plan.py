@@ -6,7 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from orthoplan.model.assets import MeshAsset, MeshProvenance, UploadedScan
-from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame
+from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame
 from orthoplan.model.settings import TreatmentSettings
 
 
@@ -108,11 +108,17 @@ class DataAvailability(BaseModel):
 
 
 class SegmentedToothMesh(BaseModel):
-    """Link a canonical tooth id to a mesh asset produced by segmentation."""
+    """Link a canonical tooth id to a mesh asset produced by segmentation.
+
+    ``local_frame`` is an optional, approximate per-tooth frame (see
+    ToothLocalFrame). When present it lets a 3D viewer render rotation; when
+    absent, rotation stays non-renderable.
+    """
 
     tooth: ToothId
     mesh_asset_id: str
     source: MeshProvenance = MeshProvenance.MANUAL
+    local_frame: ToothLocalFrame | None = None
     notes: str | None = None
 
 

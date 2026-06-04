@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-04 - Risk Burndown: JS Tests, Contract Parity, Approximate Rotation Frame
+
+- Contract parity: added `ui_dict()` to `ToothPose`/`StageProgressFrame` derived from `model_dump` so the UI frame contract can never silently drop a model field; `api.py` uses it; added parity tests asserting `ui_dict` keys == model fields.
+- JS unit tests: extracted DOM-free logic to `ui/core.js` (HTML escaping, contiguous stage reindex, frame pose extraction, async stale-response token guard); `render.js`/`plan.js` now import it; added `ui/core.test.js` (8 tests, `node --test`) and `ui/package.json` (`type: module`).
+- Rotation rendering (decision: PCA-derived, labeled approximate): added `ToothLocalFrame` (geometry) and `planning/mesh_frame.py` (pure-Python Jacobi PCA, returns None for degenerate clouds); `read_stl_geometry` exposes vertices in one read; `import_segmented_meshes` attaches an approximate frame per tooth; `build_stage_progress_frames` now flips `rotation_renderable` per tooth when a frame exists. Frame is labeled approximate/non-anatomical; the 2D preview stays translation-only.
+- 68 Python tests + 8 JS tests; maintainability passes. Updated SAFETY, plan, and this log.
+
 ### 2026-06-03 - Audit Fixes: Dev Server Hardening and UI Race
 
 - Dev server: malformed `Content-Length` now returns a clean 400 instead of dropping the connection; empty body is 400 (was 413); `do_GET`/`do_POST` are wrapped so an unexpected error returns a 500 JSON instead of a reset/traceback; added a 30s request timeout so a client that declares but never sends a body cannot hang a worker thread.
@@ -178,4 +185,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T03:16:23+00:00 - Commit Status
 
 - Commit subject: Harden dev server and fix UI evaluation race
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04 - Commit Status
+
+- Commit subject: Burn down top risks: JS tests, contract parity, approximate rotation frame
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-04T19:45:47+00:00 - Commit Status
+
+- Commit subject: Burn down top risks: JS tests, contract parity, approximate rotation frame
 - Status: development history hook observed and recorded this commit workflow.

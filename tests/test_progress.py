@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from orthoplan.model import MeshAsset, Stage, ToothDelta, ToothId, TreatmentPlan, UploadedScan
-from orthoplan.viz import build_stage_progress_frames
+from orthoplan.planning.transforms import ToothPose
+from orthoplan.viz import StageProgressFrame, build_stage_progress_frames
 
 
 def test_progress_frames_are_cumulative() -> None:
@@ -18,6 +19,39 @@ def test_progress_frames_are_cumulative() -> None:
 
     assert frames[0].poses[0].translate_x_mm == 0.2
     assert frames[1].poses[0].translate_x_mm == 0.5
+
+
+def test_rotation_renderable_flips_per_tooth_with_local_frame() -> None:
+    from orthoplan.model import SegmentedToothMesh, ToothLocalFrame
+    from orthoplan.model.assets import MeshAsset
+
+    asset = MeshAsset(id="m11", format="stl-binary", vertex_count=3, face_count=1)
+    link = SegmentedToothMesh(
+        tooth=ToothId(value="11"),
+        mesh_asset_id="m11",
+        local_frame=ToothLocalFrame(
+            origin=(0, 0, 0), axes=((1, 0, 0), (0, 1, 0), (0, 0, 1))
+        ),
+    )
+    plan = TreatmentPlan(
+        id="rot",
+        mesh_assets=[asset],
+        tooth_meshes=[link],
+        stages=[
+            Stage(
+                index=0,
+                deltas=[
+                    ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="m11", rotate_tip_deg=3.0),
+                    ToothDelta(tooth=ToothId(value="21"), rotate_tip_deg=3.0),  # no frame
+                ],
+            )
+        ],
+    )
+    frames = build_stage_progress_frames(plan)
+    poses = {p.tooth.value: p for p in frames[0].poses}
+    assert poses["11"].rotation_renderable is True  # has an (approximate) frame
+    assert poses["21"].rotation_renderable is False  # no frame
+    assert frames[0].rotation_renderable is True  # any renderable -> frame-level true
 
 
 def test_progress_frames_mark_rotation_not_renderable_in_scan_frame() -> None:
@@ -47,3 +81,21 @@ def test_progress_frames_include_data_gaps() -> None:
     assert "roots unavailable" in frames[0].data_gaps
     assert "CBCT unavailable" in frames[0].data_gaps
     assert any("units unverified" in gap for gap in frames[0].data_gaps)
+
+
+def test_pose_ui_dict_covers_every_model_field() -> None:
+    # Guards against silent contract drift: a new ToothPose field must appear in
+    # the UI dict, not be dropped by a hand-written serializer.
+    pose = ToothPose.from_delta(
+        ToothDelta(tooth=ToothId(value="11"), translate_x_mm=0.2), rotation_renderable=False
+    )
+    ui = pose.ui_dict()
+    assert set(ui) == set(ToothPose.model_fields)
+    assert ui["tooth"] == "11"  # flattened from the nested ToothId
+
+
+def test_frame_ui_dict_covers_every_model_field() -> None:
+    frame = StageProgressFrame(stage_index=0)
+    ui = frame.ui_dict()
+    assert set(ui) == set(StageProgressFrame.model_fields)
+    assert isinstance(ui["poses"], list)

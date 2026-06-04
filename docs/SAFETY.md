@@ -28,6 +28,11 @@ risk. A proposed movement that fits within configured caps is a geometric statem
 biomechanical or clinical one. Visualization pivots (crown centroid) are explicit display
 assumptions and never imply knowledge of root or bone position.
 
+Per-tooth local frames (`ToothLocalFrame`) derived from crown-surface PCA are approximate
+visualization aids: their axes are ordered by geometric variance, not anatomy, and they do
+not represent mesiodistal/buccolingual/long axes or root direction. They exist only so a 3D
+viewer can render rotation with that caveat.
+
 ## Privacy Posture
 
 Intraoral STL scans are patient-derived data. The toolkit:

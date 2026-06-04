@@ -123,13 +123,17 @@ def _trimesh_quality(path: Path, fallback: MeshQualityReport) -> MeshQualityRepo
     )
 
 
-def inspect_stl(
+def read_stl_geometry(
     path: str | Path,
     *,
     provenance: MeshProvenance = MeshProvenance.PATIENT_DERIVED,
     max_bytes: int = MAX_STL_BYTES,
-) -> MeshAsset:
-    """Return redacted, units-unverified metadata for an STL file."""
+) -> tuple[MeshAsset, list[Vec3]]:
+    """Inspect an STL once and return both its metadata and its vertices.
+
+    Vertices are returned for callers that need geometry (e.g. per-tooth frame
+    estimation) so the file is read a single time.
+    """
 
     path = Path(path)
     size = path.stat().st_size
@@ -149,7 +153,7 @@ def inspect_stl(
         raise ValueError("STL facet and vertex counts are inconsistent")
 
     quality = _trimesh_quality(path, _internal_quality(face_count, vertices))
-    return MeshAsset(
+    asset = MeshAsset(
         id=sha256[:16],
         format=fmt,
         provenance=provenance,
@@ -161,3 +165,16 @@ def inspect_stl(
         sha256=sha256,
         reference=redact_reference(str(path)),
     )
+    return asset, vertices
+
+
+def inspect_stl(
+    path: str | Path,
+    *,
+    provenance: MeshProvenance = MeshProvenance.PATIENT_DERIVED,
+    max_bytes: int = MAX_STL_BYTES,
+) -> MeshAsset:
+    """Return redacted, units-unverified metadata for an STL file."""
+
+    asset, _ = read_stl_geometry(path, provenance=provenance, max_bytes=max_bytes)
+    return asset

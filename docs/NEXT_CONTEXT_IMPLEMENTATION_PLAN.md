@@ -208,9 +208,11 @@ Progress:
 - ~~malformed-mesh and scale-ambiguity warnings as deterministic findings~~ done (`evaluation/rules/mesh_quality.py`, aggregated by `evaluation/engine.run_rules`, surfaced via api/CLI/UI).
 - ~~per-tooth mesh asset references and imported segmentation~~ done (`SegmentedToothMesh`, `segmentation/manual.py`, `segmentation/imports.import_segmented_meshes`).
 
-Open decision (blocks rotation rendering):
+Per-tooth frame (resolved 2026-06-04):
 
-- A per-tooth **local frame** (tooth long axis + mesiodistal/buccolingual axes) is what flips `rotation_renderable` to true. Estimating it from a crown-only surface (e.g. PCA of segmented vertices) is itself a geometric assumption and must be labeled as such, never implying root direction. Needs a decision on the estimation method and its safety framing before implementation; until then rotation stays tabular-only.
+- Decision: derive an **approximate** per-tooth `ToothLocalFrame` from crown-surface PCA (`planning/mesh_frame.py`, pure-Python Jacobi eigensolver), attach it on `SegmentedToothMesh` during `import_segmented_meshes`, and flip `rotation_renderable` per tooth in `build_stage_progress_frames` when a frame is present.
+- Safety framing: the frame is labeled `approximate=True`, `source="pca-crown"`, with a standing note that axes are ordered by geometric variance, NOT anatomy, and say nothing about root direction. The 2D preview still renders translation only; the flag and frame exist for a future 3D viewer to consume with that caveat.
+- Still open: mapping PCA axes to true anatomical tip/torque/long-axis requires landmarks or registration (out of scope until segmentation provides them).
 
 Exit criteria:
 

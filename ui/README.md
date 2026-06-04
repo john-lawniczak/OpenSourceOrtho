@@ -38,3 +38,17 @@ divergent implementation.
 
 Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
 remains the source of truth for mesh inspection.
+
+## Tests
+
+Pure, DOM-free UI logic lives in `core.js` (HTML escaping, contiguous stage
+reindexing, frame pose extraction, the async stale-response token guard) so it
+can be unit-tested under Node with no browser or jsdom:
+
+```bash
+cd ui && node --test        # or, from the repo root: node --test 'ui/*.test.js'
+```
+
+The DOM modules (`render.js`, `plan.js`) import these helpers from `core.js`
+rather than defining them inline, so the tested code is the shipped code.
+

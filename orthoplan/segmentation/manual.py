@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from orthoplan.model import MeshAsset, MeshProvenance, SegmentedToothMesh, ToothId
+from orthoplan.model.geometry import ToothLocalFrame
 
 
 def link_tooth_mesh(
@@ -8,6 +9,7 @@ def link_tooth_mesh(
     tooth: ToothId,
     mesh_asset: MeshAsset,
     source: MeshProvenance = MeshProvenance.MANUAL,
+    local_frame: ToothLocalFrame | None = None,
     notes: str | None = None,
 ) -> SegmentedToothMesh:
     """Create an explicit tooth-to-mesh link for manual/imported segmentation."""
@@ -16,6 +18,7 @@ def link_tooth_mesh(
         tooth=tooth,
         mesh_asset_id=mesh_asset.id,
         source=source,
+        local_frame=local_frame,
         notes=notes,
     )
 

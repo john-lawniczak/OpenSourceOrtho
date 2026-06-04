@@ -19,7 +19,7 @@ from orthoplan.evaluation.engine import run_rules
 from orthoplan.model.gaps import data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.timeline import project_timeline
-from orthoplan.viz.progress import StageProgressFrame, build_stage_progress_frames
+from orthoplan.viz.progress import build_stage_progress_frames
 
 
 def _format_errors(error: ValidationError) -> list[str]:
@@ -28,28 +28,6 @@ def _format_errors(error: ValidationError) -> list[str]:
         location = ".".join(str(part) for part in item.get("loc", ())) or "(plan)"
         messages.append(f"{location}: {item.get('msg', 'invalid')}")
     return messages
-
-
-def _frame_dict(frame: StageProgressFrame) -> dict[str, Any]:
-    return {
-        "stage_index": frame.stage_index,
-        "coordinate_frame": frame.coordinate_frame,
-        "rotation_renderable": frame.rotation_renderable,
-        "poses": [
-            {
-                "tooth": pose.tooth.value,
-                "translate_x_mm": pose.translate_x_mm,
-                "translate_y_mm": pose.translate_y_mm,
-                "translate_z_mm": pose.translate_z_mm,
-                "rotate_tip_deg": pose.rotate_tip_deg,
-                "rotate_torque_deg": pose.rotate_torque_deg,
-                "rotate_rotation_deg": pose.rotate_rotation_deg,
-                "rotation_renderable": pose.rotation_renderable,
-                "pivot": pose.pivot,
-            }
-            for pose in frame.poses
-        ],
-    }
 
 
 def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
@@ -64,7 +42,7 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
         "data_gaps": data_gaps(plan),
         "findings": [finding.model_dump() for finding in findings],
         "timeline": timeline.model_dump(),
-        "frames": [_frame_dict(frame) for frame in frames],
+        "frames": [frame.ui_dict() for frame in frames],
     }
 
 

@@ -1,0 +1,68 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { createLatest, escapeHtml, framePoseTotals, stageBuckets } from "./core.js";
+
+test("escapeHtml neutralizes HTML metacharacters", () => {
+  assert.equal(
+    escapeHtml('<img src=x onerror="alert(1)">'),
+    "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;",
+  );
+  assert.equal(escapeHtml("a & b's"), "a &amp; b&#39;s");
+});
+
+test("escapeHtml coerces non-strings", () => {
+  assert.equal(escapeHtml(11), "11");
+  assert.equal(escapeHtml(0), "0");
+});
+
+test("stageBuckets reindexes gapped stages to contiguous 0..n-1", () => {
+  const rows = [
+    { stage: 0, tooth: "11" },
+    { stage: 2, tooth: "21" },
+    { stage: 5, tooth: "31" },
+  ];
+  const buckets = stageBuckets(rows);
+  assert.deepEqual(buckets.map((b) => b.index), [0, 1, 2]);
+  assert.equal(buckets[1].rows[0].tooth, "21"); // original stage 2 -> index 1
+});
+
+test("stageBuckets groups multiple rows per stage and sorts", () => {
+  const rows = [
+    { stage: 1, tooth: "21" },
+    { stage: 0, tooth: "11" },
+    { stage: 1, tooth: "22" },
+  ];
+  const buckets = stageBuckets(rows);
+  assert.equal(buckets.length, 2);
+  assert.equal(buckets[0].rows[0].tooth, "11");
+  assert.deepEqual(buckets[1].rows.map((r) => r.tooth), ["21", "22"]);
+});
+
+test("stageBuckets handles no rows", () => {
+  assert.deepEqual(stageBuckets([]), []);
+});
+
+test("framePoseTotals maps tooth -> translation from a frame", () => {
+  const frame = {
+    poses: [
+      { tooth: "11", translate_x_mm: 0.5, translate_y_mm: 0.1, translate_z_mm: 0 },
+    ],
+  };
+  const totals = framePoseTotals(frame);
+  assert.deepEqual(totals.get("11"), { x: 0.5, y: 0.1, z: 0 });
+});
+
+test("framePoseTotals tolerates missing/empty frames", () => {
+  assert.equal(framePoseTotals(undefined).size, 0);
+  assert.equal(framePoseTotals(null).size, 0);
+  assert.equal(framePoseTotals({}).size, 0);
+});
+
+test("createLatest only treats the newest token as current", () => {
+  const latest = createLatest();
+  const first = latest.next();
+  const second = latest.next();
+  assert.equal(latest.isCurrent(first), false); // stale response must be dropped
+  assert.equal(latest.isCurrent(second), true);
+});

@@ -82,3 +82,31 @@ class CoordinateFrame(BaseModel):
 # Canonical authoring frame for Phase 1. Vertical (z) is resolved; horizontal
 # anatomical axes are not, so tip/torque/rotation are not renderable yet.
 SCAN_FRAME = CoordinateFrame()
+
+
+Vec3 = tuple[float, float, float]
+
+APPROXIMATE_FRAME_NOTE = (
+    "Approximate visualization frame from crown-surface PCA. Axes are ordered by "
+    "geometric variance, NOT anatomy; this is not a mesiodistal/buccolingual/long-axis "
+    "measurement and says nothing about root direction."
+)
+
+
+class ToothLocalFrame(BaseModel):
+    """A per-tooth local frame derived from segmented crown geometry.
+
+    Phase 3 derives this from PCA of the crown mesh, so it is explicitly an
+    APPROXIMATE visualization aid. ``axes`` are the principal directions ordered
+    by descending variance, not resolved anatomical axes. Its presence lets a
+    3D viewer render rotation, with the standing caveat that the frame is
+    approximate and never implies root position or biomechanics.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    origin: Vec3
+    axes: tuple[Vec3, Vec3, Vec3]
+    source: str = "pca-crown"
+    approximate: bool = True
+    note: str = APPROXIMATE_FRAME_NOTE

@@ -26,6 +26,13 @@ class StageProgressFrame(BaseModel):
     rotation_renderable: bool = False
     data_gaps: list[str] = Field(default_factory=list)
 
+    def ui_dict(self) -> dict:
+        """UI-shaped serialization derived from ``model_dump`` (drift-proof),
+        with poses replaced by their flattened UI dicts."""
+        data = self.model_dump()
+        data["poses"] = [pose.ui_dict() for pose in self.poses]
+        return data
+
 
 def build_stage_progress_frames(plan: TreatmentPlan) -> list[StageProgressFrame]:
     """Build cumulative frames so UIs render progress from one canonical contract.
@@ -34,9 +41,17 @@ def build_stage_progress_frames(plan: TreatmentPlan) -> list[StageProgressFrame]
     composition from ``planning.transforms`` and gaps from ``model.gaps``.
     """
 
-    rotation_renderable = plan.coordinate_frame.tip_torque_convertible
     frame_name = plan.coordinate_frame.name
     gaps = data_gaps(plan)
+    # Rotation is renderable for a tooth when an (approximate) per-tooth local
+    # frame exists for it, or if the global frame ever resolves tip/torque.
+    global_convertible = plan.coordinate_frame.tip_torque_convertible
+    teeth_with_frame = {
+        link.tooth.value for link in plan.tooth_meshes if link.local_frame is not None
+    }
+
+    def renderable(tooth_value: str) -> bool:
+        return global_convertible or tooth_value in teeth_with_frame
 
     poses: dict[str, ToothPose] = {}
     frames: list[StageProgressFrame] = []
@@ -47,14 +62,15 @@ def build_stage_progress_frames(plan: TreatmentPlan) -> list[StageProgressFrame]
             if key in poses:
                 poses[key] = poses[key].apply_delta(delta)
             else:
-                poses[key] = ToothPose.from_delta(delta, rotation_renderable=rotation_renderable)
+                poses[key] = ToothPose.from_delta(delta, rotation_renderable=renderable(key))
 
+        stage_poses = sorted(poses.values(), key=lambda pose: pose.tooth.value)
         frames.append(
             StageProgressFrame(
                 stage_index=stage.index,
-                poses=sorted(poses.values(), key=lambda pose: pose.tooth.value),
+                poses=stage_poses,
                 coordinate_frame=frame_name,
-                rotation_renderable=rotation_renderable,
+                rotation_renderable=any(pose.rotation_renderable for pose in stage_poses),
                 data_gaps=gaps,
             )
         )

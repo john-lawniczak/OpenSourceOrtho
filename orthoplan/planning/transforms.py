@@ -42,6 +42,14 @@ class ToothPose(BaseModel):
     pivot: str = PIVOT_LABEL
     source: str = "plan"
 
+    def ui_dict(self) -> dict:
+        """UI-shaped serialization: every model field, with tooth flattened to
+        its FDI value. Derived from ``model_dump`` so new fields can never
+        silently drop out of the client contract."""
+        data = self.model_dump()
+        data["tooth"] = self.tooth.value
+        return data
+
     @classmethod
     def from_delta(cls, delta: ToothDelta, *, rotation_renderable: bool) -> "ToothPose":
         return cls(

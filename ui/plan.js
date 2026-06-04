@@ -1,4 +1,5 @@
-import { el, numberValue, state, stages } from "./state.js";
+import { stageBuckets } from "./core.js";
+import { el, numberValue, state } from "./state.js";
 
 export function planJson() {
   return {
@@ -14,11 +15,11 @@ export function planJson() {
     scans: scanPayload(),
     mesh_assets: [],
     tooth_meshes: [],
-    // Reindex to contiguous 0..n-1 so the exported plan satisfies the Python
-    // TreatmentPlan contiguity invariant even if UI stage numbers have gaps.
-    stages: stages().map((stage, index) => ({
-      index,
-      deltas: state.rows.filter((row) => row.stage === stage).map(deltaPayload),
+    // Contiguous-reindexed stage buckets (see core.stageBuckets) so the exported
+    // plan satisfies the Python TreatmentPlan contiguity invariant.
+    stages: stageBuckets(state.rows).map((bucket) => ({
+      index: bucket.index,
+      deltas: bucket.rows.map(deltaPayload),
     })),
   };
 }

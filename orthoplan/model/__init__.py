@@ -15,6 +15,7 @@ from orthoplan.model.geometry import (
     AxisSemantics,
     CoordinateFrame,
     Handedness,
+    ToothLocalFrame,
 )
 from orthoplan.model.plan import (
     Arch,
@@ -52,6 +53,7 @@ __all__ = [
     "TimelineSettings",
     "ToothDelta",
     "ToothId",
+    "ToothLocalFrame",
     "TreatmentPlan",
     "TreatmentSettings",
     "UploadedScan",
