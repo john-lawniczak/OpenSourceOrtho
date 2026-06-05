@@ -81,8 +81,8 @@
           <div class="simple-grid">
             <label class="upload-target" for="simpleStlFile">
               <span class="upload-icon" aria-hidden="true">↑</span>
-              <span id="simpleUploadLabel">Choose your STL</span>
-              <input id="simpleStlFile" type="file" accept=".stl" />
+              <span id="simpleUploadLabel">Choose your STL files</span>
+              <input id="simpleStlFile" type="file" accept=".stl" multiple />
             </label>
             <div class="simple-panel">
               <label>
@@ -99,7 +99,7 @@
                 <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
                 <input id="simpleAcknowledged" type="checkbox" />
               </label>
-              <button class="primary-action" id="simpleReview" type="button">Review Educational Preview</button>
+              <button class="primary-action" id="simpleReview" type="button">Next: Review Preview</button>
             </div>
           </div>
           <div class="simple-steps">
@@ -128,8 +128,8 @@
           <div class="upload-row">
             <label class="upload-target" for="stlFile">
               <span class="upload-icon" aria-hidden="true">↑</span>
-              <span id="uploadLabel">Choose STL file</span>
-              <input id="stlFile" type="file" accept=".stl" />
+              <span id="uploadLabel">Choose STL files</span>
+              <input id="stlFile" type="file" accept=".stl" multiple />
             </label>
             <div class="field-grid compact">
               <label>
@@ -153,6 +153,9 @@
             </div>
           </div>
           <dl class="metadata-grid" id="scanMetadata"></dl>
+          <div class="workflow-actions">
+            <button class="primary-action next-action" id="uploadNext" type="button">Next: Data Availability</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-availability">
@@ -257,6 +260,7 @@
                   <input id="stageSlider" type="range" min="0" max="0" value="0" />
                 </label>
               </div>
+              <p id="scanRenderStatus" class="scan-status"></p>
               <div class="viewer3d-wrap">
                 <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
                 <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
@@ -266,9 +270,15 @@
                 </div>
               </div>
               <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
-              <p class="viewer-caveat">Schematic proxy teeth, not the scanned mesh. Translation is the engine's cumulative movement, scaled by the shown ×exaggeration for visibility. PCA crown frames are exposed as approximate metadata only; rotation is not drawn unless a future trusted anatomical frame marks it renderable. The crown-centroid pivot is a visualization assumption.</p>
+              <p class="viewer-caveat">Uploaded STL scans render as the exact scan mesh layer when provided. Stage movement remains schematic unless the plan includes segmented per-tooth render meshes. Translation is the engine's cumulative movement, scaled by the shown ×exaggeration for visibility. PCA crown frames are exposed as approximate metadata only; rotation is not drawn unless a future trusted anatomical frame marks it renderable.</p>
             </section>
             <aside class="review-side">
+              <section class="download-actions" aria-label="Downloads">
+                <h2>Downloads</h2>
+                <button class="primary-action" id="downloadPlan" type="button">Download Plan JSON</button>
+                <button id="downloadEvaluation" type="button">Download Evaluation JSON</button>
+                <button id="downloadPrintMetadata" type="button">Download Print Metadata</button>
+              </section>
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>

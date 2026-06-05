@@ -5,6 +5,8 @@ export const state = {
   view: "current",
   dim: "3d",
   file: null,
+  files: [],
+  scanRenderStatus: "No uploaded scan is loaded.",
   scanUnits: "unverified",
   scanArch: "",
   // Latest response from the Python engine (POST /api/evaluate). The UI never

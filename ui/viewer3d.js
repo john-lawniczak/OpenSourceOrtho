@@ -12,6 +12,14 @@ import { parseStlGeometry } from "./stl.js";
 
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xc4d0d6, transparent: true, opacity: 0.45, roughness: 0.7 });
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xf6f1e6, roughness: 0.62, metalness: 0.02 });
+const SCAN = new THREE.MeshStandardMaterial({
+  color: 0x8fd3c7,
+  transparent: true,
+  opacity: 0.62,
+  roughness: 0.58,
+  metalness: 0.01,
+  side: THREE.DoubleSide,
+});
 const ATTACHMENT = new THREE.MeshStandardMaterial({ color: 0xb45309 });
 const ATTACHMENT_BOX = new THREE.BoxGeometry(0.9, 0.55, 0.45);
 const LINE_MAT = new THREE.LineBasicMaterial({ color: 0x2563eb });
@@ -133,6 +141,8 @@ export function createViewer(container) {
 
   const proxies = new THREE.Group();
   scene.add(proxies);
+  const uploadedScans = new THREE.Group();
+  scene.add(uploadedScans);
   // Per-update line geometries are freshly allocated each rebuild (unlike the
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
@@ -166,6 +176,7 @@ export function createViewer(container) {
 
   function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration }) {
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
+    uploadedScans.visible = view === "current" || view === "overlay";
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
     proxies.clear();
@@ -212,14 +223,17 @@ export function createViewer(container) {
       }
     }
     if (!fitted) {
-      fitCameraToProxies();
+      fitCameraToScene();
       fitted = true;
     }
   }
 
-  function fitCameraToProxies() {
-    if (!proxies.children.length) return;
-    const box = new THREE.Box3().setFromObject(proxies);
+  function fitCameraToScene() {
+    const fitTarget = new THREE.Group();
+    if (uploadedScans.visible && uploadedScans.children.length) fitTarget.add(uploadedScans.clone());
+    if (proxies.children.length) fitTarget.add(proxies.clone());
+    if (!fitTarget.children.length) return;
+    const box = new THREE.Box3().setFromObject(fitTarget);
     if (box.isEmpty()) return;
     // Fit a bounding sphere using the limiting (narrower) of the vertical and
     // horizontal field of view so a wide dental arch is fully framed and
@@ -252,7 +266,7 @@ export function createViewer(container) {
   }
 
   function recenter() {
-    fitCameraToProxies();
+    fitCameraToScene();
   }
 
   async function loadMeshes(renderMeshes = []) {
@@ -275,6 +289,34 @@ export function createViewer(container) {
     return loaded;
   }
 
+  async function loadUploadedScans(files = []) {
+    const scanFiles = files.filter((file) => file?.name?.toLowerCase().endsWith(".stl"));
+    const key = scanFiles.map((file) => `${file.name}:${file.size}:${file.lastModified}`).join("|");
+    if (uploadedScans.userData.key === key) return { loaded: false, count: uploadedScans.children.length };
+    uploadedScans.userData.key = key;
+    uploadedScans.traverse((child) => {
+      if (child.isMesh) child.geometry.dispose();
+    });
+    uploadedScans.clear();
+    if (!scanFiles.length) return { loaded: false, count: 0 };
+
+    for (const file of scanFiles) {
+      const geometry = parseStlGeometry(await file.arrayBuffer());
+      const mesh = new THREE.Mesh(geometry, SCAN);
+      mesh.name = file.name;
+      uploadedScans.add(mesh);
+    }
+
+    const box = new THREE.Box3().setFromObject(uploadedScans);
+    if (!box.isEmpty()) {
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      uploadedScans.position.set(-center.x, -center.y, -center.z);
+    }
+    fitted = false;
+    return { loaded: true, count: uploadedScans.children.length };
+  }
+
   function dispose() {
     running = false;
     for (const geom of lineGeometries) geom.dispose();
@@ -285,7 +327,7 @@ export function createViewer(container) {
   }
 
   window.addEventListener("resize", resize);
-  return { update, resize, dispose, loadMeshes, zoomBy, recenter };
+  return { update, resize, dispose, loadMeshes, loadUploadedScans, zoomBy, recenter };
 }
 
 // A material placeholder: mergeGroupGeometry only copies position/normal, so the
