@@ -47,17 +47,19 @@ document.querySelectorAll(".dim").forEach((button) => {
 });
 
 el("stlFile").addEventListener("change", (event) => {
-  state.file = event.target.files[0] || null;
+  state.files = Array.from(event.target.files || []);
+  state.file = state.files[0] || null;
   state.useDemoMeshes = false;
-  el("uploadLabel").textContent = state.file ? state.file.name : "Choose STL file";
+  el("uploadLabel").textContent = uploadLabel(state.files, "Choose STL files");
   renderAll();
 });
 
 el("simpleStlFile").addEventListener("change", (event) => {
-  state.file = event.target.files[0] || null;
+  state.files = Array.from(event.target.files || []);
+  state.file = state.files[0] || null;
   state.demoInitialOffsets = {};
   state.useDemoMeshes = false;
-  el("simpleUploadLabel").textContent = state.file ? state.file.name : "Choose your STL";
+  el("simpleUploadLabel").textContent = uploadLabel(state.files, "Choose your STL files");
   renderAll();
 });
 
@@ -126,6 +128,20 @@ document.body.addEventListener("click", (event) => {
     state.view = "overlay";
     renderAll();
   }
+  if (target.id === "uploadNext") {
+    state.activeStep = "availability";
+    renderAll();
+  }
+  if (target.id === "simpleNext") {
+    state.activeStep = "review";
+    state.view = "overlay";
+    renderAll();
+  }
+  if (target.id === "downloadPlan") downloadJson("orthoplan-plan.json", planJson());
+  if (target.id === "downloadEvaluation" && state.lastEval) downloadJson("orthoplan-evaluation.json", state.lastEval);
+  if (target.id === "downloadPrintMetadata" && state.lastEval?.print_export) {
+    downloadJson("orthoplan-print-metadata.json", state.lastEval.print_export);
+  }
   if (target.id === "sendChat") {
     sendChatMessage();
   }
@@ -138,6 +154,24 @@ document.body.addEventListener("click", (event) => {
   }
 });
 
+function uploadLabel(files, emptyLabel) {
+  if (!files.length) return emptyLabel;
+  if (files.length === 1) return files[0].name;
+  return `${files.length} STL files selected`;
+}
+
+function downloadJson(filename, value) {
+  const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  const href = link.href;
+  link.remove();
+  URL.revokeObjectURL(href);
+}
+
 function loadSyntheticDemo() {
   state.userMode = "simple";
   state.simpleAcknowledged = true;
@@ -145,6 +179,7 @@ function loadSyntheticDemo() {
   state.demoInitialOffsets = demoInitialOffsets;
   state.useDemoMeshes = true;
   state.rows = syntheticCrowdingRows(12);
+  state.files = [];
   state.file = null;
   state.view = "overlay";
   state.activeStep = "review";

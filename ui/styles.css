@@ -128,7 +128,8 @@ p {
 .mode,
 .mode-choice,
 .primary-action,
-.theme-toggle {
+.theme-toggle,
+.download-actions button {
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -490,6 +491,18 @@ textarea {
 .metadata-grid dd {
   margin: 4px 0 0;
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.workflow-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.next-action {
+  min-width: 210px;
 }
 
 .toggle-grid {
@@ -552,6 +565,31 @@ td input {
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 12px;
+}
+
+.scan-status {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink);
+  font-size: 13px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+}
+
+.download-actions {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.download-actions h2 {
+  margin-bottom: 2px;
+}
+
+.download-actions button {
+  width: 100%;
 }
 
 .stage-slider {

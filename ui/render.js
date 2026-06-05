@@ -63,6 +63,24 @@ function updateViewer(result) {
   const v = ensureViewer();
   if (!v) return;
   v.resize();
+  if (state.files.length) {
+    v.loadUploadedScans(state.files).then(({ loaded, count }) => {
+      state.scanRenderStatus = count
+        ? `Rendering exact uploaded scan mesh${count === 1 ? "" : "es"} (${state.files.map((file) => file.name).join(", ")}). Staged movement remains schematic unless segmented per-tooth meshes are provided.`
+        : "No uploaded STL scan mesh could be rendered.";
+      renderScanStatus();
+      if (loaded && state.lastEval === result) updateViewer(result);
+    }).catch((error) => {
+      state.scanRenderStatus = `Uploaded STL render failed: ${error.message}`;
+      renderScanStatus();
+    });
+  } else {
+    v.loadUploadedScans([]);
+    state.scanRenderStatus = state.useDemoMeshes
+      ? "Rendering bundled demo tooth meshes."
+      : "No uploaded scan mesh is loaded; review uses schematic proxy teeth.";
+    renderScanStatus();
+  }
   const renderMeshes = result.render_meshes?.length
     ? result.render_meshes
     : (state.useDemoMeshes ? demoRenderMeshes() : []);
@@ -123,6 +141,8 @@ export function renderAll() {
   renderRows();
   renderIprContactMap();
   renderChat();
+  renderScanStatus();
+  renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   el("stageValue").textContent = el("stageSlider").value;
   scheduleEvaluate();
@@ -222,12 +242,13 @@ function renderRows() {
 }
 
 function renderMetadata() {
-  const items = state.file ? [
-    ["File", state.file.name],
-    ["Size", `${Math.round(state.file.size / 1024)} KB`],
+  const totalSize = state.files.reduce((sum, file) => sum + file.size, 0);
+  const items = state.files.length ? [
+    ["Files", state.files.map((file) => file.name).join(", ")],
+    ["Size", `${Math.round(totalSize / 1024)} KB`],
     ["Units", state.scanUnits],
     ["Arch", state.scanArch || "unknown"],
-  ] : [["File", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"]];
+  ] : [["Files", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"]];
   el("scanMetadata").innerHTML = items
     .map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`)
     .join("");
@@ -255,6 +276,7 @@ function renderEvaluation(result) {
   updateViewer(result);
   renderPrintExport(result.print_export);
   renderOptimizedStaging(result.optimized_staging);
+  renderDownloadActions();
 }
 
 function dataGapMarkup(result) {
@@ -318,6 +340,7 @@ function renderEngineErrors(errors) {
     .join("");
   el("timelineText").textContent = "Plan invalid - fix the errors above to re-evaluate.";
   el("printExportStatus").innerHTML = "";
+  renderDownloadActions();
 }
 
 function renderEngineOffline() {
@@ -331,6 +354,16 @@ function renderEngineOffline() {
   el("printExportStatus").innerHTML = "";
   el("optimizedStaging").innerHTML = "";
   el("timelineText").textContent = "Engine offline - no projection available.";
+  renderDownloadActions();
+}
+
+function renderScanStatus() {
+  el("scanRenderStatus").textContent = state.scanRenderStatus;
+}
+
+function renderDownloadActions() {
+  el("downloadEvaluation").disabled = !state.lastEval;
+  el("downloadPrintMetadata").disabled = !state.lastEval?.print_export;
 }
 
 function renderPrintExport(status) {
@@ -472,4 +505,3 @@ function toothPath(ctx, x, y, label) {
   ctx.bezierCurveTo(x + 8, y + 22, x - 8, y + 22, x - 13, y + 14);
   ctx.closePath();
 }
-

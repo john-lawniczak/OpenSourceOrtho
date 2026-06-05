@@ -87,20 +87,20 @@ function parseIprContacts(value) {
 }
 
 function scanPayload() {
-  if (!state.file) return [];
-  return [{
+  if (!state.files.length) return [];
+  return state.files.map((file) => ({
     asset: {
-      id: `ui-${state.file.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
+      id: `ui-${file.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
       format: "stl",
       provenance: "patient-derived",
       units: state.scanUnits,
       vertex_count: 0,
       face_count: 0,
-      reference: state.file.name,
+      reference: file.name,
     },
     arch: state.scanArch || null,
     source: "intraoral-scan",
-  }];
+  }));
 }
 
 function deltaPayload(row) {
