@@ -10,13 +10,13 @@ import { displacement, rotationApplications, toothKind } from "./core.js";
 import { toothPositions } from "./state.js";
 import { parseStlGeometry } from "./stl.js";
 
-const GHOST = new THREE.MeshStandardMaterial({ color: 0xc4d0d6, transparent: true, opacity: 0.45, roughness: 0.7 });
-const PLANNED = new THREE.MeshStandardMaterial({ color: 0xf6f1e6, roughness: 0.62, metalness: 0.02 });
+const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
+const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
 const SCAN = new THREE.MeshStandardMaterial({
-  color: 0x8fd3c7,
+  color: 0xf1e4cf,
   transparent: true,
-  opacity: 0.62,
-  roughness: 0.58,
+  opacity: 0.9,
+  roughness: 0.46,
   metalness: 0.01,
   side: THREE.DoubleSide,
 });
@@ -124,11 +124,17 @@ export function createViewer(container) {
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.65);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.68));
+  const dir = new THREE.DirectionalLight(0xfffbf2, 0.82);
   dir.position.set(40, 80, 40);
   scene.add(dir);
-  scene.add(new THREE.GridHelper(90, 18, 0xdbe3e7, 0xeef2f4));
+  const fill = new THREE.DirectionalLight(0xdcecff, 0.32);
+  fill.position.set(-35, 30, -20);
+  scene.add(fill);
+  const grid = new THREE.GridHelper(90, 18, 0xd5dde2, 0xe8edf0);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.52;
+  scene.add(grid);
 
   // Persistent arch labels so the stacked maxillary/mandibular arches are
   // unambiguous (depthTest off keeps them readable through the teeth).
@@ -182,7 +188,8 @@ export function createViewer(container) {
     proxies.clear();
     const frame = frames && frames[stageIndex];
     if (!frame) return;
-    const showCurrent = view === "current" || view === "overlay";
+    const hasExactScan = uploadedScans.visible && uploadedScans.children.length > 0;
+    const showCurrent = (view === "current" || view === "overlay") && !hasExactScan;
     const showPlanned = view === "planned" || view === "overlay";
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
@@ -289,21 +296,21 @@ export function createViewer(container) {
     return loaded;
   }
 
-  async function loadUploadedScans(files = []) {
-    const scanFiles = files.filter((file) => file?.name?.toLowerCase().endsWith(".stl"));
-    const key = scanFiles.map((file) => `${file.name}:${file.size}:${file.lastModified}`).join("|");
+  async function loadScanSources(sources = []) {
+    const scanSources = sources.filter((source) => source?.name?.toLowerCase().endsWith(".stl"));
+    const key = scanSources.map(sourceKey).join("|");
     if (uploadedScans.userData.key === key) return { loaded: false, count: uploadedScans.children.length };
     uploadedScans.userData.key = key;
     uploadedScans.traverse((child) => {
       if (child.isMesh) child.geometry.dispose();
     });
     uploadedScans.clear();
-    if (!scanFiles.length) return { loaded: false, count: 0 };
+    if (!scanSources.length) return { loaded: false, count: 0 };
 
-    for (const file of scanFiles) {
-      const geometry = parseStlGeometry(await file.arrayBuffer());
+    for (const source of scanSources) {
+      const geometry = parseStlGeometry(await sourceBuffer(source));
       const mesh = new THREE.Mesh(geometry, SCAN);
-      mesh.name = file.name;
+      mesh.name = source.name;
       uploadedScans.add(mesh);
     }
 
@@ -317,6 +324,10 @@ export function createViewer(container) {
     return { loaded: true, count: uploadedScans.children.length };
   }
 
+  function loadUploadedScans(files = []) {
+    return loadScanSources(files.map((file) => ({ name: file.name, file })));
+  }
+
   function dispose() {
     running = false;
     for (const geom of lineGeometries) geom.dispose();
@@ -327,7 +338,19 @@ export function createViewer(container) {
   }
 
   window.addEventListener("resize", resize);
-  return { update, resize, dispose, loadMeshes, loadUploadedScans, zoomBy, recenter };
+  return { update, resize, dispose, loadMeshes, loadScanSources, loadUploadedScans, zoomBy, recenter };
+}
+
+function sourceKey(source) {
+  if (source.file) return `${source.name}:${source.file.size}:${source.file.lastModified}`;
+  return `${source.name}:${source.url}`;
+}
+
+async function sourceBuffer(source) {
+  if (source.file) return source.file.arrayBuffer();
+  const response = await fetch(source.url);
+  if (!response.ok) throw new Error(`could not load ${source.name}`);
+  return response.arrayBuffer();
 }
 
 // A material placeholder: mergeGroupGeometry only copies position/normal, so the

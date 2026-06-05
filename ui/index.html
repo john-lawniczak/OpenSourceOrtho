@@ -78,6 +78,14 @@
             </div>
             <button class="primary-action" id="loadDemo" type="button">Try 12-Month Demo</button>
           </div>
+          <div class="workflow-card">
+            <h2>Example Progression</h2>
+            <p>Load the canonical OrthoCAD upper/lower STL pair and scrub a simulated stage sequence. The scan layer is exact; the movement sequence is educational until segmented tooth meshes are provided.</p>
+            <div class="workflow-actions inline">
+              <button class="primary-action" data-canonical-months="6" type="button">Load 6-Month Preview</button>
+              <button data-canonical-months="12" type="button">Load 12-Month Preview</button>
+            </div>
+          </div>
           <div class="simple-grid">
             <label class="upload-target" for="simpleStlFile">
               <span class="upload-icon" aria-hidden="true">↑</span>
@@ -125,6 +133,14 @@
               <li>Use dental model resin and selected thermoforming sheets such as PETG, TPU/polyurethane, or EVA-family materials; clean, cure, remove supports, and smooth printed models per material instructions.</li>
             </ol>
           </div>
+          <div class="workflow-card">
+            <h2>Step 1: Add Scan Geometry</h2>
+            <p>Upload one or more STL files, or load the canonical upper/lower OrthoCAD example. Confirm units before using millimeter findings.</p>
+            <div class="workflow-actions inline">
+              <button data-canonical-months="6" type="button">Load 6-Month Example</button>
+              <button data-canonical-months="12" type="button">Load 12-Month Example</button>
+            </div>
+          </div>
           <div class="upload-row">
             <label class="upload-target" for="stlFile">
               <span class="upload-icon" aria-hidden="true">↑</span>
@@ -163,13 +179,25 @@
             <h2>Data Availability</h2>
             <p>Only declared data is available to the plan.</p>
           </div>
+          <div class="workflow-card">
+            <h2>Step 2: Declare Records</h2>
+            <p>Mark which records you actually have. Missing segmented teeth, roots, CBCT, photos, and notes will limit the review and generate acquisition guidance.</p>
+          </div>
           <div class="toggle-grid" id="availabilityGrid"></div>
+          <div class="workflow-actions">
+            <button data-step-target="upload" type="button">Back: Upload</button>
+            <button class="primary-action next-action" data-step-target="settings" type="button">Next: Settings</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-settings">
           <div class="panel-heading">
             <h2>Movement Settings</h2>
             <p>Configurable heuristics, not approval.</p>
+          </div>
+          <div class="workflow-card">
+            <h2>Step 3: Set Review Rules</h2>
+            <p>Adjust movement caps, print metadata, fixed teeth, attachments, and exclusions. These settings control deterministic warnings; they do not approve treatment.</p>
           </div>
           <div class="field-grid">
             <label>Linear mm<input id="capLinear" type="number" min="0.01" step="0.01" value="0.25" /></label>
@@ -209,6 +237,10 @@
             <div class="ipr-map" id="iprContactMap" aria-label="IPR contact map"></div>
             <p class="viewer-caveat">Clinical controls are planning metadata. They help the engine flag conflicts; they do not predict biological response or aligner tracking.</p>
           </div>
+          <div class="workflow-actions">
+            <button data-step-target="availability" type="button">Back: Data</button>
+            <button class="primary-action next-action" data-step-target="stages" type="button">Next: Stages</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-stages">
@@ -218,6 +250,10 @@
               <p>FDI tooth IDs, millimeters, and degrees.</p>
             </div>
             <button class="primary-action" id="addStage" type="button">Add Stage</button>
+          </div>
+          <div class="workflow-card">
+            <h2>Step 4: Build The Timeline</h2>
+            <p>Each row is one tooth movement at one stage. Use small increments, then review the cumulative sequence with the stage slider.</p>
           </div>
           <div class="stage-table-wrap">
             <table class="stage-table">
@@ -237,6 +273,10 @@
               <tbody id="stageRows"></tbody>
             </table>
           </div>
+          <div class="workflow-actions">
+            <button data-step-target="settings" type="button">Back: Settings</button>
+            <button class="primary-action next-action" data-step-target="review" type="button">Next: Review</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-review">
@@ -245,6 +285,10 @@
               <div class="panel-heading">
                 <h2>Progress Preview</h2>
                 <p id="timelineText"></p>
+              </div>
+              <div class="workflow-card">
+                <h2>Step 5: Review The Progression</h2>
+                <p>Use Current, Planned, Overlay, and the stage slider to inspect each simulated stage. The exact STL scan layer shows the imported shell geometry; tooth movement is only exact when segmented tooth meshes are available.</p>
               </div>
               <div class="viewer-toolbar">
                 <button class="mode is-active" data-view="current" type="button">Current</button>

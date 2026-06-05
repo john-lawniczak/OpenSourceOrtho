@@ -87,18 +87,25 @@ function parseIprContacts(value) {
 }
 
 function scanPayload() {
-  if (!state.files.length) return [];
-  return state.files.map((file) => ({
+  const sources = state.files.length
+    ? state.files.map((file) => ({ name: file.name, reference: file.name, arch: state.scanArch || null }))
+    : state.scanSources.map((source) => ({
+      name: source.name,
+      reference: source.url || source.name,
+      arch: source.arch || state.scanArch || null,
+    }));
+  if (!sources.length) return [];
+  return sources.map((source) => ({
     asset: {
-      id: `ui-${file.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
+      id: `ui-${source.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
       format: "stl",
       provenance: "patient-derived",
       units: state.scanUnits,
       vertex_count: 0,
       face_count: 0,
-      reference: file.name,
+      reference: source.reference,
     },
-    arch: state.scanArch || null,
+    arch: source.arch,
     source: "intraoral-scan",
   }));
 }

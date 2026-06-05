@@ -5,7 +5,7 @@
 
 Browser prototype for the data-model workflow:
 
-1. Guided educational STL review and synthetic 12-month crowding demo
+1. Guided educational STL review, synthetic 12-month crowding demo, and canonical OrthoCAD scan fixture
 2. STL upload metadata
 3. data availability toggles
 4. movement cap controls
@@ -80,6 +80,14 @@ divergent implementation.
 Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
 remains the source of truth for mesh inspection.
 
+## Canonical scan fixture
+
+`ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
+OrthoCAD shell STLs used to keep exact scan rendering stable as the product
+evolves. The Guided and Clinician upload screens can load that pair as a 6-month
+or 12-month educational progression. The scan layer is the actual STL geometry;
+the movement sequence is simulated until segmented per-tooth meshes are available.
+
 ## 3D viewer
 
 The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
@@ -90,6 +98,10 @@ constraints, surfaced in the on-screen caveat:
   available from the Python API. Otherwise it falls back to schematic proxy teeth.
   Plan JSON still does not store mesh bytes; local mesh serving is limited to
   `/api/mesh/<mesh_asset_id>` files registered in the local mesh workspace.
+- Uploaded or canonical whole-arch STL scans render as an exact enamel-colored
+  scan layer in Current and Overlay views. Current schematic proxy teeth are hidden
+  when that exact scan layer is present, so the user is not shown two competing
+  "current" anatomies.
 - Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
   movement is visible next to ~10 mm teeth.
 - Rotation is drawn **only** where the engine sets `rotation_renderable`. The

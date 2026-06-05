@@ -13,6 +13,19 @@ export const demoInitialOffsets = {
   33: { x: -0.28, y: -0.12, z: 0 },
 };
 
+export const canonicalScanSources = [
+  {
+    name: "308806025_shell_occlusion_u.stl",
+    url: "/example-scans/canonical-orthocad-001/308806025_shell_occlusion_u.stl",
+    arch: "maxillary",
+  },
+  {
+    name: "308806025_shell_occlusion_l.stl",
+    url: "/example-scans/canonical-orthocad-001/308806025_shell_occlusion_l.stl",
+    arch: "mandibular",
+  },
+];
+
 export function syntheticCrowdingRows(stageCount = 12) {
   const rows = [];
   for (let stage = 0; stage < stageCount; stage += 1) {
