@@ -134,9 +134,16 @@ acknowledgement. `orthoplan.printing.build_print_export_status()` turns that int
 readiness object with blockers and planned artifact filenames.
 
 `orthoplan print-package PLAN.json --out DIR` generates stage proxy STL files from the current
-plan frames, a manifest, an optional zip package, and an optional `.eml` email draft. These are
-objective geometry outputs from the supplied plan data. Material choice, printing,
-post-processing, and any physical use are the user's responsibility and risk.
+plan frames, a manifest, an optional deterministic zip package, and an optional `.eml` email
+draft. The manifest records the engine version, canonical plan hash, stage-frame hash,
+per-artifact SHA-256 hashes, byte sizes, blockers, and geometry-source metadata. When a tooth
+has linked segmented mesh bounds, the generated proxy is sized from those bounds; otherwise it
+is explicitly labeled as schematic proxy geometry. These are objective geometry outputs from
+the supplied plan data. Material choice, printing, post-processing, and any physical use are
+the user's responsibility and risk.
+
+The next print-geometry phase should package intentionally supplied mesh bytes and transform
+actual per-tooth vertices instead of bounded proxy solids.
 
 ## Acquisition Advisor
 

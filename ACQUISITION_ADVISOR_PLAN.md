@@ -345,7 +345,7 @@ Target: parity with existing modules' rigor (positive + negative + edge cases).
 
 # Companion Implementation Plan - Measurement Truth Lab
 
-> **Status:** v1 implemented; expand fixture depth and visual/e2e coverage next.
+> **Status:** v2 implemented; expand fixture depth, real mesh transforms, and CI baselines next.
 > **Owner module (proposed):** `orthoplan/validation/measurement_lab.py`.
 > **One-liner:** Build a reproducible benchmark harness that proves OpenSource Ortho
 > recovers known geometric measurements from synthetic STL fixtures, known transforms,
@@ -362,11 +362,11 @@ measurement-validation lab.
 
 The Measurement Truth Lab should become the project’s public evidence layer:
 
-- synthetic fixtures with known geometry and no patient data
+- synthetic and file-backed golden fixtures with known geometry and no patient data
 - known transforms applied to known tooth-like meshes
 - expected millimeter/degree outputs with tolerances
 - canonical reports that bind fixture input hashes to engine output
-- visual snapshots that prove schematic/mesh renderers show the expected movement
+- browser screenshots and pixel checks that prove schematic renderers show expected movement
 
 This is the fastest path from "credible prototype" to "serious research tool."
 
@@ -647,5 +647,5 @@ Future v2:
 2. Add CLI `orthoplan measurement-lab`.
 3. Add fixture family coverage C1-C6.
 4. Add report embedding for lab status.
-5. Add Playwright visual regression snapshots.
+5. Expand Playwright visual regression snapshots into CI-managed baseline comparisons.
 6. Update docs and `TODO.md` when complete.

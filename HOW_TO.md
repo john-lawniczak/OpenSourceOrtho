@@ -32,9 +32,11 @@ orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out repor
 
 ## 3. Printing And Aligner Manufacturing Boundary
 
-The app can generate stage proxy STL files, a manifest, optional zip package, and optional
-email draft. Outputs are generated from the supplied plan data and are used at the user's own
-choice and risk.
+The app can generate stage proxy STL files, a manifest with plan/frame/artifact hashes, an
+optional deterministic zip package, and an optional email draft. When segmented mesh bounds
+exist, the package records that geometry source; otherwise it labels schematic proxy geometry.
+Outputs are generated from the supplied plan data and are used at the user's own choice and
+risk.
 
 For physical workflows:
 

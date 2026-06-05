@@ -18,19 +18,12 @@ from typing import Any
 
 from orthoplan import __version__
 from orthoplan.api import evaluate_plan
+from orthoplan.hashing import canonical_json, sha256_text
 from orthoplan.io.serialization import plan_to_json
 from orthoplan.model.plan import TreatmentPlan
 
 
 REPORT_SCHEMA_VERSION = "orthoplan-report-v1"
-
-
-def canonical_json(data: Any) -> str:
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-
-
-def sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def plan_digest(plan: TreatmentPlan) -> str:

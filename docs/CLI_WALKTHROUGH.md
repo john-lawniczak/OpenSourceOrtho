@@ -126,8 +126,9 @@ orthoplan measurement-lab --case cumulative-translation --json
 ```
 
 Runs the built-in synthetic validation cases through the same public engine paths
-used by the CLI, API, reporting, and visualization frame contracts. Failures print
-the exact expected-vs-actual mismatch.
+used by the CLI, API, reporting, and visualization frame contracts. The lab includes
+file-backed golden STL fixtures plus expected millimeter/degree outputs with tolerances.
+Failures print the exact expected-vs-actual mismatch.
 
 ## 8. Print package export
 
@@ -136,8 +137,10 @@ orthoplan print-package examples/basic_plan.json --out print-output --zip --emai
 ```
 
 Writes stage proxy STL files, a deterministic manifest, and optional zip/email
-draft. Generated files are informational outputs from the supplied plan data and
-physical use is the user's own responsibility and risk.
+draft. The manifest binds the package to the engine version, plan hash, stage-frame
+hash, artifact hashes, and geometry-source metadata. Generated files are informational
+outputs from the supplied plan data and physical use is the user's own responsibility
+and risk.
 
 ## 9. Optional model advisory
 

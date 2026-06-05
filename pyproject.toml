@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["orthoplan"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"orthoplan/validation/golden_fixtures" = "orthoplan/validation/golden_fixtures"
+
 [project]
 name = "opensource-ortho"
 version = "0.1.0"

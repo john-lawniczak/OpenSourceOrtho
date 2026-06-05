@@ -12,7 +12,7 @@ Browser prototype for the data-model workflow:
 5. timeline projection
 6. progress preview
 7. plan-shaped JSON output
-8. print-export readiness metadata
+8. print-export readiness and package metadata
 
 ## Run it
 
@@ -70,8 +70,8 @@ with a matching pinned pair.
 The Settings step has print-export fields for format, delivery email, dental model
 material, thermoforming material, and acknowledgement. The Review step renders backend
 readiness status from `print_export`. `orthoplan print-package` generates stage proxy STL
-files, a manifest, optional zip package, and optional email draft from the supplied plan
-data.
+files, a hash-bound manifest, optional deterministic zip package, and optional email draft
+from the supplied plan data.
 
 ## Tests
 
@@ -88,8 +88,10 @@ rather than defining them inline, so the tested code is the shipped code.
 
 A headless-browser smoke/visual-regression test (`tests/e2e/test_viewer_smoke.py`)
 verifies the 3D viewer mounts a sized WebGL canvas, the acquisition panel renders,
-the 2D canvas has non-background movement pixels, and invalid stage input reaches
-the engine rejection state. It is skipped unless Playwright is installed:
+print export readiness is visible, 2D/3D screenshot artifacts are non-empty, the 2D
+canvas has non-background movement pixels, and invalid stage input reaches both the
+machine-readable API rejection state and visible engine rejection state. It is skipped
+unless Playwright is installed:
 
 ```bash
 pip install -e ".[e2e]" && python -m playwright install chromium

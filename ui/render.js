@@ -256,7 +256,7 @@ function renderPrintExport(status) {
   }
   const blockers = status.blockers?.length
     ? `<ul>${status.blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : "<p>Export metadata is ready for handoff review.</p>";
+    : "<p>Print package inputs are ready for export.</p>";
   const artifacts = status.artifacts?.length
     ? `<p>${escapeHtml(status.artifacts.map((item) => item.filename).join(", "))}</p>`
     : "";

@@ -4,28 +4,41 @@
 
 ### 1. Measurement Truth Lab Expansion
 
-Version 1 is implemented as `orthoplan measurement-lab` with seed cases for each planned
-fixture family. The next pass should expand it into the full validation harness described
-in [ACQUISITION_ADVISOR_PLAN.md](ACQUISITION_ADVISOR_PLAN.md).
+Version 2 is implemented with file-backed golden STL fixtures, explicit expected/observed
+measurement outputs, and tolerances in `orthoplan measurement-lab`. The next pass should
+expand fixture depth and connect lab status into reports.
 
 Target outcomes:
 
-- synthetic STL fixtures with known bounds, transforms, and hashes
-- expected stage-frame outputs with mm/degree tolerances
+- additional golden STL fixtures with binary STL, multi-tooth meshes, and known hashes
+- broader expected stage-frame outputs with mm/degree tolerances
 - fixture families for bounds/scale, cumulative movement, rotation/frame gating,
   segmentation linkage, movement caps, and report reproducibility
 - CLI command `orthoplan measurement-lab`
 - report embedding for validation status
-- e2e/visual checks that compare expected vs actual UI movement behavior
+- CI-managed screenshot baselines for expected vs actual UI movement behavior
 
 Definition of done:
 
-- at least one fixture in every planned fixture family
+- multiple fixtures in every planned fixture family
 - failures produce precise mismatch messages
 - no patient data
 - all checks pass in CI
 
-### 2. Acquisition Advisor Follow-Through
+### 2. Print Geometry Upgrade
+
+Print packages now include artifact hashes, deterministic zip output, plan/frame hashes, and
+geometry-source metadata. The next pass should move from bounded stage proxy solids to real
+segmented mesh transforms.
+
+Target outcomes:
+
+- transform actual per-tooth mesh vertices when source mesh bytes are intentionally packaged
+- emit STL/3MF with artifact hashes and manifest hashes
+- validate watertightness/orientation when optional mesh tooling is installed
+- keep schematic fallback clearly labeled when real mesh bytes are unavailable
+
+### 3. Acquisition Advisor Follow-Through
 
 The deterministic acquisition advisor is implemented in the engine, API, UI, CLI, and
 `plan-summary`. The next pass should polish it into a stronger user-facing workflow.

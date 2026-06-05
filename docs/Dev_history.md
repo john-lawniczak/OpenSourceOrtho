@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-05 - Measurement/Print Readiness Hardening
+
+- Added golden STL fixtures under `orthoplan/validation/golden_fixtures/` and expanded `orthoplan measurement-lab` results with expected values, observed values, and explicit tolerances for STL bounds and known mm/degree transforms.
+- Split measurement-lab cases and print-package generation into smaller modules to keep strict maintainability checks green.
+- Upgraded print packages with canonical plan hashes, stage-frame hashes, per-artifact SHA-256 hashes, byte sizes, deterministic zip creation, and geometry-source metadata that distinguishes segmented-mesh-bounds proxies from schematic proxies.
+- Expanded Playwright e2e coverage for acquisition rendering, print export readiness, 2D/3D screenshot artifacts, and machine-readable API rejection states.
+
 ### 2026-06-04 - Print Export, How-To, and LLM Review Guidance
 
 - Added `PrintExportSettings` to the treatment settings model and `orthoplan.printing` readiness output for user-directed model printing/thermoforming handoff metadata.
@@ -353,4 +360,9 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-04T21:29:50+00:00 - Commit Status
 
 - Commit subject: Add trust and measurement readiness features
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T13:57:49+00:00 - Commit Status
+
+- Commit subject: Harden measurement truth and print packages
 - Status: development history hook observed and recorded this commit workflow.

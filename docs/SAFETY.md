@@ -81,9 +81,11 @@ The advisor predicts nothing about what newly acquired data would show.
 ## Printing And Manufacturing Boundary
 
 Print export settings, readiness checks, and generated packages are informational outputs from
-the supplied plan data. They do not make a plan safe, suitable, or guaranteed to fit. Physical
-workflows depend on confirmed scale, validated model materials, appropriate thermoforming
-sheets, post-processing controls, cleaning procedures, and applicable regulatory compliance.
+the supplied plan data. Package manifests bind the output to plan/frame/artifact hashes and
+label whether geometry came from segmented mesh bounds or schematic proxies. They do not make
+a plan safe, suitable, or guaranteed to fit. Physical workflows depend on confirmed scale,
+validated model materials, appropriate thermoforming sheets, post-processing controls,
+cleaning procedures, and applicable regulatory compliance.
 
 The app may list planned model artifact filenames and blockers. It must not claim that hobby
 printer materials, unvalidated resins, or ordinary plastics are appropriate for intraoral use.
