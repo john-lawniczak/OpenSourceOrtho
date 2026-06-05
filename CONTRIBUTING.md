@@ -143,6 +143,14 @@ confirm:
 Maintainers may ask for changes to keep the codebase composable; small,
 well-scoped PRs are reviewed fastest.
 
+## Releases and versioning
+
+The version lives in `pyproject.toml` and `orthoplan/__init__.py` and is exposed
+as `orthoplan.__version__` (it also stamps print/report artifacts). Policy: each
+branch merged into `main` bumps the **minor** version (1.0.0 -> 1.1.0).
+Maintainers tag releases as `vX.Y.0`. Contributors do not need to change the
+version in a PR.
+
 ## Dependencies
 
 New dependencies must be permissively licensed and recorded in
