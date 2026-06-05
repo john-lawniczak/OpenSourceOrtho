@@ -4,6 +4,12 @@
 
 OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows.
 
+[![OpenSource Ortho review workspace](docs/images/review-demo.png)](docs/media/sample-demo.mp4)
+
+> The Review workspace: a stacked **Upper arch / Lower arch** 3D preview with
+> loaded crown meshes, staged movement, findings, data gaps, and the local
+> **Plan AI** helper. ▶ [Watch the demo (MP4)](docs/media/sample-demo.mp4).
+
 ## Mission
 
 **Everyone deserves the right to their own data and access to a healthy, clean smile.**
