@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenSource Ortho - aligner planning workspace</title>
+    <meta name="description" content="OpenSource Ortho: an open, safety-boundary-first clear-aligner treatment-planning research toolkit." />
+    <meta name="theme-color" content="#0f766e" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three.module.js" } }
+    </script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Plan workflow">
+        <div class="brand-block">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="28" height="28">
+              <path fill="currentColor" d="M32 13c-6 0-9 3-14 3-4 0-7-2-9-1-2 1-2 5-1 11 1 7 3 11 5 17 1 4 2 8 4 8 3 0 3-9 6-9s3 9 6 9c2 0 3-4 4-8 2-6 4-10 5-17 1-6 1-10-1-11-2-1-5 1-9 1-6 0-9-3-14-3z"/>
+            </svg>
+          </span>
+          <div>
+            <h1>OpenSource Ortho</h1>
+            <p>Open aligner-planning workspace</p>
+          </div>
+        </div>
+
+        <div class="mode-switch" aria-label="Workspace mode">
+          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Clinician</button>
+          <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
+        </div>
+        <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
+
+        <nav class="step-list" aria-label="Workflow steps">
+          <button class="step is-active" data-step="upload" type="button">Upload</button>
+          <button class="step" data-step="availability" type="button">Data</button>
+          <button class="step" data-step="settings" type="button">Settings</button>
+          <button class="step" data-step="stages" type="button">Stages</button>
+          <button class="step" data-step="review" type="button">Review</button>
+        </nav>
+
+        <section class="data-gap-panel" aria-label="Data gaps">
+          <h2>Data Gaps</h2>
+          <ul id="dataGapList"></ul>
+        </section>
+
+        <section class="data-gap-panel" aria-label="Acquisition advisor">
+          <h2>Acquire Next</h2>
+          <p id="acquisitionCaveat"></p>
+          <ul id="acquisitionList"></ul>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <label for="planTitle">Plan Title</label>
+            <input id="planTitle" value="Draft aligner plan" />
+          </div>
+          <div>
+            <label for="planId">Plan ID</label>
+            <input id="planId" value="draft-001" />
+          </div>
+          <div>
+            <label for="wearInterval">Wear Days</label>
+            <input id="wearInterval" type="number" min="1" value="14" />
+          </div>
+        </header>
+
+        <section class="panel" id="panel-simple">
+          <div class="simple-hero">
+            <div>
+              <h2>Guided STL Review</h2>
+              <p>Explore an educational tooth-movement visualization and learn what records an orthodontist would need. This is not a diagnosis, treatment plan, or aligner prescription.</p>
+            </div>
+            <button class="primary-action" id="loadDemo" type="button">Try 12-Month Demo</button>
+          </div>
+          <div class="simple-grid">
+            <label class="upload-target" for="simpleStlFile">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <span id="simpleUploadLabel">Choose your STL</span>
+              <input id="simpleStlFile" type="file" accept=".stl" />
+            </label>
+            <div class="simple-panel">
+              <label>
+                What are you exploring?
+                <select id="simpleGoal">
+                  <option value="general-alignment">General alignment</option>
+                  <option value="crowding">Crowding</option>
+                  <option value="spacing">Spacing</option>
+                  <option value="front-teeth">Front teeth appearance</option>
+                  <option value="bite">Bite concern</option>
+                </select>
+              </label>
+              <label class="toggle">
+                <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
+                <input id="simpleAcknowledged" type="checkbox" />
+              </label>
+              <button class="primary-action" id="simpleReview" type="button">Review Educational Preview</button>
+            </div>
+          </div>
+          <div class="simple-steps">
+            <div><strong>1</strong><span>Upload an STL or use the synthetic demo.</span></div>
+            <div><strong>2</strong><span>Review the visual movement timeline.</span></div>
+            <div><strong>3</strong><span>Review and refine the staged preview.</span></div>
+            <div><strong>4</strong><span>Prepare 3D model prints for professional review.</span></div>
+          </div>
+        </section>
+
+        <section class="panel is-active" id="panel-upload">
+          <div class="panel-heading">
+            <h2>Upload STL</h2>
+            <p>Surface scan geometry only. Units must be confirmed before cap checks.</p>
+          </div>
+          <div class="howto-panel">
+            <h2>Getting Started</h2>
+            <ol>
+              <li>Upload or reference a surface STL and confirm units before using millimeter checks.</li>
+              <li>Declare which records are available; missing data limits what the engine can assess.</li>
+              <li>Enter staged tooth movement, then review findings, acquisition advice, and report/export status.</li>
+              <li>For physical workflows, use validated materials, confirmed scale, and calibrated equipment; aligner sheets are normally thermoformed over models, not simply printed and worn.</li>
+              <li>Use dental model resin and selected thermoforming sheets such as PETG, TPU/polyurethane, or EVA-family materials; clean, cure, remove supports, and smooth printed models per material instructions.</li>
+            </ol>
+          </div>
+          <div class="upload-row">
+            <label class="upload-target" for="stlFile">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <span id="uploadLabel">Choose STL file</span>
+              <input id="stlFile" type="file" accept=".stl" />
+            </label>
+            <div class="field-grid compact">
+              <label>
+                Units
+                <select id="scanUnits">
+                  <option value="unverified">Unverified</option>
+                  <option value="mm">mm</option>
+                  <option value="cm">cm</option>
+                  <option value="inch">inch</option>
+                  <option value="meter">meter</option>
+                </select>
+              </label>
+              <label>
+                Arch
+                <select id="scanArch">
+                  <option value="">Unknown</option>
+                  <option value="maxillary">Maxillary</option>
+                  <option value="mandibular">Mandibular</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <dl class="metadata-grid" id="scanMetadata"></dl>
+        </section>
+
+        <section class="panel" id="panel-availability">
+          <div class="panel-heading">
+            <h2>Data Availability</h2>
+            <p>Only declared data is available to the plan.</p>
+          </div>
+          <div class="toggle-grid" id="availabilityGrid"></div>
+        </section>
+
+        <section class="panel" id="panel-settings">
+          <div class="panel-heading">
+            <h2>Movement Settings</h2>
+            <p>Configurable heuristics, not approval.</p>
+          </div>
+          <div class="field-grid">
+            <label>Linear mm<input id="capLinear" type="number" min="0.01" step="0.01" value="0.25" /></label>
+            <label>Tip/Torque deg<input id="capAngular" type="number" min="0.1" step="0.1" value="1.0" /></label>
+            <label>Rotation deg<input id="capRotation" type="number" min="0.1" step="0.1" value="2.0" /></label>
+            <label>Vertical mm<input id="capVertical" type="number" min="0.01" step="0.01" value="0.10" /></label>
+          </div>
+          <div class="print-settings">
+            <h2>Print Export</h2>
+            <label class="toggle">
+              <span>Prepare print handoff metadata</span>
+              <input id="printEnabled" type="checkbox" />
+            </label>
+            <div class="field-grid">
+              <label>Format
+                <select id="printFormat">
+                  <option value="stl">STL</option>
+                  <option value="3mf">3MF</option>
+                </select>
+              </label>
+              <label>Delivery email<input id="printEmail" placeholder="optional" /></label>
+              <label>Model material<input id="modelMaterial" value="validated dental model resin" /></label>
+              <label>Aligner material<input id="thermoformingMaterial" value="user-selected aligner sheet material" /></label>
+            </div>
+            <label class="toggle">
+              <span>I understand print/package output is informational and any physical use is my own responsibility and risk.</span>
+              <input id="printSafety" type="checkbox" />
+            </label>
+          </div>
+          <div class="print-settings">
+            <h2>Clinical Controls</h2>
+            <div class="field-grid">
+              <label>Fixed teeth<input id="fixedTeeth" placeholder="11, 21" /></label>
+              <label>Attachment teeth<input id="attachmentTeeth" placeholder="13, 23" /></label>
+              <label>Excluded axes<input id="movementExclusions" placeholder="11:rotation,torque" /></label>
+            </div>
+            <div class="ipr-map" id="iprContactMap" aria-label="IPR contact map"></div>
+            <p class="viewer-caveat">Clinical controls are planning metadata. They help the engine flag conflicts; they do not predict biological response or aligner tracking.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-stages">
+          <div class="panel-heading split">
+            <div>
+              <h2>Stage Builder</h2>
+              <p>FDI tooth IDs, millimeters, and degrees.</p>
+            </div>
+            <button class="primary-action" id="addStage" type="button">Add Stage</button>
+          </div>
+          <div class="stage-table-wrap">
+            <table class="stage-table">
+              <thead>
+                <tr>
+                  <th>Stage</th>
+                  <th>Tooth</th>
+                  <th>X mm</th>
+                  <th>Y mm</th>
+                  <th>Z mm</th>
+                  <th>Tip</th>
+                  <th>Torque</th>
+                  <th>Rotation</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="stageRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-review">
+          <div class="review-grid">
+            <section class="review-main">
+              <div class="panel-heading">
+                <h2>Progress Preview</h2>
+                <p id="timelineText"></p>
+              </div>
+              <div class="viewer-toolbar">
+                <button class="mode is-active" data-view="current" type="button">Current</button>
+                <button class="mode" data-view="planned" type="button">Planned</button>
+                <button class="mode" data-view="overlay" type="button">Overlay</button>
+                <span class="dim-toggle">
+                  <button class="dim is-active" data-dim="3d" type="button">3D</button>
+                  <button class="dim" data-dim="2d" type="button">2D</button>
+                </span>
+                <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="12" /></label>
+                <label class="stage-slider">
+                  Stage <span id="stageValue">0</span>
+                  <input id="stageSlider" type="range" min="0" max="0" value="0" />
+                </label>
+              </div>
+              <div class="viewer3d-wrap">
+                <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+                <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
+                  <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                  <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
+                  <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                </div>
+              </div>
+              <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
+              <p class="viewer-caveat">Schematic proxy teeth, not the scanned mesh. Translation is the engine's cumulative movement, scaled by the shown ×exaggeration for visibility. PCA crown frames are exposed as approximate metadata only; rotation is not drawn unless a future trusted anatomical frame marks it renderable. The crown-centroid pivot is a visualization assumption.</p>
+            </section>
+            <aside class="review-side">
+              <h2>Findings</h2>
+              <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
+              <ul id="findingList"></ul>
+              <section class="ai-chat" aria-label="Plan AI chat">
+                <div class="ai-chat-heading">
+                  <h2>Plan AI</h2>
+                  <span id="chatStatus">Local helper ready</span>
+                </div>
+                <div class="field-grid chat-controls">
+                  <label>Connector
+                    <select id="chatProvider">
+                      <option value="local">Local helper</option>
+                      <option value="openai">OpenAI</option>
+                      <option value="claude-code">Claude Code</option>
+                      <option value="mcp">MCP host</option>
+                      <option value="odysseus">Odysseus</option>
+                      <option value="open-source">Open-source model</option>
+                    </select>
+                  </label>
+                  <label>Model
+                    <input id="chatModel" value="local-educational-helper" />
+                  </label>
+                  <label>Context
+                    <select id="chatScope">
+                      <option value="summary">Summary</option>
+                      <option value="clinical">Clinical metadata</option>
+                      <option value="full_plan">Full plan snapshot</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="chatMessages" class="chat-messages"></div>
+                <label class="chat-input">
+                  Ask about this plan
+                  <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
+                </label>
+                <button class="primary-action" id="sendChat" type="button">Ask AI</button>
+                <details class="ai-settings">
+                  <summary>Connector Settings</summary>
+                  <label>API key
+                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Session only; not saved" />
+                  </label>
+                  <label class="toggle">
+                    <span>Allow an external AI agent to request scoped plan context</span>
+                    <input id="agentAccessEnabled" type="checkbox" />
+                  </label>
+                  <label>Agent/MCP endpoint
+                    <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
+                  </label>
+                  <p class="viewer-caveat">The API key is session-only: it is never saved to disk, never written into plans or case snapshots, and is sent to the selected connector only when you press Ask AI. When an external connector is selected, that key and the scoped plan context are transmitted to it. The local helper sends nothing off this machine. Account linking should move to OAuth or an MCP permission handshake later.</p>
+                </details>
+                <p class="viewer-caveat">AI answers are educational only. External connectors require the acknowledgement above and receive the scoped plan context you select; use the context selector deliberately.</p>
+              </section>
+              <h2 class="advanced-only">Print Export</h2>
+              <div id="printExportStatus" class="status-block advanced-only"></div>
+              <h2 class="advanced-only">Optimized Staging</h2>
+              <div id="optimizedStaging" class="status-block advanced-only"></div>
+              <h2 class="advanced-only">Plan JSON</h2>
+              <textarea id="planJson" class="advanced-only" readonly></textarea>
+            </aside>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
