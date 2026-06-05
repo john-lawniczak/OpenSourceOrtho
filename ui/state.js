@@ -8,6 +8,7 @@ export const state = {
   files: [],
   scanSources: [],
   scanRenderStatus: "No uploaded scan is loaded.",
+  uploadStorageStatus: "",
   scanUnits: "unverified",
   scanArch: "",
   // Latest response from the Python engine (POST /api/evaluate). The UI never

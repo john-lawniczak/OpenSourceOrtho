@@ -237,9 +237,10 @@ function renderUploadFileList() {
   const markup = state.files.length
     ? `
       <div class="upload-file-heading">
-        <strong>${state.files.length === 1 ? "Stored STL" : "Stored STLs"}</strong>
+        <strong>${state.files.length === 1 ? "Uploaded STL" : "Uploaded STLs"}</strong>
         <button data-clear-uploads="true" type="button">Clear All</button>
       </div>
+      ${state.uploadStorageStatus ? `<p>${escapeHtml(state.uploadStorageStatus)}</p>` : ""}
       <ul>
         ${state.files.map((file, index) => `
           <li>
