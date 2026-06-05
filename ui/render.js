@@ -21,6 +21,7 @@ function ensureViewer() {
   } catch (error) {
     viewerFailed = true;
     el("viewer3d").hidden = true;
+    el("viewerZoom").hidden = true;
     el("archCanvas").hidden = false;
     state.dim = "2d";
   }
@@ -33,7 +34,19 @@ export function setDimension(dim) {
   const use3d = dim === "3d" && !viewerFailed;
   el("viewer3d").hidden = !use3d;
   el("archCanvas").hidden = use3d;
+  el("viewerZoom").hidden = !use3d;
   renderAll();
+}
+
+// Zoom/recenter hooks for the on-screen 3D controls. No-ops outside 3D.
+export function zoomViewer(factor) {
+  if (state.dim !== "3d") return;
+  ensureViewer()?.zoomBy(factor);
+}
+
+export function recenterViewer() {
+  if (state.dim !== "3d") return;
+  ensureViewer()?.recenter();
 }
 
 function updateViewer(result) {

@@ -249,7 +249,14 @@
                   <input id="stageSlider" type="range" min="0" max="0" value="0" />
                 </label>
               </div>
-              <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+              <div class="viewer3d-wrap">
+                <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+                <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
+                  <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                  <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
+                  <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                </div>
+              </div>
               <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
               <p class="viewer-caveat">Schematic proxy teeth, not the scanned mesh. Translation is the engine's cumulative movement, scaled by the shown ×exaggeration for visibility. PCA crown frames are exposed as approximate metadata only; rotation is not drawn unless a future trusted anatomical frame marks it renderable. The crown-centroid pivot is a visualization assumption.</p>
             </section>

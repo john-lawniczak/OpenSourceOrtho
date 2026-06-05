@@ -629,6 +629,10 @@ td input {
   margin-bottom: 10px;
 }
 
+.viewer3d-wrap {
+  position: relative;
+}
+
 .viewer3d {
   width: 100%;
   height: min(64vh, 660px);
@@ -637,6 +641,39 @@ td input {
   border-radius: 8px;
   overflow: hidden;
   background: var(--canvas);
+}
+
+.viewer-zoom {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.viewer-zoom button {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--canvas);
+  color: var(--ink, currentColor);
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.viewer-zoom button:hover {
+  opacity: 1;
+}
+
+.viewer-zoom[hidden] {
+  display: none;
 }
 
 .dim-toggle {

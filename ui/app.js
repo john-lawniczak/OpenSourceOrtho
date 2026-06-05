@@ -1,6 +1,6 @@
 import { askPlanAssistant, el, maxStage, state } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
-import { renderAll, renderAvailability, renderChat, setDimension } from "./render.js";
+import { recenterViewer, renderAll, renderAvailability, renderChat, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
@@ -127,6 +127,9 @@ document.body.addEventListener("click", (event) => {
   if (target.id === "sendChat") {
     sendChatMessage();
   }
+  if (target.id === "zoomIn") zoomViewer(0.83);
+  if (target.id === "zoomOut") zoomViewer(1.2);
+  if (target.id === "zoomReset") recenterViewer();
   if (target.dataset.remove) {
     state.rows.splice(Number(target.dataset.remove), 1);
     renderAll();

@@ -18,11 +18,45 @@ const LINE_MAT = new THREE.LineBasicMaterial({ color: 0x2563eb });
 const meshGeometryCache = new Map();
 const syntheticToothCache = new Map();
 
-// Map an arch layout point (top-down screen coords) to a centered world point
-// on the ground plane (XZ), Y up.
+// Dental-arch layout. Each FDI arch is laid out as a horseshoe on its own
+// horizontal plane: the maxillary (upper) arch sits above the mandibular
+// (lower) arch so the pair reads as a bite rather than two flat rows. The 2D
+// arch coordinates (toothPositions) drive the mesiodistal (x) spread and the
+// front-back (z) curve; the curve is amplified because depth is foreshortened
+// from a front view.
+const ARCH = {
+  widthScale: 0.052,
+  depthScale: 0.14,
+  gapY: 1.5,
+  upperCenterY: 102,
+  lowerCenterY: 414,
+};
+
+function archOf(tooth) {
+  const quadrant = String(tooth)[0];
+  return quadrant === "1" || quadrant === "2" ? "upper" : "lower";
+}
+
+// Map an FDI tooth to a centered world point. Upper arch elevated (+y), lower
+// arch lowered (-y). The default camera sits on +z, so anterior teeth are placed
+// toward +z (nearest the camera) and molars toward -z, giving a natural anterior
+// "smile" view with the arch opening away from the viewer.
 function basePosition(tooth) {
   const p = toothPositions[tooth];
-  return p ? new THREE.Vector3((p[0] - 520) * 0.05, 0, (p[1] - 258) * 0.05) : null;
+  if (!p) return null;
+  const x = (p[0] - 520) * ARCH.widthScale;
+  if (archOf(tooth) === "upper") {
+    return new THREE.Vector3(x, ARCH.gapY, (ARCH.upperCenterY - p[1]) * ARCH.depthScale);
+  }
+  return new THREE.Vector3(x, -ARCH.gapY, (p[1] - ARCH.lowerCenterY) * ARCH.depthScale);
+}
+
+// Maxillary crowns point down toward the occlusal plane; mandibular crowns point
+// up. Synthetic geometry is built crown-up (+y), so flip the upper arch.
+function archQuaternion(tooth) {
+  return archOf(tooth) === "upper"
+    ? new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI)
+    : new THREE.Quaternion();
 }
 
 // pose translation (x mesiodistal-ish, y front-back, z occlusogingival/vertical)
@@ -75,6 +109,10 @@ export function createViewer(container) {
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
   let lineGeometries = [];
+  // The camera frames the arch once, on first populated render. Later updates
+  // (stage scrub, view toggle) must not yank a camera the user has panned or
+  // zoomed; an explicit recenter() re-frames on demand.
+  let fitted = false;
 
   function resize() {
     const w = container.clientWidth || 1;
@@ -119,6 +157,7 @@ export function createViewer(container) {
       if (showCurrent) {
         const ghost = new THREE.Mesh(syntheticToothGeometry(pose.tooth), GHOST);
         ghost.position.copy(base);
+        ghost.quaternion.copy(archQuaternion(pose.tooth));
         proxies.add(ghost);
       }
       if (showPlanned) {
@@ -126,7 +165,7 @@ export function createViewer(container) {
         const geometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
         const mesh = new THREE.Mesh(geometry, PLANNED);
         mesh.position.copy(moved);
-        mesh.quaternion.copy(plannedQuaternion(pose, toothFrames?.[pose.tooth]));
+        mesh.quaternion.copy(archQuaternion(pose.tooth).multiply(plannedQuaternion(pose, toothFrames?.[pose.tooth])));
         proxies.add(mesh);
 
         if (activeAttachments.has(pose.tooth)) {
@@ -143,7 +182,10 @@ export function createViewer(container) {
         }
       }
     }
-    fitCameraToProxies();
+    if (!fitted) {
+      fitCameraToProxies();
+      fitted = true;
+    }
   }
 
   function fitCameraToProxies() {
@@ -159,13 +201,29 @@ export function createViewer(container) {
     const radius = Math.max(sphere.radius, 4);
     const fovV = THREE.MathUtils.degToRad(camera.fov);
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * Math.max(camera.aspect, 0.0001));
-    const distance = Math.max(28, (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.1);
-    camera.position.set(center.x, center.y + distance * 0.62, center.z + distance * 0.9);
+    const distance = Math.max(24, (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.1);
+    // ~42 deg elevation: high enough to read the arch horseshoe, low enough to
+    // still face the crowns.
+    camera.position.set(center.x, center.y + distance * 0.7, center.z + distance * 0.74);
     controls.target.copy(center);
     camera.near = Math.max(0.1, distance / 100);
     camera.far = distance * 100;
     camera.updateProjectionMatrix();
     controls.update();
+  }
+
+  // Dolly the camera toward (factor < 1) or away from (factor > 1) the target,
+  // clamped so the user cannot zoom through the teeth or out to infinity.
+  function zoomBy(factor) {
+    const offset = camera.position.clone().sub(controls.target);
+    const length = Math.min(Math.max(offset.length() * factor, 6), 4000);
+    camera.position.copy(controls.target.clone().add(offset.setLength(length)));
+    camera.updateProjectionMatrix();
+    controls.update();
+  }
+
+  function recenter() {
+    fitCameraToProxies();
   }
 
   async function loadMeshes(renderMeshes = []) {
@@ -192,36 +250,52 @@ export function createViewer(container) {
   }
 
   window.addEventListener("resize", resize);
-  return { update, resize, dispose, loadMeshes };
+  return { update, resize, dispose, loadMeshes, zoomBy, recenter };
 }
+
+// A material placeholder: mergeGroupGeometry only copies position/normal, so the
+// per-part material is irrelevant - the render material (GHOST/PLANNED) is set
+// on the final mesh. Built crown-up (+y), root-down; the caller orients per arch.
+const TOOTH_MAT = new THREE.MeshBasicMaterial();
 
 function syntheticToothGeometry(tooth) {
   const key = toothKind(tooth);
   if (syntheticToothCache.has(key)) return syntheticToothCache.get(key);
+  const p = toothProfile(key);
   const group = new THREE.Group();
-  const enamel = new THREE.MeshStandardMaterial({ color: 0xf6f1e6, roughness: 0.62, metalness: 0.02 });
-  const cusp = new THREE.MeshStandardMaterial({ color: 0xfffbf0, roughness: 0.58, metalness: 0.02 });
-  const profile = toothProfile(key);
-  const crown = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18), enamel);
-  crown.scale.set(profile.width, profile.height, profile.depth);
-  crown.position.y = profile.height * 0.2;
+
+  // Crown: a tapered prism. CylinderGeometry(topR, bottomR, height, sides) gives
+  // the natural occlusal->cervical taper; 4 sides reads as a boxy crown (incisor,
+  // molar), more sides round it (premolar). Scaled to mesiodistal width and
+  // buccolingual depth so each tooth class has a distinct silhouette.
+  const crown = new THREE.Mesh(
+    new THREE.CylinderGeometry(p.crownTop, p.crownNeck, p.crownHeight, p.sides),
+    TOOTH_MAT,
+  );
+  if (p.sides === 4) crown.rotation.y = Math.PI / 4; // align flats mesiodistally
+  crown.scale.set(p.width, 1, p.depth);
+  crown.position.y = p.crownHeight / 2;
   group.add(crown);
 
-  for (const point of profile.cusps) {
-    const bump = new THREE.Mesh(new THREE.SphereGeometry(0.33, 16, 10), cusp);
-    bump.scale.set(point.sx, 0.34, point.sz);
-    bump.position.set(point.x, profile.height * 0.9, point.z);
-    group.add(bump);
+  // Occlusal anatomy: a flat incisal edge (incisor) or pointed cusps.
+  for (const c of p.cusps) {
+    const cusp = new THREE.Mesh(new THREE.ConeGeometry(c.r, c.h, c.flat ? 4 : 12), TOOTH_MAT);
+    if (c.flat) cusp.rotation.y = Math.PI / 4;
+    cusp.scale.set(c.sx ?? 1, 1, c.sz ?? 1);
+    cusp.position.set((c.x ?? 0) * p.width, p.crownHeight - (c.sink ?? 0) + c.h / 2, (c.z ?? 0) * p.depth);
+    group.add(cusp);
   }
 
-  const root = new THREE.Mesh(new THREE.ConeGeometry(profile.rootWidth, 1.35, 18), enamel);
-  root.position.y = -profile.height * 0.85;
-  root.rotation.x = Math.PI;
-  root.scale.z = profile.rootDepth;
+  // Root: a single tapering cone (multi-root teeth simplified) below the neck.
+  const root = new THREE.Mesh(
+    new THREE.CylinderGeometry(p.crownNeck * 0.92, p.rootTip, p.rootHeight, 12),
+    TOOTH_MAT,
+  );
+  root.scale.set(p.width * 0.86, 1, p.depth * 0.86);
+  root.position.y = -p.rootHeight / 2;
   group.add(root);
 
   const geometry = mergeGroupGeometry(group);
-  geometry.rotateX(Math.PI / 2);
   geometry.computeVertexNormals();
   syntheticToothCache.set(key, geometry);
   return geometry;
@@ -235,48 +309,45 @@ function toothKind(tooth) {
   return "molar";
 }
 
+// Per-class crown/root proportions. width = mesiodistal, depth = buccolingual.
+// crownTop/crownNeck are the prism radii (occlusal vs cervical); cusp x/z are
+// fractions of width/depth so they track crown size.
 function toothProfile(kind) {
   if (kind === "incisor") {
+    // Thin chisel blade: wide mesiodistally, shallow buccolingually, flat edge.
     return {
-      width: 1.05,
-      height: 1.35,
-      depth: 0.7,
-      rootWidth: 0.42,
-      rootDepth: 0.72,
-      cusps: [{ x: 0, z: 0, sx: 1.8, sz: 0.55 }],
+      sides: 4, width: 1.15, depth: 0.5, crownTop: 0.92, crownNeck: 0.66, crownHeight: 1.55,
+      rootTip: 0.1, rootHeight: 1.75,
+      cusps: [{ x: 0, z: 0, r: 0.95, h: 0.26, flat: true, sx: 1.0, sz: 0.5, sink: 0.04 }],
     };
   }
   if (kind === "canine") {
+    // Single prominent pointed cusp on a tall, tapering crown.
     return {
-      width: 1.05,
-      height: 1.55,
-      depth: 0.85,
-      rootWidth: 0.46,
-      rootDepth: 0.78,
-      cusps: [{ x: 0, z: 0, sx: 0.85, sz: 0.85 }],
+      sides: 4, width: 0.98, depth: 0.82, crownTop: 0.62, crownNeck: 0.66, crownHeight: 1.5,
+      rootTip: 0.1, rootHeight: 2.0,
+      cusps: [{ x: 0, z: 0, r: 0.55, h: 0.7, sink: 0.1 }],
     };
   }
   if (kind === "premolar") {
+    // Oval occlusal table with two cusps (buccal + lingual).
     return {
-      width: 1.18,
-      height: 1.18,
-      depth: 1.0,
-      rootWidth: 0.48,
-      rootDepth: 0.9,
-      cusps: [{ x: -0.35, z: 0, sx: 0.7, sz: 0.75 }, { x: 0.35, z: 0, sx: 0.7, sz: 0.75 }],
+      sides: 8, width: 1.08, depth: 0.98, crownTop: 0.78, crownNeck: 0.66, crownHeight: 1.15,
+      rootTip: 0.1, rootHeight: 1.7,
+      cusps: [
+        { x: 0, z: -0.3, r: 0.34, h: 0.4, sink: 0.08 },
+        { x: 0, z: 0.3, r: 0.34, h: 0.4, sink: 0.08 },
+      ],
     };
   }
-  return {
-    width: 1.45,
-    height: 1.08,
-    depth: 1.25,
-    rootWidth: 0.58,
-    rootDepth: 1.05,
+  return { // molar: broad squarish crown with four cusps
+    sides: 4, width: 1.5, depth: 1.35, crownTop: 0.95, crownNeck: 0.76, crownHeight: 1.05,
+    rootTip: 0.1, rootHeight: 1.6,
     cusps: [
-      { x: -0.42, z: -0.32, sx: 0.68, sz: 0.68 },
-      { x: 0.42, z: -0.32, sx: 0.68, sz: 0.68 },
-      { x: -0.42, z: 0.32, sx: 0.68, sz: 0.68 },
-      { x: 0.42, z: 0.32, sx: 0.68, sz: 0.68 },
+      { x: -0.32, z: -0.3, r: 0.33, h: 0.38, sink: 0.06 },
+      { x: 0.32, z: -0.3, r: 0.33, h: 0.38, sink: 0.06 },
+      { x: -0.32, z: 0.3, r: 0.33, h: 0.38, sink: 0.06 },
+      { x: 0.32, z: 0.3, r: 0.33, h: 0.38, sink: 0.06 },
     ],
   };
 }

@@ -15,6 +15,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-05 - 3D Arch Realism, Zoom Controls, Live-Chat Server Test
+
+- Reworked the 3D layout into a recognizable bite: the maxillary arch is elevated and the mandibular arch lowered (instead of two coplanar rows), each laid out as a horseshoe with amplified front-back curvature and anteriors placed toward the camera. Upper crowns are flipped to point down at the occlusal plane.
+- Replaced the blob/onion proxy teeth with class-specific anatomy built from tapered crown prisms, cone cusps, and tapering roots: flat-edged incisors, single-cusp canines, two-cusp premolars, and four-cusp molars. These remain explicitly schematic proxies, not scanned meshes.
+- The camera now frames the arch once (first populated render) instead of on every update, so scrubbing stages or toggling views no longer yanks a panned/zoomed camera.
+- Added on-screen 3D zoom controls (+ / recenter / -) alongside scroll/orbit zoom; they hide outside the 3D view and on WebGL fallback.
+- Added server-level tests for the live external chat path using an injected mock provider (consent honored, key never echoed) plus a consent-rejection test.
+
 ### 2026-06-05 - Audit Follow-ups: Collisions, 3D Centering, Shared Axes, Live Chat
 
 - Collision rule now reports one finding per tooth pair, keyed to the deepest overlapping stage, instead of one near-identical finding per stage - removes findings-list flooding for persistent contacts. Added a multi-stage dedup regression test.
@@ -416,4 +424,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-05T15:48:52+00:00 - Commit Status
 
 - Commit subject: Merge remote main (hook-rewritten audit-fixes commit) into follow-ups
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T16:09:16+00:00 - Commit Status
+
+- Commit subject: 3D arch realism + zoom controls + live-chat server test
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T16:09:16+00:00 - Commit Status
+
+- Commit subject: 3D arch realism + zoom controls + live-chat server test
 - Status: development history hook observed and recorded this commit workflow.

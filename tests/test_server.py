@@ -117,6 +117,65 @@ def test_local_chat_endpoint_returns_session(server: int) -> None:
     assert payload["session"]["messages"][1]["role"] == "assistant"
 
 
+_CHAT_PLAN = {
+    "id": "chat",
+    "stages": [
+        {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}
+    ],
+}
+
+
+def test_live_chat_endpoint_uses_injected_provider(server: int, monkeypatch) -> None:
+    # The server runs in-process, so monkeypatching the provider factory reaches
+    # the request handler thread. This guards the live external-connector path
+    # end-to-end without contacting a real model.
+    import orthoplan.ai_chat as ai_chat
+    from orthoplan.evaluation.providers.base import ModelResponse
+
+    class _FakeProvider:
+        name = "openai"
+
+        def complete(self, request):  # noqa: ANN001 - test stub
+            assert "licensed dental professional" in request.system
+            return ModelResponse(text="Mock external educational answer.", model="mock", provider="openai")
+
+    monkeypatch.setattr(ai_chat, "build_chat_provider", lambda *a, **k: _FakeProvider())
+
+    body = json.dumps(
+        {
+            "plan": _CHAT_PLAN,
+            "message": "Explain the timeline",
+            "provider": "openai",
+            "api_key": "sk-secret-server-test",
+            "share_acknowledged": True,
+        }
+    ).encode()
+    status, payload = _post(server, body, {"Content-Type": "application/json"}, path="/api/chat")
+
+    assert status == 200
+    assert payload["ok"] is True
+    assert payload["session"]["connector"]["kind"] == "openai"
+    assert payload["session"]["messages"][1]["content"] == "Mock external educational answer."
+    # The browser-supplied key must never be echoed back by the server.
+    assert "sk-secret-server-test" not in json.dumps(payload)
+
+
+def test_external_chat_without_consent_is_rejected(server: int) -> None:
+    body = json.dumps(
+        {
+            "plan": _CHAT_PLAN,
+            "message": "Explain the timeline",
+            "provider": "openai",
+            "api_key": "sk-secret-server-test",
+        }
+    ).encode()
+    status, payload = _post(server, body, {"Content-Type": "application/json"}, path="/api/chat")
+
+    assert status == 200
+    assert payload["ok"] is False
+    assert "off this machine" in payload["errors"][0]
+
+
 def test_invalid_json_is_400(server: int) -> None:
     status, payload = _post(server, b"not json", {"Content-Type": "application/json"})
     assert status == 400
