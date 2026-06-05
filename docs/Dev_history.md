@@ -15,6 +15,10 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-05 - Post-implementation Audit Hardening
+
+- Hardened `export_print_package` against author-supplied plan ids: filenames now derive from a sanitized, filesystem-safe stem (`_safe_stem`) so a plan id containing path separators or `..` cannot write artifacts outside the chosen output directory. Manifest/email content still records the true plan id. Added a regression test asserting all written files stay inside the output directory for a traversal-style id.
+
 ### 2026-06-05 - Measurement/Print Readiness Hardening
 
 - Added golden STL fixtures under `orthoplan/validation/golden_fixtures/` and expanded `orthoplan measurement-lab` results with expected values, observed values, and explicit tolerances for STL bounds and known mm/degree transforms.
@@ -375,4 +379,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-05T15:10:51+00:00 - Commit Status
 
 - Commit subject: Add guided review, AI chat, and tooth demo
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T15:21:55+00:00 - Commit Status
+
+- Commit subject: Post-implementation audit fixes: path traversal + WebGL leak
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T15:21:55+00:00 - Commit Status
+
+- Commit subject: Post-implementation audit fixes: path traversal + WebGL leak
 - Status: development history hook observed and recorded this commit workflow.

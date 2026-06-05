@@ -39,17 +39,18 @@ def export_print_package(
 
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
+    stem = _safe_stem(plan.id)
     status = build_print_export_status(plan)
     frames = build_stage_progress_frames(plan)
-    artifacts, records = _write_stage_artifacts(plan, output, frames)
-    manifest_path = _write_manifest(plan, output, status, records, frames)
+    artifacts, records = _write_stage_artifacts(plan, output, frames, stem)
+    manifest_path = _write_manifest(plan, output, status, records, frames, stem)
     zip_path = (
-        _write_zip(plan.id, output, [manifest_path, *[Path(path) for path in artifacts]])
+        _write_zip(stem, output, [manifest_path, *[Path(path) for path in artifacts]])
         if make_zip
         else None
     )
     email_path = (
-        _write_email_draft(plan, output, zip_path or manifest_path, status.delivery_email)
+        _write_email_draft(plan, output, zip_path or manifest_path, status.delivery_email, stem)
         if make_email_draft
         else None
     )
@@ -69,14 +70,15 @@ def _write_stage_artifacts(
     plan: TreatmentPlan,
     output: Path,
     frames: list,
+    stem: str,
 ) -> tuple[list[str], list[dict]]:
     artifacts: list[str] = []
     records: list[dict] = []
     tooth_geometry = _tooth_geometry(plan)
     for frame in frames:
-        path = output / f"{plan.id}-stage-{frame.stage_index:02d}-model.stl"
+        path = output / f"{stem}-stage-{frame.stage_index:02d}-model.stl"
         stl, geometry_sources = _frame_to_stl(
-            plan.id,
+            stem,
             frame.stage_index,
             frame.poses,
             tooth_geometry,
@@ -104,6 +106,7 @@ def _write_manifest(
     status,
     artifacts: list[dict],
     frames: list,
+    stem: str,
 ) -> Path:
     plan_payload = json.loads(plan_to_json(plan, indent=None))
     manifest = {
@@ -122,7 +125,7 @@ def _write_manifest(
         "post_processing_notes": status.post_processing_notes,
         "caveat": status.caveat,
     }
-    path = output / f"{plan.id}-print-manifest.json"
+    path = output / f"{stem}-print-manifest.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 
@@ -143,6 +146,7 @@ def _write_email_draft(
     output: Path,
     attachment: Path,
     delivery_email: str | None,
+    stem: str,
 ) -> Path:
     message = EmailMessage()
     message["Subject"] = f"OpenSource Ortho print package: {plan.id}"
@@ -158,9 +162,22 @@ def _write_email_draft(
         subtype="octet-stream",
         filename=attachment.name,
     )
-    path = output / f"{plan.id}-print-package.eml"
+    path = output / f"{stem}-print-package.eml"
     path.write_bytes(message.as_bytes())
     return path
+
+
+def _safe_stem(plan_id: str) -> str:
+    """Filesystem-safe filename stem derived from an author-supplied plan id.
+
+    Plan ids come from JSON that may be imported from an untrusted source and
+    flow into output filenames. Restrict them to a conservative charset so an id
+    containing path separators or traversal sequences (``..``, ``/``) cannot be
+    used to write artifacts outside the chosen output directory.
+    """
+
+    cleaned = "".join(char if (char.isalnum() or char in {"-", "_"}) else "-" for char in plan_id)
+    return cleaned.strip("-") or "plan"
 
 
 def _tooth_geometry(plan: TreatmentPlan) -> dict[str, tuple[str, tuple[float, float, float]]]:

@@ -71,6 +71,10 @@ export function createViewer(container) {
 
   const proxies = new THREE.Group();
   scene.add(proxies);
+  // Per-update line geometries are freshly allocated each rebuild (unlike the
+  // cached tooth/box geometries) so they must be disposed explicitly - clearing
+  // the group only detaches them and leaks their GPU buffers otherwise.
+  let lineGeometries = [];
 
   function resize() {
     const w = container.clientWidth || 1;
@@ -91,6 +95,8 @@ export function createViewer(container) {
 
   function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration }) {
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
+    for (const geom of lineGeometries) geom.dispose();
+    lineGeometries = [];
     proxies.clear();
     const frame = frames && frames[stageIndex];
     if (!frame) return;
@@ -127,6 +133,7 @@ export function createViewer(container) {
 
         if (moved.distanceTo(base) > 0.2) {
           const geom = new THREE.BufferGeometry().setFromPoints([base, moved]);
+          lineGeometries.push(geom);
           proxies.add(new THREE.Line(geom, LINE_MAT));
         }
       }
@@ -169,6 +176,9 @@ export function createViewer(container) {
 
   function dispose() {
     running = false;
+    for (const geom of lineGeometries) geom.dispose();
+    lineGeometries = [];
+    window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
   }
