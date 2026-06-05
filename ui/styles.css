@@ -129,7 +129,8 @@ p {
 .mode-choice,
 .primary-action,
 .theme-toggle,
-.download-actions button {
+.download-actions button,
+.workflow-actions button {
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -368,7 +369,8 @@ textarea {
 .howto-panel,
 .print-settings,
 .status-block,
-.ai-chat {
+.ai-chat,
+.workflow-card {
   border: 1px solid var(--line);
   background: var(--panel-alt);
   padding: 12px;
@@ -377,9 +379,19 @@ textarea {
 
 .howto-panel h2,
 .print-settings h2,
-.ai-chat h2 {
+.ai-chat h2,
+.workflow-card h2 {
   font-size: 14px;
   margin-bottom: 0;
+}
+
+.workflow-card {
+  display: grid;
+  gap: 8px;
+}
+
+.workflow-card p {
+  font-size: 13px;
 }
 
 .howto-panel ol {
@@ -499,6 +511,12 @@ textarea {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.workflow-actions.inline {
+  justify-content: flex-start;
+  margin-top: 2px;
 }
 
 .next-action {

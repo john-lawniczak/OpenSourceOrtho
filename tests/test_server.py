@@ -186,6 +186,13 @@ def test_demo_crown_meshes_are_served(server: int) -> None:
         assert len(body) > 1000
 
 
+def test_canonical_orthocad_scans_are_served(server: int) -> None:
+    for arch in ("u", "l"):
+        status, body = _get(server, f"/example-scans/canonical-orthocad-001/308806025_shell_occlusion_{arch}.stl")
+        assert status == 200, arch
+        assert len(body) > 10_000_000
+
+
 def test_invalid_json_is_400(server: int) -> None:
     status, payload = _post(server, b"not json", {"Content-Type": "application/json"})
     assert status == 400

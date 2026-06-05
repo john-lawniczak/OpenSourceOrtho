@@ -12,7 +12,7 @@ import {
   toothKind,
 } from "./core.js";
 import { parseStlGeometry } from "./stl.js";
-import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 
 test("toothKind classifies FDI teeth by last digit", () => {
   assert.equal(toothKind("11"), "incisor");
@@ -136,4 +136,9 @@ test("syntheticCrowdingRows creates 12 stages that counter initial offsets", () 
     .filter((row) => row.tooth === firstTooth)
     .reduce((sum, row) => sum + row.x, 0);
   assert.ok(Math.abs(total + demoInitialOffsets[firstTooth].x) < 0.01);
+});
+
+test("canonical scan sources expose upper and lower STL fixtures", () => {
+  assert.deepEqual(canonicalScanSources.map((source) => source.arch), ["maxillary", "mandibular"]);
+  assert.ok(canonicalScanSources.every((source) => source.url.endsWith(".stl")));
 });

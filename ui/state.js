@@ -6,6 +6,7 @@ export const state = {
   dim: "3d",
   file: null,
   files: [],
+  scanSources: [],
   scanRenderStatus: "No uploaded scan is loaded.",
   scanUnits: "unverified",
   scanArch: "",

@@ -63,10 +63,14 @@ function updateViewer(result) {
   const v = ensureViewer();
   if (!v) return;
   v.resize();
-  if (state.files.length) {
-    v.loadUploadedScans(state.files).then(({ loaded, count }) => {
+  const scanSources = state.files.length
+    ? state.files.map((file) => ({ name: file.name, file }))
+    : state.scanSources;
+  if (scanSources.length) {
+    v.loadScanSources(scanSources).then(({ loaded, count }) => {
+      const sourceType = state.files.length ? "uploaded" : "canonical example";
       state.scanRenderStatus = count
-        ? `Rendering exact uploaded scan mesh${count === 1 ? "" : "es"} (${state.files.map((file) => file.name).join(", ")}). Staged movement remains schematic unless segmented per-tooth meshes are provided.`
+        ? `Rendering exact ${sourceType} scan mesh${count === 1 ? "" : "es"} (${scanSources.map((source) => source.name).join(", ")}). Staged movement remains simulated unless segmented per-tooth meshes are provided.`
         : "No uploaded STL scan mesh could be rendered.";
       renderScanStatus();
       if (loaded && state.lastEval === result) updateViewer(result);
@@ -75,7 +79,7 @@ function updateViewer(result) {
       renderScanStatus();
     });
   } else {
-    v.loadUploadedScans([]);
+    v.loadScanSources([]);
     state.scanRenderStatus = state.useDemoMeshes
       ? "Rendering bundled demo tooth meshes."
       : "No uploaded scan mesh is loaded; review uses schematic proxy teeth.";
@@ -242,12 +246,18 @@ function renderRows() {
 }
 
 function renderMetadata() {
+  const sources = state.files.length ? state.files : state.scanSources;
   const totalSize = state.files.reduce((sum, file) => sum + file.size, 0);
   const items = state.files.length ? [
     ["Files", state.files.map((file) => file.name).join(", ")],
     ["Size", `${Math.round(totalSize / 1024)} KB`],
     ["Units", state.scanUnits],
     ["Arch", state.scanArch || "unknown"],
+  ] : sources.length ? [
+    ["Files", sources.map((source) => source.name).join(", ")],
+    ["Size", "repo example"],
+    ["Units", state.scanUnits],
+    ["Arch", "upper + lower"],
   ] : [["Files", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"]];
   el("scanMetadata").innerHTML = items
     .map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`)

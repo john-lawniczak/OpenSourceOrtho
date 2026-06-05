@@ -1,5 +1,5 @@
 import { askPlanAssistant, el, maxStage, state } from "./state.js";
-import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 
@@ -49,6 +49,7 @@ document.querySelectorAll(".dim").forEach((button) => {
 el("stlFile").addEventListener("change", (event) => {
   state.files = Array.from(event.target.files || []);
   state.file = state.files[0] || null;
+  state.scanSources = [];
   state.useDemoMeshes = false;
   el("uploadLabel").textContent = uploadLabel(state.files, "Choose STL files");
   renderAll();
@@ -57,6 +58,7 @@ el("stlFile").addEventListener("change", (event) => {
 el("simpleStlFile").addEventListener("change", (event) => {
   state.files = Array.from(event.target.files || []);
   state.file = state.files[0] || null;
+  state.scanSources = [];
   state.demoInitialOffsets = {};
   state.useDemoMeshes = false;
   el("simpleUploadLabel").textContent = uploadLabel(state.files, "Choose your STL files");
@@ -122,6 +124,13 @@ document.body.addEventListener("click", (event) => {
   if (target.id === "loadDemo") {
     loadSyntheticDemo();
   }
+  if (target.dataset.canonicalMonths) {
+    loadCanonicalCase(Number(target.dataset.canonicalMonths));
+  }
+  if (target.dataset.stepTarget) {
+    state.activeStep = target.dataset.stepTarget;
+    renderAll();
+  }
   if (target.id === "simpleReview") {
     if (!state.simpleAcknowledged) return;
     state.activeStep = "review";
@@ -180,6 +189,7 @@ function loadSyntheticDemo() {
   state.useDemoMeshes = true;
   state.rows = syntheticCrowdingRows(12);
   state.files = [];
+  state.scanSources = [];
   state.file = null;
   state.view = "overlay";
   state.activeStep = "review";
@@ -189,6 +199,35 @@ function loadSyntheticDemo() {
   el("exaggeration").value = "12";
   el("simpleGoal").value = "crowding";
   el("simpleAcknowledged").checked = true;
+  renderAll();
+}
+
+function loadCanonicalCase(months) {
+  const stageCount = months === 6 ? 6 : 12;
+  state.simpleAcknowledged = true;
+  state.simpleGoal = "crowding";
+  state.demoInitialOffsets = demoInitialOffsets;
+  state.useDemoMeshes = true;
+  state.files = [];
+  state.file = null;
+  state.scanSources = canonicalScanSources;
+  state.rows = syntheticCrowdingRows(stageCount);
+  state.view = "overlay";
+  state.activeStep = "review";
+  state.availability.intraoral_scan = true;
+  state.availability.occlusion_scan = true;
+  state.availability.segmented_teeth = false;
+  el("planTitle").value = `Canonical OrthoCAD simulated ${months}-month progression`;
+  el("planId").value = `canonical-orthocad-${months}-month`;
+  el("wearInterval").value = "30";
+  el("exaggeration").value = "12";
+  el("scanUnits").value = "mm";
+  el("scanArch").value = "";
+  el("simpleGoal").value = "crowding";
+  el("simpleAcknowledged").checked = true;
+  el("uploadLabel").textContent = "Canonical upper + lower OrthoCAD STLs";
+  el("simpleUploadLabel").textContent = "Canonical upper + lower OrthoCAD STLs";
+  renderAvailability();
   renderAll();
 }
 
