@@ -172,17 +172,23 @@ function uploadLabel(files, emptyLabel) {
 }
 
 async function setUploadedFiles(files) {
-  state.files = files;
-  state.file = files[0] || null;
+  const stlFiles = files.filter((file) => file?.name?.toLowerCase().endsWith(".stl"));
+  state.files = stlFiles;
+  state.file = stlFiles[0] || null;
   state.scanSources = [];
   state.useDemoMeshes = false;
   updateUploadLabels();
-  if (files.length) {
-    await saveUploadedFiles(files).catch((error) => {
-      state.scanRenderStatus = `Uploaded files are loaded for this session, but browser storage failed: ${error.message}`;
-    });
+  if (stlFiles.length) {
+    state.uploadStorageStatus = "Saving STL files locally in this browser...";
+    try {
+      await saveUploadedFiles(stlFiles);
+      state.uploadStorageStatus = "Saved locally in this browser. Use Clear All or x to remove.";
+    } catch (error) {
+      state.uploadStorageStatus = `Loaded for this session only; browser storage failed: ${error.message}`;
+    }
   } else {
     await clearUploadedFiles().catch(() => {});
+    state.uploadStorageStatus = files.length ? "No STL files were selected." : "";
     el("stlFile").value = "";
     el("simpleStlFile").value = "";
   }
@@ -216,7 +222,9 @@ function loadSyntheticDemo() {
   state.files = [];
   state.scanSources = [];
   state.file = null;
+  state.uploadStorageStatus = "";
   clearUploadedFiles().catch(() => {});
+  updateUploadLabels();
   state.view = "overlay";
   state.activeStep = "review";
   el("planTitle").value = "Educational crowding demo";
@@ -236,6 +244,7 @@ function loadCanonicalCase(months) {
   state.useDemoMeshes = true;
   state.files = [];
   state.file = null;
+  state.uploadStorageStatus = "";
   clearUploadedFiles().catch(() => {});
   state.scanSources = canonicalScanSources;
   state.rows = syntheticCrowdingRows(stageCount);
@@ -266,6 +275,7 @@ async function restoreStoredUploads() {
     state.file = files[0];
     state.scanSources = [];
     state.useDemoMeshes = false;
+    state.uploadStorageStatus = "Restored saved STL files from this browser.";
     updateUploadLabels();
     renderAll();
   } catch {

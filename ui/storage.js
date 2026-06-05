@@ -5,11 +5,11 @@ const UPLOAD_KEY = "current-stl-files";
 
 function openDb() {
   return new Promise((resolve, reject) => {
-    if (!("indexedDB" in window)) {
+    if (typeof window === "undefined" || !window.indexedDB) {
       reject(new Error("IndexedDB is not available"));
       return;
     }
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = window.indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
       request.result.createObjectStore(STORE);
     };
@@ -24,9 +24,16 @@ async function withStore(mode, callback) {
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, mode);
       const store = tx.objectStore(STORE);
-      const result = callback(store);
+      let result;
+      try {
+        result = callback(store);
+      } catch (error) {
+        reject(error);
+        return;
+      }
       tx.oncomplete = () => resolve(result);
       tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error("IndexedDB transaction aborted"));
     });
   } finally {
     db.close();
