@@ -408,7 +408,12 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 - Commit subject: Audit follow-ups: collision dedup, 3D centering, shared axes, live chat
 - Status: development history hook observed and recorded this commit workflow.
 
-### 2026-06-05T15:45:19+00:00 - Commit Status
+### 2026-06-05T15:48:50+00:00 - Commit Status
 
-- Commit subject: Audit follow-ups: collision dedup, 3D centering, shared axes, live chat
+- Commit subject: Merge remote main (hook-rewritten audit-fixes commit) into follow-ups
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T15:48:52+00:00 - Commit Status
+
+- Commit subject: Merge remote main (hook-rewritten audit-fixes commit) into follow-ups
 - Status: development history hook observed and recorded this commit workflow.
