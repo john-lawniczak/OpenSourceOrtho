@@ -11,7 +11,6 @@ This directory holds the project docs that should evolve with the product.
 - [OPEN_SOURCE_REFERENCES.md](OPEN_SOURCE_REFERENCES.md) - open-source dependencies and proprietary reference boundaries
 - [LICENSE_AUDIT.md](LICENSE_AUDIT.md) - per-dependency license audit and compatibility
 - [SOURCES_AND_RECOMMENDED_SOFTWARE.md](SOURCES_AND_RECOMMENDED_SOFTWARE.md) - source ledger for monitoring upstream references over time
-- [NEXT_CONTEXT_IMPLEMENTATION_PLAN.md](NEXT_CONTEXT_IMPLEMENTATION_PLAN.md) - temporary phased implementation plan for the next coding window
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance
 - [AI_CHAT_MCP.md](AI_CHAT_MCP.md) - scoped AI chat and MCP connector data model
 - [LLM_PROMPTS.md](LLM_PROMPTS.md) - safe optional LLM review prompt templates
