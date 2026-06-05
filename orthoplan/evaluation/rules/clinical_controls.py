@@ -7,7 +7,6 @@ from orthoplan.evaluation.finding import (
     FindingSeverity,
     lint_finding,
 )
-from orthoplan.model.clinical import MovementAxis
 from orthoplan.model.plan import ToothDelta, TreatmentPlan
 
 _CLINICAL_CONTROL_GAP = (
@@ -58,7 +57,7 @@ def _movement_exclusion_findings(plan: TreatmentPlan) -> list[Finding]:
         return findings
     for stage in plan.stages:
         for delta in stage.deltas:
-            for axis in _moved_axes(delta):
+            for axis in delta.moved_axes():
                 controls = [
                     item
                     for item in exclusions
@@ -143,24 +142,7 @@ def _ipr_spacing_findings(plan: TreatmentPlan) -> list[Finding]:
 
 
 def _delta_moves(delta: ToothDelta) -> bool:
-    return bool(_moved_axes(delta))
-
-
-def _moved_axes(delta: ToothDelta) -> list[MovementAxis]:
-    axes: list[MovementAxis] = []
-    if delta.translate_x_mm:
-        axes.append("translate_x")
-    if delta.translate_y_mm:
-        axes.append("translate_y")
-    if delta.translate_z_mm:
-        axes.append("translate_z")
-    if delta.rotate_tip_deg:
-        axes.append("tip")
-    if delta.rotate_torque_deg:
-        axes.append("torque")
-    if delta.rotate_rotation_deg:
-        axes.append("rotation")
-    return axes
+    return bool(delta.moved_axes())
 
 
 def _likely_attachment_dependent(delta: ToothDelta) -> bool:

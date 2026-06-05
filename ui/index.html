@@ -302,9 +302,9 @@
                   <label>Agent/MCP endpoint
                     <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
                   </label>
-                  <p class="viewer-caveat">Account linking should use OAuth or an MCP permission handshake later. Raw API keys are session-only here and are not written into plans or case snapshots.</p>
+                  <p class="viewer-caveat">The API key is session-only: it is never saved to disk, never written into plans or case snapshots, and is sent to the selected connector only when you press Ask AI. When an external connector is selected, that key and the scoped plan context are transmitted to it. The local helper sends nothing off this machine. Account linking should move to OAuth or an MCP permission handshake later.</p>
                 </details>
-                <p class="viewer-caveat">AI answers are educational only. External connectors can receive plan context; use the context selector deliberately.</p>
+                <p class="viewer-caveat">AI answers are educational only. External connectors require the acknowledgement above and receive the scoped plan context you select; use the context selector deliberately.</p>
               </section>
               <h2 class="advanced-only">Print Export</h2>
               <div id="printExportStatus" class="status-block advanced-only"></div>

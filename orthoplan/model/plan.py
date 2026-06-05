@@ -9,6 +9,7 @@ from orthoplan.model.clinical import (
     Attachment,
     FixedTooth,
     InterproximalReduction,
+    MovementAxis,
     MovementExclusion,
     PlannedSpacing,
 )
@@ -40,6 +41,29 @@ class ToothDelta(BaseModel):
     @property
     def arch(self) -> Arch:
         return self.tooth.arch
+
+    def moved_axes(self) -> list[MovementAxis]:
+        """Movement axes with a nonzero component, in canonical order.
+
+        Shared by the staging optimizer and the clinical-control rules so both
+        agree on what counts as movement on a given axis (drift between the two
+        would mis-flag fixed-tooth / exclusion violations).
+        """
+
+        axes: list[MovementAxis] = []
+        if self.translate_x_mm:
+            axes.append("translate_x")
+        if self.translate_y_mm:
+            axes.append("translate_y")
+        if self.translate_z_mm:
+            axes.append("translate_z")
+        if self.rotate_tip_deg:
+            axes.append("tip")
+        if self.rotate_torque_deg:
+            axes.append("torque")
+        if self.rotate_rotation_deg:
+            axes.append("rotation")
+        return axes
 
 
 class Stage(BaseModel):

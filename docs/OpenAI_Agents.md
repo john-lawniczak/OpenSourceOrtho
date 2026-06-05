@@ -49,10 +49,22 @@ The adapter is intentionally narrow:
 - does not bypass `lint_finding()`
 - converts SDK/CLI execution failures into `RuntimeError` so `orthoplan advise`
   exits cleanly instead of surfacing provider tracebacks
+- accepts an injected `api_key` and `base_url`, so the same adapter drives the
+  official OpenAI API and any OpenAI-compatible host (MCP / Odysseus /
+  open-source local model servers). An explicit key wins over `OPENAI_API_KEY`.
 
 Default model: `gpt-5.5`, based on current OpenAI model guidance checked during
 the initial scaffold on 2026-06-03 and rechecked during the 2026-06-04
 post-implementation audit.
+
+## Chat Connector Use
+
+Beyond the `advise` pipeline, the adapter also backs the live AI chat layer. The
+chat path (`orthoplan/ai_chat.py` + `orthoplan/ai_connectors.py`) builds an
+`OpenAIProvider` per request from a browser-supplied key/endpoint, but only after
+an explicit egress-consent flag (`share_acknowledged`) is set. The key is never
+persisted nor echoed back. See [AI_CHAT_MCP.md](AI_CHAT_MCP.md) for the endpoint
+contract and the connector kinds.
 
 ## Commit Status
 

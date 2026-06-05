@@ -35,7 +35,7 @@ def test_openai_provider_converts_sdk_failure_to_runtime_error(monkeypatch) -> N
             raise ValueError("rate limit")
 
     class FakeOpenAI:
-        def __init__(self) -> None:
+        def __init__(self, **kwargs) -> None:  # noqa: ANN003 - SDK-shaped test stub
             self.responses = FakeResponses()
 
     fake_module = ModuleType("openai")

@@ -32,7 +32,7 @@ def optimize_staging(plan: TreatmentPlan) -> OptimizedStagingResult:
 
     for tooth_value, delta in totals.items():
         blocked_axes = _blocked_axes(plan, tooth_value)
-        moved_blocked = [axis for axis in _moved_axes(delta) if axis in blocked_axes or "all" in blocked_axes]
+        moved_blocked = [axis for axis in delta.moved_axes() if axis in blocked_axes or "all" in blocked_axes]
         fixed = any(control.tooth.value == tooth_value for control in plan.fixed_teeth)
         if fixed or moved_blocked:
             issues.append(
@@ -114,21 +114,4 @@ def _blocked_axes(plan: TreatmentPlan, tooth_value: str) -> set[MovementAxis]:
     for exclusion in plan.movement_exclusions:
         if exclusion.tooth.value == tooth_value:
             axes.update(exclusion.axes)
-    return axes
-
-
-def _moved_axes(delta: ToothDelta) -> list[MovementAxis]:
-    axes: list[MovementAxis] = []
-    if delta.translate_x_mm:
-        axes.append("translate_x")
-    if delta.translate_y_mm:
-        axes.append("translate_y")
-    if delta.translate_z_mm:
-        axes.append("translate_z")
-    if delta.rotate_tip_deg:
-        axes.append("tip")
-    if delta.rotate_torque_deg:
-        axes.append("torque")
-    if delta.rotate_rotation_deg:
-        axes.append("rotation")
     return axes

@@ -161,12 +161,18 @@ async function sendChatMessage() {
   state.chat.input = "";
   renderChat();
   try {
+    // The API key is read straight from the DOM at send time so it is never
+    // held in app state or persisted - only transmitted on an explicit "Ask AI".
+    const apiKey = el("chatApiKey").value.trim();
     const result = await askPlanAssistant({
       plan: planJson(),
       message,
       provider: state.chat.provider,
       model: state.chat.model,
       context_scope: state.chat.contextScope,
+      api_key: apiKey || undefined,
+      endpoint: state.chat.agentEndpoint.trim() || undefined,
+      share_acknowledged: state.chat.agentAccessEnabled,
     });
     if (result.ok === false) {
       state.chat.messages.push({

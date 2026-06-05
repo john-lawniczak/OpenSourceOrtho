@@ -49,6 +49,44 @@ def test_segmented_mesh_collision_rule_flags_transformed_bounds_overlap() -> Non
     assert "bounds overlap" in findings[0].title
 
 
+def test_segmented_mesh_collision_rule_reports_one_finding_per_pair() -> None:
+    mesh_11 = MeshAsset(
+        id="mesh-11",
+        format="stl-ascii",
+        vertex_count=8,
+        face_count=12,
+        bounds=BoundingBox(min_xyz=(0, 0, 0), max_xyz=(1, 1, 1)),
+    )
+    mesh_21 = MeshAsset(
+        id="mesh-21",
+        format="stl-ascii",
+        vertex_count=8,
+        face_count=12,
+        bounds=BoundingBox(min_xyz=(2, 0, 0), max_xyz=(3, 1, 1)),
+    )
+    # Tooth 21 marches toward tooth 11; the overlap deepens every stage, so the
+    # contact persists across stages 1 and 2 (deepest at stage 2).
+    plan = TreatmentPlan(
+        id="persistent-collision",
+        mesh_assets=[mesh_11, mesh_21],
+        tooth_meshes=[
+            SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="mesh-11"),
+            SegmentedToothMesh(tooth=ToothId(value="21"), mesh_asset_id="mesh-21"),
+        ],
+        stages=[
+            Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=-0.6)]),
+            Stage(index=1, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=-0.6)]),
+            Stage(index=2, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=-0.6)]),
+        ],
+    )
+
+    findings = evaluate_segmented_mesh_collisions(plan)
+
+    assert len(findings) == 1
+    assert "11 and 21" in findings[0].title
+    assert "deepest at stage 2" in findings[0].message
+
+
 def test_optimizer_splits_large_movement_by_configured_caps() -> None:
     plan = TreatmentPlan(
         id="optimize",

@@ -12,6 +12,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError
 
+from orthoplan.ai_connectors import (
+    AIConnector,
+    ConnectorKind,
+    build_chat_provider,
+    connector_catalog,
+    connector_for,
+)
 from orthoplan.api import evaluate_plan
 from orthoplan.evaluation.providers.base import ModelProvider, ModelRequest
 from orthoplan.hashing import canonical_json, sha256_text
@@ -19,7 +26,16 @@ from orthoplan.model.gaps import data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.timeline import project_timeline
 
-ConnectorKind = Literal["local", "openai", "claude-code", "mcp", "odysseus", "open-source"]
+__all__ = [
+    "AIConnector",
+    "ConnectorKind",
+    "answer_chat_payload",
+    "build_chat_context",
+    "build_chat_provider",
+    "connector_catalog",
+    "scope_for",
+]
+
 ContextScopeName = Literal["summary", "clinical", "full_plan"]
 
 CHAT_SYSTEM_PROMPT = """You are an educational assistant for OpenSource Ortho.
@@ -29,19 +45,6 @@ findings. You must not diagnose, approve treatment, prescribe aligners, claim a
 plan is safe, or replace review by a licensed dental professional. When data is
 missing, say so plainly and ask what record would resolve the uncertainty.
 """
-
-
-class AIConnector(BaseModel):
-    """Configuration metadata for a future model/MCP connector."""
-
-    id: str
-    kind: ConnectorKind = "local"
-    label: str
-    model: str | None = None
-    endpoint: str | None = None
-    enabled: bool = False
-    shares_patient_data: bool = False
-    notes: str | None = None
 
 
 class AIContextScope(BaseModel):
@@ -78,6 +81,14 @@ class ChatRequest(BaseModel):
     model: str | None = None
     context_scope: ContextScopeName = "summary"
     session_id: str | None = None
+    # Browser-supplied credentials/endpoint for live external connectors. These
+    # are never persisted, never echoed back in the response, and only sent on an
+    # explicit user "Ask AI" action.
+    api_key: str | None = Field(default=None, max_length=400)
+    endpoint: str | None = Field(default=None, max_length=400)
+    # Egress consent gate. External connectors transmit scoped plan context off
+    # this machine, so the user must explicitly acknowledge before any call.
+    share_acknowledged: bool = False
 
 
 class ChatResponse(BaseModel):
@@ -93,49 +104,6 @@ class ChatResponse(BaseModel):
 class ChatErrorResponse(BaseModel):
     ok: bool = False
     errors: list[str]
-
-
-def connector_catalog() -> list[AIConnector]:
-    return [
-        AIConnector(id="local", kind="local", label="Local educational helper", enabled=True),
-        AIConnector(
-            id="openai",
-            kind="openai",
-            label="OpenAI",
-            model="configured externally",
-            shares_patient_data=True,
-            notes="Future live connector; keep disabled unless the user explicitly configures it.",
-        ),
-        AIConnector(
-            id="claude-code",
-            kind="claude-code",
-            label="Claude Code",
-            model="configured externally",
-            shares_patient_data=True,
-            notes="Future CLI/MCP connector; keep disabled unless the user explicitly configures it.",
-        ),
-        AIConnector(
-            id="mcp",
-            kind="mcp",
-            label="MCP-compatible model host",
-            endpoint="user supplied",
-            shares_patient_data=True,
-        ),
-        AIConnector(
-            id="odysseus",
-            kind="odysseus",
-            label="Odysseus",
-            endpoint="user supplied",
-            shares_patient_data=True,
-        ),
-        AIConnector(
-            id="open-source",
-            kind="open-source",
-            label="Open-source local model",
-            endpoint="local or user supplied",
-            shares_patient_data=True,
-        ),
-    ]
 
 
 def scope_for(name: ContextScopeName) -> AIContextScope:
@@ -185,13 +153,6 @@ def _format_validation_errors(error: ValidationError) -> list[str]:
     return messages
 
 
-def _connector(kind: str) -> AIConnector:
-    for connector in connector_catalog():
-        if connector.kind == kind:
-            return connector
-    return connector_catalog()[0]
-
-
 def _local_answer(message: str, context: dict[str, Any]) -> str:
     findings = context.get("findings") or []
     gaps = context.get("data_gaps") or []
@@ -226,6 +187,44 @@ def _provider_answer(message: str, context: dict[str, Any], provider: ModelProvi
     return provider.complete(request).text
 
 
+def _resolve_answer(
+    request: ChatRequest,
+    connector: AIConnector,
+    context: dict[str, Any],
+    provider: ModelProvider | None,
+) -> tuple[str | None, list[str] | None]:
+    """Return (answer, None) on success or (None, errors) for the caller to surface.
+
+    A directly injected provider is treated as an explicit gateway. Otherwise an
+    external connector kind is built from the request, gated on egress consent.
+    """
+
+    used_provider = provider
+    if used_provider is None and connector.kind != "local":
+        if not request.share_acknowledged:
+            return None, [
+                f"{connector.label} sends scoped plan context off this machine. Enable "
+                "\"Allow an external AI agent to request scoped plan context\" in Connector "
+                "Settings to acknowledge before using an external connector."
+            ]
+        try:
+            used_provider = build_chat_provider(
+                connector.kind,
+                model=request.model,
+                api_key=request.api_key,
+                endpoint=request.endpoint,
+            )
+        except ValueError as exc:
+            return None, [str(exc)]
+
+    if used_provider is None:
+        return _local_answer(request.message, context), None
+    try:
+        return _provider_answer(request.message, context, used_provider), None
+    except Exception as exc:  # noqa: BLE001 - provider failures become user-facing data
+        return None, [f"{connector.label} chat failed: {exc}"]
+
+
 def answer_chat_payload(
     payload: dict[str, Any],
     *,
@@ -240,18 +239,14 @@ def answer_chat_payload(
     scope = scope_for(request.context_scope)
     context = build_chat_context(plan, scope)
     context["scope"] = scope.name
-    connector = _connector(request.provider if provider is None else getattr(provider, "name", "local"))
+    connector = connector_for(request.provider if provider is None else getattr(provider, "name", "local"))
     if request.model:
         connector.model = request.model
-    if provider is None and connector.kind != "local":
-        return ChatErrorResponse(
-            errors=[
-                f"{connector.label} chat is modeled but not enabled in the local server. "
-                "Use the local helper or configure an explicit provider gateway."
-            ]
-        ).model_dump(mode="json")
 
-    answer = _provider_answer(request.message, context, provider) if provider else _local_answer(request.message, context)
+    answer, errors = _resolve_answer(request, connector, context, provider)
+    if errors is not None:
+        return ChatErrorResponse(errors=errors).model_dump(mode="json")
+
     plan_hash = str(context["plan_hash"])
     session = ChatSession(
         session_id=request.session_id or f"chat-{plan_hash[:12]}",

@@ -21,7 +21,8 @@ for auditability.
 
 ## Data Model
 
-The current implementation lives in `orthoplan/ai_chat.py`.
+Chat orchestration lives in `orthoplan/ai_chat.py`; connector configuration and
+live provider construction live in `orthoplan/ai_connectors.py`.
 
 - `AIConnector`: provider metadata such as kind, label, model, endpoint, whether
   it is enabled, and whether it shares patient-derived data.
@@ -33,16 +34,36 @@ The current implementation lives in `orthoplan/ai_chat.py`.
   connector, context scope, and messages.
 
 The UI exposes connector, model preference, context scope, session-only API key
-entry, and future agent/MCP endpoint fields. The API key field is a staging UI
-only: it is not persisted in plans, case snapshots, reports, or docs.
+entry, and an agent/MCP endpoint field. The API key is read from the DOM only at
+send time, is transmitted solely to the selected connector, and is never stored
+in app state, `localStorage`, plans, case snapshots, reports, or docs.
 
 ## Current Endpoints
 
 - `GET /api/ai/connectors`: returns the connector catalog.
-- `POST /api/chat`: answers with the local educational helper by default.
+- `POST /api/chat`: answers with the local educational helper by default; when a
+  non-local `provider` is selected it performs a live completion through that
+  connector (see Live External Connectors below).
 
-External connectors are modeled but disabled in the local server until a user
-adds an explicit provider gateway. This prevents accidental plan-context sharing.
+## Live External Connectors
+
+`POST /api/chat` accepts `provider`, `model`, `context_scope`, `api_key`,
+`endpoint`, and `share_acknowledged`. For any non-local provider the server:
+
+1. Requires `share_acknowledged: true` (egress consent). Without it the request
+   is rejected before any external call - scoped plan context never leaves the
+   machine by accident.
+2. Builds a live provider via `ai_connectors.build_chat_provider`:
+   - `openai` - `OpenAIProvider` with the request-supplied key.
+   - `claude-code` - `ClaudeCodeProvider` (local `claude` CLI, no key).
+   - `mcp` / `odysseus` / `open-source` - `OpenAIProvider` pointed at the
+     supplied OpenAI-compatible `endpoint` (key optional).
+3. Sends the safety system prompt plus the selected context scope and returns the
+   model's text. Provider/credential failures are returned as `ok:false` data,
+   never as a server traceback.
+
+The API key is never echoed back in the response or stored in the `ChatSession`.
+The dev server binds to `127.0.0.1`, so keys cross only local loopback.
 
 ## Account Linking Direction
 
@@ -69,8 +90,11 @@ Long term:
    plan snapshots.
 2. Add an MCP server package exposing read-only tools such as `get_plan_summary`,
    `get_findings`, `get_data_gaps`, `get_timeline`, and `get_plan_snapshot`.
-3. Add provider adapters for configured OpenAI, Claude Code, local open-source
-   model endpoints, and Odysseus-compatible endpoints.
-4. Add per-session consent controls before full-plan or mesh metadata context is
-   shared externally.
-5. Add a redaction layer for patient identifiers before any non-local connector.
+3. Add a redaction layer for patient identifiers before any non-local connector
+   (the egress consent gate is in place; redaction is the next safety layer).
+4. Move from pasted keys to OAuth / MCP permission handshakes for account
+   linking, replacing per-request key transmission.
+
+Done: live provider adapters for OpenAI, Claude Code, and OpenAI-compatible
+endpoints (MCP / Odysseus / open-source) are wired through `/api/chat`, gated on
+per-request egress consent.

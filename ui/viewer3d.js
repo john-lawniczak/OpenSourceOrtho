@@ -79,7 +79,12 @@ export function createViewer(container) {
   function resize() {
     const w = container.clientWidth || 1;
     const h = container.clientHeight || 1;
-    renderer.setSize(w, h, false);
+    // updateStyle must stay on (the default): with it off the canvas keeps no
+    // CSS size and renders at its drawing-buffer pixel size, which is
+    // pixelRatio x larger than the container. On a retina display the canvas
+    // then overflows to 2x size and the container (overflow:hidden) shows only
+    // the top-left quadrant, pushing the centered scene into a corner.
+    renderer.setSize(w, h);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
@@ -145,13 +150,16 @@ export function createViewer(container) {
     if (!proxies.children.length) return;
     const box = new THREE.Box3().setFromObject(proxies);
     if (box.isEmpty()) return;
-    const center = new THREE.Vector3();
-    const size = new THREE.Vector3();
-    box.getCenter(center);
-    box.getSize(size);
-    const maxDim = Math.max(size.x, size.y, size.z, 8);
-    const fov = THREE.MathUtils.degToRad(camera.fov);
-    const distance = Math.max(28, (maxDim / (2 * Math.tan(fov / 2))) * 1.35);
+    // Fit a bounding sphere using the limiting (narrower) of the vertical and
+    // horizontal field of view so a wide dental arch is fully framed and
+    // centered regardless of the viewport aspect ratio.
+    const sphere = new THREE.Sphere();
+    box.getBoundingSphere(sphere);
+    const center = sphere.center;
+    const radius = Math.max(sphere.radius, 4);
+    const fovV = THREE.MathUtils.degToRad(camera.fov);
+    const fovH = 2 * Math.atan(Math.tan(fovV / 2) * Math.max(camera.aspect, 0.0001));
+    const distance = Math.max(28, (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.1);
     camera.position.set(center.x, center.y + distance * 0.62, center.z + distance * 0.9);
     controls.target.copy(center);
     camera.near = Math.max(0.1, distance / 100);

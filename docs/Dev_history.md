@@ -15,6 +15,13 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 ## Entries
 
+### 2026-06-05 - Audit Follow-ups: Collisions, 3D Centering, Shared Axes, Live Chat
+
+- Collision rule now reports one finding per tooth pair, keyed to the deepest overlapping stage, instead of one near-identical finding per stage - removes findings-list flooding for persistent contacts. Added a multi-stage dedup regression test.
+- Fixed 3D viewer off-center rendering: `renderer.setSize` was called with `updateStyle=false`, leaving the canvas with no CSS size so on retina displays it rendered at 2x the container and the `overflow:hidden` container showed only the top-left quadrant (centered scene pushed to a corner). Now uses the default `updateStyle`, and the camera fit is bounding-sphere + aspect aware so a wide arch frames correctly in any viewport aspect.
+- De-duplicated `_moved_axes`: the optimizer and clinical-control rules now share `ToothDelta.moved_axes()`, so both agree on what counts as movement on an axis (drift would mis-flag fixed-tooth / exclusion violations).
+- Made the AI chat connector layer operational: `/api/chat` now performs live completions for non-local providers using a browser-supplied key/endpoint, gated on an explicit egress-consent flag (`share_acknowledged`). Added `orthoplan/ai_connectors.py` (catalog + `build_chat_provider`); `OpenAIProvider` accepts an injected `api_key`/`base_url` and so also drives OpenAI-compatible MCP/Odysseus/open-source endpoints. The key is read from the DOM at send time only, never stored or echoed back; provider failures return as `ok:false` data. Updated AI_CHAT_MCP and OpenAI_Agents docs.
+
 ### 2026-06-05 - Post-implementation Audit Hardening
 
 - Hardened `export_print_package` against author-supplied plan ids: filenames now derive from a sanitized, filesystem-safe stem (`_safe_stem`) so a plan id containing path separators or `..` cannot write artifacts outside the chosen output directory. Manifest/email content still records the true plan id. Added a regression test asserting all written files stay inside the output directory for a traversal-style id.
@@ -394,4 +401,14 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 ### 2026-06-05T15:31:34+00:00 - Commit Status
 
 - Commit subject: Post-implementation audit fixes: path traversal + WebGL leak
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T15:45:19+00:00 - Commit Status
+
+- Commit subject: Audit follow-ups: collision dedup, 3D centering, shared axes, live chat
+- Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T15:45:19+00:00 - Commit Status
+
+- Commit subject: Audit follow-ups: collision dedup, 3D centering, shared axes, live chat
 - Status: development history hook observed and recorded this commit workflow.

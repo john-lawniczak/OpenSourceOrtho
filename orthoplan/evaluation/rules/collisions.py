@@ -29,7 +29,11 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
     if len(bounds_by_tooth) < 2:
         return []
 
-    findings: list[Finding] = []
+    # Collect the worst (deepest) overlap per tooth pair across all stages so a
+    # contact that persists through many stages is reported once - keyed by the
+    # stage where it is most severe - instead of flooding the findings list with
+    # one near-identical entry per stage.
+    worst_by_pair: dict[tuple[str, str], tuple[int, float]] = {}
     for frame in build_stage_progress_frames(plan):
         moved = dict(bounds_by_tooth)
         for pose in frame.poses:
@@ -39,25 +43,33 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
         for index, tooth_a in enumerate(teeth):
             for tooth_b in teeth[index + 1 :]:
                 overlap = _overlap_depth(moved[tooth_a], moved[tooth_b])
-                if overlap > 0:
-                    findings.append(
-                        lint_finding(
-                            Finding(
-                                severity=FindingSeverity.WARNING,
-                                category=FindingCategory.MECHANICS,
-                                provenance=FindingProvenance.RULE,
-                                title=f"Stage {frame.stage_index} segmented crown bounds overlap",
-                                message=(
-                                    f"Teeth {tooth_a} and {tooth_b} have overlapping transformed "
-                                    f"axis-aligned crown bounds by approximately {overlap:.3f} mm "
-                                    "on the shallowest overlapping axis."
-                                ),
-                                data_gap=_GAP,
-                                clinician_question=_QUESTION,
-                                reference=_REFERENCE,
-                            )
-                        )
-                    )
+                if overlap <= 0:
+                    continue
+                pair = (tooth_a, tooth_b)
+                current = worst_by_pair.get(pair)
+                if current is None or overlap > current[1]:
+                    worst_by_pair[pair] = (frame.stage_index, overlap)
+
+    findings: list[Finding] = []
+    for (tooth_a, tooth_b), (stage_index, overlap) in sorted(worst_by_pair.items()):
+        findings.append(
+            lint_finding(
+                Finding(
+                    severity=FindingSeverity.WARNING,
+                    category=FindingCategory.MECHANICS,
+                    provenance=FindingProvenance.RULE,
+                    title=f"Teeth {tooth_a} and {tooth_b} segmented crown bounds overlap",
+                    message=(
+                        f"Teeth {tooth_a} and {tooth_b} have overlapping transformed "
+                        f"axis-aligned crown bounds, deepest at stage {stage_index} by "
+                        f"approximately {overlap:.3f} mm on the shallowest overlapping axis."
+                    ),
+                    data_gap=_GAP,
+                    clinician_question=_QUESTION,
+                    reference=_REFERENCE,
+                )
+            )
+        )
     return findings
 
 
