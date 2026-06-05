@@ -144,3 +144,22 @@ def test_export_print_package_manifest_binds_hashes_and_geometry_sources(tmp_pat
     repeated = export_print_package(_segmented_plan(settings), tmp_path / "again", make_zip=True)
     assert result.artifact_sha256 == repeated.artifact_sha256
     assert result.zip_sha256 == repeated.zip_sha256
+
+
+def test_export_print_package_neutralizes_traversal_in_plan_id(tmp_path) -> None:
+    settings = TreatmentSettings(
+        print_export=PrintExportSettings(enabled=True, safety_acknowledged=True)
+    )
+    plan = _plan(settings).model_copy(update={"id": "../../evil"})
+
+    result = export_print_package(plan, tmp_path, make_zip=True, make_email_draft=True)
+
+    written = [Path(result.manifest_path), *[Path(p) for p in result.artifact_paths]]
+    if result.zip_path:
+        written.append(Path(result.zip_path))
+    if result.email_draft_path:
+        written.append(Path(result.email_draft_path))
+    for path in written:
+        resolved = path.resolve()
+        assert resolved.is_relative_to(tmp_path.resolve()), resolved
+        assert ".." not in path.name
