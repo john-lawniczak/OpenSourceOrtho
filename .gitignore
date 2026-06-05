@@ -7,3 +7,7 @@ dist/
 build/
 *.egg-info/
 .orthoplan-meshes/
+
+# Local working notes - intentionally kept out of the public repo.
+TODO.md
+docs/Dev_history.md

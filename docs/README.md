@@ -15,7 +15,6 @@ This directory holds the project docs that should evolve with the product.
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance
 - [AI_CHAT_MCP.md](AI_CHAT_MCP.md) - scoped AI chat and MCP connector data model
 - [LLM_PROMPTS.md](LLM_PROMPTS.md) - safe optional LLM review prompt templates
-- [Dev_history.md](Dev_history.md) - development history and commit-status notes
 
 The user how-to lives at [../HOW_TO.md](../HOW_TO.md), the UI prototype lives at
 [../ui/](../ui/README.md), synthetic example plans at [../examples/](../examples/README.md),
@@ -23,4 +22,4 @@ and contributor setup in [../CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Maintenance Rule
 
-When external sources change license terms, recommended usage, model availability, medical-device disclaimers, or project status, update the relevant docs in this directory and record the change in [Dev_history.md](Dev_history.md).
+When external sources change license terms, recommended usage, model availability, medical-device disclaimers, or project status, update the relevant docs in this directory and summarize the change in your pull request description.

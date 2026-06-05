@@ -71,12 +71,77 @@ These are enforced by code and review, not just convention:
 
 New deterministic rules register in `orthoplan/evaluation/engine.py`.
 
-## Commits
+## Branches
 
-- Keep changes focused; add tests for new behavior and regressions.
-- Update [docs/Dev_history.md](docs/Dev_history.md) when you change behavior, and
+Never commit to `main`. Branch from an up-to-date `main`, using a
+`type/short-description` name that matches your change type:
+
+```bash
+git switch main && git pull
+git switch -c fix/movement-cap-zero-division
+# ...work, commit...
+git push -u origin fix/movement-cap-zero-division
+```
+
+| Prefix | Use for |
+|--------|---------|
+| `fix/` | bug fixes |
+| `feat/` | new functionality |
+| `docs/` | documentation only |
+| `refactor/` | behavior-preserving restructuring |
+| `test/` | tests only |
+| `perf/` | performance work |
+| `chore/` | build, deps, tooling |
+
+## Commit messages and PR titles
+
+We are lighter than security-critical projects, but we keep submissions
+**canonical and structured** so history is skimmable. Prefix every commit subject
+and PR title with a type tag, then an imperative summary:
+
+```
+Fix: reject zero movement caps before division
+Add: live OpenAI chat connector with egress consent
+Docs: document the print-package manifest schema
+```
+
+| Tag | Meaning |
+|-----|---------|
+| `Add:` | a new feature, rule, endpoint, or file |
+| `Fix:` | a bug fix |
+| `Change:` | a behavior change that is neither purely add nor fix |
+| `Remove:` | deletion of code, a feature, or a dependency |
+| `Refactor:` | internal restructuring with no behavior change |
+| `Docs:` | documentation only |
+| `Test:` | tests only |
+| `Perf:` | performance only |
+| `Build:` | CI, packaging, tooling, dependencies |
+
+Rules of thumb:
+
+- One logical change per PR. Split unrelated work.
+- Keep the subject under ~72 characters, imperative mood ("Add", not "Added").
+- Add tests for new behavior and for any regression you fix.
+- Summarize behavior changes in the PR description; update
   [docs/OpenAI_Agents.md](docs/OpenAI_Agents.md) when you change provider behavior.
 - Respect the file-size guardrails in MAINTAINABILITY.md.
+
+## Pull requests
+
+Open the PR against `main`. The template
+([.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)) asks you to
+confirm:
+
+- [ ] PR title uses a type tag (`Add:`, `Fix:`, ...).
+- [ ] `pytest -q`, `python tools/check_maintainability.py --strict`, and
+      `cd ui && node --test` all pass locally.
+- [ ] New behavior and regressions have tests.
+- [ ] No patient data, no verdict language, mechanics stay in deterministic rules
+      (see Non-negotiable rules above).
+- [ ] Docs updated if behavior or provider behavior changed.
+
+Maintainers may ask for changes to keep the codebase composable; small,
+well-scoped PRs are reviewed fastest.
 
 ## Dependencies
 

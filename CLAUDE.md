@@ -2,7 +2,7 @@
 
 This repository is safety-boundary-first. Do not describe OpenSource Ortho as a medical device, Invisalign clone, clinical approval tool, or autonomous treatment planner.
 
-When changing behavior, update [docs/Dev_history.md](docs/Dev_history.md). When changing model-provider behavior, also update [docs/OpenAI_Agents.md](docs/OpenAI_Agents.md).
+When changing behavior, summarize it in your pull request description. When changing model-provider behavior, also update [docs/OpenAI_Agents.md](docs/OpenAI_Agents.md).
 
 Model-generated findings are untrusted and must pass `lint_finding()` before display or export.
 

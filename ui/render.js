@@ -7,7 +7,7 @@ import {
   state,
   toothPositions,
 } from "./state.js";
-import { createLatest, escapeHtml, framePoseTotals } from "./core.js";
+import { createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
 
@@ -49,13 +49,25 @@ export function recenterViewer() {
   ensureViewer()?.recenter();
 }
 
+// Demo crowns are static-served per tooth class so the Guided demo exercises the
+// real mesh-loading path (and shows rounded crowns) without a registered scan.
+function demoRenderMeshes() {
+  return Object.keys(state.demoInitialOffsets || {}).map((tooth) => ({
+    tooth,
+    url: `/demo-meshes/${toothKind(tooth)}.stl`,
+  }));
+}
+
 function updateViewer(result) {
   if (state.dim !== "3d") return;
   const v = ensureViewer();
   if (!v) return;
   v.resize();
-  if (result.render_meshes?.length) {
-    v.loadMeshes(result.render_meshes).then((loaded) => {
+  const renderMeshes = result.render_meshes?.length
+    ? result.render_meshes
+    : (state.useDemoMeshes ? demoRenderMeshes() : []);
+  if (renderMeshes.length) {
+    v.loadMeshes(renderMeshes).then((loaded) => {
       if (loaded && state.lastEval === result) updateViewer(result);
     });
   }
@@ -461,10 +473,3 @@ function toothPath(ctx, x, y, label) {
   ctx.closePath();
 }
 
-function toothKind(label) {
-  const digit = String(label).slice(-1);
-  if (digit === "3") return "canine";
-  if (digit === "4" || digit === "5") return "premolar";
-  if (digit === "1" || digit === "2") return "incisor";
-  return "molar";
-}

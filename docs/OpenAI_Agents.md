@@ -68,7 +68,7 @@ contract and the connector kinds.
 
 ## Commit Status
 
-When provider behavior changes, update this file and [Dev_history.md](Dev_history.md) in the same commit.
+When provider behavior changes, update this file in the same commit and summarize the change in your pull request description.
 
 ## Maintainability Agent Guidance
 

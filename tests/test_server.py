@@ -176,6 +176,16 @@ def test_external_chat_without_consent_is_rejected(server: int) -> None:
     assert "off this machine" in payload["errors"][0]
 
 
+def test_demo_crown_meshes_are_served(server: int) -> None:
+    # The Guided demo loads these bundled crowns over the static path; they must
+    # ship and serve as binary STL.
+    for kind in ("incisor", "canine", "premolar", "molar"):
+        status, body = _get(server, f"/demo-meshes/{kind}.stl")
+        assert status == 200, kind
+        assert b"OpenSource Ortho" in body[:80]
+        assert len(body) > 1000
+
+
 def test_invalid_json_is_400(server: int) -> None:
     status, payload = _post(server, b"not json", {"Content-Type": "application/json"})
     assert status == 400

@@ -6,7 +6,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "./vendor/OrbitControls.js";
-import { displacement, rotationApplications } from "./core.js";
+import { displacement, rotationApplications, toothKind } from "./core.js";
 import { toothPositions } from "./state.js";
 import { parseStlGeometry } from "./stl.js";
 
@@ -16,6 +16,7 @@ const ATTACHMENT = new THREE.MeshStandardMaterial({ color: 0xb45309 });
 const ATTACHMENT_BOX = new THREE.BoxGeometry(0.9, 0.55, 0.45);
 const LINE_MAT = new THREE.LineBasicMaterial({ color: 0x2563eb });
 const meshGeometryCache = new Map();
+const meshUrlCache = new Map();
 const syntheticToothCache = new Map();
 
 // Dental-arch layout. Each FDI arch is laid out as a horseshoe on its own
@@ -57,6 +58,24 @@ function archQuaternion(tooth) {
   return archOf(tooth) === "upper"
     ? new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI)
     : new THREE.Quaternion();
+}
+
+// A small billboarded text label rendered from a 2D canvas texture.
+function makeTextSprite(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+  ctx.font = "bold 34px system-ui, sans-serif";
+  ctx.fillStyle = "#8a99a3";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, 128, 34);
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(9, 2.25, 1);
+  return sprite;
 }
 
 // pose translation (x mesiodistal-ish, y front-back, z occlusogingival/vertical)
@@ -102,6 +121,15 @@ export function createViewer(container) {
   dir.position.set(40, 80, 40);
   scene.add(dir);
   scene.add(new THREE.GridHelper(90, 18, 0xdbe3e7, 0xeef2f4));
+
+  // Persistent arch labels so the stacked maxillary/mandibular arches are
+  // unambiguous (depthTest off keeps them readable through the teeth).
+  const upperLabel = makeTextSprite("Upper arch");
+  upperLabel.position.set(0, ARCH.gapY + 5, 7);
+  scene.add(upperLabel);
+  const lowerLabel = makeTextSprite("Lower arch");
+  lowerLabel.position.set(0, -ARCH.gapY - 5, 7);
+  scene.add(lowerLabel);
 
   const proxies = new THREE.Group();
   scene.add(proxies);
@@ -155,7 +183,8 @@ export function createViewer(container) {
       const base = ideal.clone().add(worldOffset(initialOffsets?.[pose.tooth], exaggeration));
 
       if (showCurrent) {
-        const ghost = new THREE.Mesh(syntheticToothGeometry(pose.tooth), GHOST);
+        const ghostGeometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
+        const ghost = new THREE.Mesh(ghostGeometry, GHOST);
         ghost.position.copy(base);
         ghost.quaternion.copy(archQuaternion(pose.tooth));
         proxies.add(ghost);
@@ -230,10 +259,16 @@ export function createViewer(container) {
     let loaded = false;
     await Promise.all(renderMeshes.map(async (item) => {
       if (!item?.tooth || !item.url || meshGeometryCache.has(item.tooth)) return;
-      const response = await fetch(item.url);
-      if (!response.ok) return;
-      const geometry = parseStlGeometry(await response.arrayBuffer());
-      centerGeometry(geometry);
+      // Reuse a parsed geometry across teeth that share a URL (e.g. demo crowns
+      // grouped by tooth class) so identical meshes are fetched once.
+      let geometry = meshUrlCache.get(item.url);
+      if (!geometry) {
+        const response = await fetch(item.url);
+        if (!response.ok) return;
+        geometry = parseStlGeometry(await response.arrayBuffer());
+        centerGeometry(geometry);
+        meshUrlCache.set(item.url, geometry);
+      }
       meshGeometryCache.set(item.tooth, geometry);
       loaded = true;
     }));
@@ -301,53 +336,47 @@ function syntheticToothGeometry(tooth) {
   return geometry;
 }
 
-function toothKind(tooth) {
-  const digit = String(tooth).slice(-1);
-  if (["1", "2"].includes(digit)) return "incisor";
-  if (digit === "3") return "canine";
-  if (["4", "5"].includes(digit)) return "premolar";
-  return "molar";
-}
-
 // Per-class crown/root proportions. width = mesiodistal, depth = buccolingual.
 // crownTop/crownNeck are the prism radii (occlusal vs cervical); cusp x/z are
 // fractions of width/depth so they track crown size.
+// Cusps are deliberately short, rounded bumps (not tall cones) and crowns use
+// rounder prisms so the schematic fallback reads as teeth, not spikes.
 function toothProfile(kind) {
   if (kind === "incisor") {
-    // Thin chisel blade: wide mesiodistally, shallow buccolingually, flat edge.
+    // Rounded chisel blade: wide mesiodistally, shallow buccolingually, soft edge.
     return {
-      sides: 4, width: 1.15, depth: 0.5, crownTop: 0.92, crownNeck: 0.66, crownHeight: 1.55,
-      rootTip: 0.1, rootHeight: 1.75,
-      cusps: [{ x: 0, z: 0, r: 0.95, h: 0.26, flat: true, sx: 1.0, sz: 0.5, sink: 0.04 }],
+      sides: 8, width: 1.15, depth: 0.55, crownTop: 1.0, crownNeck: 0.7, crownHeight: 1.4,
+      rootTip: 0.12, rootHeight: 1.7,
+      cusps: [{ x: 0, z: 0, r: 0.95, h: 0.14, flat: true, sx: 1.0, sz: 0.55, sink: 0.06 }],
     };
   }
   if (kind === "canine") {
-    // Single prominent pointed cusp on a tall, tapering crown.
+    // Single rounded cusp on a tapering crown (a soft point, not a spike).
     return {
-      sides: 4, width: 0.98, depth: 0.82, crownTop: 0.62, crownNeck: 0.66, crownHeight: 1.5,
-      rootTip: 0.1, rootHeight: 2.0,
-      cusps: [{ x: 0, z: 0, r: 0.55, h: 0.7, sink: 0.1 }],
+      sides: 8, width: 1.0, depth: 0.85, crownTop: 0.78, crownNeck: 0.7, crownHeight: 1.45,
+      rootTip: 0.12, rootHeight: 1.9,
+      cusps: [{ x: 0, z: 0, r: 0.62, h: 0.32, sink: 0.16 }],
     };
   }
   if (kind === "premolar") {
-    // Oval occlusal table with two cusps (buccal + lingual).
+    // Oval occlusal table with two low cusps (buccal + lingual).
     return {
-      sides: 8, width: 1.08, depth: 0.98, crownTop: 0.78, crownNeck: 0.66, crownHeight: 1.15,
-      rootTip: 0.1, rootHeight: 1.7,
+      sides: 10, width: 1.1, depth: 1.0, crownTop: 0.85, crownNeck: 0.7, crownHeight: 1.1,
+      rootTip: 0.12, rootHeight: 1.7,
       cusps: [
-        { x: 0, z: -0.3, r: 0.34, h: 0.4, sink: 0.08 },
-        { x: 0, z: 0.3, r: 0.34, h: 0.4, sink: 0.08 },
+        { x: 0, z: -0.28, r: 0.4, h: 0.22, sink: 0.12 },
+        { x: 0, z: 0.28, r: 0.4, h: 0.22, sink: 0.12 },
       ],
     };
   }
-  return { // molar: broad squarish crown with four cusps
-    sides: 4, width: 1.5, depth: 1.35, crownTop: 0.95, crownNeck: 0.76, crownHeight: 1.05,
-    rootTip: 0.1, rootHeight: 1.6,
+  return { // molar: broad rounded crown with four low cusps
+    sides: 8, width: 1.5, depth: 1.35, crownTop: 1.0, crownNeck: 0.78, crownHeight: 1.0,
+    rootTip: 0.12, rootHeight: 1.6,
     cusps: [
-      { x: -0.32, z: -0.3, r: 0.33, h: 0.38, sink: 0.06 },
-      { x: 0.32, z: -0.3, r: 0.33, h: 0.38, sink: 0.06 },
-      { x: -0.32, z: 0.3, r: 0.33, h: 0.38, sink: 0.06 },
-      { x: 0.32, z: 0.3, r: 0.33, h: 0.38, sink: 0.06 },
+      { x: -0.32, z: -0.3, r: 0.4, h: 0.2, sink: 0.1 },
+      { x: 0.32, z: -0.3, r: 0.4, h: 0.2, sink: 0.1 },
+      { x: -0.32, z: 0.3, r: 0.4, h: 0.2, sink: 0.1 },
+      { x: 0.32, z: 0.3, r: 0.4, h: 0.2, sink: 0.1 },
     ],
   };
 }

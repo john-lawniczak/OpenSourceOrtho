@@ -48,6 +48,7 @@ document.querySelectorAll(".dim").forEach((button) => {
 
 el("stlFile").addEventListener("change", (event) => {
   state.file = event.target.files[0] || null;
+  state.useDemoMeshes = false;
   el("uploadLabel").textContent = state.file ? state.file.name : "Choose STL file";
   renderAll();
 });
@@ -55,6 +56,7 @@ el("stlFile").addEventListener("change", (event) => {
 el("simpleStlFile").addEventListener("change", (event) => {
   state.file = event.target.files[0] || null;
   state.demoInitialOffsets = {};
+  state.useDemoMeshes = false;
   el("simpleUploadLabel").textContent = state.file ? state.file.name : "Choose your STL";
   renderAll();
 });
@@ -141,6 +143,7 @@ function loadSyntheticDemo() {
   state.simpleAcknowledged = true;
   state.simpleGoal = "crowding";
   state.demoInitialOffsets = demoInitialOffsets;
+  state.useDemoMeshes = true;
   state.rows = syntheticCrowdingRows(12);
   state.file = null;
   state.view = "overlay";

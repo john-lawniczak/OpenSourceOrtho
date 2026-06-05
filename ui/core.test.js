@@ -9,9 +9,20 @@ import {
   framePoseTotals,
   rotationApplications,
   stageBuckets,
+  toothKind,
 } from "./core.js";
 import { parseStlGeometry } from "./stl.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+
+test("toothKind classifies FDI teeth by last digit", () => {
+  assert.equal(toothKind("11"), "incisor");
+  assert.equal(toothKind("22"), "incisor");
+  assert.equal(toothKind("13"), "canine");
+  assert.equal(toothKind("24"), "premolar");
+  assert.equal(toothKind("15"), "premolar");
+  assert.equal(toothKind("16"), "molar");
+  assert.equal(toothKind("48"), "molar");
+});
 
 test("escapeHtml neutralizes HTML metacharacters", () => {
   assert.equal(

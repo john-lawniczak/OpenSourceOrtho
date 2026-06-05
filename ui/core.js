@@ -36,6 +36,16 @@ export function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
+// Classify an FDI tooth into a crown class by its last digit. Shared by the 3D
+// proxy geometry and the demo mesh URL mapping so both agree on tooth type.
+export function toothKind(tooth) {
+  const digit = String(tooth).slice(-1);
+  if (digit === "1" || digit === "2") return "incisor";
+  if (digit === "3") return "canine";
+  if (digit === "4" || digit === "5") return "premolar";
+  return "molar";
+}
+
 // Displacement vector for a pose, scaled by an honesty-flagged exaggeration so
 // sub-mm movement is visible next to ~10 mm teeth. The caller labels the factor.
 export function displacement(pose, exaggeration = 1) {

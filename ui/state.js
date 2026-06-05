@@ -26,6 +26,8 @@ export const state = {
   simpleGoal: "general-alignment",
   simpleAcknowledged: false,
   demoInitialOffsets: {},
+  // When true, the 3D viewer loads the bundled demo crown meshes per tooth class.
+  useDemoMeshes: false,
   availability: {
     intraoral_scan: true,
     segmented_teeth: false,

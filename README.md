@@ -4,6 +4,18 @@
 
 OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows.
 
+## Mission
+
+**Everyone deserves the right to their own data and access to a healthy, clean smile.**
+
+Orthodontic planning is dominated by closed, expensive, proprietary systems that
+lock patients out of their own scans and treatment data. OpenSource Ortho exists
+to change that: a transparent, inspectable, community-owned toolkit where the
+math is auditable, the data stays with the person it belongs to, and the safety
+boundaries are explicit rather than hidden. It is not a medical device and does
+not replace a licensed professional - it lowers the barrier to understanding and
+participating in your own care.
+
 Most project documentation lives in [docs/](docs/README.md).
 
 New users can start with [HOW_TO.md](HOW_TO.md).
@@ -20,8 +32,9 @@ The UI includes two workflows:
   a do-it-yourself treatment plan.
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
   plan context, findings, data gaps, and timeline. The local helper works
-  without external services; OpenAI, Claude Code, MCP hosts, Odysseus, and
-  open-source model connectors are modeled for explicit future configuration.
+  without external services. Live connectors for OpenAI, Claude Code, and any
+  OpenAI-compatible host (MCP/Odysseus/open-source local models) are available
+  and gated behind an explicit per-session consent that data leaves the machine.
 
 It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
 
@@ -63,15 +76,19 @@ The first workflow is simple:
 
 For a quick demo, open the app, switch to **Guided**, and click **Try 12-Month Demo**.
 The demo uses synthetic crowding offsets and staged movement over twelve 30-day stages.
-It renders built-in synthetic tooth-shaped crowns for visual clarity, not patient
-anatomy, and does not claim clinical feasibility.
+The 3D view stacks a labeled **Upper arch** above a **Lower arch** and loads bundled
+rounded crown meshes (served from `ui/demo-meshes/`, exercising the same per-tooth
+mesh-loading path real scans use). These crowns are synthetic educational proxies
+for visual clarity, not patient anatomy, and do not claim clinical feasibility. Use
+the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to zoom and orbit.
 
 In **Review**, use **Plan AI** to ask educational questions about the active
-plan. The default local helper stays on this machine. External connectors are
-listed in the UI and API but are disabled until a user configures an explicit
-provider gateway. The UI includes session-only API key entry plus future agent
-access fields; do not store raw API keys in plans or case snapshots. See
-[docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+plan. The default local helper stays on this machine. To use an external
+connector (OpenAI, Claude Code, or an OpenAI-compatible endpoint), open
+**Connector Settings**, enter a key/endpoint, and tick the acknowledgement that
+scoped plan context will be sent off the machine. The key is read only when you
+press **Ask AI**; it is never written to plans, case snapshots, or `localStorage`
+and is never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 
@@ -162,13 +179,9 @@ The dev server exposes registered meshes only by asset id at `/api/mesh/<mesh_as
 The UI renders real linked STL meshes when available and falls back to schematic
 proxy teeth when no registered mesh can be loaded.
 
-## Repository Status
+## Contributing
 
-Development history and commit-status notes live in [docs/Dev_history.md](docs/Dev_history.md). Claude Code project hooks are scaffolded under `.claude/` to append a lightweight status entry after `git commit` commands run inside Claude Code. The normal Git `post-commit` hook records the new commit status and amends the just-created commit with that note, guarded against recursion.
-
-For normal Git commits, initialize the repo and opt into the included hook path:
-
-```bash
-git init
-git config core.hooksPath .githooks
-```
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch
+and pull-request conventions, the contribution-type tags, the safety rules that
+are enforced by code and review, and how to run the same checks CI runs. Commit
+history is the canonical record of changes (`git log`).
