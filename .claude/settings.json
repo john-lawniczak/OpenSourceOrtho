@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/check-maintainability.sh",
+            "args": []
+          },
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/update-dev-history.sh",
+            "args": []
+          }
+        ]
+      }
+    ]
+  }
+}

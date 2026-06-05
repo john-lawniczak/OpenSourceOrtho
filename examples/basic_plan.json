@@ -1,0 +1,132 @@
+{
+  "id": "example-basic",
+  "title": "Synthetic example - basic staged plan",
+  "numbering_system": "FDI",
+  "coordinate_frame": {
+    "name": "scan-local",
+    "handedness": "right-handed",
+    "axes": {
+      "x": "unknown",
+      "y": "unknown",
+      "z": "occlusogingival"
+    },
+    "origin": "scan-local origin (not an anatomical landmark)"
+  },
+  "data": {
+    "intraoral_scan": true,
+    "segmented_teeth": false,
+    "roots": false,
+    "cbct": false,
+    "periodontal_status": false,
+    "occlusion_scan": false,
+    "photos": false,
+    "radiographs": false,
+    "clinician_notes": false
+  },
+  "settings": {
+    "movement_caps": {
+      "default": {
+        "linear_mm": 0.25,
+        "angular_deg": 1.0,
+        "rotation_deg": 2.0,
+        "intrusion_extrusion_mm": 0.1,
+        "reference": "Heuristic defaults from clear-aligner staging literature; user-configurable."
+      },
+      "per_tooth_overrides": {}
+    },
+    "timeline": {
+      "wear_interval_days": 14
+    },
+    "print_export": {
+      "enabled": false,
+      "export_format": "stl",
+      "delivery_email": null,
+      "model_material": "validated dental model resin",
+      "thermoforming_material": "user-selected aligner sheet material",
+      "safety_acknowledged": false,
+      "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material instructions and chosen process explicitly allow it."
+    }
+  },
+  "scans": [],
+  "mesh_assets": [],
+  "tooth_meshes": [],
+  "fixed_teeth": [],
+  "movement_exclusions": [],
+  "attachments": [],
+  "interproximal_reductions": [],
+  "planned_spacing": [],
+  "stages": [
+    {
+      "index": 0,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "11"
+          },
+          "translate_x_mm": 0.2,
+          "translate_y_mm": 0.0,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "21"
+          },
+          "translate_x_mm": 0.2,
+          "translate_y_mm": 0.0,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 1,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "11"
+          },
+          "translate_x_mm": 0.3,
+          "translate_y_mm": 0.0,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "21"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.18,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    }
+  ]
+}
