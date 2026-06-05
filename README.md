@@ -10,6 +10,19 @@ New users can start with [HOW_TO.md](HOW_TO.md).
 
 The first static UI prototype lives in [ui/](ui/README.md).
 
+The UI includes two workflows:
+
+- **Clinician mode**: a professional planning workspace for staged movement, records,
+  clinical controls, findings, mesh rendering, print metadata, and plan JSON.
+- **Guided Review mode**: an educational, non-diagnostic flow for people who have an STL or
+  want to try a synthetic 12-month crowding demo. It is designed to explain limits,
+  visualize movement, and produce questions for a dental professional, not to create
+  a do-it-yourself treatment plan.
+- **Plan AI chat**: a scoped advisory chat panel that can explain the current
+  plan context, findings, data gaps, and timeline. The local helper works
+  without external services; OpenAI, Claude Code, MCP hosts, Odysseus, and
+  open-source model connectors are modeled for explicit future configuration.
+
 It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
 
 Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
@@ -23,7 +36,8 @@ The software may:
 - check internal consistency against user-configured movement caps
 - surface observational findings, data gaps, and handoff questions
 - rank missing data by deterministic acquisition impact
-- run local or remote model providers for advisory review
+- run local or explicitly configured remote model providers for advisory review
+- open an auditable, scoped AI chat session over selected plan context
 - generate reproducible handoff reports tying inputs to engine version and findings
 
 The software may not:
@@ -47,6 +61,18 @@ The first workflow is simple:
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
+For a quick demo, open the app, switch to **Guided**, and click **Try 12-Month Demo**.
+The demo uses synthetic crowding offsets and staged movement over twelve 30-day stages.
+It renders built-in synthetic tooth-shaped crowns for visual clarity, not patient
+anatomy, and does not claim clinical feasibility.
+
+In **Review**, use **Plan AI** to ask educational questions about the active
+plan. The default local helper stays on this machine. External connectors are
+listed in the UI and API but are disabled until a user configures an explicit
+provider gateway. The UI includes session-only API key entry plus future agent
+access fields; do not store raw API keys in plans or case snapshots. See
+[docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 
 ## Maintainability
@@ -63,8 +89,9 @@ The project should stay modular and composable as it grows. Follow [docs/MAINTAI
 6. Controlled finding vocabulary.
 7. Model provider adapters: OpenAI first, Claude Code second.
 8. Prompt boundary injection.
-9. Visualization frame contract and UI prototype.
-10. CLI glue.
+9. Scoped AI chat and MCP connector data model.
+10. Visualization frame contract and UI prototype.
+11. CLI glue.
 
 ## References
 

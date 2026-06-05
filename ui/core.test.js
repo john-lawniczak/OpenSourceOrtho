@@ -11,6 +11,7 @@ import {
   stageBuckets,
 } from "./core.js";
 import { parseStlGeometry } from "./stl.js";
+import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 
 test("escapeHtml neutralizes HTML metacharacters", () => {
   assert.equal(
@@ -113,4 +114,15 @@ endsolid tooth
 `;
   const geometry = parseStlGeometry(new TextEncoder().encode(stl).buffer);
   assert.equal(geometry.getAttribute("position").count, 3);
+});
+
+test("syntheticCrowdingRows creates 12 stages that counter initial offsets", () => {
+  const rows = syntheticCrowdingRows(12);
+  const teeth = Object.keys(demoInitialOffsets);
+  assert.equal(rows.length, teeth.length * 12);
+  const firstTooth = teeth[0];
+  const total = rows
+    .filter((row) => row.tooth === firstTooth)
+    .reduce((sum, row) => sum + row.x, 0);
+  assert.ok(Math.abs(total + demoInitialOffsets[firstTooth].x) < 0.01);
 });

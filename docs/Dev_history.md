@@ -371,3 +371,8 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 - Commit subject: Add clinical controls and local mesh rendering
 - Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T15:10:51+00:00 - Commit Status
+
+- Commit subject: Add guided review, AI chat, and tooth demo
+- Status: development history hook observed and recorded this commit workflow.

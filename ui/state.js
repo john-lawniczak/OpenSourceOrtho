@@ -1,4 +1,6 @@
 export const state = {
+  theme: "light",
+  userMode: "advanced",
   activeStep: "upload",
   view: "current",
   dim: "3d",
@@ -9,6 +11,21 @@ export const state = {
   // computes findings, gaps, timeline, or frames itself.
   lastEval: null,
   engineError: null,
+  chat: {
+    provider: "local",
+    model: "local-educational-helper",
+    contextScope: "summary",
+    input: "",
+    messages: [],
+    status: "Ask about this plan. The local helper stays on this machine.",
+    busy: false,
+    apiKeyPresent: false,
+    agentAccessEnabled: false,
+    agentEndpoint: "",
+  },
+  simpleGoal: "general-alignment",
+  simpleAcknowledged: false,
+  demoInitialOffsets: {},
   availability: {
     intraoral_scan: true,
     segmented_teeth: false,
@@ -100,6 +117,19 @@ export async function evaluatePlan(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["engine request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function askPlanAssistant(payload) {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["chat request failed"]).join("; "));
   }
   return response.json();
 }

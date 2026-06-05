@@ -5,14 +5,16 @@
 
 Browser prototype for the data-model workflow:
 
-1. STL upload metadata
-2. data availability toggles
-3. movement cap controls
-4. stage movement table
-5. timeline projection
-6. progress preview
-7. plan-shaped JSON output
-8. print-export readiness and package metadata
+1. Guided educational STL review and synthetic 12-month crowding demo
+2. STL upload metadata
+3. data availability toggles
+4. movement cap controls
+5. stage movement table
+6. timeline projection
+7. progress preview
+8. scoped Plan AI chat
+9. plan-shaped JSON output
+10. print-export readiness and package metadata
 
 ## Run it
 
@@ -26,6 +28,38 @@ python3 -m orthoplan.server        # or: orthoplan serve
 Then open `http://127.0.0.1:8000`.
 
 The Upload step includes a short Getting Started panel for first-time users.
+
+## Modes
+
+The sidebar mode switch exposes two workflows:
+
+- **Guided** is for non-technical educational review. It lets a user upload an STL
+  or launch a synthetic crowding demo, acknowledges that the preview is not a
+  diagnosis or treatment plan, and focuses the review surface on visualization and
+  findings. The built-in demo uses synthetic tooth-shaped models with crown/cusp
+  detail for clarity; it does not represent patient anatomy.
+- **Clinician** is the advanced workspace for records, caps, staged movement,
+  clinical controls, print metadata, optimized staging, and plan JSON.
+
+## Plan AI
+
+The Review panel includes a compact chat surface. It posts the current
+plan-shaped JSON to `POST /api/chat` with a selected connector, model
+preference, and context scope. The default `local` connector produces an
+educational explanation without leaving the local server. External connectors
+for OpenAI, Claude Code, MCP hosts, Odysseus, and open-source models are visible
+in the UI but return a clear "not enabled" response until an explicit provider
+gateway is configured.
+
+The connector settings panel includes session-only API key entry and future
+agent/MCP access controls. API keys are not written into plan JSON, case
+snapshots, or exported reports.
+
+Context scopes:
+
+- **Summary**: findings, data gaps, timeline, and clinical controls.
+- **Clinical metadata**: summary plus mesh/tooth-mesh metadata.
+- **Full plan snapshot**: the complete plan payload.
 
 ## Engine is the single source of truth
 
@@ -52,8 +86,10 @@ The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
 toggle (2D canvas is the fallback when WebGL is unavailable). Important honesty
 constraints, surfaced in the on-screen caveat:
 
-- It renders **schematic proxy teeth, not the scanned mesh.** We never store or
-  serve mesh bytes, so the viewer cannot show real crown geometry.
+- It renders registered local STL tooth meshes when `render_meshes` links are
+  available from the Python API. Otherwise it falls back to schematic proxy teeth.
+  Plan JSON still does not store mesh bytes; local mesh serving is limited to
+  `/api/mesh/<mesh_asset_id>` files registered in the local mesh workspace.
 - Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
   movement is visible next to ~10 mm teeth.
 - Rotation is drawn **only** where the engine sets `rotation_renderable`. The

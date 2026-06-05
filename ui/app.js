@@ -1,5 +1,26 @@
-import { el, maxStage, state } from "./state.js";
-import { renderAll, renderAvailability, setDimension } from "./render.js";
+import { askPlanAssistant, el, maxStage, state } from "./state.js";
+import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+import { renderAll, renderAvailability, renderChat, setDimension } from "./render.js";
+import { planJson } from "./plan.js";
+
+const savedTheme = localStorage.getItem("orthoplan-theme");
+if (savedTheme === "dark") state.theme = "dark";
+
+el("themeToggle").addEventListener("click", () => {
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  localStorage.setItem("orthoplan-theme", state.theme);
+  renderAll();
+});
+
+document.querySelectorAll(".mode-choice").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.userMode = button.dataset.userMode;
+    state.activeStep = state.userMode === "simple" ? "simple" : "upload";
+    document.querySelectorAll(".mode-choice").forEach((item) => item.classList.remove("is-active"));
+    button.classList.add("is-active");
+    renderAll();
+  });
+});
 
 document.querySelectorAll(".step").forEach((button) => {
   button.addEventListener("click", () => {
@@ -31,6 +52,13 @@ el("stlFile").addEventListener("change", (event) => {
   renderAll();
 });
 
+el("simpleStlFile").addEventListener("change", (event) => {
+  state.file = event.target.files[0] || null;
+  state.demoInitialOffsets = {};
+  el("simpleUploadLabel").textContent = state.file ? state.file.name : "Choose your STL";
+  renderAll();
+});
+
 document.body.addEventListener("input", (event) => {
   const target = event.target;
   if (target.dataset.availability) {
@@ -54,6 +82,15 @@ document.body.addEventListener("input", (event) => {
       delete state.clinicalControls.iprContacts[target.dataset.iprContact];
     }
   }
+  if (target.id === "simpleGoal") state.simpleGoal = target.value;
+  if (target.id === "simpleAcknowledged") state.simpleAcknowledged = target.checked;
+  if (target.id === "chatProvider") state.chat.provider = target.value;
+  if (target.id === "chatModel") state.chat.model = target.value;
+  if (target.id === "chatScope") state.chat.contextScope = target.value;
+  if (target.id === "chatInput") state.chat.input = target.value;
+  if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
+  if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
+  if (target.id === "agentEndpoint") state.chat.agentEndpoint = target.value;
   if (target.id === "printEnabled") state.printExport.enabled = target.checked;
   if (target.id === "printFormat") state.printExport.export_format = target.value;
   if (target.id === "printEmail") state.printExport.delivery_email = target.value;
@@ -78,11 +115,81 @@ document.body.addEventListener("click", (event) => {
     });
     renderAll();
   }
+  if (target.id === "loadDemo") {
+    loadSyntheticDemo();
+  }
+  if (target.id === "simpleReview") {
+    if (!state.simpleAcknowledged) return;
+    state.activeStep = "review";
+    state.view = "overlay";
+    renderAll();
+  }
+  if (target.id === "sendChat") {
+    sendChatMessage();
+  }
   if (target.dataset.remove) {
     state.rows.splice(Number(target.dataset.remove), 1);
     renderAll();
   }
 });
+
+function loadSyntheticDemo() {
+  state.userMode = "simple";
+  state.simpleAcknowledged = true;
+  state.simpleGoal = "crowding";
+  state.demoInitialOffsets = demoInitialOffsets;
+  state.rows = syntheticCrowdingRows(12);
+  state.file = null;
+  state.view = "overlay";
+  state.activeStep = "review";
+  el("planTitle").value = "Educational crowding demo";
+  el("planId").value = "synthetic-crowding-demo";
+  el("wearInterval").value = "30";
+  el("exaggeration").value = "12";
+  el("simpleGoal").value = "crowding";
+  el("simpleAcknowledged").checked = true;
+  renderAll();
+}
+
+async function sendChatMessage() {
+  const message = state.chat.input.trim();
+  if (!message || state.chat.busy) return;
+  state.chat.busy = true;
+  state.chat.status = "Reviewing the scoped plan context...";
+  state.chat.messages.push({ role: "user", content: message });
+  el("chatInput").value = "";
+  state.chat.input = "";
+  renderChat();
+  try {
+    const result = await askPlanAssistant({
+      plan: planJson(),
+      message,
+      provider: state.chat.provider,
+      model: state.chat.model,
+      context_scope: state.chat.contextScope,
+    });
+    if (result.ok === false) {
+      state.chat.messages.push({
+        role: "assistant",
+        content: (result.errors || ["AI chat is not available."]).join(" "),
+      });
+      state.chat.status = "Connector unavailable";
+    } else {
+      const assistant = [...result.session.messages].reverse().find((item) => item.role === "assistant");
+      state.chat.messages.push({
+        role: "assistant",
+        content: assistant?.content || "No answer returned.",
+      });
+      state.chat.status = `${result.session.connector.label} · ${result.session.context_scope.name}`;
+    }
+  } catch (error) {
+    state.chat.messages.push({ role: "assistant", content: error.message });
+    state.chat.status = "Chat request failed";
+  } finally {
+    state.chat.busy = false;
+    renderChat();
+  }
+}
 
 renderAvailability();
 renderAll();

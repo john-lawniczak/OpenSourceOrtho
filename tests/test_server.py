@@ -47,9 +47,14 @@ def _get(port: int, path: str) -> tuple[int, bytes]:
         return exc.code, exc.read()
 
 
-def _post(port: int, body: bytes, headers: dict[str, str] | None = None) -> tuple[int, dict]:
+def _post(
+    port: int,
+    body: bytes,
+    headers: dict[str, str] | None = None,
+    path: str = "/api/evaluate",
+) -> tuple[int, dict]:
     conn = HTTPConnection("127.0.0.1", port, timeout=5)
-    conn.request("POST", "/api/evaluate", body=body, headers=headers or {})
+    conn.request("POST", path, body=body, headers=headers or {})
     resp = conn.getresponse()
     status = resp.status
     payload = json.loads(resp.read() or b"{}")
@@ -81,6 +86,35 @@ def test_valid_evaluate_returns_findings(server: int) -> None:
     assert status == 200
     assert payload["ok"] is True
     assert any("linear cap" in f["title"] for f in payload["findings"])
+
+
+def test_ai_connector_catalog_is_served(server: int) -> None:
+    status, body = _get(server, "/api/ai/connectors")
+    payload = json.loads(body)
+
+    assert status == 200
+    assert payload["ok"] is True
+    assert any(connector["kind"] == "local" for connector in payload["connectors"])
+
+
+def test_local_chat_endpoint_returns_session(server: int) -> None:
+    plan = {
+        "id": "chat",
+        "stages": [
+            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}
+        ],
+    }
+    status, payload = _post(
+        server,
+        json.dumps({"plan": plan, "message": "What can this tell me?", "provider": "local"}).encode(),
+        {"Content-Type": "application/json"},
+        path="/api/chat",
+    )
+
+    assert status == 200
+    assert payload["ok"] is True
+    assert payload["session"]["connector"]["kind"] == "local"
+    assert payload["session"]["messages"][1]["role"] == "assistant"
 
 
 def test_invalid_json_is_400(server: int) -> None:

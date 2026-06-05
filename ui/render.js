@@ -50,6 +50,7 @@ function updateViewer(result) {
     frames: result.frames,
     toothFrames: result.tooth_frames,
     attachments: result.clinical_controls?.attachments || [],
+    initialOffsets: state.demoInitialOffsets,
     stageIndex: Number(el("stageSlider").value || 0),
     view: state.view,
     exaggeration: numberValue("exaggeration") || 1,
@@ -57,8 +58,21 @@ function updateViewer(result) {
 }
 
 export function renderAll() {
+  document.body.dataset.mode = state.userMode;
+  document.body.dataset.theme = state.theme;
+  el("themeToggle").textContent = state.theme === "dark" ? "Light Mode" : "Dark Mode";
   state.scanUnits = el("scanUnits").value;
   state.scanArch = el("scanArch").value;
+  state.simpleGoal = el("simpleGoal").value;
+  state.simpleAcknowledged = el("simpleAcknowledged").checked;
+  el("simpleReview").disabled = !state.simpleAcknowledged;
+  state.chat.provider = el("chatProvider").value;
+  state.chat.model = el("chatModel").value;
+  state.chat.contextScope = el("chatScope").value;
+  state.chat.input = el("chatInput").value;
+  state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
+  state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
+  state.chat.agentEndpoint = el("agentEndpoint").value;
   state.caps = {
     linear_mm: numberValue("capLinear"),
     angular_deg: numberValue("capAngular"),
@@ -83,11 +97,33 @@ export function renderAll() {
   renderMetadata();
   renderRows();
   renderIprContactMap();
+  renderChat();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   el("stageValue").textContent = el("stageSlider").value;
   scheduleEvaluate();
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
+}
+
+export function renderChat() {
+  el("chatProvider").value = state.chat.provider;
+  el("chatModel").value = state.chat.model;
+  el("chatScope").value = state.chat.contextScope;
+  el("chatInput").value = state.chat.input;
+  el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
+  el("agentEndpoint").value = state.chat.agentEndpoint;
+  el("sendChat").disabled = state.chat.busy || !state.chat.input.trim();
+  const secretStatus = state.chat.apiKeyPresent ? " · key in session" : "";
+  const agentStatus = state.chat.agentAccessEnabled ? " · agent access staged" : "";
+  el("chatStatus").textContent = `${state.chat.status}${secretStatus}${agentStatus}`;
+  el("chatMessages").innerHTML = state.chat.messages.length
+    ? state.chat.messages.map((message) => `
+      <div class="chat-message ${escapeHtml(message.role)}">
+        <strong>${message.role === "user" ? "You" : "AI"}</strong>
+        <p>${escapeHtml(message.content)}</p>
+      </div>
+    `).join("")
+    : "<p class=\"chat-empty\">Ask what the preview can and cannot tell you.</p>";
 }
 
 let evaluateTimer = null;
@@ -130,10 +166,17 @@ export function renderAvailability() {
 }
 
 function renderSteps() {
+  document.querySelectorAll(".mode-choice").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.userMode === state.userMode);
+  });
   document.querySelectorAll(".step").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.step === state.activeStep);
   });
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("is-active"));
+  if (state.userMode === "simple" && state.activeStep !== "review") {
+    el("panel-simple").classList.add("is-active");
+    return;
+  }
   el(`panel-${state.activeStep}`).classList.add("is-active");
 }
 
@@ -317,12 +360,18 @@ function renderIprContactMap() {
 function drawCanvas() {
   const canvas = el("archCanvas");
   const ctx = canvas.getContext("2d");
+  const styles = getComputedStyle(document.body);
+  const canvasColor = styles.getPropertyValue("--canvas").trim() || "#fbfdfe";
+  const lineColor = styles.getPropertyValue("--line").trim() || "#cdd6dc";
+  const mutedColor = styles.getPropertyValue("--muted").trim() || "#60707a";
+  const accentColor = styles.getPropertyValue("--accent").trim() || "#0f766e";
+  const blueColor = styles.getPropertyValue("--blue").trim() || "#2563eb";
   const stageIndex = Number(el("stageSlider").value || 0);
   const totals = framePoseTotals(state.lastEval?.frames?.[stageIndex]);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#fbfdfe";
+  ctx.fillStyle = canvasColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "#cdd6dc";
+  ctx.strokeStyle = lineColor;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.ellipse(520, 258, 410, 210, 0, 0, Math.PI * 2);
@@ -330,28 +379,33 @@ function drawCanvas() {
 
   for (const [tooth, [x, y]] of Object.entries(toothPositions)) {
     const movement = totals.get(tooth) || { x: 0, y: 0, z: 0 };
+    const initial = state.demoInitialOffsets[tooth] || { x: 0, y: 0, z: 0 };
+    const ix = initial.x * 80;
+    const iy = initial.y * 80 - initial.z * 35;
     const dx = movement.x * 80;
     const dy = movement.y * 80 - movement.z * 35;
-    if (state.view === "overlay" || state.view === "current") drawTooth(ctx, x, y, tooth, "#dfe8ed", "#60707a");
+    if (state.view === "overlay" || state.view === "current") {
+      drawTooth(ctx, x + ix, y + iy, tooth, lineColor, mutedColor, mutedColor);
+    }
     if (state.view === "overlay" || state.view === "planned") {
-      drawTooth(ctx, x + dx, y + dy, tooth, "#0f766e", "#ffffff");
+      drawTooth(ctx, x + ix + dx, y + iy + dy, tooth, accentColor, "#ffffff", lineColor);
       if (Math.hypot(dx, dy) > 1) {
-        ctx.strokeStyle = "#2563eb";
+        ctx.strokeStyle = blueColor;
         ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + dx, y + dy);
+        ctx.moveTo(x + ix, y + iy);
+        ctx.lineTo(x + ix + dx, y + iy + dy);
         ctx.stroke();
       }
     }
   }
 }
 
-function drawTooth(ctx, x, y, label, fill, text) {
+function drawTooth(ctx, x, y, label, fill, text, stroke) {
   ctx.fillStyle = fill;
-  ctx.strokeStyle = "#6f828b";
+  ctx.strokeStyle = stroke;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  roundedRect(ctx, x - 18, y - 14, 36, 28, 7);
+  toothPath(ctx, x, y, label);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = text;
@@ -361,14 +415,43 @@ function drawTooth(ctx, x, y, label, fill, text) {
   ctx.fillText(label, x, y);
 }
 
-function roundedRect(ctx, x, y, width, height, radius) {
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
+function toothPath(ctx, x, y, label) {
+  const kind = toothKind(label);
+  if (kind === "molar") {
+    ctx.moveTo(x - 20, y - 10);
+    ctx.bezierCurveTo(x - 23, y - 20, x - 8, y - 23, x, y - 17);
+    ctx.bezierCurveTo(x + 8, y - 23, x + 23, y - 20, x + 20, y - 10);
+    ctx.bezierCurveTo(x + 26, y, x + 20, y + 19, x + 8, y + 18);
+    ctx.bezierCurveTo(x, y + 24, x - 26, y + 18, x - 20, y - 10);
+    return;
+  }
+  if (kind === "premolar") {
+    ctx.moveTo(x - 18, y - 8);
+    ctx.bezierCurveTo(x - 17, y - 20, x - 4, y - 22, x, y - 14);
+    ctx.bezierCurveTo(x + 4, y - 22, x + 17, y - 20, x + 18, y - 8);
+    ctx.bezierCurveTo(x + 20, y + 12, x + 8, y + 20, x, y + 16);
+    ctx.bezierCurveTo(x - 8, y + 20, x - 20, y + 12, x - 18, y - 8);
+    return;
+  }
+  if (kind === "canine") {
+    ctx.moveTo(x - 16, y - 6);
+    ctx.bezierCurveTo(x - 12, y - 20, x - 3, y - 22, x, y - 26);
+    ctx.bezierCurveTo(x + 3, y - 22, x + 12, y - 20, x + 16, y - 6);
+    ctx.bezierCurveTo(x + 18, y + 10, x + 8, y + 19, x, y + 17);
+    ctx.bezierCurveTo(x - 8, y + 19, x - 18, y + 10, x - 16, y - 6);
+    return;
+  }
+  ctx.moveTo(x - 16, y - 12);
+  ctx.bezierCurveTo(x - 18, y - 22, x + 18, y - 22, x + 16, y - 12);
+  ctx.lineTo(x + 13, y + 14);
+  ctx.bezierCurveTo(x + 8, y + 22, x - 8, y + 22, x - 13, y + 14);
+  ctx.closePath();
+}
+
+function toothKind(label) {
+  const digit = String(label).slice(-1);
+  if (digit === "3") return "canine";
+  if (digit === "4" || digit === "5") return "premolar";
+  if (digit === "1" || digit === "2") return "incisor";
+  return "molar";
 }

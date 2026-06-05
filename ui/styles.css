@@ -6,10 +6,28 @@
   --line: #cdd6dc;
   --panel: #ffffff;
   --panel-alt: #edf2f5;
+  --field: #ffffff;
+  --canvas: #fbfdfe;
   --accent: #0f766e;
   --accent-ink: #ffffff;
   --warn: #b45309;
   --blue: #2563eb;
+}
+
+body[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1417;
+  --ink: #edf5f7;
+  --muted: #9cb0b8;
+  --line: #34464f;
+  --panel: #172126;
+  --panel-alt: #202d33;
+  --field: #0f171b;
+  --canvas: #111a1f;
+  --accent: #2dd4bf;
+  --accent-ink: #081214;
+  --warn: #f59e0b;
+  --blue: #60a5fa;
 }
 
 * {
@@ -29,6 +47,11 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .app-shell {
@@ -93,7 +116,9 @@ p {
 
 .step,
 .mode,
-.primary-action {
+.mode-choice,
+.primary-action,
+.theme-toggle {
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -111,10 +136,41 @@ p {
 
 .step.is-active,
 .mode.is-active,
+.mode-choice.is-active,
 .primary-action {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
+}
+
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.mode-choice {
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.theme-toggle {
+  background: transparent;
+  color: #d8e4e9;
+  border-color: #344951;
+}
+
+body[data-mode="simple"] .step-list,
+body[data-mode="simple"] .data-gap-panel {
+  display: none;
+}
+
+body[data-mode="simple"] .topbar {
+  display: none;
+}
+
+body[data-mode="simple"] .advanced-only {
+  display: none;
 }
 
 .data-gap-panel {
@@ -171,7 +227,7 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--field);
   color: var(--ink);
   min-height: 40px;
   padding: 8px 10px;
@@ -203,6 +259,60 @@ textarea {
   display: grid;
   grid-template-columns: minmax(240px, 420px) 1fr;
   gap: 18px;
+}
+
+.simple-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.simple-hero h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.simple-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 420px) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.simple-panel {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  padding: 14px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.simple-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.simple-steps div {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.simple-steps strong {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.simple-steps span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .upload-target {
@@ -246,7 +356,8 @@ textarea {
 
 .howto-panel,
 .print-settings,
-.status-block {
+.status-block,
+.ai-chat {
   border: 1px solid var(--line);
   background: var(--panel-alt);
   padding: 12px;
@@ -254,9 +365,10 @@ textarea {
 }
 
 .howto-panel h2,
-.print-settings h2 {
+.print-settings h2,
+.ai-chat h2 {
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .howto-panel ol {
@@ -269,6 +381,90 @@ textarea {
 
 .print-settings {
   margin-top: 18px;
+}
+
+.ai-chat {
+  margin-top: 16px;
+}
+
+.ai-chat-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ai-chat-heading span {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.chat-controls {
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  margin-bottom: 10px;
+}
+
+.chat-messages {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+  margin-bottom: 10px;
+}
+
+.chat-message {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 10px;
+}
+
+.chat-message.user {
+  border-color: #9fb3bd;
+}
+
+.chat-message.assistant {
+  border-left: 3px solid var(--accent);
+}
+
+.chat-message strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.chat-message p,
+.chat-empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.chat-input {
+  margin-bottom: 10px;
+}
+
+.chat-input textarea {
+  resize: vertical;
+}
+
+.ai-settings {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.ai-settings summary {
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ai-settings label {
+  margin-top: 10px;
 }
 
 .metadata-grid div {
@@ -358,7 +554,7 @@ td input {
   height: min(58vh, 560px);
   min-height: 360px;
   border: 1px solid var(--line);
-  background: #fbfdfe;
+  background: var(--canvas);
 }
 
 .review-side {
@@ -377,7 +573,8 @@ td input {
 .remove-row {
   min-width: 34px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--field);
+  color: var(--ink);
   cursor: pointer;
 }
 
@@ -396,6 +593,9 @@ td input {
 
   .topbar,
   .upload-row,
+  .simple-hero,
+  .simple-grid,
+  .simple-steps,
   .field-grid,
   .field-grid.compact,
   .toggle-grid,
@@ -410,7 +610,7 @@ td input {
   margin: 8px 0 0;
   font-size: 12px;
   line-height: 1.4;
-  color: #5c6b73;
+  color: var(--muted);
 }
 
 .finding-gap,
@@ -418,7 +618,7 @@ td input {
   margin: 4px 0 0;
   font-size: 12px;
   line-height: 1.4;
-  color: #5c6b73;
+  color: var(--muted);
 }
 
 .finding-question {
@@ -431,11 +631,12 @@ td input {
 
 .viewer3d {
   width: 100%;
-  height: 520px;
-  border: 1px solid #cdd6dc;
+  height: min(64vh, 660px);
+  min-height: 460px;
+  border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
-  background: #fbfdfe;
+  background: var(--canvas);
 }
 
 .dim-toggle {
@@ -450,7 +651,7 @@ td input {
   gap: 4px;
   margin-left: 8px;
   font-size: 12px;
-  color: #5c6b73;
+  color: var(--muted);
 }
 
 .exaggeration input {
@@ -466,7 +667,7 @@ td input {
 
 .ipr-contact {
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--panel);
   padding: 8px;
   display: grid;
   grid-template-columns: 1fr 54px;

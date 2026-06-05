@@ -20,6 +20,12 @@
           </div>
         </div>
 
+        <div class="mode-switch" aria-label="Workspace mode">
+          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Clinician</button>
+          <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
+        </div>
+        <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
+
         <nav class="step-list" aria-label="Workflow steps">
           <button class="step is-active" data-step="upload" type="button">Upload</button>
           <button class="step" data-step="availability" type="button">Data</button>
@@ -55,6 +61,46 @@
             <input id="wearInterval" type="number" min="1" value="14" />
           </div>
         </header>
+
+        <section class="panel" id="panel-simple">
+          <div class="simple-hero">
+            <div>
+              <h2>Guided STL Review</h2>
+              <p>Explore an educational tooth-movement visualization and learn what records an orthodontist would need. This is not a diagnosis, treatment plan, or aligner prescription.</p>
+            </div>
+            <button class="primary-action" id="loadDemo" type="button">Try 12-Month Demo</button>
+          </div>
+          <div class="simple-grid">
+            <label class="upload-target" for="simpleStlFile">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <span id="simpleUploadLabel">Choose your STL</span>
+              <input id="simpleStlFile" type="file" accept=".stl" />
+            </label>
+            <div class="simple-panel">
+              <label>
+                What are you exploring?
+                <select id="simpleGoal">
+                  <option value="general-alignment">General alignment</option>
+                  <option value="crowding">Crowding</option>
+                  <option value="spacing">Spacing</option>
+                  <option value="front-teeth">Front teeth appearance</option>
+                  <option value="bite">Bite concern</option>
+                </select>
+              </label>
+              <label class="toggle">
+                <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
+                <input id="simpleAcknowledged" type="checkbox" />
+              </label>
+              <button class="primary-action" id="simpleReview" type="button">Review Educational Preview</button>
+            </div>
+          </div>
+          <div class="simple-steps">
+            <div><strong>1</strong><span>Upload an STL or use the synthetic demo.</span></div>
+            <div><strong>2</strong><span>Review the visual movement timeline.</span></div>
+            <div><strong>3</strong><span>Review and refine the staged preview.</span></div>
+            <div><strong>4</strong><span>Prepare 3D model prints for professional review.</span></div>
+          </div>
+        </section>
 
         <section class="panel is-active" id="panel-upload">
           <div class="panel-heading">
@@ -197,7 +243,7 @@
                   <button class="dim is-active" data-dim="3d" type="button">3D</button>
                   <button class="dim" data-dim="2d" type="button">2D</button>
                 </span>
-                <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="40" /></label>
+                <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="12" /></label>
                 <label class="stage-slider">
                   Stage <span id="stageValue">0</span>
                   <input id="stageSlider" type="range" min="0" max="0" value="0" />
@@ -211,12 +257,61 @@
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>
-              <h2>Print Export</h2>
-              <div id="printExportStatus" class="status-block"></div>
-              <h2>Optimized Staging</h2>
-              <div id="optimizedStaging" class="status-block"></div>
-              <h2>Plan JSON</h2>
-              <textarea id="planJson" readonly></textarea>
+              <section class="ai-chat" aria-label="Plan AI chat">
+                <div class="ai-chat-heading">
+                  <h2>Plan AI</h2>
+                  <span id="chatStatus">Local helper ready</span>
+                </div>
+                <div class="field-grid chat-controls">
+                  <label>Connector
+                    <select id="chatProvider">
+                      <option value="local">Local helper</option>
+                      <option value="openai">OpenAI</option>
+                      <option value="claude-code">Claude Code</option>
+                      <option value="mcp">MCP host</option>
+                      <option value="odysseus">Odysseus</option>
+                      <option value="open-source">Open-source model</option>
+                    </select>
+                  </label>
+                  <label>Model
+                    <input id="chatModel" value="local-educational-helper" />
+                  </label>
+                  <label>Context
+                    <select id="chatScope">
+                      <option value="summary">Summary</option>
+                      <option value="clinical">Clinical metadata</option>
+                      <option value="full_plan">Full plan snapshot</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="chatMessages" class="chat-messages"></div>
+                <label class="chat-input">
+                  Ask about this plan
+                  <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
+                </label>
+                <button class="primary-action" id="sendChat" type="button">Ask AI</button>
+                <details class="ai-settings">
+                  <summary>Connector Settings</summary>
+                  <label>API key
+                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Session only; not saved" />
+                  </label>
+                  <label class="toggle">
+                    <span>Allow an external AI agent to request scoped plan context</span>
+                    <input id="agentAccessEnabled" type="checkbox" />
+                  </label>
+                  <label>Agent/MCP endpoint
+                    <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
+                  </label>
+                  <p class="viewer-caveat">Account linking should use OAuth or an MCP permission handshake later. Raw API keys are session-only here and are not written into plans or case snapshots.</p>
+                </details>
+                <p class="viewer-caveat">AI answers are educational only. External connectors can receive plan context; use the context selector deliberately.</p>
+              </section>
+              <h2 class="advanced-only">Print Export</h2>
+              <div id="printExportStatus" class="status-block advanced-only"></div>
+              <h2 class="advanced-only">Optimized Staging</h2>
+              <div id="optimizedStaging" class="status-block advanced-only"></div>
+              <h2 class="advanced-only">Plan JSON</h2>
+              <textarea id="planJson" class="advanced-only" readonly></textarea>
             </aside>
           </div>
         </section>

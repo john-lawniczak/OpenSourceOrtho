@@ -16,7 +16,20 @@ The UI must show what the system actually knows:
 
 ## Core Views
 
-The first production-grade UI should include:
+The UI should support two distinct product surfaces:
+
+- **Guided review** for non-technical users: upload or demo, acknowledge limits,
+  visualize an educational movement timeline, and convert findings into questions
+  for a dental professional.
+- **Clinician review** for professional users: staged movement authoring, records,
+  clinical controls, mesh rendering, rule findings, optimized staging, print
+  metadata, and plan JSON.
+- **Plan AI review** for both workflows: scoped chat over the current plan,
+  findings, data gaps, and timeline. It must label the connector and context
+  scope, keep raw API keys out of persisted plan data, and never present AI text
+  as diagnosis or approval.
+
+The first production-grade clinician UI should include:
 
 - stage timeline with scrubber and exact stage index
 - before / current / planned overlay mode
@@ -26,6 +39,10 @@ The first production-grade UI should include:
 - data-availability panel that remains visible during plan review
 - acquisition advisor panel showing what missing data would change or unlock
 - exportable visual report with the same safety boundary language
+- auditable chat panel with local default behavior and explicit external
+  connector/context selection
+- light and dark themes with equal readability for controls, findings, and the
+  3D viewer
 
 ## Accuracy Requirements
 
@@ -38,6 +55,8 @@ The viewer must not silently approximate away measurement-relevant uncertainty.
 - Measurements must include units and source.
 - Missing anatomical data must be visible when it affects interpretation.
 - Approximate PCA tooth frames are metadata/debug aids, not enough to render tip, torque, or long-axis rotation.
+- AI chat must consume a declared context package and disclose when requested
+  information is absent from that package.
 
 ## Design Tone
 
