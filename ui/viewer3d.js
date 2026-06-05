@@ -12,12 +12,12 @@ import { parseStlGeometry } from "./stl.js";
 
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
-const SCAN = new THREE.MeshStandardMaterial({
-  color: 0xf1e4cf,
-  transparent: true,
-  opacity: 0.9,
-  roughness: 0.46,
-  metalness: 0.01,
+const SCAN = new THREE.MeshPhysicalMaterial({
+  color: 0xf6ead6,
+  roughness: 0.38,
+  metalness: 0,
+  clearcoat: 0.18,
+  clearcoatRoughness: 0.58,
   side: THREE.DoubleSide,
 });
 const ATTACHMENT = new THREE.MeshStandardMaterial({ color: 0xb45309 });
@@ -113,6 +113,9 @@ function plannedQuaternion(pose, frame) {
 export function createViewer(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio || 1);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
   container.replaceChildren(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -124,13 +127,17 @@ export function createViewer(container) {
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.68));
-  const dir = new THREE.DirectionalLight(0xfffbf2, 0.82);
-  dir.position.set(40, 80, 40);
-  scene.add(dir);
-  const fill = new THREE.DirectionalLight(0xdcecff, 0.32);
-  fill.position.set(-35, 30, -20);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8fa2ad, 0.78));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.36));
+  const key = new THREE.DirectionalLight(0xfffbf2, 1.18);
+  key.position.set(34, 58, 42);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xe4f2ff, 0.58);
+  fill.position.set(-38, 26, -22);
   scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xffffff, 0.48);
+  rim.position.set(0, 24, -55);
+  scene.add(rim);
   const grid = new THREE.GridHelper(90, 18, 0xd5dde2, 0xe8edf0);
   grid.material.transparent = true;
   grid.material.opacity = 0.52;
@@ -309,6 +316,7 @@ export function createViewer(container) {
 
     for (const source of scanSources) {
       const geometry = parseStlGeometry(await sourceBuffer(source));
+      orientScanGeometry(geometry);
       const mesh = new THREE.Mesh(geometry, SCAN);
       mesh.name = source.name;
       uploadedScans.add(mesh);
@@ -318,7 +326,7 @@ export function createViewer(container) {
     if (!box.isEmpty()) {
       const center = new THREE.Vector3();
       box.getCenter(center);
-      uploadedScans.position.set(-center.x, -center.y, -center.z);
+      uploadedScans.position.set(-center.x, -box.min.y + 0.6, -center.z);
     }
     fitted = false;
     return { loaded: true, count: uploadedScans.children.length };
@@ -339,6 +347,15 @@ export function createViewer(container) {
 
   window.addEventListener("resize", resize);
   return { update, resize, dispose, loadMeshes, loadScanSources, loadUploadedScans, zoomBy, recenter };
+}
+
+function orientScanGeometry(geometry) {
+  // OrthoCAD/STL exports commonly use Z as vertical height. Three.js uses Y as
+  // up in this viewer, so rotate the scan into the dental floor plane:
+  // source (x, y, z) -> world (x, z, -y).
+  geometry.rotateX(-Math.PI / 2);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
 }
 
 function sourceKey(source) {

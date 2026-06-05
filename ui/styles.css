@@ -130,7 +130,9 @@ p {
 .primary-action,
 .theme-toggle,
 .download-actions button,
-.workflow-actions button {
+.workflow-actions button,
+.journey-nav button,
+.upload-file-list button {
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -226,6 +228,46 @@ li {
   margin-bottom: 18px;
 }
 
+.journey-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.journey-nav button {
+  align-items: center;
+  background: var(--panel);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 58px;
+  padding: 10px;
+  text-align: left;
+}
+
+.journey-nav button.is-active {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.journey-nav strong {
+  align-items: center;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.journey-nav span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 label {
   display: grid;
   gap: 6px;
@@ -301,32 +343,6 @@ textarea {
   gap: 14px;
 }
 
-.simple-steps {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.simple-steps div {
-  border: 1px solid var(--line);
-  background: var(--panel);
-  padding: 12px;
-  display: grid;
-  gap: 6px;
-}
-
-.simple-steps strong {
-  color: var(--accent);
-  font-size: 20px;
-}
-
-.simple-steps span {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
 .upload-target {
   min-height: 148px;
   border: 1px dashed #8aa0aa;
@@ -335,6 +351,86 @@ textarea {
   place-items: center;
   text-align: center;
   color: var(--ink);
+}
+
+.upload-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.upload-file-list {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  min-height: 52px;
+  padding: 10px;
+}
+
+.upload-file-list p {
+  font-size: 12px;
+}
+
+.upload-file-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.upload-file-heading strong {
+  font-size: 12px;
+}
+
+.upload-file-heading button,
+.upload-file-list li button {
+  min-height: 28px;
+  padding: 0 8px;
+}
+
+.upload-file-list ul {
+  display: grid;
+  gap: 6px;
+}
+
+.upload-file-list li {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 38px;
+  padding: 6px 8px;
+}
+
+.upload-file-list li span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-file-list li small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.guided-explain {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.guided-explain h2 {
+  font-size: 14px;
+}
+
+.guided-explain p {
+  font-size: 13px;
 }
 
 .upload-target input {
@@ -658,10 +754,10 @@ td input {
   }
 
   .topbar,
+  .journey-nav,
   .upload-row,
   .simple-hero,
   .simple-grid,
-  .simple-steps,
   .field-grid,
   .field-grid.compact,
   .toggle-grid,

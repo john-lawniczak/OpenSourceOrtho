@@ -69,6 +69,24 @@
             <input id="wearInterval" type="number" min="1" value="14" />
           </div>
         </header>
+        <nav class="journey-nav" aria-label="Guided workflow">
+          <button class="is-active" data-journey-step="upload" type="button">
+            <strong>1</strong>
+            <span>Upload an STL or use a demo.</span>
+          </button>
+          <button data-journey-step="review" type="button">
+            <strong>2</strong>
+            <span>Review the movement timeline.</span>
+          </button>
+          <button data-journey-step="stages" type="button">
+            <strong>3</strong>
+            <span>Review and refine stages.</span>
+          </button>
+          <button data-journey-step="settings" type="button">
+            <strong>4</strong>
+            <span>Prepare model-print handoff.</span>
+          </button>
+        </nav>
 
         <section class="panel" id="panel-simple">
           <div class="simple-hero">
@@ -87,12 +105,19 @@
             </div>
           </div>
           <div class="simple-grid">
-            <label class="upload-target" for="simpleStlFile">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <span id="simpleUploadLabel">Choose your STL files</span>
-              <input id="simpleStlFile" type="file" accept=".stl" multiple />
-            </label>
+            <div class="upload-stack">
+              <label class="upload-target" for="simpleStlFile">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span id="simpleUploadLabel">Choose your STL files</span>
+                <input id="simpleStlFile" type="file" accept=".stl" multiple />
+              </label>
+              <div id="simpleUploadFileList" class="upload-file-list"></div>
+            </div>
             <div class="simple-panel">
+              <div class="guided-explain">
+                <h2>How The Straightening Preview Works</h2>
+                <p>Your uploaded STL shows the real scan. To make teeth appear straighter over time, the app needs either segmented per-tooth meshes from a clinician workflow or an educational simulated stage sequence. Choose a goal, acknowledge the limitation, then review the staged preview.</p>
+              </div>
               <label>
                 What are you exploring?
                 <select id="simpleGoal">
@@ -109,12 +134,6 @@
               </label>
               <button class="primary-action" id="simpleReview" type="button">Next: Review Preview</button>
             </div>
-          </div>
-          <div class="simple-steps">
-            <div><strong>1</strong><span>Upload an STL or use the synthetic demo.</span></div>
-            <div><strong>2</strong><span>Review the visual movement timeline.</span></div>
-            <div><strong>3</strong><span>Review and refine the staged preview.</span></div>
-            <div><strong>4</strong><span>Prepare 3D model prints for professional review.</span></div>
           </div>
         </section>
 
@@ -142,11 +161,14 @@
             </div>
           </div>
           <div class="upload-row">
-            <label class="upload-target" for="stlFile">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <span id="uploadLabel">Choose STL files</span>
-              <input id="stlFile" type="file" accept=".stl" multiple />
-            </label>
+            <div class="upload-stack">
+              <label class="upload-target" for="stlFile">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span id="uploadLabel">Choose STL files</span>
+                <input id="stlFile" type="file" accept=".stl" multiple />
+              </label>
+              <div id="uploadFileList" class="upload-file-list"></div>
+            </div>
             <div class="field-grid compact">
               <label>
                 Units
