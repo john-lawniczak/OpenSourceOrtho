@@ -16,3 +16,4 @@ CLAUDE.local.md
 tools/record_commit_status.sh
 tools/update_dev_status.py
 tools/bump_version.py
+tools/publish_snapshot.sh
