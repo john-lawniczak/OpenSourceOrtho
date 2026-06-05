@@ -12,10 +12,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.api import evaluate_plan_payload
+from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
 MAX_BODY_BYTES = 5 * 1024 * 1024
@@ -26,6 +29,7 @@ _CONTENT_TYPES = {
     ".js": "text/javascript; charset=utf-8",
     ".json": "application/json; charset=utf-8",
     ".svg": "image/svg+xml",
+    ".stl": "model/stl",
 }
 
 
@@ -49,6 +53,10 @@ class Handler(BaseHTTPRequestHandler):
             return None
         return candidate
 
+    def _mesh_workspace(self) -> Path:
+        raw = os.environ.get("ORTHOPLAN_MESH_WORKSPACE")
+        return Path(raw) if raw else default_mesh_workspace()
+
     def _content_length(self) -> int | None:
         """Parsed Content-Length, or None if the header is missing/malformed."""
         raw = self.headers.get("Content-Length")
@@ -62,6 +70,20 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
+            if path.startswith("/api/mesh/"):
+                mesh_asset_id = urllib.parse.unquote(path.removeprefix("/api/mesh/"))
+                target = resolve_mesh_path(mesh_asset_id, workspace=self._mesh_workspace())
+                if target is None:
+                    self._send_json(404, {"ok": False, "errors": ["mesh asset not found"]})
+                    return
+                body = target.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", _CONTENT_TYPES.get(target.suffix, "application/octet-stream"))
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.end_headers()
+                self.wfile.write(body)
+                return
             target = self._resolve_static(path)
             if target is None:
                 self._send_json(404, {"ok": False, "errors": ["not found"]})

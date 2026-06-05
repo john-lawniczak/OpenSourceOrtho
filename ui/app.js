@@ -46,6 +46,14 @@ document.body.addEventListener("input", (event) => {
       row[field] = Number.isFinite(num) ? num : 0;
     }
   }
+  if (target.dataset.iprContact) {
+    const value = Number(target.value);
+    if (Number.isFinite(value) && value > 0) {
+      state.clinicalControls.iprContacts[target.dataset.iprContact] = value;
+    } else {
+      delete state.clinicalControls.iprContacts[target.dataset.iprContact];
+    }
+  }
   if (target.id === "printEnabled") state.printExport.enabled = target.checked;
   if (target.id === "printFormat") state.printExport.export_format = target.value;
   if (target.id === "printEmail") state.printExport.delivery_email = target.value;

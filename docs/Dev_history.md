@@ -366,3 +366,8 @@ This file tracks status notes intended to be updated alongside commits. Claude C
 
 - Commit subject: Harden measurement truth and print packages
 - Status: development history hook observed and recorded this commit workflow.
+
+### 2026-06-05T14:39:31+00:00 - Commit Status
+
+- Commit subject: Add clinical controls and local mesh rendering
+- Status: development history hook observed and recorded this commit workflow.

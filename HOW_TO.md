@@ -7,13 +7,17 @@ medical device and does not approve treatment.
 ## 1. Start The App
 
 ```bash
-python -m venv .venv
+/Users/johnlaw/.local/bin/python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 orthoplan serve
 ```
 
 Open `http://127.0.0.1:8000`.
+
+If your default `python3` can create virtual environments correctly, `python3 -m venv .venv`
+is also fine. On macOS, avoid a broken Homebrew Python 3.14 build if `ensurepip` fails;
+recreate `.venv` with Python 3.11 or 3.12 instead.
 
 ## 2. Basic Workflow
 
@@ -30,7 +34,22 @@ Open `http://127.0.0.1:8000`.
 orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out report.json
 ```
 
-## 3. Printing And Aligner Manufacturing Boundary
+## 3. Render Local Per-Tooth Meshes
+
+Plan JSON stores mesh metadata and asset IDs, not mesh bytes. To render real
+per-tooth STL meshes in the local UI, register each tooth STL in a local mesh
+workspace and link the returned asset ID in the plan's `mesh_assets` and
+`tooth_meshes`.
+
+```bash
+orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
+ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
+```
+
+The UI loads registered meshes from `/api/mesh/<mesh_asset_id>` and falls back
+to schematic proxy teeth when a linked mesh is not available locally.
+
+## 4. Printing And Aligner Manufacturing Boundary
 
 The app can generate stage proxy STL files, a manifest with plan/frame/artifact hashes, an
 optional deterministic zip package, and an optional email draft. When segmented mesh bounds
@@ -55,10 +74,11 @@ For physical workflows:
 Any physical use is at the user's own risk and depends on validated materials, confirmed
 scale, cleaning procedures, and applicable regulatory compliance.
 
-## 4. Helpful Commands
+## 5. Helpful Commands
 
 ```bash
 orthoplan new-plan --id demo --out demo.json
+orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
 orthoplan plan-summary examples/basic_plan.json
 orthoplan acquisition examples/basic_plan.json
 orthoplan measurement-lab
@@ -67,7 +87,7 @@ orthoplan print-package examples/basic_plan.json --out print-output --zip --emai
 pytest
 ```
 
-## 5. What The App Does Not Do
+## 6. What The App Does Not Do
 
 - It does not diagnose.
 - It does not decide a plan is safe, approved, or acceptable.

@@ -163,3 +163,23 @@ def test_unverified_scan_units_gate_cap_evaluation() -> None:
     assert result["ok"] is True
     assert result["scale_confirmed"] is False
     assert any("units unverified" in f["title"] for f in result["findings"])
+
+
+def test_render_mesh_links_are_included_for_tooth_meshes() -> None:
+    plan = TreatmentPlan(
+        id="render",
+        mesh_assets=[MeshAsset(id="mesh-11", format="stl-ascii", vertex_count=3, face_count=1)],
+        tooth_meshes=[SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="mesh-11")],
+        stages=[
+            Stage(
+                index=0,
+                deltas=[ToothDelta(tooth=ToothId(value="11"), mesh_asset_id="mesh-11")],
+            )
+        ],
+    )
+
+    result = evaluate_plan(plan)
+
+    assert result["render_meshes"] == [
+        {"tooth": "11", "mesh_asset_id": "mesh-11", "url": "/api/mesh/mesh-11", "source": "manual"}
+    ]

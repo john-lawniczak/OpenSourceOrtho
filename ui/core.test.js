@@ -10,6 +10,7 @@ import {
   rotationApplications,
   stageBuckets,
 } from "./core.js";
+import { parseStlGeometry } from "./stl.js";
 
 test("escapeHtml neutralizes HTML metacharacters", () => {
   assert.equal(
@@ -97,4 +98,19 @@ test("createLatest only treats the newest token as current", () => {
   const second = latest.next();
   assert.equal(latest.isCurrent(first), false); // stale response must be dropped
   assert.equal(latest.isCurrent(second), true);
+});
+
+test("parseStlGeometry reads ASCII STL vertices", () => {
+  const stl = `solid tooth
+  facet normal 0 0 1
+    outer loop
+      vertex 0 0 0
+      vertex 1 0 0
+      vertex 0 1 0
+    endloop
+  endfacet
+endsolid tooth
+`;
+  const geometry = parseStlGeometry(new TextEncoder().encode(stl).buffer);
+  assert.equal(geometry.getAttribute("position").count, 3);
 });

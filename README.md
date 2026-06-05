@@ -72,12 +72,68 @@ Commercial software such as BlueSkyPlan and ClinCheck may be studied as workflow
 
 ## Development
 
+### Run Locally
+
+Use Python 3.11 or 3.12 if possible. Some fresh Homebrew Python 3.14 builds can fail
+inside `ensurepip`/`pyexpat` on macOS; if that happens, create the venv with a stable
+Python executable such as `python3.11`.
+
 ```bash
-python -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pytest
+orthoplan serve
 ```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+If your shell has a working `python3` but not `python`, use:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+orthoplan serve --host 127.0.0.1 --port 8000
+```
+
+If venv creation fails partway through, remove the broken environment and recreate it:
+
+```bash
+rm -rf .venv
+/Users/johnlaw/.local/bin/python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+orthoplan serve
+```
+
+Run tests:
+
+```bash
+pytest
+cd ui
+npm test
+cd ..
+python3 tools/check_maintainability.py
+```
+
+### Local Mesh Workspace
+
+Plan JSON never stores mesh bytes. To render real per-tooth STL meshes locally,
+register each STL in a local mesh workspace, then link the returned `id` in the
+plan's `mesh_assets` and `tooth_meshes`.
+
+```bash
+orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
+ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
+```
+
+The dev server exposes registered meshes only by asset id at `/api/mesh/<mesh_asset_id>`.
+The UI renders real linked STL meshes when available and falls back to schematic
+proxy teeth when no registered mesh can be loaded.
 
 ## Repository Status
 

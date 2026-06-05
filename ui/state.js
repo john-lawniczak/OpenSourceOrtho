@@ -34,11 +34,22 @@ export const state = {
     thermoforming_material: "user-selected aligner sheet material",
     safety_acknowledged: false,
   },
+  clinicalControls: {
+    fixedTeeth: "",
+    attachmentTeeth: "",
+    movementExclusions: "",
+    iprContacts: {},
+  },
   rows: [
     { stage: 0, tooth: "11", x: 0.2, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 },
     { stage: 1, tooth: "11", x: 0.1, y: 0.1, z: 0, tip: 0, torque: 0, rotation: 0 },
   ],
 };
+
+export const iprContactPairs = [
+  ["18", "17"], ["17", "16"], ["16", "15"], ["15", "14"], ["14", "13"], ["13", "12"], ["12", "11"], ["11", "21"], ["21", "22"], ["22", "23"], ["23", "24"], ["24", "25"], ["25", "26"], ["26", "27"], ["27", "28"],
+  ["48", "47"], ["47", "46"], ["46", "45"], ["45", "44"], ["44", "43"], ["43", "42"], ["42", "41"], ["41", "31"], ["31", "32"], ["32", "33"], ["33", "34"], ["34", "35"], ["35", "36"], ["36", "37"], ["37", "38"],
+];
 
 export const availabilityLabels = {
   intraoral_scan: "Intraoral scan",

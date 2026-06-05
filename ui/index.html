@@ -142,6 +142,16 @@
               <input id="printSafety" type="checkbox" />
             </label>
           </div>
+          <div class="print-settings">
+            <h2>Clinical Controls</h2>
+            <div class="field-grid">
+              <label>Fixed teeth<input id="fixedTeeth" placeholder="11, 21" /></label>
+              <label>Attachment teeth<input id="attachmentTeeth" placeholder="13, 23" /></label>
+              <label>Excluded axes<input id="movementExclusions" placeholder="11:rotation,torque" /></label>
+            </div>
+            <div class="ipr-map" id="iprContactMap" aria-label="IPR contact map"></div>
+            <p class="viewer-caveat">Clinical controls are planning metadata. They help the engine flag conflicts; they do not predict biological response or aligner tracking.</p>
+          </div>
         </section>
 
         <section class="panel" id="panel-stages">
@@ -203,6 +213,8 @@
               <ul id="findingList"></ul>
               <h2>Print Export</h2>
               <div id="printExportStatus" class="status-block"></div>
+              <h2>Optimized Staging</h2>
+              <div id="optimizedStaging" class="status-block"></div>
               <h2>Plan JSON</h2>
               <textarea id="planJson" readonly></textarea>
             </aside>

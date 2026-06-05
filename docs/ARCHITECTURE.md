@@ -36,6 +36,14 @@ The browser UI never reimplements the engine. `orthoplan/api.py` exposes a singl
 The first UI prototype is a static browser workspace under `ui/`. It mirrors
 the Python data contract but does not yet run backend STL inspection.
 
+The local development server can also serve registered per-tooth STL meshes from a
+local mesh workspace. Plan JSON still does not contain mesh bytes; it contains
+`mesh_asset_id` links. `orthoplan register-mesh` copies an STL into a local
+workspace registry, and `/api/mesh/<mesh_asset_id>` serves only registered files
+under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
+load real tooth meshes when available and falls back to schematic proxies when a
+mesh is missing.
+
 ## Core Objects
 
 `TreatmentPlan`
@@ -116,6 +124,11 @@ Rotation is different. Summed Euler components (tip/torque/rotation) are not a c
 Approximate crown-surface PCA frames are not enough to change that flag. A future real-mesh
 orientation path must supply non-approximate anatomical frames or another validated frame
 source before rotation can be rendered.
+
+For local real-mesh visualization, `planning/mesh_transform.py` can transform externally
+supplied per-tooth vertices by cumulative translation while preserving the same rotation
+honesty rule. The server/UI path uses the same stage frames; real STL meshes are visual
+geometry, not a different planning engine.
 
 ## Handoff Reports
 

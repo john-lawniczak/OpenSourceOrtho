@@ -120,6 +120,11 @@
       "notes": null
     }
   ],
+  "fixed_teeth": [],
+  "movement_exclusions": [],
+  "attachments": [],
+  "interproximal_reductions": [],
+  "planned_spacing": [],
   "stages": [
     {
       "index": 0,

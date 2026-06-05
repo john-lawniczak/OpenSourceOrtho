@@ -14,6 +14,7 @@ from orthoplan.cli_packages import (
 )
 from orthoplan.io.serialization import plan_to_json, read_plan, write_plan
 from orthoplan.io.stl_import import inspect_stl
+from orthoplan.mesh_workspace import register_stl_mesh
 from orthoplan.model.assets import MeshProvenance, bounding_box_sanity
 from orthoplan.model.gaps import data_gaps
 from orthoplan.model.plan import TreatmentPlan
@@ -41,6 +42,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--provenance",
         choices=[p.value for p in MeshProvenance],
         default=MeshProvenance.PATIENT_DERIVED.value,
+    )
+
+    register = sub.add_parser("register-mesh", help="copy an STL into the local mesh workspace")
+    register.add_argument("path")
+    register.add_argument("--workspace", default=None, help="mesh workspace directory")
+    register.add_argument(
+        "--provenance",
+        choices=[p.value for p in MeshProvenance],
+        default=MeshProvenance.IMPORTED.value,
     )
 
     summary = sub.add_parser("plan-summary", help="summarize a serialized plan")
@@ -99,6 +109,24 @@ def _cmd_inspect_stl(args: argparse.Namespace) -> int:
     print(asset.model_dump_json(indent=2))
     note = bounding_box_sanity(asset)
     print(f"\nScale note: {note}" if note else "\nScale note: none")
+    return 0
+
+
+def _cmd_register_mesh(args: argparse.Namespace) -> int:
+    try:
+        asset = register_stl_mesh(
+            args.path,
+            workspace=args.workspace,
+            provenance=MeshProvenance(args.provenance),
+        )
+    except (OSError, ValueError) as exc:
+        print(f"register-mesh error: {exc}", file=sys.stderr)
+        return 2
+    print(asset.model_dump_json(indent=2))
+    print(
+        "\nAdd this asset id to a plan mesh_assets/tooth_meshes link, then run "
+        "`orthoplan serve` with ORTHOPLAN_MESH_WORKSPACE pointing to the same workspace."
+    )
     return 0
 
 
@@ -235,6 +263,7 @@ def _cmd_acquisition(args: argparse.Namespace) -> int:
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
     "inspect-stl": _cmd_inspect_stl,
+    "register-mesh": _cmd_register_mesh,
     "plan-summary": _cmd_plan_summary,
     "serve": _cmd_serve,
     "advise": _cmd_advise,

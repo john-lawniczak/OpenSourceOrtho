@@ -10,7 +10,19 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
+from orthoplan.mesh_workspace import register_stl_mesh
 from orthoplan.server import Handler
+
+ASCII_STL = """solid tooth
+  facet normal 0 0 1
+    outer loop
+      vertex 0 0 0
+      vertex 1 0 0
+      vertex 0 1 0
+    endloop
+  endfacet
+endsolid tooth
+"""
 
 
 @pytest.fixture()
@@ -113,3 +125,24 @@ def test_unknown_post_endpoint_is_404(server: int) -> None:
     resp = conn.getresponse()
     assert resp.status == 404
     conn.close()
+
+
+def test_serves_registered_mesh_by_asset_id(server: int, tmp_path, monkeypatch) -> None:
+    source = tmp_path / "tooth.stl"
+    source.write_text(ASCII_STL, encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    asset = register_stl_mesh(source, workspace=workspace)
+    monkeypatch.setenv("ORTHOPLAN_MESH_WORKSPACE", str(workspace))
+
+    status, body = _get(server, f"/api/mesh/{asset.id}")
+
+    assert status == 200
+    assert body == ASCII_STL.encode()
+
+
+def test_mesh_endpoint_blocks_unknown_asset(server: int, tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("ORTHOPLAN_MESH_WORKSPACE", str(tmp_path))
+
+    status, _ = _get(server, "/api/mesh/../secret")
+
+    assert status == 404

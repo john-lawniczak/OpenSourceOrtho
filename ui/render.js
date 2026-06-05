@@ -2,6 +2,7 @@ import {
   availabilityLabels,
   el,
   evaluatePlan,
+  iprContactPairs,
   numberValue,
   state,
   toothPositions,
@@ -40,9 +41,15 @@ function updateViewer(result) {
   const v = ensureViewer();
   if (!v) return;
   v.resize();
+  if (result.render_meshes?.length) {
+    v.loadMeshes(result.render_meshes).then((loaded) => {
+      if (loaded && state.lastEval === result) updateViewer(result);
+    });
+  }
   v.update({
     frames: result.frames,
     toothFrames: result.tooth_frames,
+    attachments: result.clinical_controls?.attachments || [],
     stageIndex: Number(el("stageSlider").value || 0),
     view: state.view,
     exaggeration: numberValue("exaggeration") || 1,
@@ -66,9 +73,16 @@ export function renderAll() {
     thermoforming_material: el("thermoformingMaterial").value,
     safety_acknowledged: el("printSafety").checked,
   };
+  state.clinicalControls = {
+    fixedTeeth: el("fixedTeeth").value,
+    attachmentTeeth: el("attachmentTeeth").value,
+    movementExclusions: el("movementExclusions").value,
+    iprContacts: state.clinicalControls.iprContacts,
+  };
   renderSteps();
   renderMetadata();
   renderRows();
+  renderIprContactMap();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   el("stageValue").textContent = el("stageSlider").value;
   scheduleEvaluate();
@@ -172,6 +186,7 @@ function renderEvaluation(result) {
   drawCanvas();
   updateViewer(result);
   renderPrintExport(result.print_export);
+  renderOptimizedStaging(result.optimized_staging);
 }
 
 function dataGapMarkup(result) {
@@ -246,6 +261,7 @@ function renderEngineOffline() {
   el("acquisitionCaveat").textContent = "";
   el("acquisitionList").innerHTML = "";
   el("printExportStatus").innerHTML = "";
+  el("optimizedStaging").innerHTML = "";
   el("timelineText").textContent = "Engine offline - no projection available.";
 }
 
@@ -268,6 +284,34 @@ function renderPrintExport(status) {
     <p>${escapeHtml(status.thermoforming_material)}</p>
     <p>${escapeHtml(status.caveat)}</p>
   `;
+}
+
+function renderOptimizedStaging(status) {
+  if (!status) {
+    el("optimizedStaging").innerHTML = "";
+    return;
+  }
+  const issues = status.issues?.length
+    ? `<ul>${status.issues.map((issue) => `<li>${escapeHtml(issue.tooth)}: ${escapeHtml(issue.message)}</li>`).join("")}</ul>`
+    : "<p>No fixed-tooth or movement-exclusion conflicts in the optimizer input.</p>";
+  el("optimizedStaging").innerHTML = `
+    <p><strong>${Number(status.stage_count || 0)} suggested stage(s)</strong></p>
+    ${issues}
+    <p>${escapeHtml(status.caveat)}</p>
+  `;
+}
+
+function renderIprContactMap() {
+  el("iprContactMap").innerHTML = iprContactPairs.map(([a, b]) => {
+    const key = `${a}-${b}`;
+    const value = state.clinicalControls.iprContacts[key] || "";
+    return `
+      <label class="ipr-contact">
+        <span>${escapeHtml(a)}-${escapeHtml(b)}</span>
+        <input data-ipr-contact="${escapeHtml(key)}" type="number" min="0" step="0.05" value="${escapeHtml(value)}" />
+      </label>
+    `;
+  }).join("");
 }
 
 function drawCanvas() {

@@ -8,6 +8,13 @@ from orthoplan.model.assets import (
     bounding_box_sanity,
     redact_reference,
 )
+from orthoplan.model.clinical import (
+    Attachment,
+    FixedTooth,
+    InterproximalReduction,
+    MovementExclusion,
+    PlannedSpacing,
+)
 from orthoplan.model.gaps import DataGapAction, data_gap_actions, data_gaps
 from orthoplan.model.geometry import (
     SCAN_FRAME,
@@ -17,13 +24,12 @@ from orthoplan.model.geometry import (
     Handedness,
     ToothLocalFrame,
 )
+from orthoplan.model.identity import Arch, ToothId
 from orthoplan.model.plan import (
-    Arch,
     DataAvailability,
     SegmentedToothMesh,
     Stage,
     ToothDelta,
-    ToothId,
     TreatmentPlan,
 )
 from orthoplan.model.settings import (
@@ -38,18 +44,23 @@ __all__ = [
     "SCAN_FRAME",
     "AnatomicalDirection",
     "Arch",
+    "Attachment",
     "AxisCaps",
     "AxisSemantics",
     "BoundingBox",
     "CoordinateFrame",
     "DataAvailability",
     "DataGapAction",
+    "FixedTooth",
     "Handedness",
+    "InterproximalReduction",
     "MeshAsset",
     "MeshProvenance",
     "MeshQualityReport",
     "MeshUnits",
     "MovementCaps",
+    "MovementExclusion",
+    "PlannedSpacing",
     "PrintExportSettings",
     "SegmentedToothMesh",
     "Stage",

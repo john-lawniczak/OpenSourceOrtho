@@ -456,3 +456,26 @@ td input {
 .exaggeration input {
   width: 56px;
 }
+
+.ipr-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ipr-contact {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 1fr 54px;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+
+.ipr-contact input {
+  min-height: 30px;
+  padding: 4px 6px;
+}
