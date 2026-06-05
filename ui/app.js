@@ -2,6 +2,7 @@ import { askPlanAssistant, el, maxStage, state } from "./state.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
+import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -15,7 +16,7 @@ el("themeToggle").addEventListener("click", () => {
 document.querySelectorAll(".mode-choice").forEach((button) => {
   button.addEventListener("click", () => {
     state.userMode = button.dataset.userMode;
-    state.activeStep = state.userMode === "simple" ? "simple" : "upload";
+    state.activeStep = "upload";
     document.querySelectorAll(".mode-choice").forEach((item) => item.classList.remove("is-active"));
     button.classList.add("is-active");
     renderAll();
@@ -46,23 +47,13 @@ document.querySelectorAll(".dim").forEach((button) => {
   });
 });
 
-el("stlFile").addEventListener("change", (event) => {
-  state.files = Array.from(event.target.files || []);
-  state.file = state.files[0] || null;
-  state.scanSources = [];
-  state.useDemoMeshes = false;
-  el("uploadLabel").textContent = uploadLabel(state.files, "Choose STL files");
-  renderAll();
+el("stlFile").addEventListener("change", async (event) => {
+  await setUploadedFiles(Array.from(event.target.files || []));
 });
 
-el("simpleStlFile").addEventListener("change", (event) => {
-  state.files = Array.from(event.target.files || []);
-  state.file = state.files[0] || null;
-  state.scanSources = [];
+el("simpleStlFile").addEventListener("change", async (event) => {
   state.demoInitialOffsets = {};
-  state.useDemoMeshes = false;
-  el("simpleUploadLabel").textContent = uploadLabel(state.files, "Choose your STL files");
-  renderAll();
+  await setUploadedFiles(Array.from(event.target.files || []));
 });
 
 document.body.addEventListener("input", (event) => {
@@ -131,6 +122,17 @@ document.body.addEventListener("click", (event) => {
     state.activeStep = target.dataset.stepTarget;
     renderAll();
   }
+  if (target.dataset.journeyStep) {
+    state.activeStep = target.dataset.journeyStep;
+    renderAll();
+  }
+  if (target.dataset.removeUpload) {
+    const nextFiles = state.files.filter((_, index) => index !== Number(target.dataset.removeUpload));
+    setUploadedFiles(nextFiles);
+  }
+  if (target.dataset.clearUploads) {
+    setUploadedFiles([]);
+  }
   if (target.id === "simpleReview") {
     if (!state.simpleAcknowledged) return;
     state.activeStep = "review";
@@ -169,6 +171,29 @@ function uploadLabel(files, emptyLabel) {
   return `${files.length} STL files selected`;
 }
 
+async function setUploadedFiles(files) {
+  state.files = files;
+  state.file = files[0] || null;
+  state.scanSources = [];
+  state.useDemoMeshes = false;
+  updateUploadLabels();
+  if (files.length) {
+    await saveUploadedFiles(files).catch((error) => {
+      state.scanRenderStatus = `Uploaded files are loaded for this session, but browser storage failed: ${error.message}`;
+    });
+  } else {
+    await clearUploadedFiles().catch(() => {});
+    el("stlFile").value = "";
+    el("simpleStlFile").value = "";
+  }
+  renderAll();
+}
+
+function updateUploadLabels() {
+  el("uploadLabel").textContent = uploadLabel(state.files, "Choose STL files");
+  el("simpleUploadLabel").textContent = uploadLabel(state.files, "Choose your STL files");
+}
+
 function downloadJson(filename, value) {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json" });
   const link = document.createElement("a");
@@ -191,6 +216,7 @@ function loadSyntheticDemo() {
   state.files = [];
   state.scanSources = [];
   state.file = null;
+  clearUploadedFiles().catch(() => {});
   state.view = "overlay";
   state.activeStep = "review";
   el("planTitle").value = "Educational crowding demo";
@@ -210,6 +236,7 @@ function loadCanonicalCase(months) {
   state.useDemoMeshes = true;
   state.files = [];
   state.file = null;
+  clearUploadedFiles().catch(() => {});
   state.scanSources = canonicalScanSources;
   state.rows = syntheticCrowdingRows(stageCount);
   state.view = "overlay";
@@ -229,6 +256,21 @@ function loadCanonicalCase(months) {
   el("simpleUploadLabel").textContent = "Canonical upper + lower OrthoCAD STLs";
   renderAvailability();
   renderAll();
+}
+
+async function restoreStoredUploads() {
+  try {
+    const files = await restoreUploadedFiles();
+    if (!files.length) return;
+    state.files = files;
+    state.file = files[0];
+    state.scanSources = [];
+    state.useDemoMeshes = false;
+    updateUploadLabels();
+    renderAll();
+  } catch {
+    // Browser storage is a convenience; a failed restore should never block use.
+  }
 }
 
 async function sendChatMessage() {
@@ -279,3 +321,4 @@ async function sendChatMessage() {
 
 renderAvailability();
 renderAll();
+restoreStoredUploads();

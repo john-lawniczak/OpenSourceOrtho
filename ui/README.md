@@ -6,7 +6,7 @@
 Browser prototype for the data-model workflow:
 
 1. Guided educational STL review, synthetic 12-month crowding demo, and canonical OrthoCAD scan fixture
-2. STL upload metadata
+2. multi-file STL upload metadata with browser-side upload persistence
 3. data availability toggles
 4. movement cap controls
 5. stage movement table
@@ -78,7 +78,9 @@ shows an "engine offline" message instead of silently falling back to a second,
 divergent implementation.
 
 Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
-remains the source of truth for mesh inspection.
+remains the source of truth for mesh inspection. Uploaded STL files are stored
+locally in IndexedDB so a small upper/lower scan set survives reloads on the
+same browser; they are not uploaded to a server database.
 
 ## Canonical scan fixture
 
@@ -102,6 +104,9 @@ constraints, surfaced in the on-screen caveat:
   scan layer in Current and Overlay views. Current schematic proxy teeth are hidden
   when that exact scan layer is present, so the user is not shown two competing
   "current" anatomies.
+- Whole-arch scans are rotated from common STL dental coordinates into the viewer
+  frame (`x, y, z` -> `x, z, -y`) so the occlusal plane lies on the 3D grid and
+  tooth height points upward.
 - Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
   movement is visible next to ~10 mm teeth.
 - Rotation is drawn **only** where the engine sets `rotation_renderable`. The

@@ -71,7 +71,7 @@ function updateViewer(result) {
       const sourceType = state.files.length ? "uploaded" : "canonical example";
       state.scanRenderStatus = count
         ? `Rendering exact ${sourceType} scan mesh${count === 1 ? "" : "es"} (${scanSources.map((source) => source.name).join(", ")}). Staged movement remains simulated unless segmented per-tooth meshes are provided.`
-        : "No uploaded STL scan mesh could be rendered.";
+        : "No STL scan mesh could be rendered.";
       renderScanStatus();
       if (loaded && state.lastEval === result) updateViewer(result);
     }).catch((error) => {
@@ -142,6 +142,7 @@ export function renderAll() {
   };
   renderSteps();
   renderMetadata();
+  renderUploadFileList();
   renderRows();
   renderIprContactMap();
   renderChat();
@@ -221,12 +222,37 @@ function renderSteps() {
   document.querySelectorAll(".step").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.step === state.activeStep);
   });
+  document.querySelectorAll("[data-journey-step]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.journeyStep === state.activeStep);
+  });
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("is-active"));
-  if (state.userMode === "simple" && state.activeStep !== "review") {
+  if (state.userMode === "simple" && (state.activeStep === "simple" || state.activeStep === "upload")) {
     el("panel-simple").classList.add("is-active");
     return;
   }
   el(`panel-${state.activeStep}`).classList.add("is-active");
+}
+
+function renderUploadFileList() {
+  const markup = state.files.length
+    ? `
+      <div class="upload-file-heading">
+        <strong>${state.files.length === 1 ? "Stored STL" : "Stored STLs"}</strong>
+        <button data-clear-uploads="true" type="button">Clear All</button>
+      </div>
+      <ul>
+        ${state.files.map((file, index) => `
+          <li>
+            <span>${escapeHtml(file.name)}</span>
+            <small>${Math.round(file.size / 1024)} KB</small>
+            <button data-remove-upload="${index}" type="button" aria-label="Remove ${escapeHtml(file.name)}">x</button>
+          </li>
+        `).join("")}
+      </ul>
+    `
+    : "<p>No STL files are stored yet. Select upper, lower, or both arches.</p>";
+  el("uploadFileList").innerHTML = markup;
+  el("simpleUploadFileList").innerHTML = markup;
 }
 
 function renderRows() {
