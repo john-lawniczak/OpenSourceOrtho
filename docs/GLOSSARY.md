@@ -40,7 +40,11 @@ So **`11`** is the upper-right central incisor, **`23`** the upper-left canine,
 **5-8** (5 upper right, 6 upper left, 7 lower left, 8 lower right) with positions
 1-5; the model accepts these too.
 
-![FDI tooth-numbering map](images/fdi-tooth-map.svg)
+![Mouth diagram with Universal (1–32) and FDI tooth numbers](images/fdi-tooth-map.svg)
+
+> The diagram shows the **Universal** number (US 1–32) large and the **FDI**
+> number small. The app uses FDI internally; Universal is shown because it is the
+> most common chart in the US. The mapping table below covers both.
 
 ### Numbering systems for orientation only
 

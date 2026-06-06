@@ -188,6 +188,7 @@ export function renderGeneration() {
   el("generatePlan").disabled = gen.busy;
   el("generationStatus").textContent = gen.busy ? "Working..." : (gen.status || "Ready");
   el("generationConnector").textContent = generationConnectorHint();
+  if (gen.landmarksStatus) el("landmarksStatus").textContent = gen.landmarksStatus;
   el("generationReport").innerHTML = gen.result ? generationReportMarkup(gen.result) : "";
 }
 
@@ -195,9 +196,9 @@ export function renderGeneration() {
 // whether it is currently wired up. Notes only feed that review step.
 function generationConnectorHint() {
   if (state.chat.provider === "local") {
-    return "AI review: using the local helper (offline) — the optional model review is skipped, "
-      + "so generation runs fully on-machine. To send the plan + notes to an external model, pick a "
-      + "connector and add a key under Plan AI → Connector Settings below.";
+    return "AI review: the local helper (offline) acts on your Notes on-machine — nothing leaves your "
+      + "computer. To send the plan + notes to an external model instead, pick a connector and add a key "
+      + "under Plan AI → Connector Settings below.";
   }
   const key = state.chat.apiKeyPresent ? "key in session" : "no key yet";
   const consent = state.chat.agentAccessEnabled ? "sharing acknowledged" : "sharing OFF — review will be skipped";

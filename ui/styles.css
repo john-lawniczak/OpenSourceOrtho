@@ -1021,6 +1021,17 @@ td input {
   color: var(--accent);
 }
 
+.landmark-import {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.landmark-import input {
+  font-size: 12px;
+}
+
 .version-list {
   list-style: none;
   margin: 8px 0 0;

@@ -33,6 +33,8 @@ export const state = {
     status: "",
     acknowledged: false,
     notes: "",
+    landmarks: null,
+    landmarksStatus: "",
     result: null,
   },
   // Saved plan versions (case store) for the current Plan ID.

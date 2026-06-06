@@ -17,6 +17,17 @@ def test_cli_new_plan_emits_json(monkeypatch, capsys) -> None:
     assert payload["settings"]["timeline"]["wear_interval_days"] == 14
 
 
+def test_cli_landmarks_template_emits_fillable_json(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "landmarks-template", "--arch", "upper"])
+
+    assert cli.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert len(payload["landmarks"]) == 16  # full upper permanent dentition
+    assert payload["landmarks"][0]["tooth"]["value"][0] in {"1", "2"}
+    assert payload["landmarks"][0]["approximate"] is True
+
+
 def test_cli_inspect_stl_handles_invalid_file_without_traceback(
     monkeypatch, capsys, tmp_path: Path
 ) -> None:

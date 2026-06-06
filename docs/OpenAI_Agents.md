@@ -90,6 +90,12 @@ are context for the reviewer only: they never change deterministic staging, neve
 relax the boundary in the system prompt, and the model's output still passes
 `lint_finding()`.
 
+When no external model is connected (the default), notes are still acted on
+offline by `evaluation/local_review.py::local_notes_advisory` - a deterministic,
+linted educational finding (MODEL provenance, `[ADVISORY - unverified]`) that
+reflects the focus back and relates it to the plan's actual movements. It does not
+reason freely; it routes the user to a professional.
+
 The model step is opt-in and consent-gated: it runs only when an external
 connector is selected AND the egress acknowledgement (`share_acknowledged`) is
 set, exactly like the chat connector. The connector is configured in the UI under

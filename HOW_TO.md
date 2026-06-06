@@ -76,9 +76,19 @@ approved.
 
 **Notes for the AI review**: the Generate Plan panel has a free-text *Notes* box.
 Anything you write there (for example, "focus on the lateral incisors FDI 12 and
-22 — they are off-plane") is appended to the optional AI review prompt so the model
-considers your priorities. Notes never change the deterministic staging or relax
-the safety boundary, and the model's output still passes the same lint gate.
+22 — they are off-plane") is **always acted on**: with an external connector the
+notes are appended to the model review prompt; with the default offline local
+helper, a deterministic, linted educational note reflects your focus back and
+relates it to what the plan actually moves. Notes never change the deterministic
+staging or relax the safety boundary, and any model output still passes the lint
+gate.
+
+**Precise landmarks**: the best way to ground the plan in your real teeth is to
+import per-tooth crown landmarks. Get a fill-in template with `orthoplan
+landmarks-template --out landmarks.json`, fill each tooth's occlusal-plane (x, y)
+in millimeters from the scan, then import it with the *Import landmarks* control
+in the Generate Plan panel. With landmarks present, generation is
+"landmark-derived" (real arch-form targets + IPR space budget + collision check).
 
 **Connecting an AI model / API key**: the optional review reuses the connector you
 configure under **Plan AI → Connector Settings** (in the same Review panel). Pick a
@@ -165,6 +175,7 @@ orthoplan register-contribution upper.stl lower.stl --arch maxillary --units mm 
 orthoplan case-save examples/basic_plan.json --note "first pass"
 orthoplan case-list
 orthoplan case-versions example-basic
+orthoplan landmarks-template --arch both --out landmarks.json
 orthoplan plan-summary examples/basic_plan.json
 orthoplan acquisition examples/basic_plan.json
 orthoplan measurement-lab
