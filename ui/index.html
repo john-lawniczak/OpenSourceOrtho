@@ -310,6 +310,7 @@
                 <h2>Progress Preview</h2>
                 <p id="timelineText"></p>
               </div>
+              <p id="sampleStatusChip" class="sample-status-chip" hidden></p>
               <div class="workflow-card">
                 <h2>Step 5: Review The Progression</h2>
                 <p>Use the view buttons and stage slider to inspect the current, planned, or overlay preview.</p>
@@ -346,17 +347,23 @@
                   <h2>Generate Plan</h2>
                   <span id="generationStatus">Ready</span>
                 </div>
+                <div class="detail-switch" aria-label="Generate Plan detail level">
+                  <button class="is-active" data-detail-mode="generation" data-detail-value="basic" type="button">Basic</button>
+                  <button data-detail-mode="generation" data-detail-value="advanced" type="button">Advanced</button>
+                </div>
                 <p class="viewer-caveat">Builds staged movement from authored rows, landmarks, segmented crowns, or the educational template.</p>
-                <label class="chat-input">
-                  Optional notes
-                  <textarea id="generationNotes" rows="3" placeholder="e.g. Focus on the lateral incisors (FDI 12 and 22) — they are off-plane and that is what I want to align."></textarea>
-                </label>
-                <p id="generationConnector" class="viewer-caveat"></p>
-                <label class="landmark-import">
-                  <span>Import landmarks JSON</span>
-                  <input id="landmarksFile" type="file" accept=".json,application/json" />
-                </label>
-                <p id="landmarksStatus" class="viewer-caveat">No landmarks imported. Template: <code>orthoplan landmarks-template</code>.</p>
+                <div class="advanced-generation">
+                  <label class="chat-input">
+                    Optional notes
+                    <textarea id="generationNotes" rows="3" placeholder="e.g. Focus on the lateral incisors (FDI 12 and 22) — they are off-plane and that is what I want to align."></textarea>
+                  </label>
+                  <p id="generationConnector" class="viewer-caveat"></p>
+                  <label class="landmark-import">
+                    <span>Import landmarks JSON</span>
+                    <input id="landmarksFile" type="file" accept=".json,application/json" />
+                  </label>
+                  <p id="landmarksStatus" class="viewer-caveat">No landmarks imported. Template: <code>orthoplan landmarks-template</code>.</p>
+                </div>
                 <label class="toggle">
                   <span>I understand a generated plan is educational/heuristic and is not a diagnosis, treatment plan, or approval.</span>
                   <input id="generationAck" type="checkbox" />
@@ -391,7 +398,11 @@
                   <h2>Plan AI</h2>
                   <span id="chatStatus">Local helper ready</span>
                 </div>
-                <div class="field-grid chat-controls">
+                <div class="detail-switch" aria-label="Plan AI detail level">
+                  <button class="is-active" data-detail-mode="ai" data-detail-value="basic" type="button">Basic</button>
+                  <button data-detail-mode="ai" data-detail-value="advanced" type="button">Advanced</button>
+                </div>
+                <div class="field-grid chat-controls advanced-ai">
                   <label>Connector
                     <select id="chatProvider">
                       <option value="local">Local helper</option>
@@ -419,7 +430,7 @@
                   <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
                 </label>
                 <button class="primary-action" id="sendChat" type="button">Ask AI</button>
-                <details class="ai-settings">
+                <details class="ai-settings advanced-ai">
                   <summary>Connector Settings</summary>
                   <label>API key
                     <input id="chatApiKey" type="password" autocomplete="off" placeholder="Session only; not saved" />

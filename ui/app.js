@@ -126,6 +126,7 @@ document.body.addEventListener("click", (event) => {
   const journeyTarget = closestDatasetTarget(target, "journeyStep");
   const removeUploadTarget = closestDatasetTarget(target, "removeUpload");
   const clearUploadsTarget = closestDatasetTarget(target, "clearUploads");
+  const detailModeTarget = closestDatasetTarget(target, "detailMode");
   const restoreVersionTarget = closestDatasetTarget(target, "restoreVersion");
   const removeRowTarget = closestDatasetTarget(target, "remove");
 
@@ -162,6 +163,10 @@ document.body.addEventListener("click", (event) => {
   }
   if (clearUploadsTarget) {
     setUploadedFiles([]);
+  }
+  if (detailModeTarget) {
+    state.detailMode[detailModeTarget.dataset.detailMode] = detailModeTarget.dataset.detailValue;
+    renderAll();
   }
   if (button?.id === "simpleReview") {
     if (!state.simpleAcknowledged) return;
@@ -217,6 +222,9 @@ async function setUploadedFiles(files) {
   state.file = stlFiles[0] || null;
   state.scanSources = [];
   state.useDemoMeshes = false;
+  state.sampleStatus = stlFiles.length
+    ? "Uploaded STL scan layer · movement preview is schematic until segmented per-tooth meshes are available."
+    : "";
   updateUploadLabels();
   if (stlFiles.length) {
     state.uploadStorageStatus = "Saving STL files locally in this browser...";
@@ -258,6 +266,7 @@ function loadSyntheticDemo() {
   state.simpleGoal = "crowding";
   state.demoInitialOffsets = demoInitialOffsets;
   state.useDemoMeshes = true;
+  state.sampleStatus = "Educational demo · bundled tooth meshes · simulated crowding movement.";
   state.rows = syntheticCrowdingRows(12);
   state.files = [];
   state.scanSources = [];
@@ -282,6 +291,8 @@ function loadCanonicalCase(months) {
   state.simpleGoal = "crowding";
   state.demoInitialOffsets = demoInitialOffsets;
   state.useDemoMeshes = true;
+  state.sampleStatus =
+    `Gold Star Sample · real upper/lower OrthoCAD STL scan layer · simulated ${months}-month tooth movement.`;
   state.files = [];
   state.file = null;
   state.uploadStorageStatus = "";

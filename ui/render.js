@@ -107,6 +107,8 @@ function updateViewer(result) {
 export function renderAll() {
   document.body.dataset.mode = state.userMode;
   document.body.dataset.theme = state.theme;
+  document.body.dataset.generationDetail = state.detailMode.generation;
+  document.body.dataset.aiDetail = state.detailMode.ai;
   el("themeToggle").textContent = state.theme === "dark" ? "Light Mode" : "Dark Mode";
   state.scanUnits = el("scanUnits").value;
   state.scanArch = el("scanArch").value;
@@ -150,8 +152,10 @@ export function renderAll() {
   renderIprContactMap();
   renderChat();
   renderGeneration();
+  renderDetailModes();
   renderVersions();
   renderScanStatus();
+  renderSampleStatus();
   renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   el("stageValue").textContent = el("stageSlider").value;
@@ -190,6 +194,13 @@ export function renderGeneration() {
   el("generationConnector").textContent = generationConnectorHint();
   if (gen.landmarksStatus) el("landmarksStatus").textContent = gen.landmarksStatus;
   el("generationReport").innerHTML = gen.result ? generationReportMarkup(gen.result) : "";
+}
+
+function renderDetailModes() {
+  document.querySelectorAll("[data-detail-mode]").forEach((button) => {
+    const group = button.dataset.detailMode;
+    button.classList.toggle("is-active", state.detailMode[group] === button.dataset.detailValue);
+  });
 }
 
 // Tells the user exactly where the optional AI review gets its model/key, and
@@ -472,6 +483,12 @@ function renderEngineOffline() {
 
 function renderScanStatus() {
   el("scanRenderStatus").textContent = state.scanRenderStatus;
+}
+
+function renderSampleStatus() {
+  const chip = el("sampleStatusChip");
+  chip.hidden = !state.sampleStatus;
+  chip.textContent = state.sampleStatus;
 }
 
 function renderDownloadActions() {
