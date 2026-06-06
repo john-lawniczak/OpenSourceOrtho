@@ -196,14 +196,11 @@ export function renderGeneration() {
 // whether it is currently wired up. Notes only feed that review step.
 function generationConnectorHint() {
   if (state.chat.provider === "local") {
-    return "AI review: the local helper (offline) acts on your Notes on-machine — nothing leaves your "
-      + "computer. To send the plan + notes to an external model instead, pick a connector and add a key "
-      + "under Plan AI → Connector Settings below.";
+    return "AI review: local helper, offline. External review uses the Plan AI connector settings.";
   }
   const key = state.chat.apiKeyPresent ? "key in session" : "no key yet";
   const consent = state.chat.agentAccessEnabled ? "sharing acknowledged" : "sharing OFF — review will be skipped";
-  return `AI review connector: ${state.chat.provider} · ${key} · ${consent}. `
-    + "Change these under Plan AI → Connector Settings below. Notes are sent only to this review.";
+  return `AI review: ${state.chat.provider} · ${key} · ${consent}. Notes are sent only when sharing is on.`;
 }
 
 function generationReportMarkup(result) {

@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   createLatest,
+  closestDatasetTarget,
   degToRad,
   displacement,
   escapeHtml,
@@ -110,6 +111,26 @@ test("createLatest only treats the newest token as current", () => {
   const second = latest.next();
   assert.equal(latest.isCurrent(first), false); // stale response must be dropped
   assert.equal(latest.isCurrent(second), true);
+});
+
+test("closestDatasetTarget returns direct and ancestor data targets", () => {
+  const direct = { dataset: { journeyStep: "review" } };
+  assert.equal(closestDatasetTarget(direct, "journeyStep"), direct);
+
+  const ancestor = { dataset: { journeyStep: "stages" } };
+  const child = {
+    dataset: {},
+    closest(selector) {
+      assert.equal(selector, "[data-journey-step]");
+      return ancestor;
+    },
+  };
+  assert.equal(closestDatasetTarget(child, "journeyStep"), ancestor);
+});
+
+test("closestDatasetTarget tolerates non-element targets", () => {
+  assert.equal(closestDatasetTarget(null, "journeyStep"), null);
+  assert.equal(closestDatasetTarget({ dataset: {} }, "journeyStep"), null);
 });
 
 test("parseStlGeometry reads ASCII STL vertices", () => {
