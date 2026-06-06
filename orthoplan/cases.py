@@ -45,6 +45,12 @@ class CaseStore(BaseModel):
         return version
 
 
+def default_case_store() -> Path:
+    """Default local case-store path (mirrors the mesh-workspace convention)."""
+
+    return Path.cwd() / ".orthoplan-cases.json"
+
+
 def read_case_store(path: str | Path) -> CaseStore:
     target = Path(path)
     if not target.exists():

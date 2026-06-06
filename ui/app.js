@@ -1,6 +1,6 @@
-import { askPlanAssistant, el, maxStage, requestPlanGeneration, state } from "./state.js";
+import { askPlanAssistant, el, listCaseVersions, maxStage, requestPlanGeneration, savePlanVersion, state } from "./state.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
-import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, setDimension, zoomViewer } from "./render.js";
+import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
 
@@ -88,6 +88,7 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
   if (target.id === "generationAck") state.generation.acknowledged = target.checked;
+  if (target.id === "versionNote") state.versions.note = target.value;
   if (target.id === "agentEndpoint") state.chat.agentEndpoint = target.value;
   if (target.id === "printEnabled") state.printExport.enabled = target.checked;
   if (target.id === "printFormat") state.printExport.export_format = target.value;
@@ -159,6 +160,13 @@ document.body.addEventListener("click", (event) => {
   }
   if (target.id === "generatePlan") {
     generatePlan();
+  }
+  if (target.id === "saveVersion") {
+    saveVersion();
+  }
+  if (target.dataset.restoreVersion) {
+    const version = state.versions.list[Number(target.dataset.restoreVersion)];
+    if (version?.snapshot) restorePlan(version.snapshot);
   }
   if (target.id === "zoomIn") zoomViewer(0.83);
   if (target.id === "zoomOut") zoomViewer(1.2);
@@ -394,6 +402,67 @@ async function generatePlan() {
   }
 }
 
+async function loadVersions() {
+  const caseId = el("planId").value.trim();
+  if (!caseId) return;
+  try {
+    const result = await listCaseVersions(caseId);
+    state.versions.list = result.ok ? result.versions : [];
+  } catch {
+    state.versions.list = [];
+  }
+  renderVersions();
+}
+
+async function saveVersion() {
+  if (state.versions.busy) return;
+  state.versions.busy = true;
+  state.versions.status = "Saving version...";
+  renderVersions();
+  try {
+    const result = await savePlanVersion({
+      plan: planJson(),
+      case_id: el("planId").value.trim() || undefined,
+      note: state.versions.note.trim() || undefined,
+    });
+    if (result.ok === false) {
+      state.versions.status = (result.errors || ["Save failed."]).join("; ");
+    } else {
+      state.versions.status = `Saved ${result.version.version_id}`;
+      state.versions.note = "";
+      el("versionNote").value = "";
+      await loadVersions();
+    }
+  } catch (error) {
+    state.versions.status = error.message;
+  } finally {
+    state.versions.busy = false;
+    renderVersions();
+  }
+}
+
+function restorePlan(snapshot) {
+  el("planId").value = snapshot.id || "";
+  el("planTitle").value = snapshot.title || "";
+  const wear = snapshot.settings?.timeline?.wear_interval_days;
+  if (wear) el("wearInterval").value = wear;
+  const caps = snapshot.settings?.movement_caps?.default;
+  if (caps) {
+    el("capLinear").value = caps.linear_mm;
+    el("capAngular").value = caps.angular_deg;
+    el("capRotation").value = caps.rotation_deg;
+    el("capVertical").value = caps.intrusion_extrusion_mm;
+  }
+  if (snapshot.data) state.availability = { ...state.availability, ...snapshot.data };
+  state.rows = rowsFromPlan(snapshot);
+  state.activeStep = "review";
+  state.view = "overlay";
+  state.versions.status = `Restored ${snapshot.id || "plan"} into the editor`;
+  renderAvailability();
+  renderAll();
+}
+
 renderAvailability();
 renderAll();
 restoreStoredUploads();
+loadVersions();

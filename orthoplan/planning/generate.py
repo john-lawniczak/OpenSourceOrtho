@@ -68,6 +68,9 @@ class GeneratedPlanResult(BaseModel):
     blocked_teeth: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     issues: list[OptimizerIssue] = Field(default_factory=list)
+    # The resolved target totals (pre-staging). Exposed so the orchestrator can
+    # regression-check that the staged plan's cumulative movement reaches them.
+    requested_targets: list[ToothDelta] = Field(default_factory=list)
     caveat: str = _CAVEAT
 
 
@@ -106,6 +109,7 @@ def generate_plan(plan: TreatmentPlan, *, acknowledge_educational: bool = False)
         blocked_teeth=blocked,
         warnings=warnings,
         issues=optimized.issues,
+        requested_targets=targets,
     )
 
 

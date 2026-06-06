@@ -354,6 +354,19 @@
                 <button class="primary-action" id="generatePlan" type="button">Generate Plan</button>
                 <div id="generationReport" class="status-block"></div>
               </section>
+              <section class="generate-panel" aria-label="Plan versions">
+                <div class="ai-chat-heading">
+                  <h2>Versions</h2>
+                  <span id="versionStatus"></span>
+                </div>
+                <p class="viewer-caveat">Save named snapshots of this plan (the case is keyed by Plan ID). Versions are stored locally by the dev server and can be restored into the editor.</p>
+                <label class="chat-input">
+                  Note
+                  <textarea id="versionNote" rows="2" placeholder="e.g. after IPR pass"></textarea>
+                </label>
+                <button class="primary-action" id="saveVersion" type="button">Save Version</button>
+                <ul id="versionList" class="version-list"></ul>
+              </section>
               <section class="download-actions" aria-label="Downloads">
                 <h2>Downloads</h2>
                 <button class="primary-action" id="downloadPlan" type="button">Download Plan JSON</button>

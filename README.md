@@ -44,6 +44,11 @@ The UI includes two workflows:
   consistency (verdict `CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
   optional model review is consent-gated and linted. It is a proposal, not a
   diagnosis or treatment approval.
+- **Plan versions**: save named snapshots of a plan and restore any version back
+  into the editor. Backed by a local case store (`.orthoplan-cases.json`,
+  override with `ORTHOPLAN_CASE_STORE`); available in the UI Versions panel, the
+  HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
+  `case-list`, `case-versions`).
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
   plan context, findings, data gaps, and timeline. The local helper works
   without external services. Live connectors for OpenAI, Claude Code, and any

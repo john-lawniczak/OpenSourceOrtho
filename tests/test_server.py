@@ -139,6 +139,18 @@ def test_generate_plan_endpoint_returns_staging(server: int) -> None:
     assert payload["stage_count"] >= 4
 
 
+def test_plan_version_save_and_list_roundtrip(server: int, tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("ORTHOPLAN_CASE_STORE", str(tmp_path / "cases.json"))
+    plan = {"id": "case-srv", "title": "Server case", "stages": [
+        {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}]}
+    status, saved = _post(server, json.dumps({"plan": plan, "note": "v1"}).encode(),
+                          {"Content-Type": "application/json"}, path="/api/plan/version")
+    assert status == 200 and saved["ok"] is True and saved["version"]["version_id"] == "v0001"
+    assert any(c["case_id"] == "case-srv" for c in json.loads(_get(server, "/api/cases")[1])["cases"])
+    versions = json.loads(_get(server, "/api/cases/case-srv")[1])
+    assert versions["ok"] is True and versions["versions"][0]["snapshot"]["id"] == "case-srv"
+
+
 _CHAT_PLAN = {
     "id": "chat",
     "stages": [
