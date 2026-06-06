@@ -157,6 +157,10 @@ p {
   color: var(--accent-ink);
 }
 
+.gold-action {
+  min-width: 220px;
+}
+
 .mode-switch {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -484,6 +488,29 @@ textarea {
 .workflow-card {
   display: grid;
   gap: 8px;
+}
+
+.gold-sample {
+  background: #fff8e1;
+  border-color: #d6a928;
+  box-shadow: inset 4px 0 0 #d6a928;
+}
+
+body[data-theme="dark"] .gold-sample {
+  background: #2a2412;
+  border-color: #fbbf24;
+  box-shadow: inset 4px 0 0 #fbbf24;
+}
+
+.sample-badge {
+  color: #7c4a03;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body[data-theme="dark"] .sample-badge {
+  color: #fcd34d;
 }
 
 .workflow-card p {

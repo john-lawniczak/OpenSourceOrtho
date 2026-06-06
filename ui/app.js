@@ -3,6 +3,7 @@ import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from 
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
+import { closestDatasetTarget } from "./core.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -119,7 +120,16 @@ document.body.addEventListener("input", (event) => {
 
 document.body.addEventListener("click", (event) => {
   const target = event.target;
-  if (target.id === "addStage") {
+  const button = target.closest?.("button");
+  const canonicalTarget = closestDatasetTarget(target, "canonicalMonths");
+  const stepTarget = closestDatasetTarget(target, "stepTarget");
+  const journeyTarget = closestDatasetTarget(target, "journeyStep");
+  const removeUploadTarget = closestDatasetTarget(target, "removeUpload");
+  const clearUploadsTarget = closestDatasetTarget(target, "clearUploads");
+  const restoreVersionTarget = closestDatasetTarget(target, "restoreVersion");
+  const removeRowTarget = closestDatasetTarget(target, "remove");
+
+  if (button?.id === "addStage") {
     state.rows.push({
       stage: maxStage() + 1,
       tooth: "21",
@@ -132,65 +142,65 @@ document.body.addEventListener("click", (event) => {
     });
     renderAll();
   }
-  if (target.id === "loadDemo") {
+  if (button?.id === "loadDemo") {
     loadSyntheticDemo();
   }
-  if (target.dataset.canonicalMonths) {
-    loadCanonicalCase(Number(target.dataset.canonicalMonths));
+  if (canonicalTarget) {
+    loadCanonicalCase(Number(canonicalTarget.dataset.canonicalMonths));
   }
-  if (target.dataset.stepTarget) {
-    state.activeStep = target.dataset.stepTarget;
+  if (stepTarget) {
+    state.activeStep = stepTarget.dataset.stepTarget;
     renderAll();
   }
-  if (target.dataset.journeyStep) {
-    state.activeStep = target.dataset.journeyStep;
+  if (journeyTarget) {
+    state.activeStep = journeyTarget.dataset.journeyStep;
     renderAll();
   }
-  if (target.dataset.removeUpload) {
-    const nextFiles = state.files.filter((_, index) => index !== Number(target.dataset.removeUpload));
+  if (removeUploadTarget) {
+    const nextFiles = state.files.filter((_, index) => index !== Number(removeUploadTarget.dataset.removeUpload));
     setUploadedFiles(nextFiles);
   }
-  if (target.dataset.clearUploads) {
+  if (clearUploadsTarget) {
     setUploadedFiles([]);
   }
-  if (target.id === "simpleReview") {
+  if (button?.id === "simpleReview") {
     if (!state.simpleAcknowledged) return;
     state.activeStep = "review";
     state.view = "overlay";
     renderAll();
   }
-  if (target.id === "uploadNext") {
+  if (button?.id === "uploadNext") {
     state.activeStep = "availability";
     renderAll();
   }
-  if (target.id === "simpleNext") {
+  if (button?.id === "simpleNext") {
     state.activeStep = "review";
     state.view = "overlay";
     renderAll();
   }
-  if (target.id === "downloadPlan") downloadJson("orthoplan-plan.json", planJson());
-  if (target.id === "downloadEvaluation" && state.lastEval) downloadJson("orthoplan-evaluation.json", state.lastEval);
-  if (target.id === "downloadPrintMetadata" && state.lastEval?.print_export) {
+  if (button?.id === "downloadPlan") downloadJson("orthoplan-plan.json", planJson());
+  if (button?.id === "downloadEvaluation" && state.lastEval) downloadJson("orthoplan-evaluation.json", state.lastEval);
+  if (button?.id === "downloadPrintMetadata" && state.lastEval?.print_export) {
     downloadJson("orthoplan-print-metadata.json", state.lastEval.print_export);
   }
-  if (target.id === "sendChat") {
+  if (button?.id === "sendChat") {
     sendChatMessage();
   }
-  if (target.id === "generatePlan") {
+  if (button?.id === "generatePlan") {
     generatePlan();
   }
-  if (target.id === "saveVersion") {
+  if (button?.id === "saveVersion") {
     saveVersion();
   }
-  if (target.dataset.restoreVersion) {
-    const version = state.versions.list[Number(target.dataset.restoreVersion)];
+  if (restoreVersionTarget) {
+    const version = state.versions.list[Number(restoreVersionTarget.dataset.restoreVersion)];
     if (version?.snapshot) restorePlan(version.snapshot);
   }
-  if (target.id === "zoomIn") zoomViewer(0.83);
-  if (target.id === "zoomOut") zoomViewer(1.2);
-  if (target.id === "zoomReset") recenterViewer();
-  if (target.dataset.remove) {
-    state.rows.splice(Number(target.dataset.remove), 1);
+  if (button?.id === "zoomIn") zoomViewer(0.83);
+  if (button?.id === "zoomOut") zoomViewer(1.2);
+  if (button?.id === "zoomReset") recenterViewer();
+  if (removeRowTarget) {
+    state.rows.splice(Number(removeRowTarget.dataset.remove), 1);
     renderAll();
   }
 });
