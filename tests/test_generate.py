@@ -3,6 +3,7 @@ from __future__ import annotations
 from orthoplan.evaluation.rules.movement_caps import evaluate_movement_caps
 from orthoplan.model.assets import BoundingBox, MeshAsset, MeshUnits, UploadedScan
 from orthoplan.model.clinical import FixedTooth
+from orthoplan.model.landmarks import ArchLandmarks, CrownLandmark
 from orthoplan.model.plan import SegmentedToothMesh, Stage, ToothDelta, TreatmentPlan
 from orthoplan.planning.generate import generate_plan
 
@@ -83,6 +84,46 @@ def test_geometry_derived_targets_from_segmented_crowns() -> None:
     assert result.target_tooth_count >= 1
     assert any("geometric" in w for w in result.warnings)
     assert _no_cap_violations(result.plan)
+
+
+def _landmarks() -> ArchLandmarks:
+    # Tight upper anterior arch with one incisor pulled off the curve.
+    rows = [("13", -6, 1.2), ("12", -4, 0.6), ("11", -2, 0.6), ("21", 0, 0.0), ("22", 2, 0.2), ("23", 4, 0.8)]
+    return ArchLandmarks(landmarks=[
+        CrownLandmark(tooth={"system": "FDI", "value": v}, x_mm=x, y_mm=y) for v, x, y in rows
+    ])
+
+
+def test_landmark_derived_source_and_clinical_structure() -> None:
+    plan = TreatmentPlan(id="p", scans=[_confirmed_scan()])
+    result = generate_plan(plan, landmarks=_landmarks())
+    assert result.source == "landmark-derived"
+    assert result.plan.interproximal_reductions  # space budget emitted
+    assert result.plan.attachments  # attachments on moved teeth
+    assert len(result.plan.tooth_meshes) == 6  # approximate collision bounds present
+    assert result.space_discrepancy_mm is not None and result.space_discrepancy_mm > 0
+    assert _no_cap_violations(result.plan)
+
+
+def test_landmark_collision_check_is_no_longer_vacuous() -> None:
+    from orthoplan.evaluation.rules.collisions import evaluate_segmented_mesh_collisions
+
+    plan = TreatmentPlan(id="p", scans=[_confirmed_scan()])
+    result = generate_plan(plan, landmarks=_landmarks())
+    # With per-tooth bounds present the collision rule actually evaluates pairs
+    # (it returns [] only when < 2 segmented teeth exist).
+    assert len(result.plan.tooth_meshes) >= 2
+    evaluate_segmented_mesh_collisions(result.plan)  # must run without error
+
+
+def test_authored_movement_takes_priority_over_landmarks() -> None:
+    plan = TreatmentPlan(
+        id="p",
+        scans=[_confirmed_scan()],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth={"system": "FDI", "value": "21"}, translate_x_mm=0.5)])],
+    )
+    result = generate_plan(plan, landmarks=_landmarks())
+    assert result.source == "authored"
 
 
 def test_no_targets_returns_none_source() -> None:

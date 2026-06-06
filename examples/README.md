@@ -15,13 +15,15 @@ not churn between regenerations.
 - `north_star_canonical_plan.json` — the **North Star**: a full generated
   straightening plan for the first tracked specimen
   (`spec-07b7031938c84b1a9c98517b8bc4cdd3`, the bundled OrthoCAD shells),
-  produced by the real Generate Plan pipeline. It is a mild/medium anterior
-  alignment that projects to ~4.7 months (10 stages at 14-day wear) with a
-  `CONSISTENT` correctness verdict. **Honesty note:** the specimen files are
-  fused whole-arch shells with no segmentation, so the per-tooth targets are
-  *authored* estimates of a mild correction, not measurements of the patient's
-  crowns; with segmented per-tooth meshes the same pipeline would derive the
-  target from the visible geometry instead. Not a diagnosis, plan, or approval.
+  produced by the real `landmark-derived` Generate Plan pipeline. Per-tooth crown
+  **landmarks** drive real arch-form deviation targets, a space analysis budgets
+  **IPR**, **attachments** are added on moved teeth, and approximate per-tooth
+  **collision bounds** make the overlap check real. It is a mild/medium alignment
+  projecting to ~4.2 months (9 stages at 14-day wear) with a `CONSISTENT` verdict.
+  **Honesty note:** the specimen files are fused whole-arch shells with no
+  segmentation, so the landmark coordinates are *approximate* scaffolding (not
+  precise measurements); refining them to precise landmarks (or providing
+  segmented meshes) raises fidelity further. Not a diagnosis, plan, or approval.
 
 ## Try them
 

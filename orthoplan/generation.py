@@ -29,6 +29,7 @@ from orthoplan.evaluation.advisory import request_advisory
 from orthoplan.evaluation.engine import run_rules
 from orthoplan.evaluation.providers.base import ModelProvider
 from orthoplan.model.assets import bounding_box_sanity
+from orthoplan.model.landmarks import ArchLandmarks
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.generate import generate_plan
 from orthoplan.planning.timeline import project_timeline
@@ -45,6 +46,9 @@ GENERATION_CAVEAT = (
 
 class GenerateRequest(BaseModel):
     plan: dict[str, Any]
+    # Optional per-tooth crown landmarks ({"landmarks": [...]}) to ground targets
+    # in the patient's real positions (preferred over the educational fallback).
+    landmarks: dict[str, Any] | None = None
     acknowledge_educational: bool = False
     provider: ConnectorKind = "local"
     model: str | None = None
@@ -229,11 +233,14 @@ def generate_plan_payload(
     try:
         request = GenerateRequest.model_validate(payload)
         plan = TreatmentPlan.model_validate(request.plan)
+        landmarks = ArchLandmarks.model_validate(request.landmarks) if request.landmarks else None
     except ValidationError as exc:
         return {"ok": False, "errors": _format_errors(exc)}
 
     steps = [_review_scan(plan)]
-    generated = generate_plan(plan, acknowledge_educational=request.acknowledge_educational)
+    generated = generate_plan(
+        plan, acknowledge_educational=request.acknowledge_educational, landmarks=landmarks
+    )
     steps.append(
         PipelineStep(
             name="generate-targets",
@@ -256,7 +263,10 @@ def generate_plan_payload(
     advisory_findings, model_step = _model_review(request, generated.plan, provider)
     steps.append(model_step)
 
-    timeline = project_timeline(generated.plan)
+    return _build_response(generated, steps, checks, verdict, metrics, findings, advisory_findings)
+
+
+def _build_response(generated, steps, checks, verdict, metrics, findings, advisory_findings) -> dict[str, Any]:
     return {
         "ok": True,
         "source": generated.source,
@@ -266,7 +276,13 @@ def generate_plan_payload(
         "checks": [check.model_dump() for check in checks],
         "correctness": {"verdict": verdict, **metrics},
         "stage_count": len(generated.plan.stages),
-        "timeline": timeline.model_dump(),
+        "space": {
+            "discrepancy_mm": generated.space_discrepancy_mm,
+            "residual_mm": generated.space_residual_mm,
+            "ipr_count": len(generated.plan.interproximal_reductions),
+            "attachment_count": len(generated.plan.attachments),
+        },
+        "timeline": project_timeline(generated.plan).model_dump(),
         "deterministic_findings": [f.model_dump(mode="json") for f in findings],
         "advisory_findings": advisory_findings,
         "issues": [issue.model_dump() for issue in generated.issues],

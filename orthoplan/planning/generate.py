@@ -25,11 +25,15 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from orthoplan.model.assets import MeshAsset
+from orthoplan.model.landmarks import ArchLandmarks
 from orthoplan.model.plan import Stage, ToothDelta, TreatmentPlan
 from orthoplan.planning.arch_form import archform_corrections
+from orthoplan.planning.landmark_plan import build_landmark_inputs
 from orthoplan.planning.optimizer import OptimizerIssue, _target_totals, optimize_staging
 
-GenerationSource = Literal["authored", "geometry-derived", "educational-synthetic", "none"]
+GenerationSource = Literal[
+    "authored", "landmark-derived", "geometry-derived", "educational-synthetic", "none"
+]
 
 # Educational anterior crowding template (FDI -> initial scan-plane offset). The
 # corrective target is the negative of these. Mirrors the UI demo offsets and is
@@ -71,20 +75,31 @@ class GeneratedPlanResult(BaseModel):
     # The resolved target totals (pre-staging). Exposed so the orchestrator can
     # regression-check that the staged plan's cumulative movement reaches them.
     requested_targets: list[ToothDelta] = Field(default_factory=list)
+    # Space analysis (landmark-derived only): arch-length crowding and the part
+    # IPR cannot resolve.
+    space_discrepancy_mm: float | None = None
+    space_residual_mm: float | None = None
     caveat: str = _CAVEAT
 
 
-def generate_plan(plan: TreatmentPlan, *, acknowledge_educational: bool = False) -> GeneratedPlanResult:
+def generate_plan(
+    plan: TreatmentPlan,
+    *,
+    acknowledge_educational: bool = False,
+    landmarks: ArchLandmarks | None = None,
+) -> GeneratedPlanResult:
     """Produce a cap-respecting staged plan from the best available target."""
 
-    targets, source, warnings, requires_ack = _resolve_targets(plan)
+    seed, targets, source, warnings, requires_ack, discrepancy, residual = _seed_plan(
+        plan, landmarks
+    )
     if not targets:
         return GeneratedPlanResult(
             plan=plan,
             source="none",
             warnings=[
-                "Nothing to generate: no authored movement, no segmented teeth, and the "
-                "educational template produced no targets."
+                "Nothing to generate: no authored movement, no landmarks, no segmented "
+                "teeth, and the educational template produced no targets."
             ],
         )
 
@@ -94,8 +109,7 @@ def generate_plan(plan: TreatmentPlan, *, acknowledge_educational: bool = False)
             "confirm units to enable cap evaluation."
         )
 
-    target_plan = plan.model_copy(update={"stages": [Stage(index=0, deltas=targets)]})
-    optimized = optimize_staging(target_plan)
+    optimized = optimize_staging(seed)
     blocked = sorted({issue.tooth for issue in optimized.issues})
     target_values = {delta.tooth.value for delta in targets}
     aligned = sorted(target_values - set(blocked))
@@ -110,25 +124,50 @@ def generate_plan(plan: TreatmentPlan, *, acknowledge_educational: bool = False)
         warnings=warnings,
         issues=optimized.issues,
         requested_targets=targets,
+        space_discrepancy_mm=discrepancy,
+        space_residual_mm=residual,
     )
 
 
-def _resolve_targets(
-    plan: TreatmentPlan,
-) -> tuple[list[ToothDelta], GenerationSource, list[str], bool]:
+def _seed_plan(
+    plan: TreatmentPlan, landmarks: ArchLandmarks | None
+) -> tuple[TreatmentPlan, list[ToothDelta], GenerationSource, list[str], bool, float | None, float | None]:
+    """Resolve targets and return an (enriched) seed plan with a single target stage.
+
+    The landmark path additionally enriches the plan with IPR, attachments, and
+    approximate collision bounds; other paths only set the target stage.
+    """
+
+    # Authored movement always wins (re-stage what the user already entered).
     authored = _authored_targets(plan)
     if authored:
-        return authored, "authored", [], False
+        seed = plan.model_copy(update={"stages": [Stage(index=0, deltas=authored)]})
+        return seed, authored, "authored", [], False, None, None
+
+    if landmarks is not None:
+        inputs = build_landmark_inputs(landmarks, plan.coordinate_frame.name)
+        if inputs.targets:
+            seed = plan.model_copy(update={
+                "mesh_assets": [*plan.mesh_assets, *inputs.mesh_assets],
+                "tooth_meshes": [*plan.tooth_meshes, *inputs.tooth_meshes],
+                "interproximal_reductions": [*plan.interproximal_reductions, *inputs.iprs],
+                "attachments": [*plan.attachments, *inputs.attachments],
+                "stages": [Stage(index=0, deltas=inputs.targets)],
+            })
+            return (seed, inputs.targets, "landmark-derived", inputs.warnings, False,
+                    inputs.discrepancy_mm, inputs.residual_mm)
 
     geometry = _geometry_targets(plan)
     if geometry:
-        return geometry, "geometry-derived", [_GEOMETRY_WARNING], False
+        seed = plan.model_copy(update={"stages": [Stage(index=0, deltas=geometry)]})
+        return seed, geometry, "geometry-derived", [_GEOMETRY_WARNING], False, None, None
 
     synthetic = _synthetic_targets(plan)
     if synthetic:
-        return synthetic, "educational-synthetic", [_SYNTHETIC_WARNING], True
+        seed = plan.model_copy(update={"stages": [Stage(index=0, deltas=synthetic)]})
+        return seed, synthetic, "educational-synthetic", [_SYNTHETIC_WARNING], True, None, None
 
-    return [], "none", [], False
+    return plan, [], "none", [], False, None, None
 
 
 def _authored_targets(plan: TreatmentPlan) -> list[ToothDelta]:

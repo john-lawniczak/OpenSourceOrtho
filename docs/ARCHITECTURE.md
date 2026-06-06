@@ -134,9 +134,12 @@ geometry, not a different planning engine.
 
 `planning/generate.py` turns the best available target into cap-respecting staging
 by reusing the existing optimizer (`planning/optimizer.py`) - it never re-implements
-staging or caps. Target resolution is, in order: authored movement, a geometry-
-derived arch-form fit over visible segmented crowns (`planning/arch_form.py`), or a
-labeled educational template. It has no model calls.
+staging or caps. Target resolution is, in order: authored movement; a
+**landmark-derived** plan (per-tooth crown landmarks → real arch-form deviation
+targets + arch-length/space analysis in `planning/arch_analysis.py`, assembled with
+IPR, attachments, and approximate collision bounds in `planning/landmark_plan.py`);
+a geometry-derived arch-form fit over visible segmented crowns
+(`planning/arch_form.py`); or a labeled educational template. It has no model calls.
 
 The top-level `generation.py` gateway composes the deterministic generator with
 `run_rules` validation, a deterministic correctness review, and an optional
