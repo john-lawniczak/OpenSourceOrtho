@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenSource Ortho</string>
+    <!-- Standing safety disclaimer. Kept in sync with the engine `caveat` field
+         and ../../API_CONTRACT.md. Never present a plan as safe/approved/ready. -->
+    <string name="safety_disclaimer">OpenSource Ortho is an educational and research toolkit. It is not a medical device and does not diagnose, treat, or approve treatment. A CONSISTENT verdict means the staging is internally consistent with the configured caps and controls - not that it is safe, approved, or clinically appropriate. Always consult a licensed dental professional.</string>
+</resources>

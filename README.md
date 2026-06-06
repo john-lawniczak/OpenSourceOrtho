@@ -28,6 +28,9 @@ New users can start with [HOW_TO.md](HOW_TO.md).
 
 The first static UI prototype lives in [ui/](ui/README.md).
 
+Scaffolding for the **lite** iOS and Android apps - thin native clients over the
+same engine - lives in [mobile/](mobile/README.md).
+
 The UI includes two workflows:
 
 - **Clinician mode**: a professional planning workspace for staged movement, records,
