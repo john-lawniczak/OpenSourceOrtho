@@ -85,12 +85,20 @@ is **deterministic** and produces a *proposal*, never an approval. It resolves a
 whatever exists, in priority order:
 
 1. **Authored** - existing per-tooth movement is re-staged into cap-sized increments.
-2. **Geometry-derived** - when segmented per-tooth crowns exist, a straightening target is
+2. **Landmark-derived** - when per-tooth crown **landmarks** (operator-identified crown
+   centers, read from the visible scan) are supplied, the target is the real deviation of
+   each tooth from the fitted arch, plus a deterministic arch-length/space analysis that
+   budgets **IPR**, adds **attachments** on moved teeth, and attaches approximate per-tooth
+   collision bounds. Landmarks carry an `approximate` flag; the space analysis uses a
+   population crown-width table (a labeled heuristic with a data gap, not this patient's
+   measured crowns). This is geometric processing of operator-identified visible positions -
+   it infers no roots/bone and is not an approval.
+3. **Geometry-derived** - when segmented per-tooth crowns exist, a straightening target is
    computed from their *visible* occlusal-plane positions by fitting a smooth arch curve
    (`planning/arch_form.py`). This is geometric processing of data already in the scan. It is
    explicitly a scan-axis heuristic: it does **not** infer roots, bone, or biological response,
    does not resolve mesiodistal/buccolingual axes, and is not a clinical alignment goal.
-3. **Educational-synthetic** - when only a raw scan is loaded, a clearly-labeled generic
+4. **Educational-synthetic** - when only a raw scan is loaded, a clearly-labeled generic
    crowding template is used. The result is **not derived from the user's teeth**; it carries a
    prominent warning and `requires_acknowledgement`. This is a text warning, not a functional
    freeze - the engine still produces a visible educational preview.

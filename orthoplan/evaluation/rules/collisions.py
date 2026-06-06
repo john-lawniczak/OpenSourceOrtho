@@ -42,6 +42,10 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
         teeth = sorted(moved)
         for index, tooth_a in enumerate(teeth):
             for tooth_b in teeth[index + 1 :]:
+                # Opposing arches share the occlusal x/y plane and are not
+                # collision partners; only compare teeth within the same arch.
+                if _arch_of(tooth_a) != _arch_of(tooth_b):
+                    continue
                 overlap = _overlap_depth(moved[tooth_a], moved[tooth_b])
                 if overlap <= 0:
                     continue
@@ -71,6 +75,11 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
             )
         )
     return findings
+
+
+def _arch_of(tooth_value: str) -> str:
+    # FDI maxillary quadrants are 1,2 (permanent) and 5,6 (primary).
+    return "maxillary" if tooth_value[0] in {"1", "2", "5", "6"} else "mandibular"
 
 
 def _assets_by_id(plan: TreatmentPlan) -> dict[str, MeshAsset]:

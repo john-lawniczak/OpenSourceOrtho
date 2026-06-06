@@ -38,10 +38,11 @@ The UI includes two workflows:
   a do-it-yourself treatment plan.
 - **Generate Plan**: a one-click pipeline in the Review panel that builds a
   cap-respecting staged plan from the best available target - your authored
-  movement, segmented crown geometry (a deterministic arch-form fit over the
-  visible scan), or, if only a raw scan is loaded, a clearly-labeled educational
-  template. A deterministic orchestration step reviews the result for internal
-  consistency (verdict `CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
+  movement; per-tooth crown **landmarks** (real arch-form deviation targets plus a
+  space analysis that budgets IPR, adds attachments, and checks crown collisions);
+  segmented crown geometry; or, if only a raw scan is loaded, a clearly-labeled
+  educational template. A deterministic orchestration step runs explicit named
+  checks and a verdict (`CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
   optional model review is consent-gated and linted. It is a proposal, not a
   diagnosis or treatment approval.
 - **Plan versions**: save named snapshots of a plan and restore any version back
