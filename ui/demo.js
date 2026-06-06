@@ -16,25 +16,27 @@ export const demoInitialOffsets = {
 export const canonicalScanSources = [
   {
     name: "308806025_shell_occlusion_u.stl",
-    url: "/example-scans/canonical-orthocad-001/308806025_shell_occlusion_u.stl",
+    url: "./example-scans/canonical-orthocad-001/308806025_shell_occlusion_u.stl",
     arch: "maxillary",
   },
   {
     name: "308806025_shell_occlusion_l.stl",
-    url: "/example-scans/canonical-orthocad-001/308806025_shell_occlusion_l.stl",
+    url: "./example-scans/canonical-orthocad-001/308806025_shell_occlusion_l.stl",
     arch: "mandibular",
   },
 ];
 
-export function syntheticCrowdingRows(stageCount = 12) {
+export function syntheticCrowdingRows(stageCount = 12, options = {}) {
   const rows = [];
+  const movementStages = options.includeBaseline ? Math.max(1, stageCount - 1) : stageCount;
   for (let stage = 0; stage < stageCount; stage += 1) {
     for (const [tooth, offset] of Object.entries(demoInitialOffsets)) {
+      const isBaseline = options.includeBaseline && stage === 0;
       rows.push({
         stage,
         tooth,
-        x: round(-offset.x / stageCount),
-        y: round(-offset.y / stageCount),
+        x: isBaseline ? 0 : round(-offset.x / movementStages),
+        y: isBaseline ? 0 : round(-offset.y / movementStages),
         z: 0,
         tip: 0,
         torque: 0,

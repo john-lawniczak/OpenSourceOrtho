@@ -17,7 +17,7 @@ el("themeToggle").addEventListener("click", () => {
 document.querySelectorAll(".mode-choice").forEach((button) => {
   button.addEventListener("click", () => {
     state.userMode = button.dataset.userMode;
-    state.activeStep = state.userMode === "simple" ? "sample" : "upload";
+    state.activeStep = "upload";
     document.querySelectorAll(".mode-choice").forEach((item) => item.classList.remove("is-active"));
     button.classList.add("is-active");
     renderAll();
@@ -219,7 +219,7 @@ function uploadLabel(files, emptyLabel) {
 
 function goToStep(step) {
   if (step === "sample") {
-    loadCanonicalCase(12, { activeStep: "sample" });
+    loadCanonicalCase(4, { activeStep: "sample" });
     return;
   }
   state.activeStep = step;
@@ -296,20 +296,21 @@ function loadSyntheticDemo() {
 }
 
 function loadCanonicalCase(months, options) {
-  const stageCount = months === 6 ? 6 : 12;
+  const stageCount = months === 4 ? 4 : (months === 6 ? 6 : 12);
   state.simpleAcknowledged = true;
   state.simpleGoal = "crowding";
   state.demoInitialOffsets = demoInitialOffsets;
   state.useDemoMeshes = true;
   state.sampleStatus =
-    `Sample · real upper/lower OrthoCAD STL scan layer · simulated ${months}-month tooth movement.`;
+    `Sample test case · real upper/lower OrthoCAD STL scan layer · simulated ${months}-month tooth movement.`;
   state.files = [];
   state.file = null;
   state.uploadStorageStatus = "";
   state.scanArchFilter = "both";
+  state.scanRenderStatus = "Loading built-in upper/lower OrthoCAD STL scan layer...";
   clearUploadedFiles().catch(() => {});
   state.scanSources = canonicalScanSources;
-  state.rows = syntheticCrowdingRows(stageCount);
+  state.rows = syntheticCrowdingRows(stageCount, { includeBaseline: true });
   state.view = "overlay";
   state.activeStep = options?.activeStep || "sample";
   state.availability.intraoral_scan = true;
@@ -331,7 +332,6 @@ function loadCanonicalCase(months, options) {
 
 async function restoreStoredUploads() {
   try {
-    if (state.activeStep === "sample" && state.scanSources.length) return;
     const files = await restoreUploadedFiles();
     if (!files.length) return;
     state.files = files;
@@ -527,7 +527,6 @@ function restorePlan(snapshot) {
   renderAll();
 }
 
-loadCanonicalCase(12, { activeStep: "sample" });
 renderAvailability();
 renderAll();
 restoreStoredUploads();

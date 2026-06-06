@@ -5,7 +5,7 @@
 
 Browser prototype for the data-model workflow:
 
-1. Guided educational STL review, synthetic 12-month crowding demo, and canonical OrthoCAD scan fixture
+1. Guided educational STL review, synthetic crowding demo, and canonical OrthoCAD sample test case
 2. multi-file STL upload metadata with browser-side upload persistence
 3. data availability toggles
 4. movement cap controls
@@ -28,6 +28,8 @@ python3 -m orthoplan.server        # or: orthoplan serve
 Then open `http://127.0.0.1:8000`.
 
 The Upload step includes a short Getting Started panel for first-time users.
+The sidebar Sample Test Case button opens the included 4-month canonical
+OrthoCAD preview without replacing the normal Guided or Clinician upload flows.
 
 ## Modes
 
@@ -86,9 +88,9 @@ same browser; they are not uploaded to a server database.
 
 `ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
 OrthoCAD shell STLs used to keep exact scan rendering stable as the product
-evolves. The Guided and Clinician upload screens can load that pair as a 6-month
-or 12-month educational progression. The scan layer is the actual STL geometry;
-the movement sequence is simulated until segmented per-tooth meshes are available.
+evolves. The sidebar Sample Test Case opens that pair as a 4-month educational
+progression. The scan layer is the actual STL geometry; the movement sequence is
+simulated until segmented per-tooth meshes are available.
 
 ## 3D viewer
 
