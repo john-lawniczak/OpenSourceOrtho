@@ -8,6 +8,7 @@ export const state = {
   files: [],
   scanSources: [],
   scanRenderStatus: "No uploaded scan is loaded.",
+  sampleStatus: "",
   uploadStorageStatus: "",
   scanUnits: "unverified",
   scanArch: "",
@@ -36,6 +37,10 @@ export const state = {
     landmarks: null,
     landmarksStatus: "",
     result: null,
+  },
+  detailMode: {
+    generation: "basic",
+    ai: "basic",
   },
   // Saved plan versions (case store) for the current Plan ID.
   versions: {

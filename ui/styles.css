@@ -513,6 +513,25 @@ body[data-theme="dark"] .sample-badge {
   color: #fcd34d;
 }
 
+.sample-status-chip {
+  background: #fff8e1;
+  border: 1px solid #d6a928;
+  color: #5f3a04;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  margin: 0 0 12px;
+  max-width: 100%;
+  padding: 8px 10px;
+}
+
+body[data-theme="dark"] .sample-status-chip {
+  background: #2a2412;
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
 .workflow-card p {
   font-size: 13px;
 }
@@ -550,6 +569,33 @@ body[data-theme="dark"] .sample-badge {
 .chat-controls {
   grid-template-columns: repeat(2, minmax(120px, 1fr));
   margin-bottom: 10px;
+}
+
+.detail-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(84px, 1fr));
+  gap: 4px;
+  max-width: 220px;
+}
+
+.detail-switch button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.detail-switch button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+body[data-generation-detail="basic"] .advanced-generation,
+body[data-ai-detail="basic"] .advanced-ai {
+  display: none;
 }
 
 .chat-messages {
