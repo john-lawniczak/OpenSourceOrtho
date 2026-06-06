@@ -121,6 +121,7 @@ export function renderAll() {
   state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
   state.chat.agentEndpoint = el("agentEndpoint").value;
   state.generation.acknowledged = el("generationAck").checked;
+  state.generation.notes = el("generationNotes").value;
   state.versions.note = el("versionNote").value;
   state.caps = {
     linear_mm: numberValue("capLinear"),
@@ -183,9 +184,25 @@ export function renderChat() {
 export function renderGeneration() {
   const gen = state.generation;
   el("generationAck").checked = gen.acknowledged;
+  el("generationNotes").value = gen.notes;
   el("generatePlan").disabled = gen.busy;
   el("generationStatus").textContent = gen.busy ? "Working..." : (gen.status || "Ready");
+  el("generationConnector").textContent = generationConnectorHint();
   el("generationReport").innerHTML = gen.result ? generationReportMarkup(gen.result) : "";
+}
+
+// Tells the user exactly where the optional AI review gets its model/key, and
+// whether it is currently wired up. Notes only feed that review step.
+function generationConnectorHint() {
+  if (state.chat.provider === "local") {
+    return "AI review: using the local helper (offline) — the optional model review is skipped, "
+      + "so generation runs fully on-machine. To send the plan + notes to an external model, pick a "
+      + "connector and add a key under Plan AI → Connector Settings below.";
+  }
+  const key = state.chat.apiKeyPresent ? "key in session" : "no key yet";
+  const consent = state.chat.agentAccessEnabled ? "sharing acknowledged" : "sharing OFF — review will be skipped";
+  return `AI review connector: ${state.chat.provider} · ${key} · ${consent}. `
+    + "Change these under Plan AI → Connector Settings below. Notes are sent only to this review.";
 }
 
 function generationReportMarkup(result) {

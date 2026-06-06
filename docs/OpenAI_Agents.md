@@ -84,9 +84,16 @@ each item becomes a `Finding(provenance=MODEL)`, and the batch passes
 `mechanics` findings, no verdict/approval language, warnings need a data gap and a
 follow-up question, accepted findings render with `[ADVISORY - unverified]`.
 
+Optional free-text user **notes** (e.g. "focus on the lateral incisors") are
+appended to the review prompt by `build_advisory_request(plan, notes=...)`. Notes
+are context for the reviewer only: they never change deterministic staging, never
+relax the boundary in the system prompt, and the model's output still passes
+`lint_finding()`.
+
 The model step is opt-in and consent-gated: it runs only when an external
 connector is selected AND the egress acknowledgement (`share_acknowledged`) is
-set, exactly like the chat connector. With the local connector or no consent, the
+set, exactly like the chat connector. The connector is configured in the UI under
+Plan AI → Connector Settings and reused by Generate Plan. With the local connector or no consent, the
 pipeline completes fully offline and the model step is recorded as `skipped`. The
 deterministic correctness verdict is never produced or overridden by a model.
 

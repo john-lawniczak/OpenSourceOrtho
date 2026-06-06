@@ -49,6 +49,9 @@ class GenerateRequest(BaseModel):
     # Optional per-tooth crown landmarks ({"landmarks": [...]}) to ground targets
     # in the patient's real positions (preferred over the educational fallback).
     landmarks: dict[str, Any] | None = None
+    # Free-text focus/notes appended to the OPTIONAL model review prompt only
+    # (e.g. "focus on the lateral incisors"). Never changes deterministic staging.
+    notes: str | None = Field(default=None, max_length=2000)
     acknowledge_educational: bool = False
     provider: ConnectorKind = "local"
     model: str | None = None
@@ -213,7 +216,7 @@ def _model_review(
         except ValueError as exc:
             return [], PipelineStep(name="model-review", status="warning", detail=str(exc))
     try:
-        result = request_advisory(plan, used)
+        result = request_advisory(plan, used, notes=request.notes)
     except Exception as exc:  # noqa: BLE001 - provider failures become user-facing data
         return [], PipelineStep(name="model-review", status="warning", detail=f"review failed: {exc}")
     findings = [f.model_dump(mode="json") for f in result.accepted]
@@ -263,7 +266,9 @@ def generate_plan_payload(
     advisory_findings, model_step = _model_review(request, generated.plan, provider)
     steps.append(model_step)
 
-    return _build_response(generated, steps, checks, verdict, metrics, findings, advisory_findings)
+    response = _build_response(generated, steps, checks, verdict, metrics, findings, advisory_findings)
+    response["notes"] = request.notes
+    return response
 
 
 def _build_response(generated, steps, checks, verdict, metrics, findings, advisory_findings) -> dict[str, Any]:

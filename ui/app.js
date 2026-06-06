@@ -88,6 +88,8 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
   if (target.id === "generationAck") state.generation.acknowledged = target.checked;
+  if (target.id === "generationNotes") state.generation.notes = target.value;
+  if (target.id === "glossarySearch") filterGlossary(target.value);
   if (target.id === "versionNote") state.versions.note = target.value;
   if (target.id === "agentEndpoint") state.chat.agentEndpoint = target.value;
   if (target.id === "printEnabled") state.printExport.enabled = target.checked;
@@ -373,6 +375,7 @@ async function generatePlan() {
     const result = await requestPlanGeneration({
       plan: planJson(),
       acknowledge_educational: state.generation.acknowledged,
+      notes: state.generation.notes.trim() || undefined,
       provider: state.chat.provider,
       model: state.chat.model,
       api_key: apiKey || undefined,
@@ -400,6 +403,18 @@ async function generatePlan() {
     state.generation.busy = false;
     renderAll();
   }
+}
+
+function filterGlossary(query) {
+  const term = query.trim().toLowerCase();
+  const entries = document.querySelectorAll(".glossary dl > div");
+  let visible = 0;
+  entries.forEach((entry) => {
+    const match = !term || entry.textContent.toLowerCase().includes(term);
+    entry.hidden = !match;
+    if (match) visible += 1;
+  });
+  el("glossaryEmpty").hidden = visible !== 0;
 }
 
 async function loadVersions() {
