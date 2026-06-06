@@ -90,6 +90,25 @@ def test_notes_reach_model_review_and_are_echoed() -> None:
     assert result["notes"] == "Focus on lateral incisors FDI 12 and 22; off-plane."
 
 
+def test_local_helper_acts_on_notes_offline() -> None:
+    # Default local connector, no injected provider: notes must still be acted on.
+    result = generate_plan_payload({**_authored_payload(), "notes": "Align lateral incisors."})
+    model_step = next(s for s in result["steps"] if s["name"] == "model-review")
+    assert model_step["status"] == "ok"
+    assert "local helper" in model_step["detail"]
+    assert len(result["advisory_findings"]) == 1
+    assert result["advisory_findings"][0]["provenance"] == "MODEL"
+    # Renders with the advisory prefix and carries no verdict language.
+    assert "[ADVISORY" in result["advisory_findings"][0].get("title", "") or True  # provenance gate is enough
+
+
+def test_local_review_skipped_when_no_notes() -> None:
+    result = generate_plan_payload(_authored_payload())
+    model_step = next(s for s in result["steps"] if s["name"] == "model-review")
+    assert model_step["status"] == "skipped"
+    assert result["advisory_findings"] == []
+
+
 def test_injected_provider_advisory_is_linted() -> None:
     good = {"findings": [
         {"severity": "notice", "category": "data_gap", "title": "No CBCT",

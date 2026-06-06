@@ -20,21 +20,21 @@ The pipeline ("the detailed workflow"):
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
 from orthoplan.ai_connectors import ConnectorKind, build_chat_provider, connector_for
 from orthoplan.evaluation.advisory import request_advisory
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.evaluation.local_review import local_notes_advisory
 from orthoplan.evaluation.providers.base import ModelProvider
+from orthoplan.generation_checks import PipelineStep, correctness_review
 from orthoplan.model.assets import bounding_box_sanity
 from orthoplan.model.landmarks import ArchLandmarks
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.generate import generate_plan
 from orthoplan.planning.timeline import project_timeline
-
-CorrectnessVerdict = Literal["CONSISTENT", "ISSUES", "NOT_APPLICABLE"]
 
 GENERATION_CAVEAT = (
     "Plan generation is deterministic and, when targets are unavailable, educational. "
@@ -59,22 +59,6 @@ class GenerateRequest(BaseModel):
     endpoint: str | None = Field(default=None, max_length=400)
     # Egress consent for the optional model review step (mirrors the chat layer).
     share_acknowledged: bool = False
-
-
-class PipelineStep(BaseModel):
-    name: str
-    status: Literal["ok", "warning", "skipped"] = "ok"
-    detail: str = ""
-
-
-class Check(BaseModel):
-    """One named correctness check. ``gate`` checks fail the verdict; ``warning``
-    and ``info`` checks are surfaced but do not flip CONSISTENT to ISSUES."""
-
-    name: str
-    passed: bool
-    severity: Literal["gate", "warning", "info"] = "gate"
-    detail: str = ""
 
 
 def _format_errors(error: ValidationError) -> list[str]:
@@ -102,93 +86,24 @@ def _review_scan(plan: TreatmentPlan) -> PipelineStep:
     return PipelineStep(name="review-scan", detail=detail)
 
 
-_AXES = (
-    "translate_x_mm", "translate_y_mm", "translate_z_mm",
-    "rotate_tip_deg", "rotate_torque_deg", "rotate_rotation_deg",
-)
-
-
-def _cumulative(plan: TreatmentPlan) -> dict[str, dict[str, float]]:
-    totals: dict[str, dict[str, float]] = {}
-    for stage in plan.stages:
-        for delta in stage.deltas:
-            bucket = totals.setdefault(delta.tooth.value, {a: 0.0 for a in _AXES})
-            for axis in _AXES:
-                bucket[axis] += getattr(delta, axis)
-    return totals
-
-
-def _targets_reached_check(plan: TreatmentPlan, generated) -> Check:
-    """Every non-blocked target tooth's cumulative movement must equal its target."""
-    blocked = set(generated.blocked_teeth)
-    want = _cumulative_from_deltas(generated.requested_targets)
-    got = _cumulative(plan)
-    mismatches: list[str] = []
-    for tooth, target in want.items():
-        if tooth in blocked:
-            continue
-        actual = got.get(tooth, {a: 0.0 for a in _AXES})
-        if any(abs(target[a] - actual[a]) > 1e-6 for a in _AXES):
-            mismatches.append(tooth)
-    passed = not mismatches
-    detail = ("cumulative movement reaches every requested target"
-              if passed else f"targets not reached for: {', '.join(sorted(mismatches))}")
-    return Check(name="targets-reached", passed=passed, detail=detail)
-
-
-def _cumulative_from_deltas(deltas) -> dict[str, dict[str, float]]:
-    totals: dict[str, dict[str, float]] = {}
-    for delta in deltas:
-        bucket = totals.setdefault(delta.tooth.value, {a: 0.0 for a in _AXES})
-        for axis in _AXES:
-            bucket[axis] += getattr(delta, axis)
-    return totals
-
-
-def _correctness_review(
-    plan: TreatmentPlan, findings: list, generated
-) -> tuple[CorrectnessVerdict, PipelineStep, list[Check], dict]:
-    cap_violations = [f.title for f in findings if "exceeds configured" in f.title]
-    collision_count = sum(1 for f in findings if "bounds overlap" in f.title)
-    moved = {delta.tooth.value for stage in plan.stages for delta in stage.deltas}
-    fixed_moved = sorted(moved & {control.tooth.value for control in plan.fixed_teeth})
-    excluded_moved = sorted(moved & {e.tooth.value for e in plan.movement_exclusions})
-    contiguous = [s.index for s in plan.stages] == list(range(len(plan.stages)))
-
-    metrics = {
-        "cap_violations": len(cap_violations),
-        "fixed_teeth_moved": fixed_moved,
-        "excluded_teeth_moved": excluded_moved,
-        "collision_count": collision_count,
-    }
-    if not plan.stages:
-        step = PipelineStep(name="correctness-review", status="skipped", detail="No staging produced.")
-        return "NOT_APPLICABLE", step, [], metrics
-
-    checks = [
-        Check(name="caps-respected", passed=not cap_violations,
-              detail=f"{len(cap_violations)} per-stage cap violation(s)"),
-        Check(name="fixed-teeth-unmoved", passed=not fixed_moved,
-              detail=f"fixed teeth moved: {', '.join(fixed_moved) or 'none'}"),
-        Check(name="exclusions-respected", passed=not excluded_moved,
-              detail=f"excluded teeth moved: {', '.join(excluded_moved) or 'none'}"),
-        _targets_reached_check(plan, generated),
-        Check(name="stages-contiguous", passed=contiguous,
-              detail="stage indexes are contiguous from 0" if contiguous else "non-contiguous stages"),
-        Check(name="scale-confirmed", passed=plan.scale_confirmed, severity="warning",
-              detail="scan units confirmed" if plan.scale_confirmed else "units unverified; caps not in mm"),
-        Check(name="collisions-checked", passed=True, severity="info",
-              detail=f"{collision_count} crown-bounds overlap(s) reported"
-                     + ("" if plan.tooth_meshes else "; no segmented teeth, overlap check is vacuous")),
-    ]
-    verdict: CorrectnessVerdict = "ISSUES" if any(
-        c.severity == "gate" and not c.passed for c in checks
-    ) else "CONSISTENT"
-    failed = [c.name for c in checks if c.severity == "gate" and not c.passed]
-    detail = "all gate checks passed" if verdict == "CONSISTENT" else f"failed: {', '.join(failed)}"
-    step = PipelineStep(name="correctness-review",
-                        status="ok" if verdict == "CONSISTENT" else "warning", detail=detail)
-    return verdict, step, checks, metrics
+def _external_provider(
+    request: GenerateRequest, provider: ModelProvider | None
+) -> tuple[ModelProvider | None, str]:
+    """Resolve the external model provider, or (None, reason) when only the
+    offline local helper is available."""
+    if provider is not None:
+        return provider, ""
+    connector = connector_for(request.provider)
+    if connector.kind == "local":
+        return None, "local helper selected"
+    if not request.share_acknowledged:
+        return None, f"{connector.label} review needs the external-agent acknowledgement"
+    try:
+        return build_chat_provider(
+            connector.kind, model=request.model, api_key=request.api_key, endpoint=request.endpoint
+        ), ""
+    except ValueError as exc:
+        return None, str(exc)
 
 
 def _model_review(
@@ -196,34 +111,27 @@ def _model_review(
     plan: TreatmentPlan,
     provider: ModelProvider | None,
 ) -> tuple[list[dict], PipelineStep]:
-    connector = connector_for(request.provider if provider is None else getattr(provider, "name", "local"))
-    if provider is None and connector.kind == "local":
-        return [], PipelineStep(
-            name="model-review", status="skipped", detail="Local/offline; no external review requested."
-        )
-    if provider is None and not request.share_acknowledged:
-        return [], PipelineStep(
-            name="model-review",
-            status="skipped",
-            detail=f"{connector.label} review needs the external-agent acknowledgement; skipped.",
-        )
-    used = provider
-    if used is None:
+    used, note = _external_provider(request, provider)
+    if used is not None:
         try:
-            used = build_chat_provider(
-                connector.kind, model=request.model, api_key=request.api_key, endpoint=request.endpoint
-            )
-        except ValueError as exc:
-            return [], PipelineStep(name="model-review", status="warning", detail=str(exc))
-    try:
-        result = request_advisory(plan, used, notes=request.notes)
-    except Exception as exc:  # noqa: BLE001 - provider failures become user-facing data
-        return [], PipelineStep(name="model-review", status="warning", detail=f"review failed: {exc}")
-    findings = [f.model_dump(mode="json") for f in result.accepted]
-    detail = f"{len(findings)} linted advisory finding(s); {len(result.rejected)} rejected by lint."
-    if result.parse_error:
-        detail = f"unparseable advisory: {result.parse_error}"
-    return findings, PipelineStep(name="model-review", detail=detail)
+            result = request_advisory(plan, used, notes=request.notes)
+        except Exception as exc:  # noqa: BLE001 - provider failures become user-facing data
+            return [], PipelineStep(name="model-review", status="warning", detail=f"review failed: {exc}")
+        findings = [f.model_dump(mode="json") for f in result.accepted]
+        detail = (f"unparseable advisory: {result.parse_error}" if result.parse_error
+                  else f"{len(findings)} linted advisory finding(s); {len(result.rejected)} rejected by lint.")
+        return findings, PipelineStep(name="model-review", detail=detail)
+
+    # No external model: the offline local helper still acts on the user's notes.
+    if request.notes and request.notes.strip():
+        local = local_notes_advisory(plan, request.notes)
+        suffix = f" ({note})" if note and note != "local helper selected" else ""
+        return [f.model_dump(mode="json") for f in local], PipelineStep(
+            name="model-review",
+            detail=f"local helper (offline) acted on your notes - {len(local)} educational note(s).{suffix}",
+        )
+    return [], PipelineStep(name="model-review", status="skipped",
+                            detail=f"{note}; no notes to review.")
 
 
 def generate_plan_payload(
@@ -258,7 +166,7 @@ def generate_plan_payload(
         PipelineStep(name="deterministic-validation", detail=f"{len(findings)} deterministic finding(s).")
     )
 
-    verdict, correctness_step, checks, metrics = _correctness_review(
+    verdict, correctness_step, checks, metrics = correctness_review(
         generated.plan, findings, generated
     )
     steps.append(correctness_step)

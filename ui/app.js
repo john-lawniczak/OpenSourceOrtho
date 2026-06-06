@@ -56,6 +56,22 @@ el("simpleStlFile").addEventListener("change", async (event) => {
   await setUploadedFiles(Array.from(event.target.files || []));
 });
 
+el("landmarksFile").addEventListener("change", async (event) => {
+  const file = (event.target.files || [])[0];
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    const count = Array.isArray(parsed?.landmarks) ? parsed.landmarks.length : 0;
+    if (!count) throw new Error("no \"landmarks\" array found");
+    state.generation.landmarks = parsed;
+    state.generation.landmarksStatus = `Imported ${count} landmark(s) from ${file.name}. Generation will be landmark-derived.`;
+  } catch (error) {
+    state.generation.landmarks = null;
+    state.generation.landmarksStatus = `Could not read landmarks: ${error.message}`;
+  }
+  renderGeneration();
+});
+
 document.body.addEventListener("input", (event) => {
   const target = event.target;
   if (target.dataset.availability) {
@@ -374,6 +390,7 @@ async function generatePlan() {
     const apiKey = el("chatApiKey").value.trim();
     const result = await requestPlanGeneration({
       plan: planJson(),
+      landmarks: state.generation.landmarks || undefined,
       acknowledge_educational: state.generation.acknowledged,
       notes: state.generation.notes.trim() || undefined,
       provider: state.chat.provider,

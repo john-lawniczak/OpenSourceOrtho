@@ -352,6 +352,11 @@
                   <textarea id="generationNotes" rows="3" placeholder="e.g. Focus on the lateral incisors (FDI 12 and 22) — they are off-plane and that is what I want to align."></textarea>
                 </label>
                 <p id="generationConnector" class="viewer-caveat"></p>
+                <label class="landmark-import">
+                  <span>Import per-tooth landmarks (JSON) — grounds the plan in real positions</span>
+                  <input id="landmarksFile" type="file" accept=".json,application/json" />
+                </label>
+                <p id="landmarksStatus" class="viewer-caveat">No landmarks imported — generation falls back to authored movement or the educational template. Get a template with <code>orthoplan landmarks-template</code>.</p>
                 <label class="toggle">
                   <span>I understand a generated plan is educational/heuristic and is not a diagnosis, treatment plan, or approval.</span>
                   <input id="generationAck" type="checkbox" />
