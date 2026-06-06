@@ -33,10 +33,13 @@
           <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
         </div>
         <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
+        <button class="sample-launch" data-step-target="sample" type="button">
+          <strong>Sample Test Case</strong>
+          <span>Open the built-in 4-month OrthoCAD preview</span>
+        </button>
 
         <nav class="step-list" aria-label="Workflow steps">
-          <button class="step is-active" data-step="sample" type="button">Sample</button>
-          <button class="step" data-step="upload" type="button">Upload</button>
+          <button class="step is-active" data-step="upload" type="button">Upload</button>
           <button class="step" data-step="availability" type="button">Data</button>
           <button class="step" data-step="settings" type="button">Settings</button>
           <button class="step" data-step="stages" type="button">Stages</button>
@@ -73,9 +76,9 @@
           </div>
         </header>
         <nav class="journey-nav" aria-label="Guided workflow">
-          <button class="is-active" data-journey-step="sample" type="button">
+          <button class="is-active" data-journey-step="upload" type="button">
             <strong>1</strong>
-            <span>Open sample</span>
+            <span>Load STL files</span>
           </button>
           <button data-journey-step="review" type="button">
             <strong>2</strong>
@@ -95,9 +98,8 @@
           <div class="simple-hero">
             <div>
               <h2>Guided STL Review</h2>
-              <p>Start with the built-in sample, or upload STL scans to inspect a preview. Educational only; not a diagnosis or prescription.</p>
+              <p>Upload STL scans to inspect a preview. Educational only; not a diagnosis or prescription.</p>
             </div>
-            <button class="primary-action sample-action" data-step-target="sample" type="button">Open Sample</button>
           </div>
           <div class="simple-grid">
             <div class="upload-stack">
@@ -135,12 +137,12 @@
         <section class="panel" id="panel-upload">
           <div class="panel-heading">
             <h2>Upload STL</h2>
-            <p>Add your own STL scans. The built-in example lives in the Sample tab.</p>
+            <p>Add upper, lower, or both STL scans.</p>
           </div>
           <div class="howto-panel">
             <h2>Getting Started</h2>
             <ol>
-              <li>Use the Sample tab for the built-in OrthoCAD walkthrough, or upload STL scans here.</li>
+              <li>Upload STL scans here, or use the Sample Test Case button in the sidebar for the built-in example.</li>
               <li>Confirm units before relying on millimeter movement checks.</li>
               <li>Review findings and data gaps before exporting anything.</li>
             </ol>
@@ -286,21 +288,20 @@
           </div>
         </section>
 
-        <section class="panel is-active" id="panel-review">
+        <section class="panel" id="panel-review">
           <div class="review-grid">
             <section class="review-main">
               <div class="panel-heading">
-                <h2 id="reviewHeading">Sample Preview</h2>
+                <h2 id="reviewHeading">Progress Preview</h2>
                 <p id="timelineText"></p>
               </div>
               <p id="sampleStatusChip" class="sample-status-chip" hidden></p>
               <div class="workflow-card sample-panel sample-only">
-                <span class="sample-badge">Built-in sample</span>
-                <h2>Canonical OrthoCAD Scan</h2>
-                <p>Upper and lower STL files are already included. Scrub the timeline to see the simulated staged straightening preview over the real scan layer.</p>
+                <span class="sample-badge">Sample test case</span>
+                <h2>4-Month OrthoCAD Preview</h2>
+                <p>Upper and lower STL files are included. Drag the stage slider to compare the starting scan layer with the simulated straightening preview.</p>
                 <div class="workflow-actions inline">
-                  <button class="primary-action" data-canonical-months="12" type="button">12-Month Sample</button>
-                  <button data-canonical-months="6" type="button">6-Month Sample</button>
+                  <button class="primary-action" data-canonical-months="4" type="button">Reset 4-Month Sample</button>
                 </div>
               </div>
               <div class="workflow-card">

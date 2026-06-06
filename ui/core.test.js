@@ -159,6 +159,19 @@ test("syntheticCrowdingRows creates 12 stages that counter initial offsets", () 
   assert.ok(Math.abs(total + demoInitialOffsets[firstTooth].x) < 0.01);
 });
 
+test("syntheticCrowdingRows can keep stage 0 as a before-state baseline", () => {
+  const rows = syntheticCrowdingRows(4, { includeBaseline: true });
+  const teeth = Object.keys(demoInitialOffsets);
+  assert.equal(rows.length, teeth.length * 4);
+  assert.ok(rows.filter((row) => row.stage === 0).every((row) => row.x === 0 && row.y === 0));
+
+  const firstTooth = teeth[0];
+  const total = rows
+    .filter((row) => row.tooth === firstTooth)
+    .reduce((sum, row) => sum + row.x, 0);
+  assert.ok(Math.abs(total + demoInitialOffsets[firstTooth].x) < 0.01);
+});
+
 test("canonical scan sources expose upper and lower STL fixtures", () => {
   assert.deepEqual(canonicalScanSources.map((source) => source.arch), ["maxillary", "mandibular"]);
   assert.ok(canonicalScanSources.every((source) => source.url.endsWith(".stl")));

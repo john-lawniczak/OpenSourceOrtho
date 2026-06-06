@@ -170,7 +170,7 @@ export function renderAll() {
 }
 
 function renderReviewHeading() {
-  el("reviewHeading").textContent = state.activeStep === "sample" ? "Sample Preview" : "Progress Preview";
+  el("reviewHeading").textContent = state.activeStep === "sample" ? "Sample Test Case" : "Progress Preview";
 }
 
 function filterScanSources(sources) {

@@ -1,7 +1,7 @@
 export const state = {
   theme: "light",
   userMode: "advanced",
-  activeStep: "sample",
+  activeStep: "upload",
   view: "current",
   dim: "3d",
   file: null,

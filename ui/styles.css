@@ -127,6 +127,7 @@ p {
 .step,
 .mode,
 .mode-choice,
+.sample-launch,
 .primary-action,
 .theme-toggle,
 .download-actions button,
@@ -157,10 +158,6 @@ p {
   color: var(--accent-ink);
 }
 
-.sample-action {
-  min-width: 220px;
-}
-
 .mode-switch {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -176,6 +173,37 @@ p {
   background: transparent;
   color: #d8e4e9;
   border-color: #344951;
+}
+
+.sample-launch {
+  background: #fff8e1;
+  border-color: #d6a928;
+  color: #5f3a04;
+  display: grid;
+  gap: 4px;
+  min-height: 68px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.sample-launch strong {
+  font-size: 13px;
+}
+
+.sample-launch span {
+  color: #7c4a03;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body[data-theme="dark"] .sample-launch {
+  background: #2a2412;
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+body[data-theme="dark"] .sample-launch span {
+  color: #fcd34d;
 }
 
 body[data-mode="simple"] .step-list,

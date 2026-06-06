@@ -6,6 +6,6 @@ Files:
 
 These STLs are whole-arch scan shells, not segmented per-tooth meshes. The UI
 uses them to verify exact scan rendering and camera/material behavior. The
-6-month and 12-month progression buttons pair these scans with a simulated
-educational stage sequence; they do not represent a clinical prediction,
-diagnosis, or treatment plan.
+Sample Test Case pairs these scans with a simulated 4-month educational stage
+sequence; it does not represent a clinical prediction, diagnosis, or treatment
+plan.
