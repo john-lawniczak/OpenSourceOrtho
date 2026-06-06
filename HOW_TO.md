@@ -72,8 +72,21 @@ plan from the best target available, in this order:
 A deterministic orchestration step then validates the result and reports a
 correctness verdict (`CONSISTENT` / `ISSUES`) - meaning the staging is internally
 consistent with your caps and fixed-tooth controls, **not** that it is safe or
-approved. An optional model review runs only if you select an external connector
-and tick the external-agent acknowledgement; otherwise generation is fully offline.
+approved.
+
+**Notes for the AI review**: the Generate Plan panel has a free-text *Notes* box.
+Anything you write there (for example, "focus on the lateral incisors FDI 12 and
+22 — they are off-plane") is appended to the optional AI review prompt so the model
+considers your priorities. Notes never change the deterministic staging or relax
+the safety boundary, and the model's output still passes the same lint gate.
+
+**Connecting an AI model / API key**: the optional review reuses the connector you
+configure under **Plan AI → Connector Settings** (in the same Review panel). Pick a
+connector (OpenAI, Claude Code, MCP/Odysseus/open-source), paste a session-only API
+key or endpoint, and tick *Allow an external AI agent…* to consent to sending the
+scoped plan context. The Generate Plan panel shows which connector is active. With
+the default **local helper** (or no consent), the AI review is skipped and
+generation runs **fully offline** - the deterministic plan is still produced.
 
 ## 3. Render Local Per-Tooth Meshes
 

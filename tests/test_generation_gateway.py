@@ -68,6 +68,28 @@ def test_model_review_skipped_without_consent() -> None:
     assert result["advisory_findings"] == []
 
 
+class NotesProbeProvider:
+    name = "fake"
+
+    def __init__(self) -> None:
+        self.seen_prompt = ""
+
+    def complete(self, request) -> ModelResponse:  # noqa: ANN001 - test stub
+        self.seen_prompt = request.prompt
+        return ModelResponse(text='{"findings": []}', model="fake-1", provider=self.name)
+
+
+def test_notes_reach_model_review_and_are_echoed() -> None:
+    probe = NotesProbeProvider()
+    result = generate_plan_payload(
+        {**_authored_payload(), "notes": "Focus on lateral incisors FDI 12 and 22; off-plane."},
+        provider=probe,
+    )
+    assert "lateral incisors" in probe.seen_prompt  # notes appended to the review prompt
+    assert "User focus" in probe.seen_prompt
+    assert result["notes"] == "Focus on lateral incisors FDI 12 and 22; off-plane."
+
+
 def test_injected_provider_advisory_is_linted() -> None:
     good = {"findings": [
         {"severity": "notice", "category": "data_gap", "title": "No CBCT",

@@ -99,11 +99,16 @@ def _to_finding(item: AdvisoryItem) -> Finding:
     )
 
 
-def request_advisory(plan: TreatmentPlan, provider: ModelProvider) -> AdvisoryResult:
+def request_advisory(
+    plan: TreatmentPlan, provider: ModelProvider, *, notes: str | None = None
+) -> AdvisoryResult:
     """Run the advisory layer for a plan against a provider. Never raises on bad
-    model output; parse and lint failures are returned as data."""
+    model output; parse and lint failures are returned as data.
 
-    response = provider.complete(build_advisory_request(plan))
+    ``notes`` is optional user focus appended to the prompt (not the boundary).
+    """
+
+    response = provider.complete(build_advisory_request(plan, notes=notes))
     parsed, error = parse_advisory(response.text)
     if parsed is None:
         return AdvisoryResult(parse_error=error, model=response.model, provider=response.provider)

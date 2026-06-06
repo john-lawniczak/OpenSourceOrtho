@@ -347,6 +347,11 @@
                   <span id="generationStatus">Ready</span>
                 </div>
                 <p class="viewer-caveat">Builds a cap-respecting staged plan from the best available target: your authored movement, segmented crown geometry, or - if only a raw scan is loaded - a clearly-labeled educational template. It does not diagnose or approve treatment.</p>
+                <label class="chat-input">
+                  Notes for the AI review (optional)
+                  <textarea id="generationNotes" rows="3" placeholder="e.g. Focus on the lateral incisors (FDI 12 and 22) — they are off-plane and that is what I want to align."></textarea>
+                </label>
+                <p id="generationConnector" class="viewer-caveat"></p>
                 <label class="toggle">
                   <span>I understand a generated plan is educational/heuristic and is not a diagnosis, treatment plan, or approval.</span>
                   <input id="generationAck" type="checkbox" />
@@ -444,6 +449,7 @@
             <h2>FDI Tooth Numbering</h2>
             <p>Teeth are named by two digits: the first is the <strong>quadrant</strong>, the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar. The engine uses FDI internally.</p>
           </div>
+          <img class="tooth-chart" src="./tooth-chart.svg" alt="Mouth diagram showing FDI tooth numbers on the upper and lower arches" />
           <div class="tooth-map" aria-label="FDI quadrant map">
             <div class="quadrant">
               <h3>Q1 &middot; Upper right</h3>
@@ -464,6 +470,11 @@
           </div>
           <div class="glossary">
             <h2>Key Terms (A&ndash;Z)</h2>
+            <label class="glossary-search">
+              <span class="sr-only">Search key terms</span>
+              <input id="glossarySearch" type="search" placeholder="Search key terms (e.g. IPR, torque, crowding)" autocomplete="off" />
+            </label>
+            <p id="glossaryEmpty" class="chat-empty" hidden>No terms match your search.</p>
             <dl>
               <div><dt>Arch</dt><dd>One jaw's row of teeth: maxillary (upper) or mandibular (lower).</dd></div>
               <div><dt>Attachment</dt><dd>A small composite bump bonded to a tooth so an aligner can grip and move it. Planning intent only.</dd></div>
