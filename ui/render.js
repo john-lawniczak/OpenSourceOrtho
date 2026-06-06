@@ -120,6 +120,7 @@ export function renderAll() {
   state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
   state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
   state.chat.agentEndpoint = el("agentEndpoint").value;
+  state.generation.acknowledged = el("generationAck").checked;
   state.caps = {
     linear_mm: numberValue("capLinear"),
     angular_deg: numberValue("capAngular"),
@@ -146,6 +147,7 @@ export function renderAll() {
   renderRows();
   renderIprContactMap();
   renderChat();
+  renderGeneration();
   renderScanStatus();
   renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
@@ -174,6 +176,40 @@ export function renderChat() {
       </div>
     `).join("")
     : "<p class=\"chat-empty\">Ask what the preview can and cannot tell you.</p>";
+}
+
+export function renderGeneration() {
+  const gen = state.generation;
+  el("generationAck").checked = gen.acknowledged;
+  el("generatePlan").disabled = gen.busy;
+  el("generationStatus").textContent = gen.busy ? "Working..." : (gen.status || "Ready");
+  el("generationReport").innerHTML = gen.result ? generationReportMarkup(gen.result) : "";
+}
+
+function generationReportMarkup(result) {
+  const verdict = result.correctness?.verdict || "N/A";
+  const ack = result.requires_acknowledgement
+    ? "<p class=\"finding-gap\">This educational plan is not derived from your scan. Tick the acknowledgement and regenerate to confirm you understand.</p>"
+    : "";
+  const warnings = (result.warnings || [])
+    .map((w) => `<li class="warning">${escapeHtml(w)}</li>`).join("");
+  const steps = (result.steps || [])
+    .map((s) => `<li class="${escapeHtml(s.status)}"><strong>${escapeHtml(s.name)}</strong>: ${escapeHtml(s.detail)}</li>`)
+    .join("");
+  const det = (result.deterministic_findings || []).length;
+  const adv = (result.advisory_findings || []).length;
+  const blocked = result.correctness?.fixed_teeth_moved?.length
+    ? `<p class="finding-gap">Fixed teeth reported moved: ${escapeHtml(result.correctness.fixed_teeth_moved.join(", "))}</p>`
+    : "";
+  return `
+    <p><strong>Source:</strong> ${escapeHtml(result.source)} · <strong>Correctness:</strong> ${escapeHtml(verdict)}</p>
+    ${ack}
+    <p>${result.stage_count} stage(s) · ${det} deterministic finding(s) · ${adv} linted advisory finding(s) · ${Number(result.correctness?.collision_count || 0)} crown overlap(s)</p>
+    ${blocked}
+    ${warnings ? `<ul>${warnings}</ul>` : ""}
+    <details><summary>Orchestration steps</summary><ul class="gen-steps">${steps}</ul></details>
+    <p class="viewer-caveat">${escapeHtml(result.caveat || "")}</p>
+  `;
 }
 
 let evaluateTimer = null;

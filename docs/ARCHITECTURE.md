@@ -130,6 +130,21 @@ supplied per-tooth vertices by cumulative translation while preserving the same 
 honesty rule. The server/UI path uses the same stage frames; real STL meshes are visual
 geometry, not a different planning engine.
 
+## Plan Generation
+
+`planning/generate.py` turns the best available target into cap-respecting staging
+by reusing the existing optimizer (`planning/optimizer.py`) - it never re-implements
+staging or caps. Target resolution is, in order: authored movement, a geometry-
+derived arch-form fit over visible segmented crowns (`planning/arch_form.py`), or a
+labeled educational template. It has no model calls.
+
+The top-level `generation.py` gateway composes the deterministic generator with
+`run_rules` validation, a deterministic correctness review (verdict
+`CONSISTENT`/`ISSUES`/`NOT_APPLICABLE`, never an approval), and an optional
+consent-gated model review reusing `evaluation/advisory.py`. The UI consumes the
+returned staged plan through the same stage-frame contract as everything else; it
+does not re-stage. See [SAFETY.md](SAFETY.md) for the boundary.
+
 ## Handoff Reports
 
 `orthoplan report PLAN.json` emits a deterministic handoff artifact. The report includes the

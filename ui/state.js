@@ -27,6 +27,13 @@ export const state = {
     agentAccessEnabled: false,
     agentEndpoint: "",
   },
+  // Latest /api/generate-plan orchestration result, shown in the Review panel.
+  generation: {
+    busy: false,
+    status: "",
+    acknowledged: false,
+    result: null,
+  },
   simpleGoal: "general-alignment",
   simpleAcknowledged: false,
   demoInitialOffsets: {},
@@ -123,6 +130,19 @@ export async function evaluatePlan(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["engine request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestPlanGeneration(payload) {
+  const response = await fetch("/api/generate-plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["generation request failed"]).join("; "));
   }
   return response.json();
 }

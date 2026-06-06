@@ -1,6 +1,6 @@
-import { askPlanAssistant, el, maxStage, state } from "./state.js";
+import { askPlanAssistant, el, maxStage, requestPlanGeneration, state } from "./state.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
-import { recenterViewer, renderAll, renderAvailability, renderChat, setDimension, zoomViewer } from "./render.js";
+import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
 
@@ -87,6 +87,7 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "chatInput") state.chat.input = target.value;
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
+  if (target.id === "generationAck") state.generation.acknowledged = target.checked;
   if (target.id === "agentEndpoint") state.chat.agentEndpoint = target.value;
   if (target.id === "printEnabled") state.printExport.enabled = target.checked;
   if (target.id === "printFormat") state.printExport.export_format = target.value;
@@ -155,6 +156,9 @@ document.body.addEventListener("click", (event) => {
   }
   if (target.id === "sendChat") {
     sendChatMessage();
+  }
+  if (target.id === "generatePlan") {
+    generatePlan();
   }
   if (target.id === "zoomIn") zoomViewer(0.83);
   if (target.id === "zoomOut") zoomViewer(1.2);
@@ -326,6 +330,67 @@ async function sendChatMessage() {
   } finally {
     state.chat.busy = false;
     renderChat();
+  }
+}
+
+function rowsFromPlan(plan) {
+  const rows = [];
+  for (const stage of plan.stages || []) {
+    for (const d of stage.deltas || []) {
+      rows.push({
+        stage: stage.index,
+        tooth: d.tooth.value,
+        x: d.translate_x_mm,
+        y: d.translate_y_mm,
+        z: d.translate_z_mm,
+        tip: d.rotate_tip_deg,
+        torque: d.rotate_torque_deg,
+        rotation: d.rotate_rotation_deg,
+      });
+    }
+  }
+  return rows;
+}
+
+async function generatePlan() {
+  if (state.generation.busy) return;
+  state.generation.busy = true;
+  state.generation.status = "Reviewing scan, generating, and orchestrating checks...";
+  renderGeneration();
+  try {
+    // The API key is read from the DOM only at request time (never persisted),
+    // matching the chat layer. The external-agent acknowledgement opts into the
+    // optional model review step; without it the pipeline runs fully offline.
+    const apiKey = el("chatApiKey").value.trim();
+    const result = await requestPlanGeneration({
+      plan: planJson(),
+      acknowledge_educational: state.generation.acknowledged,
+      provider: state.chat.provider,
+      model: state.chat.model,
+      api_key: apiKey || undefined,
+      endpoint: state.chat.agentEndpoint.trim() || undefined,
+      share_acknowledged: state.chat.agentAccessEnabled,
+    });
+    if (result.ok === false) {
+      state.generation.result = null;
+      state.generation.status = (result.errors || ["Generation failed."]).join("; ");
+    } else {
+      state.generation.result = result;
+      state.generation.status = `source: ${result.source} · ${result.correctness.verdict}`;
+      // Load generated staging into the editable rows so the existing review,
+      // timeline, and 3D pipeline visualize it - the UI never re-stages itself.
+      if (result.plan?.stages?.length) {
+        state.rows = rowsFromPlan(result.plan);
+        state.activeStep = "review";
+        state.view = "overlay";
+      }
+    }
+  } catch (error) {
+    state.generation.result = null;
+    state.generation.status = error.message;
+  } finally {
+    state.generation.busy = false;
+    renderAll();
   }
 }
 

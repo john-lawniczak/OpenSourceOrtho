@@ -36,6 +36,14 @@ The UI includes two workflows:
   want to try a synthetic 12-month crowding demo. It is designed to explain limits,
   visualize movement, and produce questions for a dental professional, not to create
   a do-it-yourself treatment plan.
+- **Generate Plan**: a one-click pipeline in the Review panel that builds a
+  cap-respecting staged plan from the best available target - your authored
+  movement, segmented crown geometry (a deterministic arch-form fit over the
+  visible scan), or, if only a raw scan is loaded, a clearly-labeled educational
+  template. A deterministic orchestration step reviews the result for internal
+  consistency (verdict `CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
+  optional model review is consent-gated and linted. It is a proposal, not a
+  diagnosis or treatment approval.
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
   plan context, findings, data gaps, and timeline. The local helper works
   without external services. Live connectors for OpenAI, Claude Code, and any
@@ -184,6 +192,36 @@ ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
 The dev server exposes registered meshes only by asset id at `/api/mesh/<mesh_asset_id>`.
 The UI renders real linked STL meshes when available and falls back to schematic
 proxy teeth when no registered mesh can be loaded.
+
+## Contribute Your Data
+
+The engine gets better when more real scans and results are tested against it.
+You can contribute STL intraoral scans and the plans/results you produced from
+them. Every contributed dataset is tracked by a stable, **non-identifying**
+specimen id (`spec-<uuid>`) so data stays organized as the collection scales -
+without ever storing patient identity.
+
+Privacy is enforced in code, not just requested. The manifest model
+(`orthoplan/model/dataset.py`) stores redacted metadata only (never mesh bytes),
+reduces filenames to a basename, forbids unknown fields, and has **no** name,
+date-of-birth, contact, or record-number fields by construction (locked by a
+test). Register a contribution locally with:
+
+```bash
+orthoplan register-contribution upper.stl lower.stl \
+  --arch maxillary --units mm --i-confirm-no-phi \
+  --out datasets/<your-folder>/manifest.json
+```
+
+The `--i-confirm-no-phi` flag is required and asserts you have removed
+patient-identifying information. The first tracked specimen is the bundled
+example at `ui/example-scans/canonical-orthocad-001/manifest.json`. See
+[docs/DATA_CONTRIBUTION.md](docs/DATA_CONTRIBUTION.md) for the full workflow and
+manifest schema, and [docs/SAFETY.md](docs/SAFETY.md) before sharing anything.
+
+New to dental terminology? The [Glossary](docs/GLOSSARY.md) explains key terms
+(IPR, tip, torque, crowding, FDI numbering) and includes a tooth-numbering
+diagram; it is also reachable in the app via the **Key Terms** sidebar button.
 
 ## Contributing
 

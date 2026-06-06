@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" font-family="system-ui,Segoe UI,Roboto,sans-serif" role="img" aria-label="FDI permanent tooth numbering, upper and lower arches">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="380.0" y="28" text-anchor="middle" font-size="18" font-weight="700" fill="#0f3d3a">FDI permanent tooth numbering</text>
+<text x="380.0" y="218" text-anchor="middle" font-size="12" fill="#60707a">Patient perspective · first digit = quadrant, second = position from midline</text>
+<text x="150" y="250" text-anchor="middle" font-size="12" font-weight="600" fill="#0f766e">Q1 · upper right</text>
+<text x="610" y="250" text-anchor="middle" font-size="12" font-weight="600" fill="#0f766e">Q2 · upper left</text>
+<text x="150" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#0f766e">Q4 · lower right</text>
+<text x="610" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#0f766e">Q3 · lower left</text>
+<g><circle cx="100.0" cy="187.6" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="100.0" y="191.6" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">18</text></g>
+<g><circle cx="137.3" cy="158.3" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="137.3" y="162.3" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">17</text></g>
+<g><circle cx="174.7" cy="133.2" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="174.7" y="137.2" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">16</text></g>
+<g><circle cx="212.0" cy="112.3" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="212.0" y="116.3" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">15</text></g>
+<g><circle cx="249.3" cy="95.6" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="249.3" y="99.6" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">14</text></g>
+<g><circle cx="286.7" cy="83.1" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="286.7" y="87.1" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">13</text></g>
+<g><circle cx="324.0" cy="74.7" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="324.0" y="78.7" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">12</text></g>
+<g><circle cx="361.3" cy="70.5" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="361.3" y="74.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">11</text></g>
+<g><circle cx="398.7" cy="70.5" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="398.7" y="74.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">21</text></g>
+<g><circle cx="436.0" cy="74.7" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="436.0" y="78.7" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">22</text></g>
+<g><circle cx="473.3" cy="83.1" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="473.3" y="87.1" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">23</text></g>
+<g><circle cx="510.7" cy="95.6" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="510.7" y="99.6" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">24</text></g>
+<g><circle cx="548.0" cy="112.3" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="548.0" y="116.3" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">25</text></g>
+<g><circle cx="585.3" cy="133.2" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="585.3" y="137.2" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">26</text></g>
+<g><circle cx="622.7" cy="158.3" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="622.7" y="162.3" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">27</text></g>
+<g><circle cx="660.0" cy="187.6" r="15.5" fill="#e8f5f3" stroke="#0f766e" stroke-width="1.5"/><text x="660.0" y="191.6" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">28</text></g>
+<g><circle cx="100.0" cy="252.4" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="100.0" y="256.4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">48</text></g>
+<g><circle cx="137.3" cy="281.7" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="137.3" y="285.7" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">47</text></g>
+<g><circle cx="174.7" cy="306.8" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="174.7" y="310.8" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">46</text></g>
+<g><circle cx="212.0" cy="327.7" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="212.0" y="331.7" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">45</text></g>
+<g><circle cx="249.3" cy="344.4" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="249.3" y="348.4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">44</text></g>
+<g><circle cx="286.7" cy="356.9" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="286.7" y="360.9" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">43</text></g>
+<g><circle cx="324.0" cy="365.3" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="324.0" y="369.3" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">42</text></g>
+<g><circle cx="361.3" cy="369.5" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="361.3" y="373.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">41</text></g>
+<g><circle cx="398.7" cy="369.5" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="398.7" y="373.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">31</text></g>
+<g><circle cx="436.0" cy="365.3" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="436.0" y="369.3" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">32</text></g>
+<g><circle cx="473.3" cy="356.9" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="473.3" y="360.9" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">33</text></g>
+<g><circle cx="510.7" cy="344.4" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="510.7" y="348.4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">34</text></g>
+<g><circle cx="548.0" cy="327.7" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="548.0" y="331.7" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">35</text></g>
+<g><circle cx="585.3" cy="306.8" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="585.3" y="310.8" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">36</text></g>
+<g><circle cx="622.7" cy="281.7" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="622.7" y="285.7" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">37</text></g>
+<g><circle cx="660.0" cy="252.4" r="15.5" fill="#eef2ff" stroke="#2563eb" stroke-width="1.5"/><text x="660.0" y="256.4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#13343b">38</text></g>
+</svg>

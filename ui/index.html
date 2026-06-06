@@ -42,6 +42,8 @@
           <button class="step" data-step="review" type="button">Review</button>
         </nav>
 
+        <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open key terms and tooth numbering">Key Terms &amp; Tooth Map</button>
+
         <section class="data-gap-panel" aria-label="Data gaps">
           <h2>Data Gaps</h2>
           <ul id="dataGapList"></ul>
@@ -339,6 +341,19 @@
               <p class="viewer-caveat">Uploaded STL scans render as the exact scan mesh layer when provided. Stage movement remains schematic unless the plan includes segmented per-tooth render meshes. Translation is the engine's cumulative movement, scaled by the shown ×exaggeration for visibility. PCA crown frames are exposed as approximate metadata only; rotation is not drawn unless a future trusted anatomical frame marks it renderable.</p>
             </section>
             <aside class="review-side">
+              <section class="generate-panel" aria-label="Generate plan">
+                <div class="ai-chat-heading">
+                  <h2>Generate Plan</h2>
+                  <span id="generationStatus">Ready</span>
+                </div>
+                <p class="viewer-caveat">Builds a cap-respecting staged plan from the best available target: your authored movement, segmented crown geometry, or - if only a raw scan is loaded - a clearly-labeled educational template. It does not diagnose or approve treatment.</p>
+                <label class="toggle">
+                  <span>I understand a generated plan is educational/heuristic and is not a diagnosis, treatment plan, or approval.</span>
+                  <input id="generationAck" type="checkbox" />
+                </label>
+                <button class="primary-action" id="generatePlan" type="button">Generate Plan</button>
+                <div id="generationReport" class="status-block"></div>
+              </section>
               <section class="download-actions" aria-label="Downloads">
                 <h2>Downloads</h2>
                 <button class="primary-action" id="downloadPlan" type="button">Download Plan JSON</button>
@@ -404,6 +419,58 @@
               <h2 class="advanced-only">Plan JSON</h2>
               <textarea id="planJson" class="advanced-only" readonly></textarea>
             </aside>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-glossary">
+          <div class="panel-heading">
+            <h2>Key Terms &amp; Tooth Numbering</h2>
+            <p>Plain-language reference for people new to dentistry. Educational only; not a diagnosis.</p>
+          </div>
+          <div class="workflow-card">
+            <h2>FDI Tooth Numbering</h2>
+            <p>Teeth are named by two digits: the first is the <strong>quadrant</strong>, the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar. The engine uses FDI internally.</p>
+          </div>
+          <div class="tooth-map" aria-label="FDI quadrant map">
+            <div class="quadrant">
+              <h3>Q1 &middot; Upper right</h3>
+              <ul><li>11 central incisor</li><li>12 lateral incisor</li><li>13 canine</li><li>14 first premolar</li><li>15 second premolar</li><li>16 first molar</li><li>17 second molar</li><li>18 third molar</li></ul>
+            </div>
+            <div class="quadrant">
+              <h3>Q2 &middot; Upper left</h3>
+              <ul><li>21 central incisor</li><li>22 lateral incisor</li><li>23 canine</li><li>24 first premolar</li><li>25 second premolar</li><li>26 first molar</li><li>27 second molar</li><li>28 third molar</li></ul>
+            </div>
+            <div class="quadrant">
+              <h3>Q4 &middot; Lower right</h3>
+              <ul><li>41 central incisor</li><li>42 lateral incisor</li><li>43 canine</li><li>44 first premolar</li><li>45 second premolar</li><li>46 first molar</li><li>47 second molar</li><li>48 third molar</li></ul>
+            </div>
+            <div class="quadrant">
+              <h3>Q3 &middot; Lower left</h3>
+              <ul><li>31 central incisor</li><li>32 lateral incisor</li><li>33 canine</li><li>34 first premolar</li><li>35 second premolar</li><li>36 first molar</li><li>37 second molar</li><li>38 third molar</li></ul>
+            </div>
+          </div>
+          <div class="glossary">
+            <h2>Key Terms (A&ndash;Z)</h2>
+            <dl>
+              <div><dt>Arch</dt><dd>One jaw's row of teeth: maxillary (upper) or mandibular (lower).</dd></div>
+              <div><dt>Attachment</dt><dd>A small composite bump bonded to a tooth so an aligner can grip and move it. Planning intent only.</dd></div>
+              <div><dt>Crowding</dt><dd>Too little space, so teeth overlap or twist.</dd></div>
+              <div><dt>Data gap</dt><dd>A missing record (roots, CBCT, occlusion&hellip;) that limits what the engine can assess.</dd></div>
+              <div><dt>Extrusion / Intrusion</dt><dd>Moving a tooth out of (extrusion) or into (intrusion) the bone vertically.</dd></div>
+              <div><dt>Finding</dt><dd>A structured, controlled-vocabulary observation from a rule or a linted advisory. Never an approval.</dd></div>
+              <div><dt>Fixed tooth</dt><dd>A tooth intended to stay still; the generator will not move it.</dd></div>
+              <div><dt>IPR</dt><dd>Interproximal reduction: removing a sliver of enamel between two teeth to create space (in mm).</dd></div>
+              <div><dt>Malocclusion</dt><dd>A "bad bite": teeth that do not meet/align as intended. The app does not diagnose this.</dd></div>
+              <div><dt>Movement cap</dt><dd>The maximum per-stage movement treated as a review threshold (linear, vertical, angular, rotation).</dd></div>
+              <div><dt>Occlusion</dt><dd>How upper and lower teeth meet when biting.</dd></div>
+              <div><dt>Rotation</dt><dd>Turning a tooth around its own long axis.</dd></div>
+              <div><dt>Segmentation</dt><dd>Splitting a whole-arch scan into individual per-tooth meshes. Needed to move teeth individually.</dd></div>
+              <div><dt>Stage</dt><dd>One step of an aligner sequence, holding per-tooth movement values.</dd></div>
+              <div><dt>Tip / Torque</dt><dd>Tip = tilting along the arch; torque = tilting the crown in/out.</dd></div>
+              <div><dt>Units</dt><dd>The real-world scale of a scan (mm, cm&hellip;); confirm before millimeter checks run.</dd></div>
+              <div><dt>Wear interval</dt><dd>How many days each aligner stage is worn; sets the projected (not promised) duration.</dd></div>
+            </dl>
+            <p class="viewer-caveat">Full glossary, the FDI&harr;Universal&harr;Palmer table, and the tooth-map diagram live in <code>docs/GLOSSARY.md</code>.</p>
           </div>
         </section>
       </section>
