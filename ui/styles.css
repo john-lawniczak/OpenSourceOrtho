@@ -157,7 +157,7 @@ p {
   color: var(--accent-ink);
 }
 
-.gold-action {
+.sample-action {
   min-width: 220px;
 }
 
@@ -490,16 +490,20 @@ textarea {
   gap: 8px;
 }
 
-.gold-sample {
+.sample-panel {
   background: #fff8e1;
   border-color: #d6a928;
   box-shadow: inset 4px 0 0 #d6a928;
 }
 
-body[data-theme="dark"] .gold-sample {
+body[data-theme="dark"] .sample-panel {
   background: #2a2412;
   border-color: #fbbf24;
   box-shadow: inset 4px 0 0 #fbbf24;
+}
+
+body:not([data-step="sample"]) .sample-only {
+  display: none;
 }
 
 .sample-badge {
@@ -928,6 +932,20 @@ td input {
 
 .exaggeration input {
   width: 56px;
+}
+
+.arch-filter {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 12px;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.arch-filter select {
+  min-height: 34px;
+  width: 136px;
 }
 
 .ipr-map {
