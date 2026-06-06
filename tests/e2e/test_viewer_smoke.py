@@ -69,7 +69,7 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
     assert not errors, f"uncaught page errors: {errors}"
 
 
-def test_gold_star_sample_loads_review_and_stage_slider(server_url: str) -> None:
+def test_builtin_sample_loads_review_and_stage_slider(server_url: str) -> None:
     with sync_playwright() as pw:
         try:
             browser = pw.chromium.launch(headless=True)
@@ -81,12 +81,11 @@ def test_gold_star_sample_loads_review_and_stage_slider(server_url: str) -> None
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
-            page.click('#panel-upload button[data-canonical-months="12"]')
             page.wait_for_selector("#panel-review.is-active", timeout=15000)
             page.wait_for_selector("#findingList li", timeout=15000)
 
             chip = page.locator("#sampleStatusChip").inner_text()
-            assert "Gold Star Sample" in chip
+            assert "Sample" in chip
             assert "real upper/lower OrthoCAD STL scan layer" in chip
             assert "simulated 12-month tooth movement" in chip
 

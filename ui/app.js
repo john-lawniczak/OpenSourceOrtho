@@ -17,7 +17,7 @@ el("themeToggle").addEventListener("click", () => {
 document.querySelectorAll(".mode-choice").forEach((button) => {
   button.addEventListener("click", () => {
     state.userMode = button.dataset.userMode;
-    state.activeStep = "upload";
+    state.activeStep = state.userMode === "simple" ? "sample" : "upload";
     document.querySelectorAll(".mode-choice").forEach((item) => item.classList.remove("is-active"));
     button.classList.add("is-active");
     renderAll();
@@ -26,7 +26,7 @@ document.querySelectorAll(".mode-choice").forEach((button) => {
 
 document.querySelectorAll(".step").forEach((button) => {
   button.addEventListener("click", () => {
-    state.activeStep = button.dataset.step;
+    goToStep(button.dataset.step);
     renderAll();
   });
 });
@@ -106,6 +106,7 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
   if (target.id === "generationAck") state.generation.acknowledged = target.checked;
   if (target.id === "generationNotes") state.generation.notes = target.value;
+  if (target.id === "scanArchFilter") state.scanArchFilter = target.value;
   if (target.id === "glossarySearch") filterGlossary(target.value);
   if (target.id === "versionNote") state.versions.note = target.value;
   if (target.id === "agentEndpoint") state.chat.agentEndpoint = target.value;
@@ -150,11 +151,11 @@ document.body.addEventListener("click", (event) => {
     loadCanonicalCase(Number(canonicalTarget.dataset.canonicalMonths));
   }
   if (stepTarget) {
-    state.activeStep = stepTarget.dataset.stepTarget;
+    goToStep(stepTarget.dataset.stepTarget);
     renderAll();
   }
   if (journeyTarget) {
-    state.activeStep = journeyTarget.dataset.journeyStep;
+    goToStep(journeyTarget.dataset.journeyStep);
     renderAll();
   }
   if (removeUploadTarget) {
@@ -175,11 +176,11 @@ document.body.addEventListener("click", (event) => {
     renderAll();
   }
   if (button?.id === "uploadNext") {
-    state.activeStep = "availability";
+    goToStep("availability");
     renderAll();
   }
   if (button?.id === "simpleNext") {
-    state.activeStep = "review";
+    goToStep("review");
     state.view = "overlay";
     renderAll();
   }
@@ -216,12 +217,21 @@ function uploadLabel(files, emptyLabel) {
   return `${files.length} STL files selected`;
 }
 
+function goToStep(step) {
+  if (step === "sample") {
+    loadCanonicalCase(12, { activeStep: "sample" });
+    return;
+  }
+  state.activeStep = step;
+}
+
 async function setUploadedFiles(files) {
   const stlFiles = files.filter((file) => file?.name?.toLowerCase().endsWith(".stl"));
   state.files = stlFiles;
   state.file = stlFiles[0] || null;
   state.scanSources = [];
   state.useDemoMeshes = false;
+  state.scanArchFilter = "both";
   state.sampleStatus = stlFiles.length
     ? "Uploaded STL scan layer · movement preview is schematic until segmented per-tooth meshes are available."
     : "";
@@ -285,22 +295,23 @@ function loadSyntheticDemo() {
   renderAll();
 }
 
-function loadCanonicalCase(months) {
+function loadCanonicalCase(months, options) {
   const stageCount = months === 6 ? 6 : 12;
   state.simpleAcknowledged = true;
   state.simpleGoal = "crowding";
   state.demoInitialOffsets = demoInitialOffsets;
   state.useDemoMeshes = true;
   state.sampleStatus =
-    `Gold Star Sample · real upper/lower OrthoCAD STL scan layer · simulated ${months}-month tooth movement.`;
+    `Sample · real upper/lower OrthoCAD STL scan layer · simulated ${months}-month tooth movement.`;
   state.files = [];
   state.file = null;
   state.uploadStorageStatus = "";
+  state.scanArchFilter = "both";
   clearUploadedFiles().catch(() => {});
   state.scanSources = canonicalScanSources;
   state.rows = syntheticCrowdingRows(stageCount);
   state.view = "overlay";
-  state.activeStep = "review";
+  state.activeStep = options?.activeStep || "sample";
   state.availability.intraoral_scan = true;
   state.availability.occlusion_scan = true;
   state.availability.segmented_teeth = false;
@@ -320,6 +331,7 @@ function loadCanonicalCase(months) {
 
 async function restoreStoredUploads() {
   try {
+    if (state.activeStep === "sample" && state.scanSources.length) return;
     const files = await restoreUploadedFiles();
     if (!files.length) return;
     state.files = files;
@@ -515,6 +527,7 @@ function restorePlan(snapshot) {
   renderAll();
 }
 
+loadCanonicalCase(12, { activeStep: "sample" });
 renderAvailability();
 renderAll();
 restoreStoredUploads();

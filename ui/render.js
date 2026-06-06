@@ -63,9 +63,10 @@ function updateViewer(result) {
   const v = ensureViewer();
   if (!v) return;
   v.resize();
-  const scanSources = state.files.length
-    ? state.files.map((file) => ({ name: file.name, file }))
+  const allScanSources = state.files.length
+    ? state.files.map((file) => ({ name: file.name, file, arch: inferSourceArch(file.name) }))
     : state.scanSources;
+  const scanSources = filterScanSources(allScanSources);
   if (scanSources.length) {
     v.loadScanSources(scanSources).then(({ loaded, count }) => {
       const sourceType = state.files.length ? "uploaded" : "canonical example";
@@ -88,15 +89,17 @@ function updateViewer(result) {
   const renderMeshes = result.render_meshes?.length
     ? result.render_meshes
     : (state.useDemoMeshes ? demoRenderMeshes() : []);
-  if (renderMeshes.length) {
-    v.loadMeshes(renderMeshes).then((loaded) => {
+  const filteredRenderMeshes = renderMeshes.filter((item) => toothMatchesArch(item.tooth));
+  if (filteredRenderMeshes.length) {
+    v.loadMeshes(filteredRenderMeshes).then((loaded) => {
       if (loaded && state.lastEval === result) updateViewer(result);
     });
   }
+  const visibleResult = filterResultForArch(result);
   v.update({
-    frames: result.frames,
-    toothFrames: result.tooth_frames,
-    attachments: result.clinical_controls?.attachments || [],
+    frames: visibleResult.frames,
+    toothFrames: visibleResult.tooth_frames,
+    attachments: visibleResult.clinical_controls?.attachments || [],
     initialOffsets: state.demoInitialOffsets,
     stageIndex: Number(el("stageSlider").value || 0),
     view: state.view,
@@ -107,6 +110,7 @@ function updateViewer(result) {
 export function renderAll() {
   document.body.dataset.mode = state.userMode;
   document.body.dataset.theme = state.theme;
+  document.body.dataset.step = state.activeStep;
   document.body.dataset.generationDetail = state.detailMode.generation;
   document.body.dataset.aiDetail = state.detailMode.ai;
   el("themeToggle").textContent = state.theme === "dark" ? "Light Mode" : "Dark Mode";
@@ -146,6 +150,7 @@ export function renderAll() {
     iprContacts: state.clinicalControls.iprContacts,
   };
   renderSteps();
+  renderReviewHeading();
   renderMetadata();
   renderUploadFileList();
   renderRows();
@@ -162,6 +167,64 @@ export function renderAll() {
   scheduleEvaluate();
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
+}
+
+function renderReviewHeading() {
+  el("reviewHeading").textContent = state.activeStep === "sample" ? "Sample Preview" : "Progress Preview";
+}
+
+function filterScanSources(sources) {
+  if (state.scanArchFilter === "both") return sources;
+  return sources.filter((source) => (source.arch || inferSourceArch(source.name)) === state.scanArchFilter);
+}
+
+function inferSourceArch(name = "") {
+  const text = name.toLowerCase();
+  if (
+    text.includes("upper") ||
+    text.includes("top") ||
+    text.includes("maxilla") ||
+    text.includes("maxillary") ||
+    /(^|[-_\s])u(\.stl|[-_\s])/.test(text)
+  ) {
+    return "maxillary";
+  }
+  if (
+    text.includes("lower") ||
+    text.includes("bottom") ||
+    text.includes("mandible") ||
+    text.includes("mandibular") ||
+    /(^|[-_\s])l(\.stl|[-_\s])/.test(text)
+  ) {
+    return "mandibular";
+  }
+  return null;
+}
+
+function toothMatchesArch(tooth) {
+  if (state.scanArchFilter === "both") return true;
+  const q = String(tooth || "")[0];
+  let arch = null;
+  if (q === "1" || q === "2") arch = "maxillary";
+  if (q === "3" || q === "4") arch = "mandibular";
+  if (!arch) return true;
+  return arch === state.scanArchFilter;
+}
+
+function filterResultForArch(result) {
+  if (state.scanArchFilter === "both") return result;
+  return {
+    ...result,
+    frames: (result.frames || []).map((frame) => ({
+      ...frame,
+      poses: (frame.poses || []).filter((pose) => toothMatchesArch(pose.tooth)),
+    })),
+    clinical_controls: {
+      ...(result.clinical_controls || {}),
+      attachments: (result.clinical_controls?.attachments || [])
+        .filter((item) => toothMatchesArch(item.tooth?.value)),
+    },
+  };
 }
 
 export function renderChat() {
@@ -313,11 +376,12 @@ function renderSteps() {
     button.classList.toggle("is-active", button.dataset.journeyStep === state.activeStep);
   });
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("is-active"));
-  if (state.userMode === "simple" && (state.activeStep === "simple" || state.activeStep === "upload")) {
+  if (state.userMode === "simple" && state.activeStep === "upload") {
     el("panel-simple").classList.add("is-active");
     return;
   }
-  el(`panel-${state.activeStep}`).classList.add("is-active");
+  const panelId = state.activeStep === "sample" ? "panel-review" : `panel-${state.activeStep}`;
+  el(panelId).classList.add("is-active");
 }
 
 function renderUploadFileList() {
@@ -483,6 +547,7 @@ function renderEngineOffline() {
 
 function renderScanStatus() {
   el("scanRenderStatus").textContent = state.scanRenderStatus;
+  el("scanArchFilter").value = state.scanArchFilter;
 }
 
 function renderSampleStatus() {
@@ -555,7 +620,8 @@ function drawCanvas() {
   const accentColor = styles.getPropertyValue("--accent").trim() || "#0f766e";
   const blueColor = styles.getPropertyValue("--blue").trim() || "#2563eb";
   const stageIndex = Number(el("stageSlider").value || 0);
-  const totals = framePoseTotals(state.lastEval?.frames?.[stageIndex]);
+  const visibleResult = state.lastEval ? filterResultForArch(state.lastEval) : null;
+  const totals = framePoseTotals(visibleResult?.frames?.[stageIndex]);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = canvasColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -566,6 +632,7 @@ function drawCanvas() {
   ctx.stroke();
 
   for (const [tooth, [x, y]] of Object.entries(toothPositions)) {
+    if (!toothMatchesArch(tooth)) continue;
     const movement = totals.get(tooth) || { x: 0, y: 0, z: 0 };
     const initial = state.demoInitialOffsets[tooth] || { x: 0, y: 0, z: 0 };
     const ix = initial.x * 80;
