@@ -60,6 +60,16 @@ class PipelineStep(BaseModel):
     detail: str = ""
 
 
+class Check(BaseModel):
+    """One named correctness check. ``gate`` checks fail the verdict; ``warning``
+    and ``info`` checks are surfaced but do not flip CONSISTENT to ISSUES."""
+
+    name: str
+    passed: bool
+    severity: Literal["gate", "warning", "info"] = "gate"
+    detail: str = ""
+
+
 def _format_errors(error: ValidationError) -> list[str]:
     messages: list[str] = []
     for item in error.errors():
@@ -85,35 +95,93 @@ def _review_scan(plan: TreatmentPlan) -> PipelineStep:
     return PipelineStep(name="review-scan", detail=detail)
 
 
-def _correctness_review(plan: TreatmentPlan, findings: list) -> tuple[CorrectnessVerdict, PipelineStep, dict]:
+_AXES = (
+    "translate_x_mm", "translate_y_mm", "translate_z_mm",
+    "rotate_tip_deg", "rotate_torque_deg", "rotate_rotation_deg",
+)
+
+
+def _cumulative(plan: TreatmentPlan) -> dict[str, dict[str, float]]:
+    totals: dict[str, dict[str, float]] = {}
+    for stage in plan.stages:
+        for delta in stage.deltas:
+            bucket = totals.setdefault(delta.tooth.value, {a: 0.0 for a in _AXES})
+            for axis in _AXES:
+                bucket[axis] += getattr(delta, axis)
+    return totals
+
+
+def _targets_reached_check(plan: TreatmentPlan, generated) -> Check:
+    """Every non-blocked target tooth's cumulative movement must equal its target."""
+    blocked = set(generated.blocked_teeth)
+    want = _cumulative_from_deltas(generated.requested_targets)
+    got = _cumulative(plan)
+    mismatches: list[str] = []
+    for tooth, target in want.items():
+        if tooth in blocked:
+            continue
+        actual = got.get(tooth, {a: 0.0 for a in _AXES})
+        if any(abs(target[a] - actual[a]) > 1e-6 for a in _AXES):
+            mismatches.append(tooth)
+    passed = not mismatches
+    detail = ("cumulative movement reaches every requested target"
+              if passed else f"targets not reached for: {', '.join(sorted(mismatches))}")
+    return Check(name="targets-reached", passed=passed, detail=detail)
+
+
+def _cumulative_from_deltas(deltas) -> dict[str, dict[str, float]]:
+    totals: dict[str, dict[str, float]] = {}
+    for delta in deltas:
+        bucket = totals.setdefault(delta.tooth.value, {a: 0.0 for a in _AXES})
+        for axis in _AXES:
+            bucket[axis] += getattr(delta, axis)
+    return totals
+
+
+def _correctness_review(
+    plan: TreatmentPlan, findings: list, generated
+) -> tuple[CorrectnessVerdict, PipelineStep, list[Check], dict]:
     cap_violations = [f.title for f in findings if "exceeds configured" in f.title]
     collision_count = sum(1 for f in findings if "bounds overlap" in f.title)
     moved = {delta.tooth.value for stage in plan.stages for delta in stage.deltas}
     fixed_moved = sorted(moved & {control.tooth.value for control in plan.fixed_teeth})
-
-    problems: list[str] = []
-    if cap_violations:
-        problems.append(f"{len(cap_violations)} cap violation(s)")
-    if fixed_moved:
-        problems.append(f"fixed teeth moved: {', '.join(fixed_moved)}")
+    excluded_moved = sorted(moved & {e.tooth.value for e in plan.movement_exclusions})
+    contiguous = [s.index for s in plan.stages] == list(range(len(plan.stages)))
 
     metrics = {
         "cap_violations": len(cap_violations),
         "fixed_teeth_moved": fixed_moved,
+        "excluded_teeth_moved": excluded_moved,
         "collision_count": collision_count,
     }
     if not plan.stages:
-        return "NOT_APPLICABLE", PipelineStep(
-            name="correctness-review", status="skipped", detail="No staging produced."
-        ), metrics
-    if problems:
-        return "ISSUES", PipelineStep(
-            name="correctness-review", status="warning", detail="; ".join(problems)
-        ), metrics
-    note = "Staging respects configured caps and fixed-tooth controls."
-    if collision_count:
-        note += f" {collision_count} crown-bounds overlap(s) reported for review."
-    return "CONSISTENT", PipelineStep(name="correctness-review", detail=note), metrics
+        step = PipelineStep(name="correctness-review", status="skipped", detail="No staging produced.")
+        return "NOT_APPLICABLE", step, [], metrics
+
+    checks = [
+        Check(name="caps-respected", passed=not cap_violations,
+              detail=f"{len(cap_violations)} per-stage cap violation(s)"),
+        Check(name="fixed-teeth-unmoved", passed=not fixed_moved,
+              detail=f"fixed teeth moved: {', '.join(fixed_moved) or 'none'}"),
+        Check(name="exclusions-respected", passed=not excluded_moved,
+              detail=f"excluded teeth moved: {', '.join(excluded_moved) or 'none'}"),
+        _targets_reached_check(plan, generated),
+        Check(name="stages-contiguous", passed=contiguous,
+              detail="stage indexes are contiguous from 0" if contiguous else "non-contiguous stages"),
+        Check(name="scale-confirmed", passed=plan.scale_confirmed, severity="warning",
+              detail="scan units confirmed" if plan.scale_confirmed else "units unverified; caps not in mm"),
+        Check(name="collisions-checked", passed=True, severity="info",
+              detail=f"{collision_count} crown-bounds overlap(s) reported"
+                     + ("" if plan.tooth_meshes else "; no segmented teeth, overlap check is vacuous")),
+    ]
+    verdict: CorrectnessVerdict = "ISSUES" if any(
+        c.severity == "gate" and not c.passed for c in checks
+    ) else "CONSISTENT"
+    failed = [c.name for c in checks if c.severity == "gate" and not c.passed]
+    detail = "all gate checks passed" if verdict == "CONSISTENT" else f"failed: {', '.join(failed)}"
+    step = PipelineStep(name="correctness-review",
+                        status="ok" if verdict == "CONSISTENT" else "warning", detail=detail)
+    return verdict, step, checks, metrics
 
 
 def _model_review(
@@ -180,7 +248,9 @@ def generate_plan_payload(
         PipelineStep(name="deterministic-validation", detail=f"{len(findings)} deterministic finding(s).")
     )
 
-    verdict, correctness_step, metrics = _correctness_review(generated.plan, findings)
+    verdict, correctness_step, checks, metrics = _correctness_review(
+        generated.plan, findings, generated
+    )
     steps.append(correctness_step)
 
     advisory_findings, model_step = _model_review(request, generated.plan, provider)
@@ -193,6 +263,7 @@ def generate_plan_payload(
         "requires_acknowledgement": generated.requires_acknowledgement,
         "warnings": generated.warnings,
         "steps": [step.model_dump() for step in steps],
+        "checks": [check.model_dump() for check in checks],
         "correctness": {"verdict": verdict, **metrics},
         "stage_count": len(generated.plan.stages),
         "timeline": timeline.model_dump(),

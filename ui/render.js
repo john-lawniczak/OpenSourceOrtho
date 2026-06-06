@@ -121,6 +121,7 @@ export function renderAll() {
   state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
   state.chat.agentEndpoint = el("agentEndpoint").value;
   state.generation.acknowledged = el("generationAck").checked;
+  state.versions.note = el("versionNote").value;
   state.caps = {
     linear_mm: numberValue("capLinear"),
     angular_deg: numberValue("capAngular"),
@@ -148,6 +149,7 @@ export function renderAll() {
   renderIprContactMap();
   renderChat();
   renderGeneration();
+  renderVersions();
   renderScanStatus();
   renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
@@ -196,6 +198,9 @@ function generationReportMarkup(result) {
   const steps = (result.steps || [])
     .map((s) => `<li class="${escapeHtml(s.status)}"><strong>${escapeHtml(s.name)}</strong>: ${escapeHtml(s.detail)}</li>`)
     .join("");
+  const checks = (result.checks || [])
+    .map((c) => `<li class="${c.passed ? "ok" : (c.severity === "gate" ? "warning" : "skipped")}">${c.passed ? "✓" : "✗"} <strong>${escapeHtml(c.name)}</strong>: ${escapeHtml(c.detail)}</li>`)
+    .join("");
   const det = (result.deterministic_findings || []).length;
   const adv = (result.advisory_findings || []).length;
   const blocked = result.correctness?.fixed_teeth_moved?.length
@@ -207,9 +212,29 @@ function generationReportMarkup(result) {
     <p>${result.stage_count} stage(s) · ${det} deterministic finding(s) · ${adv} linted advisory finding(s) · ${Number(result.correctness?.collision_count || 0)} crown overlap(s)</p>
     ${blocked}
     ${warnings ? `<ul>${warnings}</ul>` : ""}
+    ${checks ? `<details open><summary>Correctness checks</summary><ul class="gen-steps">${checks}</ul></details>` : ""}
     <details><summary>Orchestration steps</summary><ul class="gen-steps">${steps}</ul></details>
     <p class="viewer-caveat">${escapeHtml(result.caveat || "")}</p>
   `;
+}
+
+export function renderVersions() {
+  const v = state.versions;
+  el("versionNote").value = v.note;
+  el("saveVersion").disabled = v.busy;
+  el("versionStatus").textContent = v.busy ? "Saving..." : v.status;
+  el("versionList").innerHTML = v.list.length
+    ? v.list.map((item, index) => `
+        <li>
+          <div>
+            <strong>${escapeHtml(item.version_id)}</strong>
+            <small>${escapeHtml((item.created_at || "").slice(0, 19).replace("T", " "))}</small>
+            ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+            <code>${escapeHtml((item.plan_hash || "").slice(0, 12))}</code>
+          </div>
+          <button data-restore-version="${index}" type="button">Restore</button>
+        </li>`).join("")
+    : "<li class=\"chat-empty\">No saved versions yet.</li>";
 }
 
 let evaluateTimer = null;

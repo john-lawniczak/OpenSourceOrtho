@@ -982,3 +982,45 @@ td input {
 .generate-panel .gen-steps li.skipped {
   color: var(--muted);
 }
+
+.generate-panel .gen-steps li.ok {
+  color: var(--accent);
+}
+
+.version-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.version-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 8px 10px;
+}
+
+.version-list li small {
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.version-list li p {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+.version-list li code {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.version-list li button {
+  flex: 0 0 auto;
+}

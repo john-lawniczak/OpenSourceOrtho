@@ -90,6 +90,14 @@ ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
 The UI loads registered meshes from `/api/mesh/<mesh_asset_id>` and falls back
 to schematic proxy teeth when a linked mesh is not available locally.
 
+### Saving plan versions
+
+The Review panel's **Versions** section saves named snapshots of the current
+plan (the case is keyed by Plan ID) and can restore any version back into the
+editor. Versions persist locally via the dev server in `.orthoplan-cases.json`
+(override the path with `ORTHOPLAN_CASE_STORE`). The same history is available
+from the CLI with `case-save`, `case-list`, and `case-versions`.
+
 ## 4. Plan AI And MCP Connectors
 
 The Review panel includes **Plan AI**. The default connector is a local
@@ -141,6 +149,9 @@ scale, cleaning procedures, and applicable regulatory compliance.
 orthoplan new-plan --id demo --out demo.json
 orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
 orthoplan register-contribution upper.stl lower.stl --arch maxillary --units mm --i-confirm-no-phi --out datasets/mine/manifest.json
+orthoplan case-save examples/basic_plan.json --note "first pass"
+orthoplan case-list
+orthoplan case-versions example-basic
 orthoplan plan-summary examples/basic_plan.json
 orthoplan acquisition examples/basic_plan.json
 orthoplan measurement-lab

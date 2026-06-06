@@ -34,6 +34,13 @@ export const state = {
     acknowledged: false,
     result: null,
   },
+  // Saved plan versions (case store) for the current Plan ID.
+  versions: {
+    busy: false,
+    status: "",
+    note: "",
+    list: [],
+  },
   simpleGoal: "general-alignment",
   simpleAcknowledged: false,
   demoInitialOffsets: {},
@@ -144,6 +151,25 @@ export async function requestPlanGeneration(payload) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["generation request failed"]).join("; "));
   }
+  return response.json();
+}
+
+export async function savePlanVersion(payload) {
+  const response = await fetch("/api/plan/version", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["save failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function listCaseVersions(caseId) {
+  const response = await fetch(`/api/cases/${encodeURIComponent(caseId)}`);
+  if (!response.ok) return { ok: false, versions: [] };
   return response.json();
 }
 

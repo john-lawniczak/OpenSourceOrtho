@@ -139,11 +139,30 @@ derived arch-form fit over visible segmented crowns (`planning/arch_form.py`), o
 labeled educational template. It has no model calls.
 
 The top-level `generation.py` gateway composes the deterministic generator with
-`run_rules` validation, a deterministic correctness review (verdict
-`CONSISTENT`/`ISSUES`/`NOT_APPLICABLE`, never an approval), and an optional
+`run_rules` validation, a deterministic correctness review, and an optional
 consent-gated model review reusing `evaluation/advisory.py`. The UI consumes the
 returned staged plan through the same stage-frame contract as everything else; it
 does not re-stage. See [SAFETY.md](SAFETY.md) for the boundary.
+
+The correctness review emits explicit named **checks**, each with a pass/fail and
+a severity. Gate checks (`caps-respected`, `fixed-teeth-unmoved`,
+`exclusions-respected`, `targets-reached`, `stages-contiguous`) decide the verdict
+(`CONSISTENT`/`ISSUES`/`NOT_APPLICABLE`, never an approval). `scale-confirmed` is a
+warning check and `collisions-checked` is informational (it reports when the
+overlap check is vacuous because no segmented teeth exist). `targets-reached`
+regression-checks that the staged plan's cumulative movement actually reaches the
+requested target, so a staging bug cannot pass silently.
+
+## Plan Versions
+
+`cases.py` stores a `CaseStore` of `CaseRecord`s, each holding ordered
+`PlanVersion` snapshots (full plan JSON + content hash + engine version + note).
+A "case" groups versions of one plan; the default case id is the plan id.
+`case_api.py` wraps this in dict-in/dict-out functions used by both the server
+(`POST /api/plan/version`, `GET /api/cases`, `GET /api/cases/<case_id>`) and the
+CLI (`case-save`, `case-list`, `case-versions`). The store path defaults to
+`.orthoplan-cases.json` and is overridable via `ORTHOPLAN_CASE_STORE`. The UI's
+Versions panel saves snapshots and restores any version back into the editor.
 
 ## Handoff Reports
 

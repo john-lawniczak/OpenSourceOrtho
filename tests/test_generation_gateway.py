@@ -91,6 +91,38 @@ def test_response_makes_no_approval_claim() -> None:
     assert "does not diagnose" in caveat
 
 
+def test_pipeline_emits_named_gate_checks() -> None:
+    result = generate_plan_payload(_authored_payload())
+    checks = {c["name"]: c for c in result["checks"]}
+    for name in ("caps-respected", "fixed-teeth-unmoved", "exclusions-respected",
+                 "targets-reached", "stages-contiguous", "scale-confirmed", "collisions-checked"):
+        assert name in checks, name
+    # Every gate check passes for a clean authored plan -> CONSISTENT.
+    assert all(c["passed"] for c in result["checks"] if c["severity"] == "gate")
+    assert result["correctness"]["verdict"] == "CONSISTENT"
+
+
+def test_unconfirmed_units_warns_without_failing_verdict() -> None:
+    plan = TreatmentPlan(
+        id="p",
+        scans=[UploadedScan(asset=MeshAsset(id="s", format="stl", units=MeshUnits.UNVERIFIED,
+                                            vertex_count=0, face_count=0))],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth={"system": "FDI", "value": "21"}, translate_x_mm=1.0)])],
+    )
+    result = generate_plan_payload({"plan": plan.model_dump(mode="json")})
+    scale = next(c for c in result["checks"] if c["name"] == "scale-confirmed")
+    assert scale["passed"] is False and scale["severity"] == "warning"
+    # A warning check does not flip the verdict.
+    assert result["correctness"]["verdict"] == "CONSISTENT"
+
+
+def test_collision_check_is_marked_vacuous_without_segmentation() -> None:
+    result = generate_plan_payload(_authored_payload())
+    collisions = next(c for c in result["checks"] if c["name"] == "collisions-checked")
+    assert collisions["severity"] == "info"
+    assert "vacuous" in collisions["detail"]
+
+
 def test_empty_plan_generates_nothing() -> None:
     result = generate_plan_payload({"plan": TreatmentPlan(id="p").model_dump(mode="json")})
     assert result["source"] == "none"

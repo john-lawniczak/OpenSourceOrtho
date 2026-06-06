@@ -6,6 +6,12 @@ import sys
 
 from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.cli_cases import (
+    add_case_parsers,
+    cmd_case_list,
+    cmd_case_save,
+    cmd_case_versions,
+)
 from orthoplan.cli_contribution import add_contribution_parser, cmd_register_contribution
 from orthoplan.cli_mesh import add_mesh_parsers, cmd_inspect_stl, cmd_register_mesh
 from orthoplan.cli_packages import (
@@ -64,6 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
     acquisition.add_argument("path")
     acquisition.add_argument("--json", action="store_true", help="emit acquisition advice as JSON")
 
+    add_case_parsers(sub)
     add_print_package_parser(sub)
     add_measurement_lab_parser(sub)
     return parser
@@ -225,6 +232,9 @@ _COMMANDS = {
     "advise": _cmd_advise,
     "report": _cmd_report,
     "acquisition": _cmd_acquisition,
+    "case-save": cmd_case_save,
+    "case-list": cmd_case_list,
+    "case-versions": cmd_case_versions,
     "print-package": cmd_print_package,
     "measurement-lab": cmd_measurement_lab,
 }
