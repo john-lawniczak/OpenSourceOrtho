@@ -117,6 +117,28 @@ def test_local_chat_endpoint_returns_session(server: int) -> None:
     assert payload["session"]["messages"][1]["role"] == "assistant"
 
 
+def test_generate_plan_endpoint_returns_staging(server: int) -> None:
+    plan = {
+        "id": "gen",
+        "scans": [{"asset": {"id": "s1", "format": "stl", "units": "mm",
+                             "vertex_count": 0, "face_count": 0}}],
+        "stages": [
+            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "21"}, "translate_x_mm": 1.0}]}
+        ],
+    }
+    status, payload = _post(
+        server,
+        json.dumps({"plan": plan}).encode(),
+        {"Content-Type": "application/json"},
+        path="/api/generate-plan",
+    )
+    assert status == 200
+    assert payload["ok"] is True
+    assert payload["source"] == "authored"
+    assert payload["correctness"]["verdict"] == "CONSISTENT"
+    assert payload["stage_count"] >= 4
+
+
 _CHAT_PLAN = {
     "id": "chat",
     "stages": [

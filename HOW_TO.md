@@ -4,6 +4,11 @@ OpenSource Ortho is a research/developer toolkit for staged tooth-movement plann
 measurement checks, visualization, acquisition advice, and handoff reports. It is not a
 medical device and does not approve treatment.
 
+New to dental terms (IPR, tip, torque, FDI numbering)? See the
+[Glossary and tooth-numbering diagram](docs/GLOSSARY.md), also reachable in the
+app from the **Key Terms** button in the sidebar. To contribute your own STL
+scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md).
+
 ## 1. Start The App
 
 ```bash
@@ -35,9 +40,12 @@ The UI has two modes:
 4. Enter staged movement values using FDI tooth IDs.
 5. Review findings, data gaps, acquisition advice, timeline, progress preview, and print
    export readiness.
-6. Ask educational questions in **Plan AI** from the Review panel if you want a
+6. Optionally click **Generate Plan** in the Review panel to auto-build a
+   cap-respecting staged plan (see *Generating a plan* below) and load it into
+   the timeline.
+7. Ask educational questions in **Plan AI** from the Review panel if you want a
    plain-language explanation of the current findings and limits.
-7. Generate a handoff report:
+8. Generate a handoff report:
 
 ```bash
 orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out report.json
@@ -47,6 +55,25 @@ To try the synthetic educational demo, open the app, choose **Guided**, then cli
 **Try 12-Month Demo**. The preview uses fabricated crowding offsets and staged
 movement over one year. It is not patient-specific and does not say whether any
 treatment is needed or possible.
+
+### Generating a plan
+
+The Review panel has a **Generate Plan** button. It builds a cap-respecting staged
+plan from the best target available, in this order:
+
+- **Authored** - if you already entered movement, it is re-split into cap-sized stages.
+- **Geometry-derived** - if segmented per-tooth crowns are linked, a straightening
+  target is fit from their visible positions (a geometric arch-form heuristic in
+  scan-local axes; not a clinical goal and not root/bone aware).
+- **Educational template** - if only a raw scan is loaded, a generic crowding
+  template is used. This is **not** derived from your teeth; tick the
+  acknowledgement to confirm you understand, then generate.
+
+A deterministic orchestration step then validates the result and reports a
+correctness verdict (`CONSISTENT` / `ISSUES`) - meaning the staging is internally
+consistent with your caps and fixed-tooth controls, **not** that it is safe or
+approved. An optional model review runs only if you select an external connector
+and tick the external-agent acknowledgement; otherwise generation is fully offline.
 
 ## 3. Render Local Per-Tooth Meshes
 
@@ -113,6 +140,7 @@ scale, cleaning procedures, and applicable regulatory compliance.
 ```bash
 orthoplan new-plan --id demo --out demo.json
 orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
+orthoplan register-contribution upper.stl lower.stl --arch maxillary --units mm --i-confirm-no-phi --out datasets/mine/manifest.json
 orthoplan plan-summary examples/basic_plan.json
 orthoplan acquisition examples/basic_plan.json
 orthoplan measurement-lab
