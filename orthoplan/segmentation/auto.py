@@ -47,10 +47,10 @@ class SegmentationModel(Protocol):
 
 
 class HeuristicArchSegmenter:
-    """Dependency-free baseline segmenter (arch-sector heuristic)."""
+    """Dependency-free baseline segmenter (valley-based arch heuristic)."""
 
-    name = "heuristic-arch-sector"
-    version = "0.1.0"
+    name = "heuristic-arch-valley"
+    version = "0.2.0"
 
     def segment(self, vertices: list[Vec3], *, arch: ArchName) -> list[ToothSegment]:
         return auto_segment_arch(vertices, arch=arch)
