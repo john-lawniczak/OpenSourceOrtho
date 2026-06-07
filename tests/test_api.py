@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from orthoplan.api import evaluate_plan, evaluate_plan_payload
+import base64
+
+from orthoplan.api import evaluate_plan, evaluate_plan_payload, print_package_payload
 from orthoplan.model import (
     MeshAsset,
     SegmentedToothMesh,
@@ -183,3 +185,26 @@ def test_render_mesh_links_are_included_for_tooth_meshes() -> None:
     assert result["render_meshes"] == [
         {"tooth": "11", "mesh_asset_id": "mesh-11", "url": "/api/mesh/mesh-11", "source": "manual"}
     ]
+
+
+def test_print_package_payload_returns_downloadable_zip() -> None:
+    result = print_package_payload(_base_payload())
+
+    assert result["ok"] is True
+    assert result["stage_count"] == 1
+    zip_bytes = base64.b64decode(result["zip_base64"])
+    assert zip_bytes[:2] == b"PK"  # zip local-file-header magic
+    eml_bytes = base64.b64decode(result["email_eml_base64"])
+    assert b"OpenSource Ortho print package" in eml_bytes
+    assert result["email_filename"].endswith(".eml")
+    assert result["filename"].endswith(".zip")
+
+
+def test_print_package_payload_rejects_invalid_plan() -> None:
+    payload = _base_payload(
+        stages=[{"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "99"}}]}]
+    )
+    result = print_package_payload(payload)
+
+    assert result["ok"] is False
+    assert result["errors"]

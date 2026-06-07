@@ -75,6 +75,10 @@
             <input id="wearInterval" type="number" min="1" value="14" />
           </div>
         </header>
+        <div class="tech-banner advanced-only">
+          <span>Technician view — full controls</span>
+          <button class="ghost-toggle" data-user-mode="simple" type="button">← Back to guided</button>
+        </div>
         <nav class="journey-nav" aria-label="Guided workflow">
           <button class="is-active" data-journey-step="upload" type="button">
             <strong>1</strong>
@@ -94,29 +98,54 @@
           </button>
         </nav>
 
-        <section class="panel" id="panel-simple">
-          <div class="simple-hero">
+        <!-- Guided wizard: the primary, simplified flow for first-time users.
+             Heavy singletons (upload stack, 3D viewer, AI chat) are relocated
+             into these step hosts by guided.js placeSharedBlocks(). -->
+        <section id="guided" aria-label="Guided plan wizard">
+          <div class="guided-head">
             <div>
-              <h2>Guided STL Review</h2>
-              <p>Upload STL scans to inspect a preview. Educational only; not a diagnosis or prescription.</p>
+              <h2 id="guidedHeading">Plan your aligners, step by step</h2>
+              <p class="guided-sub">Educational only — this does not diagnose, prescribe, or say whether treatment is safe or complete.</p>
             </div>
+            <button class="ghost-toggle" data-user-mode="advanced" type="button">Technician view →</button>
           </div>
-          <div class="simple-grid">
-            <div class="upload-stack">
-              <label class="upload-target" for="simpleStlFile">
-                <span class="upload-icon" aria-hidden="true">↑</span>
-                <span id="simpleUploadLabel">Choose your STL files</span>
-                <input id="simpleStlFile" type="file" accept=".stl" multiple />
-              </label>
-              <div id="simpleUploadFileList" class="upload-file-list"></div>
-            </div>
-            <div class="simple-panel">
-              <div class="guided-explain">
-                <h2>Preview Mode</h2>
-                <p>Whole-arch STL scans render as scan geometry. Tooth movement is schematic unless segmented per-tooth meshes or landmarks are provided.</p>
+
+          <ol class="guided-rail" id="guidedRail">
+            <li data-gstep="upload"><span>1</span> Upload</li>
+            <li data-gstep="plan"><span>2</span> Teeth &amp; time</li>
+            <li data-gstep="details"><span>3</span> Details</li>
+            <li data-gstep="review"><span>4</span> Review</li>
+            <li data-gstep="preview"><span>5</span> 3D preview</li>
+            <li data-gstep="print"><span>6</span> Print / send</li>
+          </ol>
+
+          <section class="gstep" data-gstep="upload">
+            <h3>1 · Upload your STL files</h3>
+            <p>STL files are the detailed 3D scans of your teeth, usually from a dental scanner. Add your upper and/or lower scans, or try the built-in sample.</p>
+            <div id="guidedUploadHost">
+              <div id="simpleUpload" class="upload-stack">
+                <label class="upload-target" for="simpleStlFile">
+                  <span class="upload-icon" aria-hidden="true">↑</span>
+                  <span id="simpleUploadLabel">Choose your STL files</span>
+                  <input id="simpleStlFile" type="file" accept=".stl" multiple />
+                </label>
+                <div id="simpleUploadFileList" class="upload-file-list"></div>
               </div>
-              <label>
-                What are you exploring?
+            </div>
+            <div class="guided-or">
+              <span>or</span>
+              <button class="primary-action" id="guidedUseSample" type="button">Use the built-in sample</button>
+            </div>
+            <label class="toggle">
+              <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
+              <input id="simpleAcknowledged" type="checkbox" />
+            </label>
+          </section>
+
+          <section class="gstep" data-gstep="plan">
+            <h3>2 · Which teeth move, and how long</h3>
+            <div class="guided-build">
+              <label>What are you exploring?
                 <select id="simpleGoal">
                   <option value="general-alignment">General alignment</option>
                   <option value="crowding">Crowding</option>
@@ -125,14 +154,75 @@
                   <option value="bite">Bite concern</option>
                 </select>
               </label>
-              <label class="toggle">
-                <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
-                <input id="simpleAcknowledged" type="checkbox" />
-              </label>
-              <button class="primary-action" id="simpleReview" type="button">Next: Review Preview</button>
+              <button class="primary-action" id="guidedBuild" type="button">Build my plan</button>
             </div>
+            <p class="guided-hint">These are the teeth the plan moves. Uncheck any you'd like to keep still.</p>
+            <div id="guidedTeeth" class="guided-teeth"></div>
+            <h4>How long should each tray be worn?</h4>
+            <div id="guidedDuration" class="guided-duration">
+              <button data-wear="7" type="button">Faster · 7-day trays</button>
+              <button data-wear="10" type="button">Balanced · 10-day trays</button>
+              <button data-wear="14" type="button">Gentle · 14-day trays</button>
+            </div>
+            <p id="guidedDurationSummary" class="guided-hint"></p>
+          </section>
+
+          <section class="gstep" data-gstep="details">
+            <h3>3 · Small details (optional)</h3>
+            <p>You can skip this. Make the on-screen movement easier to see — this only changes the preview, not the plan.</p>
+            <label class="guided-range">Exaggerate movement in the preview
+              <input id="guidedExaggeration" type="range" min="1" max="40" step="1" value="12" />
+              <span id="guidedExaggerationValue">×12</span>
+            </label>
+            <p class="viewer-caveat">Need fine control (per-tooth caps, attachments, IPR, raw plan JSON)? Open the Technician view.</p>
+          </section>
+
+          <section class="gstep" data-gstep="review">
+            <h3>4 · Review your plan</h3>
+            <p id="guidedTimeline" class="guided-timeline"></p>
+            <div class="guided-review-cols">
+              <div>
+                <h4>What we noticed</h4>
+                <ul id="guidedFindings"></ul>
+              </div>
+              <div>
+                <h4>Missing records</h4>
+                <ul id="guidedGaps"></ul>
+              </div>
+            </div>
+            <div class="guided-ai">
+              <h4>Ask AI about your plan</h4>
+              <p class="guided-hint">Ask anything about this preview in plain language. Answers are educational only.</p>
+              <div id="guidedAiHost"></div>
+            </div>
+          </section>
+
+          <section class="gstep" data-gstep="preview">
+            <h3>5 · See the full 3D plan</h3>
+            <p>Drag the stage slider to watch the planned movement across the trays.</p>
+            <div id="guidedPreviewHost"></div>
+          </section>
+
+          <section class="gstep" data-gstep="print">
+            <h3>6 · Print or send your files</h3>
+            <p>Build the 3D-print files (one model per stage, plus a manifest). Download the zip to print the trays, or download the email draft to send the files to yourself or a print service.</p>
+            <button class="primary-action" id="guidedPrint" type="button">Build my print files</button>
+            <p id="guidedPrintStatus" class="guided-hint"></p>
+            <div id="guidedPrintLinks" class="workflow-actions inline" hidden>
+              <button data-print-artifact="zip" type="button">Download zip again</button>
+              <button data-print-artifact="email" type="button">Download email draft (.eml)</button>
+            </div>
+            <p class="viewer-caveat">The email draft opens in your mail app with the files already attached. Printing, materials, post-processing, and any physical use are your own responsibility and risk.</p>
+          </section>
+
+          <div class="guided-nav">
+            <button id="guidedBack" type="button">Back</button>
+            <button class="primary-action" id="guidedNext" type="button">Next</button>
           </div>
         </section>
+
+        <!-- Hidden home for the relocated upload stack when in Technician view. -->
+        <div id="techUploadHost" hidden></div>
 
         <section class="panel" id="panel-upload">
           <div class="panel-heading">
@@ -308,39 +398,45 @@
                 <h2>Step 5: Review The Progression</h2>
                 <p>Use the view buttons and stage slider to inspect the current, planned, or overlay preview.</p>
               </div>
-              <div class="viewer-toolbar">
-                <button class="mode is-active" data-view="current" type="button">Current</button>
-                <button class="mode" data-view="planned" type="button">Planned</button>
-                <button class="mode" data-view="overlay" type="button">Overlay</button>
-                <span class="dim-toggle">
-                  <button class="dim is-active" data-dim="3d" type="button">3D</button>
-                  <button class="dim" data-dim="2d" type="button">2D</button>
-                </span>
-                <label class="arch-filter">
-                  Show
-                  <select id="scanArchFilter">
-                    <option value="both">Both arches</option>
-                    <option value="maxillary">Upper only</option>
-                    <option value="mandibular">Lower only</option>
-                  </select>
-                </label>
-                <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="12" /></label>
-                <label class="stage-slider">
-                  Stage <span id="stageValue">0</span>
-                  <input id="stageSlider" type="range" min="0" max="0" value="0" />
-                </label>
-              </div>
-              <p id="scanRenderStatus" class="scan-status"></p>
-              <div class="viewer3d-wrap">
-                <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
-                <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
-                  <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
-                  <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
-                  <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+              <!-- #viewerBlock is a single instance relocated between the
+                   technician review and the guided 3D step by guided.js. -->
+              <div id="techViewerHost">
+                <div id="viewerBlock">
+                  <div class="viewer-toolbar">
+                    <button class="mode is-active" data-view="current" type="button">Current</button>
+                    <button class="mode" data-view="planned" type="button">Planned</button>
+                    <button class="mode" data-view="overlay" type="button">Overlay</button>
+                    <span class="dim-toggle">
+                      <button class="dim is-active" data-dim="3d" type="button">3D</button>
+                      <button class="dim" data-dim="2d" type="button">2D</button>
+                    </span>
+                    <label class="arch-filter">
+                      Show
+                      <select id="scanArchFilter">
+                        <option value="both">Both arches</option>
+                        <option value="maxillary">Upper only</option>
+                        <option value="mandibular">Lower only</option>
+                      </select>
+                    </label>
+                    <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="12" /></label>
+                    <label class="stage-slider">
+                      Stage <span id="stageValue">0</span>
+                      <input id="stageSlider" type="range" min="0" max="0" value="0" />
+                    </label>
+                  </div>
+                  <p id="scanRenderStatus" class="scan-status"></p>
+                  <div class="viewer3d-wrap">
+                    <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+                    <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
+                      <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                      <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
+                      <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                    </div>
+                  </div>
+                  <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
+                  <p class="viewer-caveat">STL scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
                 </div>
               </div>
-              <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
-              <p class="viewer-caveat">STL scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
             </section>
             <aside class="review-side">
               <section class="generate-panel" aria-label="Generate plan">
@@ -394,7 +490,8 @@
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>
-              <section class="ai-chat" aria-label="Plan AI chat">
+              <div id="techAiHost">
+              <section class="ai-chat" id="aiChatBlock" aria-label="Plan AI chat">
                 <div class="ai-chat-heading">
                   <h2>Plan AI</h2>
                   <span id="chatStatus">Local helper ready</span>
@@ -447,6 +544,7 @@
                 </details>
                 <p class="viewer-caveat">AI answers are educational only. External connectors require the acknowledgement above and receive the scoped plan context you select; use the context selector deliberately.</p>
               </section>
+              </div>
               <h2 class="advanced-only">Print Export</h2>
               <div id="printExportStatus" class="status-block advanced-only"></div>
               <h2 class="advanced-only">Optimized Staging</h2>

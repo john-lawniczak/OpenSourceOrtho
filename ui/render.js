@@ -10,6 +10,7 @@ import {
 import { createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
+import { renderGuided } from "./guided.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -118,7 +119,6 @@ export function renderAll() {
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
   state.simpleAcknowledged = el("simpleAcknowledged").checked;
-  el("simpleReview").disabled = !state.simpleAcknowledged;
   state.chat.provider = el("chatProvider").value;
   state.chat.model = el("chatModel").value;
   state.chat.contextScope = el("chatScope").value;
@@ -150,6 +150,11 @@ export function renderAll() {
     iprContacts: state.clinicalControls.iprContacts,
   };
   renderSteps();
+  // Relocates the shared viewer/AI/upload singletons into the active mode's
+  // hosts and renders the guided wizard steps (no-op visuals when technician
+  // view is active). Runs before updateViewer so the viewer is in its host
+  // before it resizes.
+  renderGuided();
   renderReviewHeading();
   renderMetadata();
   renderUploadFileList();
@@ -375,13 +380,19 @@ function renderSteps() {
   document.querySelectorAll("[data-journey-step]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.journeyStep === state.activeStep);
   });
+  // Keep the Current/Planned/Overlay toolbar in sync with state.view. Without
+  // this, programmatic view changes (e.g. the sample sets "overlay") leave the
+  // toolbar showing "Current" - the static baseline view where the stage slider
+  // moves nothing - so the preview looks frozen when scrubbing stages.
+  document.querySelectorAll(".mode").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.view === state.view);
+  });
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("is-active"));
-  if (state.userMode === "simple" && state.activeStep === "upload") {
-    el("panel-simple").classList.add("is-active");
-    return;
-  }
+  // Guided mode shows the #guided wizard (CSS-gated by body[data-mode]); the
+  // technician panels stay inactive. In technician mode, activate the panel for
+  // the current step (the sample step reuses the review panel).
   const panelId = state.activeStep === "sample" ? "panel-review" : `panel-${state.activeStep}`;
-  el(panelId).classList.add("is-active");
+  el(panelId)?.classList.add("is-active");
 }
 
 function renderUploadFileList() {

@@ -1,7 +1,17 @@
 export const state = {
   theme: "light",
-  userMode: "advanced",
+  // The guided wizard is the default, primary experience for non-technical
+  // first-time users. The dense technician workspace ("advanced") is opt-in via
+  // the Technician view toggle.
+  userMode: "simple",
   activeStep: "upload",
+  // Guided wizard sub-state (the simplified primary flow). The wizard owns its
+  // own step cursor so it is independent of the technician panel navigation.
+  guided: {
+    step: "upload",
+    excludedTeeth: [],
+    print: { busy: false, status: "", result: null },
+  },
   view: "current",
   dim: "3d",
   file: null,
@@ -191,6 +201,19 @@ export async function askPlanAssistant(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["chat request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestPrintPackage(payload) {
+  const response = await fetch("/api/print-package", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["print package request failed"]).join("; "));
   }
   return response.json();
 }

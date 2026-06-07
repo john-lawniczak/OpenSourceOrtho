@@ -219,6 +219,255 @@ body[data-mode="simple"] .advanced-only {
   display: none;
 }
 
+/* Mode switching between the guided wizard and the technician workspace. Guided
+   is the default, primary experience; the technician panels/nav are hidden. */
+#guided {
+  display: none;
+}
+
+body[data-mode="simple"] #guided {
+  display: block;
+}
+
+body[data-mode="simple"] .panel,
+body[data-mode="simple"] .journey-nav,
+body[data-mode="simple"] .mode-switch {
+  display: none;
+}
+
+body[data-mode="advanced"] #guided,
+body[data-mode="advanced"] .sample-launch {
+  display: none;
+}
+
+/* ---- Guided wizard --------------------------------------------------- */
+
+#guided {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 22px;
+}
+
+.guided-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.guided-head h2 {
+  margin: 0 0 4px;
+}
+
+.guided-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.ghost-toggle {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--accent);
+  padding: 7px 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tech-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.guided-rail li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-rail li span {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--panel-alt);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.guided-rail li.is-active {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.guided-rail li.is-active span {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.guided-rail li.is-done span {
+  background: var(--accent);
+  color: var(--accent-ink);
+  opacity: 0.55;
+}
+
+.gstep {
+  display: none;
+}
+
+.gstep.is-active {
+  display: block;
+}
+
+.gstep h3 {
+  margin: 0 0 6px;
+}
+
+.gstep > p {
+  color: var(--muted);
+  margin: 0 0 16px;
+  max-width: 64ch;
+}
+
+.guided-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  color: var(--muted);
+}
+
+.guided-build {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.guided-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-teeth {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  margin: 8px 0 20px;
+}
+
+.guided-tooth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-size: 13px;
+}
+
+.guided-tooth.is-excluded {
+  opacity: 0.5;
+}
+
+.guided-duration {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.guided-duration button {
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  cursor: pointer;
+}
+
+.guided-duration button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.guided-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 460px;
+}
+
+.guided-range input[type="range"] {
+  flex: 1;
+}
+
+.guided-review-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin: 16px 0 22px;
+}
+
+.guided-review-cols ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-timeline {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+}
+
+/* The AI box is a prominent, inviting part of the Review step. */
+.guided-ai {
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--panel-alt);
+}
+
+.guided-ai h4 {
+  margin: 0 0 4px;
+}
+
+.guided-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
 .data-gap-panel {
   border-top: 1px solid #344951;
   padding-top: 18px;

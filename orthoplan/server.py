@@ -18,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
-from orthoplan.api import evaluate_plan_payload
+from orthoplan.api import evaluate_plan_payload, print_package_payload
 from orthoplan.case_api import (
     case_versions_payload,
     list_cases_payload,
@@ -128,7 +128,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
-            if path not in {"/api/evaluate", "/api/chat", "/api/generate-plan", "/api/plan/version"}:
+            if path not in {
+                "/api/evaluate",
+                "/api/chat",
+                "/api/generate-plan",
+                "/api/plan/version",
+                "/api/print-package",
+            }:
                 self._send_json(404, {"ok": False, "errors": ["unknown endpoint"]})
                 return
             length = self._content_length()
@@ -153,6 +159,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(200, generate_plan_payload(payload))
             elif path == "/api/plan/version":
                 self._send_json(200, save_plan_version_payload(payload, store_path=self._case_store()))
+            elif path == "/api/print-package":
+                self._send_json(200, print_package_payload(payload))
             else:
                 self._send_json(200, evaluate_plan_payload(payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
