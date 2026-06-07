@@ -4,7 +4,16 @@
 // Nothing is auto-accepted, and the proposal is model output: untrusted, drafty,
 // and never a statement that a plan is safe or complete.
 
-import { el, requestSegmentation, state } from "./state.js";
+import { requestSegmentation, state } from "./state.js";
+
+// Valid FDI two-digit notation: quadrant 1-8, position 1-8. Mirrors the engine's
+// ToothId validator so a corrected number can never reach the plan and silently
+// fail whole-plan evaluation with a cryptic rejection.
+const FDI_RE = /^[1-8][1-8]$/;
+
+export function isValidFdi(value) {
+  return FDI_RE.test(String(value || "").trim());
+}
 
 export async function proposeSegmentation() {
   const seg = state.segmentation;
@@ -52,17 +61,26 @@ export function applySegmentation() {
   if (!proposal) return;
   const includedIds = new Set();
   const toothMeshes = [];
+  let invalid = 0;
   for (const link of proposal.plan_fragment.tooth_meshes) {
     const edit = seg.edits[link.mesh_asset_id];
     if (!edit || !edit.included) continue;
+    const value = String(edit.tooth || "").trim();
+    if (!isValidFdi(value)) {
+      invalid += 1;
+      continue;
+    }
     includedIds.add(link.mesh_asset_id);
-    toothMeshes.push({ ...link, tooth: { system: "FDI", value: edit.tooth } });
+    toothMeshes.push({ ...link, tooth: { system: "FDI", value } });
   }
   const meshAssets = proposal.plan_fragment.mesh_assets.filter((asset) => includedIds.has(asset.id));
   seg.applied = toothMeshes.length ? { mesh_assets: meshAssets, tooth_meshes: toothMeshes } : null;
-  seg.status = seg.applied
-    ? `Applied ${toothMeshes.length} per-tooth mesh(es) to the plan. Still a draft — not a diagnosis.`
-    : "No teeth selected to apply.";
+  const skipped = invalid ? ` Skipped ${invalid} tooth(s) with an invalid FDI number (use two digits, each 1-8).` : "";
+  if (seg.applied) {
+    seg.status = `Applied ${toothMeshes.length} per-tooth mesh(es) to the plan. Still a draft — not a diagnosis.${skipped}`;
+  } else {
+    seg.status = invalid ? `No valid teeth to apply.${skipped}` : "No teeth selected to apply.";
+  }
 }
 
 export function setSegmentToothEdit(meshAssetId, value) {

@@ -32,8 +32,8 @@ Scaffolding for the **lite** iOS and Android apps - thin native clients over the
 same engine - lives in [mobile/](mobile/README.md).
 
 The UI opens by default into a guided, step-by-step experience; the dense
-technician workspace is one click away via the **Clinician / Guided** toggle in
-the left sidebar.
+technician workspace is one click away via the **Guided / Technician** toggle in
+the left sidebar. A light/dark switch is anchored in the top bar.
 
 - **Guided mode (default)**: a six-step wizard for non-technical users -
   **Upload → Teeth & time → Details → Review → 3D preview → Print / send**. It
@@ -41,19 +41,26 @@ the left sidebar.
   long each tray is worn, animates the plan in 3D, surfaces a prominent
   **Ask AI about your plan** box, and exports printable files. It is designed to
   produce questions for a dental professional, not a do-it-yourself treatment plan.
-- **Clinician mode**: a professional planning workspace for staged movement, records,
+- **Technician mode**: a professional planning workspace for staged movement, records,
   clinical controls, findings, mesh rendering, print metadata, and plan JSON.
-- **Sample test case**: a fully isolated demonstration that reuses the guided
-  wizard (same step chips) pre-filled with simulated crowding-correction demo
-  data, so a first-time viewer can see exactly what the flow looks like and watch
-  the teeth move across stages. It snapshots and restores your working state, so
-  opening it never changes your own plan, uploads, or editors.
+- **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
+  (same step chips), pre-loaded with the two bundled test-case STL scans and a
+  Balanced 10-day pace. It starts at step 1 so a first-time viewer can walk the
+  whole flow, and it renders the real scans in 3D (the per-tooth movement layer is
+  simulated over the whole-arch shell). It snapshots and restores your working
+  state, so opening it never changes your own plan, uploads, or editors.
 - **Print / send**: the final guided step builds printable 3D files (one model
   per stage plus a manifest) via `POST /api/print-package` and offers a zip
   download and a pre-filled email draft (`.eml`) you can open in your mail app to
   send the files to yourself or a print service.
+- **Auto-segmentation (experimental)**: an on-device, dependency-free heuristic
+  proposes per-tooth meshes from a whole-arch scan via `POST /api/segment`
+  (cutting at the valleys between crowns). It is a reviewable draft with per-tooth
+  confidence - you correct the FDI numbers and **explicitly** apply it; nothing is
+  auto-accepted, and scans never leave the machine. A `SegmentationModel` seam lets
+  a local learned model (e.g. Teeth3DS) replace the heuristic later.
 - **Generate Plan**: a one-click pipeline (the guided **Build my plan** button,
-  and the Clinician Review panel) that builds a
+  and the Technician Review panel) that builds a
   cap-respecting staged plan from the best available target - your authored
   movement; per-tooth crown **landmarks** (real arch-form deviation targets plus a
   space analysis that budgets IPR, adds attachments, and checks crown collisions);
@@ -116,16 +123,16 @@ The first workflow is simple:
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
 For a quick demo, open the app and click **Sample Test Case** in the left
-sidebar. The sample reuses the guided wizard pre-filled with simulated
-crowding-correction data and opens on the 3D preview; drag the stage slider to
-watch the teeth move from crowded toward aligned. It loads bundled rounded crown
-meshes (served from `ui/demo-meshes/`, exercising the same per-tooth
-mesh-loading path real scans use). These crowns are synthetic educational proxies
-for visual clarity, not patient anatomy, and do not claim clinical feasibility. Use
-the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to zoom and orbit, and
-**Exit sample** to return - your own work is untouched.
+sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
+test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), and starts at
+step 1 so you can walk the whole flow. The 3D preview renders the real scans with
+a simulated movement layer; drag the stage slider to watch the planned movement
+across stages. The per-tooth movement over a whole-arch shell is schematic, not a
+clinical prediction. Use the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to
+zoom and orbit, the **Tooth #** toggle to label teeth, and **Exit Sample Test
+Case** to return - your own work is untouched.
 
-In the guided **Review** step (or the Clinician Review panel), use **Plan AI** to
+In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
 ask educational questions about the active plan. The default local helper stays on
 this machine and needs no key. To use an external model, pick a provider
 (OpenAI, Claude, or an OpenAI-compatible endpoint) in the AI box and paste your

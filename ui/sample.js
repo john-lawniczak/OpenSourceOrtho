@@ -39,9 +39,14 @@ export function enterSample() {
     acknowledged: el("simpleAcknowledged").checked,
     guidedStep: state.guided.step,
     excludedTeeth: [...state.guided.excludedTeeth],
+    // segmentation is a nested object mutated in place, so snapshot the whole
+    // object and give the sample a fresh one - otherwise a segmentation applied
+    // inside the sample would leak into the user's real plan on exit.
+    segmentation: state.segmentation,
   };
   for (const key of SNAPSHOT_STATE_KEYS) saved.state[key] = state[key];
   for (const field of SNAPSHOT_FIELDS) saved.fields[field] = el(field).value;
+  state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
 
   // Isolated walkthrough plan: a simulated crowding correction over 4 stages
   // (0 = the starting point), paired with the two real test-case STL scans so the
@@ -82,6 +87,7 @@ export function exitSample() {
   el("simpleAcknowledged").checked = saved.acknowledged;
   state.guided.step = saved.guidedStep;
   state.guided.excludedTeeth = saved.excludedTeeth;
+  state.segmentation = saved.segmentation;
   state.sample.active = false;
   saved = null;
 }

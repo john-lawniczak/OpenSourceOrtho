@@ -191,6 +191,12 @@ export function createViewer(container) {
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
   let lineGeometries = [];
+  // Tooth-number label sprites are cached by FDI value and reused across updates.
+  // Each sprite owns a GPU texture; proxies.clear() only detaches it, so creating
+  // a fresh sprite per update (every stage scrub / view toggle) would leak a
+  // texture each time. Caching keeps exactly one sprite per tooth for the viewer's
+  // lifetime; dispose() frees them.
+  const toothLabelSprites = new Map();
   // The camera frames the arch once, on first populated render. Later updates
   // (stage scrub, view toggle) must not yank a camera the user has panned or
   // zoomed; an explicit recenter() re-frames on demand.
@@ -249,7 +255,11 @@ export function createViewer(container) {
       // currently-displayed position, so a user can see which tooth is which.
       if (showToothLabels) {
         const labelAt = showPlanned ? base.clone().add(worldDelta(pose, exaggeration)) : base;
-        const label = makeToothNumberSprite(String(pose.tooth));
+        let label = toothLabelSprites.get(pose.tooth);
+        if (!label) {
+          label = makeToothNumberSprite(String(pose.tooth));
+          toothLabelSprites.set(pose.tooth, label);
+        }
         label.position.copy(labelAt).add(new THREE.Vector3(0, 2.4, 0));
         proxies.add(label);
       }
@@ -380,6 +390,11 @@ export function createViewer(container) {
     running = false;
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
+    for (const sprite of toothLabelSprites.values()) {
+      sprite.material.map?.dispose();
+      sprite.material.dispose();
+    }
+    toothLabelSprites.clear();
     window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
