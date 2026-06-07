@@ -136,11 +136,36 @@ constraints, surfaced in the on-screen caveat:
 - Rotation is drawn **only** where the engine sets `rotation_renderable`. The
   approximate crown-surface PCA frame (`tooth_frames` in the API) is metadata
   only; by itself it does not authorize rendered rotation.
+- A **Tooth #** toolbar toggle overlays FDI tooth-number badges on each tooth so a
+  user can see which teeth they are focusing on. It is off by default and follows
+  the displayed (current or planned) tooth position.
 
 Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
 To update it, replace `ui/vendor/three.module.js` and `ui/vendor/OrbitControls.js`
 with a matching pinned pair.
+
+## Auto-segmentation (experimental)
+
+A whole-arch STL is a single shell, not per-tooth meshes, so real per-tooth
+planning needs segmentation. The Technician Review side panel **Auto-Segmentation
+(experimental)** proposes per-tooth regions from a loaded server-local scan via
+`POST /api/segment`:
+
+- It runs **on this machine** (scans are PHI; segmentation never calls a hosted
+  API). Today the local model is a dependency-free arch-sector **heuristic**
+  (`orthoplan/segmentation/heuristic.py`); `orthoplan/segmentation/auto.py` is the
+  seam where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can be
+  dropped in behind the same contract.
+- The response is a **draft proposal**, never auto-applied: per-tooth confidence
+  (separation, not certainty), advisory model-provenance findings (all pass
+  `lint_finding`), and a ready-to-merge plan fragment (`mesh_assets` +
+  `tooth_meshes`). Each proposed tooth mesh is written into the local mesh
+  workspace and served by `/api/mesh/<id>`.
+- The UI lets the user correct each tooth number and include/exclude teeth, then
+  **explicitly** apply the accepted set; only then does `plan.js` merge it into the
+  plan. It only operates on server-local scans (the Sample Test Case / example
+  scans), because uploaded bytes stay in the browser.
 
 ## Print Export
 

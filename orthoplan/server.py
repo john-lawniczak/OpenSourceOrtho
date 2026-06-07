@@ -27,6 +27,7 @@ from orthoplan.case_api import (
 from orthoplan.cases import default_case_store
 from orthoplan.generation import generate_plan_payload
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
+from orthoplan.segmentation_api import segment_payload
 
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
 MAX_BODY_BYTES = 5 * 1024 * 1024
@@ -134,6 +135,7 @@ class Handler(BaseHTTPRequestHandler):
                 "/api/generate-plan",
                 "/api/plan/version",
                 "/api/print-package",
+                "/api/segment",
             }:
                 self._send_json(404, {"ok": False, "errors": ["unknown endpoint"]})
                 return
@@ -161,6 +163,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(200, save_plan_version_payload(payload, store_path=self._case_store()))
             elif path == "/api/print-package":
                 self._send_json(200, print_package_payload(payload))
+            elif path == "/api/segment":
+                self._send_json(
+                    200,
+                    segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
+                )
             else:
                 self._send_json(200, evaluate_plan_payload(payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection

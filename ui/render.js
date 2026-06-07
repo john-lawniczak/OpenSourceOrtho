@@ -114,6 +114,7 @@ function updateViewer(result) {
     stageIndex: Number(el("stageSlider").value || 0),
     view: state.view,
     exaggeration: numberValue("exaggeration") || 1,
+    showToothLabels: state.showToothLabels,
   });
 }
 
@@ -125,6 +126,11 @@ export function renderAll() {
   document.body.dataset.generationDetail = state.detailMode.generation;
   document.body.dataset.aiDetail = state.detailMode.ai;
   el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
+  const toothLabelBtn = el("toothLabelToggle");
+  if (toothLabelBtn) {
+    toothLabelBtn.setAttribute("aria-pressed", state.showToothLabels ? "true" : "false");
+    toothLabelBtn.classList.toggle("is-active", state.showToothLabels);
+  }
   state.scanUnits = el("scanUnits").value;
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
@@ -176,6 +182,7 @@ export function renderAll() {
   renderVersions();
   renderScanStatus();
   renderSampleStatus();
+  renderSegmentation();
   renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   el("stageValue").textContent = el("stageSlider").value;
@@ -619,6 +626,49 @@ function renderSampleStatus() {
     launch.textContent = state.sample.active ? "Exit Sample Test Case" : "Sample Test Case";
     launch.classList.toggle("is-active-sample", state.sample.active);
   }
+}
+
+function renderSegmentation() {
+  const seg = state.segmentation;
+  const status = el("segmentStatus");
+  if (!status) return; // segment panel not present (e.g. trimmed markup)
+  status.textContent = seg.busy ? "Working..." : "";
+  el("proposeSegment").disabled = seg.busy;
+
+  const proposal = seg.proposal;
+  el("segmentFindings").innerHTML = proposal?.advisory_findings?.length
+    ? proposal.advisory_findings
+        .map((f) => `<li>${escapeHtml(f.title)}: ${escapeHtml(f.message)}</li>`)
+        .join("")
+    : "";
+
+  const list = el("segmentList");
+  if (!proposal?.teeth?.length) {
+    list.innerHTML = seg.status ? `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` : "";
+    el("applySegment").hidden = true;
+    el("segmentApplied").textContent = "";
+    return;
+  }
+  list.innerHTML =
+    `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` +
+    proposal.teeth.map(segmentRowMarkup).join("");
+  el("applySegment").hidden = false;
+  el("segmentApplied").textContent = seg.applied
+    ? `Applied: ${seg.applied.tooth_meshes.length} tooth mesh(es) merged into the plan (draft).`
+    : "Not applied yet.";
+}
+
+function segmentRowMarkup(tooth) {
+  const edit = state.segmentation.edits[tooth.mesh_asset_id] || { tooth: tooth.tooth, included: true };
+  const pct = Math.round((tooth.confidence || 0) * 100);
+  return `
+    <div class="segment-row">
+      <input type="checkbox" data-segment-include="${escapeHtml(tooth.mesh_asset_id)}" ${edit.included ? "checked" : ""} aria-label="Include this tooth" />
+      <input class="segment-tooth" data-segment-tooth="${escapeHtml(tooth.mesh_asset_id)}" value="${escapeHtml(edit.tooth)}" maxlength="2" aria-label="FDI tooth number" />
+      <span class="segment-arch">${escapeHtml(tooth.arch)}</span>
+      <span class="segment-conf"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
+      <span class="segment-conf-num">${pct}%</span>
+    </div>`;
 }
 
 function renderDownloadActions() {

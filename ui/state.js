@@ -68,6 +68,17 @@ export const state = {
   demoInitialOffsets: {},
   // When true, the 3D viewer loads the bundled demo crown meshes per tooth class.
   useDemoMeshes: false,
+  // When true, the 3D viewer draws FDI tooth-number labels over each tooth.
+  showToothLabels: false,
+  // Advisory auto-segmentation proposal (POST /api/segment). Never auto-applied:
+  // `applied` holds only what the user explicitly accepted (and may have corrected).
+  segmentation: {
+    busy: false,
+    status: "",
+    proposal: null,
+    edits: {},
+    applied: null,
+  },
   availability: {
     intraoral_scan: true,
     segmented_teeth: false,
@@ -204,6 +215,19 @@ export async function askPlanAssistant(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["chat request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestSegmentation(payload) {
+  const response = await fetch("/api/segment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["segmentation request failed"]).join("; "));
   }
   return response.json();
 }

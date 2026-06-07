@@ -1405,6 +1405,21 @@ td input {
   margin-left: 8px;
 }
 
+.viewer-aux {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  min-height: 34px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.viewer-aux.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
 .exaggeration {
   display: inline-flex;
   align-items: center;
@@ -1643,4 +1658,80 @@ td input {
 
 .version-list li button {
   flex: 0 0 auto;
+}
+
+/* Auto-segmentation proposal (advisory, reviewable, never auto-applied). */
+.segment-findings {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.segment-findings li {
+  border: none;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.segment-list {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.segment-row {
+  display: grid;
+  grid-template-columns: auto 48px auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 6px 8px;
+}
+
+.segment-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+}
+
+.segment-tooth {
+  min-height: 30px;
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.segment-arch {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.segment-conf {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  overflow: hidden;
+}
+
+.segment-conf-bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.segment-conf-num {
+  min-width: 34px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+#applySegment {
+  width: 100%;
+  margin-top: 6px;
 }

@@ -86,6 +86,37 @@ function makeTextSprite(text) {
   return sprite;
 }
 
+// A readable FDI tooth-number badge: white text on an accent pill, drawn from a
+// 2D canvas texture and billboarded. depthTest off keeps it legible through the
+// teeth/scan. Reused per update (cleared with the proxies group).
+function makeToothNumberSprite(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 72;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgba(15,118,110,0.94)";
+  const w = canvas.width;
+  const h = canvas.height;
+  const r = 22;
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(8, 8, w - 16, h - 16, r);
+    ctx.fill();
+  } else {
+    ctx.fillRect(8, 8, w - 16, h - 16);
+  }
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 44px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, w / 2, h / 2 + 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(3.4, 1.9, 1);
+  return sprite;
+}
+
 // pose translation (x mesiodistal-ish, y front-back, z occlusogingival/vertical)
 // -> world (x, up=z, depth=y), times exaggeration.
 function worldDelta(pose, exaggeration) {
@@ -187,7 +218,7 @@ export function createViewer(container) {
     requestAnimationFrame(loop);
   })();
 
-  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration }) {
+  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels }) {
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
     uploadedScans.visible = view === "current" || view === "overlay";
     for (const geom of lineGeometries) geom.dispose();
@@ -214,6 +245,15 @@ export function createViewer(container) {
         ghost.quaternion.copy(archQuaternion(pose.tooth));
         proxies.add(ghost);
       }
+      // Optional FDI tooth-number label, floating above the tooth at its
+      // currently-displayed position, so a user can see which tooth is which.
+      if (showToothLabels) {
+        const labelAt = showPlanned ? base.clone().add(worldDelta(pose, exaggeration)) : base;
+        const label = makeToothNumberSprite(String(pose.tooth));
+        label.position.copy(labelAt).add(new THREE.Vector3(0, 2.4, 0));
+        proxies.add(label);
+      }
+
       if (showPlanned) {
         const moved = base.clone().add(worldDelta(pose, exaggeration));
         const geometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);

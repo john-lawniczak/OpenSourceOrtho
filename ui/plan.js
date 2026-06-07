@@ -17,8 +17,11 @@ export function planJson() {
       },
     },
     scans: scanPayload(),
-    mesh_assets: [],
-    tooth_meshes: [],
+    // Per-tooth meshes only appear once the user has reviewed and explicitly
+    // applied an auto-segmentation proposal (see segment.js). Drafts are never
+    // merged automatically.
+    mesh_assets: state.segmentation.applied?.mesh_assets || [],
+    tooth_meshes: state.segmentation.applied?.tooth_meshes || [],
     fixed_teeth: fixedTeeth(),
     movement_exclusions: parseMovementExclusions(state.clinicalControls.movementExclusions),
     attachments: parseToothList(state.clinicalControls.attachmentTeeth).map((tooth) => ({
