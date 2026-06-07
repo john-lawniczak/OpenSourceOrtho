@@ -196,6 +196,7 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "guidedBuild") {
     generatePlan();
+    renderAll();
   }
   if (button?.id === "guidedPrint") {
     runPrintPackage();

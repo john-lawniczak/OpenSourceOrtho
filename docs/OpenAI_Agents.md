@@ -98,10 +98,14 @@ reason freely; it routes the user to a professional.
 
 The model step is opt-in and consent-gated: it runs only when an external
 connector is selected AND the egress acknowledgement (`share_acknowledged`) is
-set, exactly like the chat connector. The connector is configured in the UI under
-Plan AI → Connector Settings and reused by Generate Plan. With the local connector or no consent, the
-pipeline completes fully offline and the model step is recorded as `skipped`. The
-deterministic correctness verdict is never produced or overridden by a model.
+set, exactly like the chat connector. The connector is configured in the Plan AI
+box - the **provider selector and the session-only API-key field are surfaced
+directly** (the key field is hidden for the no-key local helper), and the
+agent/MCP endpoint plus the egress consent live under **Advanced connector
+settings** - and is reused by Generate Plan. With the local connector or no
+consent, the pipeline completes fully offline and the model step is recorded as
+`skipped`. The deterministic correctness verdict is never produced or overridden
+by a model.
 
 ## Commit Status
 

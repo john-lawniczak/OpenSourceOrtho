@@ -26,12 +26,24 @@ recreate `.venv` with Python 3.11 or 3.12 instead.
 
 ## 2. Basic Workflow
 
-The UI has two modes:
+The app opens in **Guided** mode by default. Switch between modes with the
+**Clinician / Guided** toggle on the left sidebar:
 
-- **Guided**: educational STL review and a synthetic 12-month crowding demo for
-  non-technical users.
+- **Guided**: a six-step wizard for non-technical users -
+  **Upload → Teeth & time → Details → Review → 3D preview → Print / send** -
+  with Back/Next and a progress rail. Choose which teeth move and how long each
+  tray is worn, build the plan, watch it animate in 3D, ask the AI about it, and
+  export printable files.
 - **Clinician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
+
+To see a complete, isolated example, click **Sample Test Case** in the left
+sidebar: it runs the guided wizard pre-filled with simulated crowding-correction
+demo data and opens on the 3D preview (drag the stage slider to watch the teeth
+move). It snapshots and restores your own work, so nothing leaks into your
+editors; use **Exit sample** to return.
+
+The Clinician workflow:
 
 1. Upload or reference an STL surface scan.
 2. Confirm scan units before trusting millimeter measurements.
@@ -51,10 +63,10 @@ The UI has two modes:
 orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out report.json
 ```
 
-To try the synthetic educational demo, open the app, choose **Guided**, then click
-**Try 12-Month Demo**. The preview uses fabricated crowding offsets and staged
-movement over one year. It is not patient-specific and does not say whether any
-treatment is needed or possible.
+To try the synthetic educational demo, open the app and click **Sample Test
+Case** in the left sidebar. It runs the guided wizard with fabricated crowding
+offsets and staged movement, opening on the 3D preview. It is not patient-specific
+and does not say whether any treatment is needed or possible.
 
 ### Generating a plan
 
@@ -91,12 +103,14 @@ in the Generate Plan panel. With landmarks present, generation is
 "landmark-derived" (real arch-form targets + IPR space budget + collision check).
 
 **Connecting an AI model / API key**: the optional review reuses the connector you
-configure under **Plan AI → Connector Settings** (in the same Review panel). Pick a
-connector (OpenAI, Claude Code, MCP/Odysseus/open-source), paste a session-only API
-key or endpoint, and tick *Allow an external AI agent…* to consent to sending the
-scoped plan context. The Generate Plan panel shows which connector is active. With
-the default **local helper** (or no consent), the AI review is skipped and
-generation runs **fully offline** - the deterministic plan is still produced.
+configure in the **Plan AI** box (same Review surface). The provider selector and
+the **API key** field are shown directly in that box - pick a provider (OpenAI,
+Claude, MCP/Odysseus/open-source) and paste a session-only key; the key field is
+hidden for the no-key local helper. Agent/MCP-endpoint and the
+*Allow an external AI agent…* consent live under **Advanced connector settings**.
+The Generate Plan panel shows which connector is active. With the default
+**local helper** (or no consent), the AI review is skipped and generation runs
+**fully offline** - the deterministic plan is still produced.
 
 ## 3. Render Local Per-Tooth Meshes
 
@@ -123,22 +137,24 @@ from the CLI with `case-save`, `case-list`, and `case-versions`.
 
 ## 4. Plan AI And MCP Connectors
 
-The Review panel includes **Plan AI**. The default connector is a local
-educational helper that does not call an external service. Users can choose a
-connector, enter a model preference, and add an API key for the current browser
-session. The app does not write that key into plan JSON or case snapshots. Use
-the context selector deliberately:
+The Review surface includes **Plan AI**. The default connector is a local
+educational helper that does not call an external service. The **provider
+selector and a session-only API-key field are shown directly in the AI box**
+(with provider-specific instructions; the key field is hidden for the local
+helper, which needs none). The app does not write that key into plan JSON, case
+snapshots, or `localStorage`. Use the context selector deliberately:
 
 - **Summary** shares findings, data gaps, timeline, and clinical controls.
 - **Clinical metadata** also shares mesh/tooth-mesh metadata.
 - **Full plan snapshot** includes the full plan payload.
 
-External connectors for OpenAI, Claude Code, MCP hosts, Odysseus, and
-open-source models are listed for future configuration, but the local dev server
-does not send plan context to them until an explicit provider gateway is added.
-The future account-linking path should prefer OAuth or an MCP permission
-handshake where a user grants a trusted agent scoped access to plan tools rather
-than pasting long-lived raw keys into the app.
+External connectors for OpenAI, Claude (Anthropic), MCP hosts, Odysseus, and
+open-source models perform live completions once you select the provider, paste a
+key/endpoint, and grant per-session egress consent (`share_acknowledged`); the
+key is transmitted only to the selected connector and only when you press
+**Ask AI**. The future account-linking path should prefer OAuth or an MCP
+permission handshake where a user grants a trusted agent scoped access to plan
+tools rather than pasting long-lived raw keys into the app.
 See `docs/AI_CHAT_MCP.md`.
 
 ## 5. Printing And Aligner Manufacturing Boundary

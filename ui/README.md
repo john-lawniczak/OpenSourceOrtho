@@ -5,7 +5,7 @@
 
 Browser prototype for the data-model workflow:
 
-1. Guided educational STL review, synthetic crowding demo, and canonical OrthoCAD sample test case
+1. Guided six-step wizard (default) + isolated Sample Test Case demonstration
 2. multi-file STL upload metadata with browser-side upload persistence
 3. data availability toggles
 4. movement cap controls
@@ -27,35 +27,46 @@ python3 -m orthoplan.server        # or: orthoplan serve
 
 Then open `http://127.0.0.1:8000`.
 
-The Upload step includes a short Getting Started panel for first-time users.
-The sidebar Sample Test Case button opens the included 4-month canonical
-OrthoCAD preview without replacing the normal Guided or Clinician upload flows.
+The app opens in Guided mode by default. The sidebar **Sample Test Case** button
+opens an isolated demonstration that reuses the guided wizard with simulated demo
+data; it snapshots and restores the user's working state, so it never replaces the
+normal Guided or Clinician flows.
 
 ## Modes
 
-The sidebar mode switch exposes two workflows:
+The sidebar **Clinician / Guided** toggle (always visible on the left) exposes two
+workflows:
 
-- **Guided** is for non-technical educational review. It lets a user upload an STL
-  or launch a synthetic crowding demo, acknowledges that the preview is not a
-  diagnosis or treatment plan, and focuses the review surface on visualization and
-  findings. The built-in demo uses synthetic tooth-shaped models with crown/cusp
-  detail for clarity; it does not represent patient anatomy.
+- **Guided** (default) is a six-step wizard for non-technical users -
+  **Upload → Teeth & time → Details → Review → 3D preview → Print / send** - with
+  a progress rail and Back/Next, showing one step at a time. It lets a user upload
+  an STL (or open the Sample Test Case), choose which teeth move and the tray-wear
+  duration, build the plan, review it with a prominent Ask-AI box, preview it in
+  3D, and export printable files. It acknowledges that the preview is not a
+  diagnosis or treatment plan. The built-in demo uses synthetic tooth-shaped
+  models with crown/cusp detail for clarity; it does not represent patient anatomy.
 - **Clinician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 
+The 3D viewer, AI box, and upload control are single instances relocated into the
+active surface (delegated events + id-based renders), so there is never a second
+WebGL context.
+
 ## Plan AI
 
-The Review panel includes a compact chat surface. It posts the current
-plan-shaped JSON to `POST /api/chat` with a selected connector, model
+The Review surface includes a prominent **Ask AI about your plan** box. It posts
+the current plan-shaped JSON to `POST /api/chat` with a selected connector, model
 preference, and context scope. The default `local` connector produces an
-educational explanation without leaving the local server. External connectors
-for OpenAI, Claude Code, MCP hosts, Odysseus, and open-source models are visible
-in the UI but return a clear "not enabled" response until an explicit provider
-gateway is configured.
+educational explanation without leaving the local server. External connectors for
+OpenAI, Claude (Anthropic), MCP hosts, Odysseus, and open-source models perform
+live completions once a provider is selected, a key/endpoint is supplied, and
+per-session egress consent (`share_acknowledged`) is given.
 
-The connector settings panel includes session-only API key entry and future
-agent/MCP access controls. API keys are not written into plan JSON, case
-snapshots, or exported reports.
+The **provider selector and a session-only API-key field are shown directly in
+the AI box** with provider-specific, plain-language help (the key field is hidden
+for the no-key local helper); the agent/MCP endpoint and egress consent live under
+**Advanced connector settings**. API keys are read only at send time and are not
+written into plan JSON, case snapshots, `localStorage`, or exported reports.
 
 Context scopes:
 
@@ -88,9 +99,11 @@ same browser; they are not uploaded to a server database.
 
 `ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
 OrthoCAD shell STLs used to keep exact scan rendering stable as the product
-evolves. The sidebar Sample Test Case opens that pair as a 4-month educational
-progression. The scan layer is the actual STL geometry; the movement sequence is
-simulated until segmented per-tooth meshes are available.
+evolves (and as the first tracked data contribution). You can load them via the
+normal upload control to see exact whole-arch scan rendering. The sidebar **Sample
+Test Case** is a separate, isolated demonstration that uses bundled demo crowns in
+an overlay view so the simulated tooth movement is clearly visible across stages;
+it does not load the canonical STL.
 
 ## 3D viewer
 
@@ -124,9 +137,12 @@ with a matching pinned pair.
 
 The Settings step has print-export fields for format, delivery email, dental model
 material, thermoforming material, and acknowledgement. The Review step renders backend
-readiness status from `print_export`. `orthoplan print-package` generates stage proxy STL
-files, a hash-bound manifest, optional deterministic zip package, and optional email draft
-from the supplied plan data.
+readiness status from `print_export`. The guided **Print / send** step builds the
+files in-browser via `POST /api/print-package` (which reuses `export_print_package`)
+and offers a zip download plus an `.eml` draft that opens pre-attached in a mail
+client. The same package is available from the CLI: `orthoplan print-package`
+generates stage proxy STL files, a hash-bound manifest, optional deterministic zip
+package, and optional email draft from the supplied plan data.
 
 ## Tests
 

@@ -96,12 +96,6 @@ export function placeSharedBlocks() {
     relocate("simpleUpload", "guidedUploadHost");
     relocate("viewerBlock", "guidedPreviewHost");
     relocate("aiChatBlock", "guidedAiHost");
-  } else if (state.userMode === "sample") {
-    // The isolated sample only needs the 3D viewer; the upload/AI blocks park in
-    // their technician homes (hidden) so their ids stay in the DOM.
-    relocate("viewerBlock", "sampleViewerHost");
-    relocate("simpleUpload", "techUploadHost");
-    relocate("aiChatBlock", "techAiHost");
   } else {
     relocate("simpleUpload", "techUploadHost");
     relocate("viewerBlock", "techViewerHost");
@@ -128,9 +122,30 @@ export function renderGuided() {
   if (back) back.disabled = idx === 0;
   if (next) next.hidden = idx === GUIDED_STEPS.length - 1;
 
+  // Sample banner + heading: the sample reuses this wizard, so flag it clearly.
+  const banner = el("sampleBanner");
+  if (banner) banner.hidden = !state.sample.active;
+  const heading = el("guidedHeading");
+  if (heading) {
+    heading.textContent = state.sample.active
+      ? "Sample test case — guided walkthrough"
+      : "Plan your aligners, step by step";
+  }
+
   renderGuidedTeeth();
+  renderGuidedBuildStatus();
   renderGuidedReview();
   renderGuidedPrint();
+}
+
+// Visible feedback for "Build my plan" so the action is never silent.
+function renderGuidedBuildStatus() {
+  const status = el("guidedBuildStatus");
+  if (!status) return;
+  const gen = state.generation;
+  const text = gen.busy ? "Building your plan..." : (gen.status || "");
+  status.hidden = !text;
+  status.textContent = text;
 }
 
 function renderGuidedTeeth() {

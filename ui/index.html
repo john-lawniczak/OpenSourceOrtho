@@ -104,7 +104,11 @@
               <h2 id="guidedHeading">Plan your aligners, step by step</h2>
               <p class="guided-sub">Educational only — this does not diagnose, prescribe, or say whether treatment is safe or complete.</p>
             </div>
-            <button class="ghost-toggle" data-user-mode="advanced" type="button">Technician view →</button>
+          </div>
+
+          <div class="sample-banner" id="sampleBanner" hidden>
+            <span>Sample test case — a simulated walkthrough so you can see every step. Your own work is untouched.</span>
+            <button class="ghost-toggle" id="sampleExit" type="button">Exit sample</button>
           </div>
 
           <ol class="guided-rail" id="guidedRail">
@@ -153,6 +157,8 @@
               </label>
               <button class="primary-action" id="guidedBuild" type="button">Build my plan</button>
             </div>
+            <p class="guided-hint">"Build my plan" turns your scan into a step-by-step sequence of small tooth movements (the aligner stages). You can then review it, preview it in 3D, and export the print files.</p>
+            <p id="guidedBuildStatus" class="guided-status" hidden></p>
             <p class="guided-hint">These are the teeth the plan moves. Uncheck any you'd like to keep still.</p>
             <div id="guidedTeeth" class="guided-teeth"></div>
             <h4>How long should each tray be worn?</h4>
@@ -220,21 +226,6 @@
 
         <!-- Hidden home for the relocated upload stack when in Technician view. -->
         <div id="techUploadHost" hidden></div>
-
-        <!-- Sample test case: a fully isolated demonstration (sample.js). Opening
-             it snapshots and later restores the user's working state, so it never
-             changes the guided or technician editors. -->
-        <section id="sample" aria-label="Sample test case">
-          <div class="guided-head">
-            <div>
-              <h2>Sample test case</h2>
-              <p class="guided-sub">A simulated example so you can see how a plan animates. Not a real patient and not a medical device.</p>
-            </div>
-            <button class="ghost-toggle" id="sampleExit" type="button">← Back</button>
-          </div>
-          <p>Drag the stage slider to watch the teeth move from crowded toward aligned across the plan.</p>
-          <div id="sampleViewerHost"></div>
-        </section>
 
         <section class="panel" id="panel-upload">
           <div class="panel-heading">
@@ -504,17 +495,25 @@
                   <button class="is-active" data-detail-mode="ai" data-detail-value="basic" type="button">Basic</button>
                   <button data-detail-mode="ai" data-detail-value="advanced" type="button">Advanced</button>
                 </div>
-                <div class="field-grid chat-controls advanced-ai">
-                  <label>Connector
+                <!-- Connector + API key are always visible so it is obvious how to
+                     turn on a real AI. The key field hides for the local helper. -->
+                <div class="ai-connector">
+                  <label>AI provider
                     <select id="chatProvider">
-                      <option value="local">Local helper</option>
+                      <option value="local">Local helper (no key needed)</option>
                       <option value="openai">OpenAI</option>
-                      <option value="claude-code">Claude Code</option>
+                      <option value="claude-code">Claude (Anthropic)</option>
                       <option value="mcp">MCP host</option>
                       <option value="odysseus">Odysseus</option>
                       <option value="open-source">Open-source model</option>
                     </select>
                   </label>
+                  <label class="ai-key-field" id="aiKeyField">Your API key
+                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Paste your API key" />
+                  </label>
+                  <p class="ai-key-help" id="aiKeyHelp"></p>
+                </div>
+                <div class="field-grid chat-controls advanced-ai">
                   <label>Model
                     <input id="chatModel" value="local-educational-helper" />
                   </label>
@@ -533,10 +532,7 @@
                 </label>
                 <button class="primary-action" id="sendChat" type="button">Ask AI</button>
                 <details class="ai-settings advanced-ai">
-                  <summary>Connector Settings</summary>
-                  <label>API key
-                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Session only; not saved" />
-                  </label>
+                  <summary>Advanced connector settings</summary>
                   <label class="toggle">
                     <span>Allow an external AI agent to request scoped plan context</span>
                     <input id="agentAccessEnabled" type="checkbox" />
@@ -544,9 +540,8 @@
                   <label>Agent/MCP endpoint
                     <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
                   </label>
-                  <p class="viewer-caveat">The API key is session-only: it is never saved to disk, never written into plans or case snapshots, and is sent to the selected connector only when you press Ask AI. When an external connector is selected, that key and the scoped plan context are transmitted to it. The local helper sends nothing off this machine. Account linking should move to OAuth or an MCP permission handshake later.</p>
                 </details>
-                <p class="viewer-caveat">AI answers are educational only. External connectors require the acknowledgement above and receive the scoped plan context you select; use the context selector deliberately.</p>
+                <p class="viewer-caveat">Your API key is used only for this session: it is never saved to disk and is sent only to the provider you pick, only when you press Ask AI. The local helper sends nothing off this machine. AI answers are educational only.</p>
               </section>
               </div>
               <h2 class="advanced-only">Print Export</h2>

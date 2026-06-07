@@ -12,6 +12,9 @@ export const state = {
     excludedTeeth: [],
     print: { busy: false, status: "", result: null },
   },
+  // When true, the guided wizard is showing the isolated sample demonstration
+  // (working state is snapshotted and restored on exit). See sample.js.
+  sample: { active: false },
   view: "current",
   dim: "3d",
   file: null,
