@@ -1,6 +1,6 @@
 import { askPlanAssistant, el, listCaseVersions, maxStage, requestPlanGeneration, savePlanVersion, state } from "./state.js";
-import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
-import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, setDimension, zoomViewer } from "./render.js";
+import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
 import { closestDatasetTarget } from "./core.js";
@@ -13,6 +13,7 @@ import {
   setWearInterval,
   toggleExcludedTooth,
 } from "./guided.js";
+import { enterSample, exitSample } from "./sample.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -30,12 +31,13 @@ function setUserMode(mode) {
   maybeRecenterPreview();
 }
 
-// The 3D viewer is first sized while its guided step is hidden (1x1). When the
-// user lands on the preview step, re-fit the camera now that the container has a
-// real size. Deferred a frame so layout reflows before measuring.
+// The 3D viewer may be sized while its host is hidden (1x1) or framed for a
+// previous scene. When it becomes visible (guided 3D step, sample screen),
+// request a one-shot re-frame that runs after the next evaluation populates the
+// scene at its real size.
 function maybeRecenterPreview() {
   if (state.userMode === "simple" && state.guided.step === "preview") {
-    requestAnimationFrame(() => recenterViewer());
+    requestViewerRefit();
   }
 }
 
@@ -146,7 +148,6 @@ document.body.addEventListener("input", (event) => {
 document.body.addEventListener("click", (event) => {
   const target = event.target;
   const button = target.closest?.("button");
-  const canonicalTarget = closestDatasetTarget(target, "canonicalMonths");
   const stepTarget = closestDatasetTarget(target, "stepTarget");
   const journeyTarget = closestDatasetTarget(target, "journeyStep");
   const removeUploadTarget = closestDatasetTarget(target, "removeUpload");
@@ -155,7 +156,7 @@ document.body.addEventListener("click", (event) => {
   const restoreVersionTarget = closestDatasetTarget(target, "restoreVersion");
   const removeRowTarget = closestDatasetTarget(target, "remove");
   const userModeTarget = closestDatasetTarget(target, "userMode");
-  const guidedStepTarget = closestDatasetTarget(target, "gstep");
+  const guidedStepTarget = closestDatasetTarget(target, "gstepNav");
   const printArtifactTarget = closestDatasetTarget(target, "printArtifact");
   const wearTarget = closestDatasetTarget(target, "wear");
 
@@ -169,7 +170,7 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (guidedStepTarget) {
-    goGuided(guidedStepTarget.dataset.gstep);
+    goGuided(guidedStepTarget.dataset.gstepNav);
     renderAll();
     maybeRecenterPreview();
     return;
@@ -184,14 +185,17 @@ document.body.addEventListener("click", (event) => {
     renderAll();
     maybeRecenterPreview();
   }
-  if (button?.id === "guidedUseSample") {
-    loadCanonicalCase(4);
-    goGuided("plan");
+  if (button?.id === "guidedUseSample" || button?.id === "sampleLaunch") {
+    enterSample();
+    requestViewerRefit();
+    renderAll();
+  }
+  if (button?.id === "sampleExit") {
+    exitSample();
     renderAll();
   }
   if (button?.id === "guidedBuild") {
-    if (state.files.length) generatePlan();
-    else renderAll();
+    generatePlan();
   }
   if (button?.id === "guidedPrint") {
     runPrintPackage();
@@ -215,9 +219,6 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "loadDemo") {
     loadSyntheticDemo();
-  }
-  if (canonicalTarget) {
-    loadCanonicalCase(Number(canonicalTarget.dataset.canonicalMonths));
   }
   if (stepTarget) {
     goToStep(stepTarget.dataset.stepTarget);
@@ -276,10 +277,6 @@ function uploadLabel(files, emptyLabel) {
 }
 
 function goToStep(step) {
-  if (step === "sample") {
-    loadCanonicalCase(4, { activeStep: "sample" });
-    return;
-  }
   state.activeStep = step;
 }
 
@@ -350,41 +347,6 @@ function loadSyntheticDemo() {
   el("exaggeration").value = "12";
   el("simpleGoal").value = "crowding";
   el("simpleAcknowledged").checked = true;
-  renderAll();
-}
-
-function loadCanonicalCase(months, options) {
-  const stageCount = months === 4 ? 4 : (months === 6 ? 6 : 12);
-  state.simpleAcknowledged = true;
-  state.simpleGoal = "crowding";
-  state.demoInitialOffsets = demoInitialOffsets;
-  state.useDemoMeshes = true;
-  state.sampleStatus =
-    `Sample test case · real upper/lower OrthoCAD STL scan layer · simulated ${months}-month tooth movement.`;
-  state.files = [];
-  state.file = null;
-  state.uploadStorageStatus = "";
-  state.scanArchFilter = "both";
-  state.scanRenderStatus = "Loading built-in upper/lower OrthoCAD STL scan layer...";
-  clearUploadedFiles().catch(() => {});
-  state.scanSources = canonicalScanSources;
-  state.rows = syntheticCrowdingRows(stageCount, { includeBaseline: true });
-  state.view = "overlay";
-  state.activeStep = options?.activeStep || "sample";
-  state.availability.intraoral_scan = true;
-  state.availability.occlusion_scan = true;
-  state.availability.segmented_teeth = false;
-  el("planTitle").value = `Canonical OrthoCAD simulated ${months}-month progression`;
-  el("planId").value = `canonical-orthocad-${months}-month`;
-  el("wearInterval").value = "30";
-  el("exaggeration").value = "12";
-  el("scanUnits").value = "mm";
-  el("scanArch").value = "";
-  el("simpleGoal").value = "crowding";
-  el("simpleAcknowledged").checked = true;
-  el("uploadLabel").textContent = "Canonical upper + lower OrthoCAD STLs";
-  el("simpleUploadLabel").textContent = "Canonical upper + lower OrthoCAD STLs";
-  renderAvailability();
   renderAll();
 }
 

@@ -33,10 +33,7 @@
           <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
         </div>
         <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
-        <button class="sample-launch" data-step-target="sample" type="button">
-          <strong>Sample Test Case</strong>
-          <span>Open the built-in 4-month OrthoCAD preview</span>
-        </button>
+        <button class="sample-launch" id="sampleLaunch" type="button">Sample Test Case</button>
 
         <nav class="step-list" aria-label="Workflow steps">
           <button class="step is-active" data-step="upload" type="button">Upload</button>
@@ -111,12 +108,12 @@
           </div>
 
           <ol class="guided-rail" id="guidedRail">
-            <li data-gstep="upload"><span>1</span> Upload</li>
-            <li data-gstep="plan"><span>2</span> Teeth &amp; time</li>
-            <li data-gstep="details"><span>3</span> Details</li>
-            <li data-gstep="review"><span>4</span> Review</li>
-            <li data-gstep="preview"><span>5</span> 3D preview</li>
-            <li data-gstep="print"><span>6</span> Print / send</li>
+            <li data-gstep-nav="upload"><span>1</span> Upload</li>
+            <li data-gstep-nav="plan"><span>2</span> Teeth &amp; time</li>
+            <li data-gstep-nav="details"><span>3</span> Details</li>
+            <li data-gstep-nav="review"><span>4</span> Review</li>
+            <li data-gstep-nav="preview"><span>5</span> 3D preview</li>
+            <li data-gstep-nav="print"><span>6</span> Print / send</li>
           </ol>
 
           <section class="gstep" data-gstep="upload">
@@ -147,7 +144,7 @@
             <div class="guided-build">
               <label>What are you exploring?
                 <select id="simpleGoal">
-                  <option value="general-alignment">General alignment</option>
+                  <option value="general-alignment" selected>General alignment</option>
                   <option value="crowding">Crowding</option>
                   <option value="spacing">Spacing</option>
                   <option value="front-teeth">Front teeth appearance</option>
@@ -223,6 +220,21 @@
 
         <!-- Hidden home for the relocated upload stack when in Technician view. -->
         <div id="techUploadHost" hidden></div>
+
+        <!-- Sample test case: a fully isolated demonstration (sample.js). Opening
+             it snapshots and later restores the user's working state, so it never
+             changes the guided or technician editors. -->
+        <section id="sample" aria-label="Sample test case">
+          <div class="guided-head">
+            <div>
+              <h2>Sample test case</h2>
+              <p class="guided-sub">A simulated example so you can see how a plan animates. Not a real patient and not a medical device.</p>
+            </div>
+            <button class="ghost-toggle" id="sampleExit" type="button">← Back</button>
+          </div>
+          <p>Drag the stage slider to watch the teeth move from crowded toward aligned across the plan.</p>
+          <div id="sampleViewerHost"></div>
+        </section>
 
         <section class="panel" id="panel-upload">
           <div class="panel-heading">
@@ -386,14 +398,6 @@
                 <p id="timelineText"></p>
               </div>
               <p id="sampleStatusChip" class="sample-status-chip" hidden></p>
-              <div class="workflow-card sample-panel sample-only">
-                <span class="sample-badge">Sample test case</span>
-                <h2>4-Month OrthoCAD Preview</h2>
-                <p>Upper and lower STL files are included. Drag the stage slider to compare the starting scan layer with the simulated straightening preview.</p>
-                <div class="workflow-actions inline">
-                  <button class="primary-action" data-canonical-months="4" type="button">Reset 4-Month Sample</button>
-                </div>
-              </div>
               <div class="workflow-card">
                 <h2>Step 5: Review The Progression</h2>
                 <p>Use the view buttons and stage slider to inspect the current, planned, or overlay preview.</p>

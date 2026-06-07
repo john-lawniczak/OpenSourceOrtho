@@ -96,6 +96,12 @@ export function placeSharedBlocks() {
     relocate("simpleUpload", "guidedUploadHost");
     relocate("viewerBlock", "guidedPreviewHost");
     relocate("aiChatBlock", "guidedAiHost");
+  } else if (state.userMode === "sample") {
+    // The isolated sample only needs the 3D viewer; the upload/AI blocks park in
+    // their technician homes (hidden) so their ids stay in the DOM.
+    relocate("viewerBlock", "sampleViewerHost");
+    relocate("simpleUpload", "techUploadHost");
+    relocate("aiChatBlock", "techAiHost");
   } else {
     relocate("simpleUpload", "techUploadHost");
     relocate("viewerBlock", "techViewerHost");
@@ -110,9 +116,9 @@ export function renderGuided() {
   document.querySelectorAll("#guided .gstep").forEach((panel) => {
     panel.classList.toggle("is-active", panel.dataset.gstep === active);
   });
-  document.querySelectorAll("#guidedRail [data-gstep]").forEach((dot) => {
-    const done = stepIndex(dot.dataset.gstep) < stepIndex(active);
-    dot.classList.toggle("is-active", dot.dataset.gstep === active);
+  document.querySelectorAll("#guidedRail [data-gstep-nav]").forEach((dot) => {
+    const done = stepIndex(dot.dataset.gstepNav) < stepIndex(active);
+    dot.classList.toggle("is-active", dot.dataset.gstepNav === active);
     dot.classList.toggle("is-done", done);
   });
 

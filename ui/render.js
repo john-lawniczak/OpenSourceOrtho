@@ -14,6 +14,16 @@ import { renderGuided } from "./guided.js";
 
 let viewer = null;
 let viewerFailed = false;
+// One-shot request to re-frame the camera once the next evaluation has populated
+// the scene. Used when a new scene becomes visible (sample screen, guided 3D
+// step) where the viewer may have been sized while hidden or framed for a
+// different scene. It is honored after the async evaluation renders, so the fit
+// uses the real container size and the new geometry.
+let pendingRefit = false;
+
+export function requestViewerRefit() {
+  pendingRefit = true;
+}
 
 function ensureViewer() {
   if (viewer || viewerFailed) return viewer;
@@ -70,21 +80,20 @@ function updateViewer(result) {
   const scanSources = filterScanSources(allScanSources);
   if (scanSources.length) {
     v.loadScanSources(scanSources).then(({ loaded, count }) => {
-      const sourceType = state.files.length ? "uploaded" : "canonical example";
       state.scanRenderStatus = count
-        ? `Rendering exact ${sourceType} scan mesh${count === 1 ? "" : "es"} (${scanSources.map((source) => source.name).join(", ")}). Staged movement remains simulated unless segmented per-tooth meshes are provided.`
-        : "No STL scan mesh could be rendered.";
+        ? "Showing your scan. Tooth movement in the preview is simulated."
+        : "Your scan could not be displayed.";
       renderScanStatus();
       if (loaded && state.lastEval === result) updateViewer(result);
-    }).catch((error) => {
-      state.scanRenderStatus = `Uploaded STL render failed: ${error.message}`;
+    }).catch(() => {
+      state.scanRenderStatus = "Your scan could not be displayed.";
       renderScanStatus();
     });
   } else {
     v.loadScanSources([]);
     state.scanRenderStatus = state.useDemoMeshes
-      ? "Rendering bundled demo tooth meshes."
-      : "No uploaded scan mesh is loaded; review uses schematic proxy teeth.";
+      ? "Simulated sample teeth — drag the stage slider to watch them move."
+      : "No scan loaded yet; the preview uses simple placeholder teeth.";
     renderScanStatus();
   }
   const renderMeshes = result.render_meshes?.length
@@ -473,6 +482,10 @@ function renderEvaluation(result) {
   el("stageValue").textContent = slider.value;
   drawCanvas();
   updateViewer(result);
+  if (pendingRefit) {
+    pendingRefit = false;
+    ensureViewer()?.recenter();
+  }
   renderPrintExport(result.print_export);
   renderOptimizedStaging(result.optimized_staging);
   renderDownloadActions();
