@@ -13,7 +13,7 @@ import {
   setWearInterval,
   toggleExcludedTooth,
 } from "./guided.js";
-import { enterSample, exitSample } from "./sample.js";
+import { enterSample, exitSample, sampleActive } from "./sample.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -185,9 +185,15 @@ document.body.addEventListener("click", (event) => {
     renderAll();
     maybeRecenterPreview();
   }
-  if (button?.id === "guidedUseSample" || button?.id === "sampleLaunch") {
-    enterSample();
-    requestViewerRefit();
+  if (button?.id === "sampleLaunch") {
+    // The sidebar launcher toggles the sample so it can be exited from either
+    // Guided or Technician view, wherever the user has navigated.
+    if (sampleActive()) {
+      exitSample();
+    } else {
+      enterSample();
+      requestViewerRefit();
+    }
     renderAll();
   }
   if (button?.id === "sampleExit") {

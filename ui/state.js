@@ -99,10 +99,10 @@ export const state = {
     movementExclusions: "",
     iprContacts: {},
   },
-  rows: [
-    { stage: 0, tooth: "11", x: 0.2, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 },
-    { stage: 1, tooth: "11", x: 0.1, y: 0.1, z: 0, tip: 0, torque: 0, rotation: 0 },
-  ],
+  // Empty by default: the guided "teeth that move" list and the technician stage
+  // table both derive from rows, so there are no placeholder teeth until the user
+  // uploads a scan and builds a plan (or opens the Sample Test Case).
+  rows: [],
 };
 
 export const iprContactPairs = [

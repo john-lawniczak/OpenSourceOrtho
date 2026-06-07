@@ -221,8 +221,8 @@ def test_demo_crown_meshes_are_served(server: int) -> None:
 
 
 def test_canonical_orthocad_scans_are_served(server: int) -> None:
-    for arch in ("u", "l"):
-        status, body = _get(server, f"/example-scans/canonical-orthocad-001/308806025_shell_occlusion_{arch}.stl")
+    for arch in ("upper", "lower"):
+        status, body = _get(server, f"/example-scans/canonical-orthocad-001/sample-test-case-{arch}.stl")
         assert status == 200, arch
         assert len(body) > 10_000_000
 

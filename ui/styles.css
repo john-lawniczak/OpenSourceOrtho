@@ -54,8 +54,42 @@ button:disabled {
   opacity: 0.55;
 }
 
+/* Full-width top bar holding the brand and the light/dark switch, so the switch
+   is anchored in a real bar (not floating in the corner) and content fits. */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 60px;
+  padding: 0 18px;
+  background: #111b20;
+  color: #f6fbfc;
+  border-bottom: 1px solid #0a1216;
+}
+
+.app-topbar .brand-block {
+  gap: 12px;
+}
+
+.app-topbar .brand-mark {
+  width: 40px;
+  height: 40px;
+}
+
+.app-topbar .brand-block h1 {
+  color: #f6fbfc;
+}
+
+.app-topbar .brand-block p {
+  color: #a8bac2;
+}
+
 .app-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
   display: grid;
   grid-template-columns: 304px minmax(0, 1fr);
 }
@@ -169,10 +203,57 @@ p {
   padding: 0 10px;
 }
 
+/* Light/Dark switch, living at the right of the top bar like most sites. */
 .theme-toggle {
-  background: transparent;
-  color: #d8e4e9;
-  border-color: #344951;
+  position: relative;
+  flex: 0 0 auto;
+  width: 62px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid #34464f;
+  border-radius: 999px;
+  background: #0f171b;
+  cursor: pointer;
+}
+
+.theme-toggle-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+}
+
+.theme-toggle-glyph {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.theme-toggle-glyph.sun {
+  color: #d6a928;
+}
+
+.theme-toggle-glyph.moon {
+  color: var(--muted);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--accent);
+  transition: left 0.16s ease;
+}
+
+body[data-theme="dark"] .theme-toggle-thumb {
+  left: calc(100% - 25px);
 }
 
 .sample-launch {
@@ -236,13 +317,9 @@ body[data-mode="advanced"] #guided {
   display: none;
 }
 
-/* The Clinician/Guided toggle lives on the left and stays visible in both modes.
-   The only time it is hidden is inside the isolated sample, which has its own
-   "Exit sample" control so leaving always restores the user's working state. */
-body[data-sample="1"] .mode-switch,
-body[data-sample="1"] .guided-or {
-  display: none;
-}
+/* The Guided/Technician toggle lives in the sidebar and stays visible in both
+   modes AND inside the sample, so the user can move between views while the
+   sample is active. The sidebar Sample button doubles as the exit. */
 
 /* ---- Guided wizard --------------------------------------------------- */
 
@@ -463,6 +540,86 @@ body[data-theme="dark"] .sample-banner {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
+}
+
+/* Balanced (10-day) is the default, primary choice; the other paces sit one
+   layer down behind this disclosure. */
+.guided-duration-more {
+  flex-basis: 100%;
+}
+
+.guided-duration-more summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+
+.guided-duration-more > button {
+  margin: 0 8px 4px 0;
+}
+
+/* Plain-language definition callout (e.g. "what is a stage?"). */
+.guided-define {
+  border-left: 3px solid var(--accent);
+  background: var(--panel-alt);
+  padding: 10px 14px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* Step 4 headline: the key result (trays + total time), prominent above details. */
+.guided-headline {
+  display: grid;
+  gap: 3px;
+  margin: 4px 0 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--panel-alt);
+}
+
+.guided-headline:empty {
+  display: none;
+}
+
+.guided-headline-main {
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.guided-headline-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Step 4 plain-language summary + timeline bullets. */
+.guided-summary {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.guided-summary li {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.guided-summary li.guided-summary-note {
+  border: none;
+  background: transparent;
+  padding: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .guided-range {

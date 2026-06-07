@@ -124,7 +124,7 @@ export function renderAll() {
   document.body.dataset.sample = state.sample.active ? "1" : "";
   document.body.dataset.generationDetail = state.detailMode.generation;
   document.body.dataset.aiDetail = state.detailMode.ai;
-  el("themeToggle").textContent = state.theme === "dark" ? "Light Mode" : "Dark Mode";
+  el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
   state.scanUnits = el("scanUnits").value;
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
@@ -420,8 +420,9 @@ function renderSteps() {
 }
 
 function renderUploadFileList() {
-  const markup = state.files.length
-    ? `
+  let markup;
+  if (state.files.length) {
+    markup = `
       <div class="upload-file-heading">
         <strong>${state.files.length === 1 ? "Uploaded STL" : "Uploaded STLs"}</strong>
         <button data-clear-uploads="true" type="button">Clear All</button>
@@ -436,8 +437,26 @@ function renderUploadFileList() {
           </li>
         `).join("")}
       </ul>
-    `
-    : "<p>No STL files are stored yet. Select upper, lower, or both arches.</p>";
+    `;
+  } else if (state.scanSources.length) {
+    // The Sample Test Case loads its two STL scans as already-present records, so
+    // step 1 shows them as "loaded" (read-only - they are not user uploads).
+    markup = `
+      <div class="upload-file-heading">
+        <strong>Loaded scans</strong>
+      </div>
+      <ul>
+        ${state.scanSources.map((source) => `
+          <li>
+            <span>${escapeHtml(source.name)}</span>
+            <small>${escapeHtml(source.arch || "arch unknown")}</small>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+  } else {
+    markup = "<p>No STL files are stored yet. Select upper, lower, or both arches.</p>";
+  }
   el("uploadFileList").innerHTML = markup;
   el("simpleUploadFileList").innerHTML = markup;
 }
@@ -593,6 +612,13 @@ function renderSampleStatus() {
   const chip = el("sampleStatusChip");
   chip.hidden = !state.sampleStatus;
   chip.textContent = state.sampleStatus;
+  // The sidebar launcher doubles as the exit so the sample is always escapable,
+  // in either Guided or Technician view, as the user navigates.
+  const launch = el("sampleLaunch");
+  if (launch) {
+    launch.textContent = state.sample.active ? "Exit Sample Test Case" : "Sample Test Case";
+    launch.classList.toggle("is-active-sample", state.sample.active);
+  }
 }
 
 function renderDownloadActions() {
