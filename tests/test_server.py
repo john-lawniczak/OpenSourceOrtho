@@ -117,6 +117,40 @@ def test_local_chat_endpoint_returns_session(server: int) -> None:
     assert payload["session"]["messages"][1]["role"] == "assistant"
 
 
+def test_generate_plan_endpoint_returns_staging(server: int) -> None:
+    plan = {
+        "id": "gen",
+        "scans": [{"asset": {"id": "s1", "format": "stl", "units": "mm",
+                             "vertex_count": 0, "face_count": 0}}],
+        "stages": [
+            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "21"}, "translate_x_mm": 1.0}]}
+        ],
+    }
+    status, payload = _post(
+        server,
+        json.dumps({"plan": plan}).encode(),
+        {"Content-Type": "application/json"},
+        path="/api/generate-plan",
+    )
+    assert status == 200
+    assert payload["ok"] is True
+    assert payload["source"] == "authored"
+    assert payload["correctness"]["verdict"] == "CONSISTENT"
+    assert payload["stage_count"] >= 4
+
+
+def test_plan_version_save_and_list_roundtrip(server: int, tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("ORTHOPLAN_CASE_STORE", str(tmp_path / "cases.json"))
+    plan = {"id": "case-srv", "title": "Server case", "stages": [
+        {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}]}
+    status, saved = _post(server, json.dumps({"plan": plan, "note": "v1"}).encode(),
+                          {"Content-Type": "application/json"}, path="/api/plan/version")
+    assert status == 200 and saved["ok"] is True and saved["version"]["version_id"] == "v0001"
+    assert any(c["case_id"] == "case-srv" for c in json.loads(_get(server, "/api/cases")[1])["cases"])
+    versions = json.loads(_get(server, "/api/cases/case-srv")[1])
+    assert versions["ok"] is True and versions["versions"][0]["snapshot"]["id"] == "case-srv"
+
+
 _CHAT_PLAN = {
     "id": "chat",
     "stages": [
@@ -184,6 +218,13 @@ def test_demo_crown_meshes_are_served(server: int) -> None:
         assert status == 200, kind
         assert b"OpenSource Ortho" in body[:80]
         assert len(body) > 1000
+
+
+def test_canonical_orthocad_scans_are_served(server: int) -> None:
+    for arch in ("upper", "lower"):
+        status, body = _get(server, f"/example-scans/canonical-orthocad-001/sample-test-case-{arch}.stl")
+        assert status == 200, arch
+        assert len(body) > 10_000_000
 
 
 def test_invalid_json_is_400(server: int) -> None:

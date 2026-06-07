@@ -18,8 +18,16 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
-from orthoplan.api import evaluate_plan_payload
+from orthoplan.api import evaluate_plan_payload, print_package_payload
+from orthoplan.case_api import (
+    case_versions_payload,
+    list_cases_payload,
+    save_plan_version_payload,
+)
+from orthoplan.cases import default_case_store
+from orthoplan.generation import generate_plan_payload
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
+from orthoplan.segmentation_api import segment_payload
 
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
 MAX_BODY_BYTES = 5 * 1024 * 1024
@@ -58,6 +66,10 @@ class Handler(BaseHTTPRequestHandler):
         raw = os.environ.get("ORTHOPLAN_MESH_WORKSPACE")
         return Path(raw) if raw else default_mesh_workspace()
 
+    def _case_store(self) -> Path:
+        raw = os.environ.get("ORTHOPLAN_CASE_STORE")
+        return Path(raw) if raw else default_case_store()
+
     def _content_length(self) -> int | None:
         """Parsed Content-Length, or None if the header is missing/malformed."""
         raw = self.headers.get("Content-Length")
@@ -94,6 +106,13 @@ class Handler(BaseHTTPRequestHandler):
                     },
                 )
                 return
+            if path == "/api/cases":
+                self._send_json(200, list_cases_payload(store_path=self._case_store()))
+                return
+            if path.startswith("/api/cases/"):
+                case_id = urllib.parse.unquote(path.removeprefix("/api/cases/"))
+                self._send_json(200, case_versions_payload(case_id, store_path=self._case_store()))
+                return
             target = self._resolve_static(path)
             if target is None:
                 self._send_json(404, {"ok": False, "errors": ["not found"]})
@@ -110,7 +129,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
-            if path not in {"/api/evaluate", "/api/chat"}:
+            if path not in {
+                "/api/evaluate",
+                "/api/chat",
+                "/api/generate-plan",
+                "/api/plan/version",
+                "/api/print-package",
+                "/api/segment",
+            }:
                 self._send_json(404, {"ok": False, "errors": ["unknown endpoint"]})
                 return
             length = self._content_length()
@@ -131,6 +157,17 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/api/chat":
                 self._send_json(200, answer_chat_payload(payload))
+            elif path == "/api/generate-plan":
+                self._send_json(200, generate_plan_payload(payload))
+            elif path == "/api/plan/version":
+                self._send_json(200, save_plan_version_payload(payload, store_path=self._case_store()))
+            elif path == "/api/print-package":
+                self._send_json(200, print_package_payload(payload))
+            elif path == "/api/segment":
+                self._send_json(
+                    200,
+                    segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
+                )
             else:
                 self._send_json(200, evaluate_plan_payload(payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection

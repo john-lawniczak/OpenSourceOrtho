@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   createLatest,
+  closestDatasetTarget,
   degToRad,
   displacement,
   escapeHtml,
@@ -12,7 +13,7 @@ import {
   toothKind,
 } from "./core.js";
 import { parseStlGeometry } from "./stl.js";
-import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 
 test("toothKind classifies FDI teeth by last digit", () => {
   assert.equal(toothKind("11"), "incisor");
@@ -112,6 +113,26 @@ test("createLatest only treats the newest token as current", () => {
   assert.equal(latest.isCurrent(second), true);
 });
 
+test("closestDatasetTarget returns direct and ancestor data targets", () => {
+  const direct = { dataset: { journeyStep: "review" } };
+  assert.equal(closestDatasetTarget(direct, "journeyStep"), direct);
+
+  const ancestor = { dataset: { journeyStep: "stages" } };
+  const child = {
+    dataset: {},
+    closest(selector) {
+      assert.equal(selector, "[data-journey-step]");
+      return ancestor;
+    },
+  };
+  assert.equal(closestDatasetTarget(child, "journeyStep"), ancestor);
+});
+
+test("closestDatasetTarget tolerates non-element targets", () => {
+  assert.equal(closestDatasetTarget(null, "journeyStep"), null);
+  assert.equal(closestDatasetTarget({ dataset: {} }, "journeyStep"), null);
+});
+
 test("parseStlGeometry reads ASCII STL vertices", () => {
   const stl = `solid tooth
   facet normal 0 0 1
@@ -136,4 +157,22 @@ test("syntheticCrowdingRows creates 12 stages that counter initial offsets", () 
     .filter((row) => row.tooth === firstTooth)
     .reduce((sum, row) => sum + row.x, 0);
   assert.ok(Math.abs(total + demoInitialOffsets[firstTooth].x) < 0.01);
+});
+
+test("syntheticCrowdingRows can keep stage 0 as a before-state baseline", () => {
+  const rows = syntheticCrowdingRows(4, { includeBaseline: true });
+  const teeth = Object.keys(demoInitialOffsets);
+  assert.equal(rows.length, teeth.length * 4);
+  assert.ok(rows.filter((row) => row.stage === 0).every((row) => row.x === 0 && row.y === 0));
+
+  const firstTooth = teeth[0];
+  const total = rows
+    .filter((row) => row.tooth === firstTooth)
+    .reduce((sum, row) => sum + row.x, 0);
+  assert.ok(Math.abs(total + demoInitialOffsets[firstTooth].x) < 0.01);
+});
+
+test("canonical scan sources expose upper and lower STL fixtures", () => {
+  assert.deepEqual(canonicalScanSources.map((source) => source.arch), ["maxillary", "mandibular"]);
+  assert.ok(canonicalScanSources.every((source) => source.url.endsWith(".stl")));
 });

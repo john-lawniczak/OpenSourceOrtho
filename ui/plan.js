@@ -17,14 +17,12 @@ export function planJson() {
       },
     },
     scans: scanPayload(),
-    mesh_assets: [],
-    tooth_meshes: [],
-    fixed_teeth: parseToothList(state.clinicalControls.fixedTeeth).map((tooth) => ({
-      tooth,
-      stage_start: 0,
-      stage_end: null,
-      reason: "UI clinical control",
-    })),
+    // Per-tooth meshes only appear once the user has reviewed and explicitly
+    // applied an auto-segmentation proposal (see segment.js). Drafts are never
+    // merged automatically.
+    mesh_assets: state.segmentation.applied?.mesh_assets || [],
+    tooth_meshes: state.segmentation.applied?.tooth_meshes || [],
+    fixed_teeth: fixedTeeth(),
     movement_exclusions: parseMovementExclusions(state.clinicalControls.movementExclusions),
     attachments: parseToothList(state.clinicalControls.attachmentTeeth).map((tooth) => ({
       tooth,
@@ -43,6 +41,19 @@ export function planJson() {
       deltas: bucket.rows.map(deltaPayload),
     })),
   };
+}
+
+// Fixed teeth = technician-entered list PLUS any teeth the guided user chose to
+// hold still (excluded). Merged here so both flows share one plan contract.
+function fixedTeeth() {
+  const fromControls = parseToothList(state.clinicalControls.fixedTeeth).map((tooth) => tooth.value);
+  const merged = new Set([...fromControls, ...(state.guided.excludedTeeth || [])]);
+  return [...merged].map((value) => ({
+    tooth: { system: "FDI", value },
+    stage_start: 0,
+    stage_end: null,
+    reason: "UI clinical control",
+  }));
 }
 
 function parseToothList(value) {
@@ -87,20 +98,27 @@ function parseIprContacts(value) {
 }
 
 function scanPayload() {
-  if (!state.file) return [];
-  return [{
+  const sources = state.files.length
+    ? state.files.map((file) => ({ name: file.name, reference: file.name, arch: state.scanArch || null }))
+    : state.scanSources.map((source) => ({
+      name: source.name,
+      reference: source.url || source.name,
+      arch: source.arch || state.scanArch || null,
+    }));
+  if (!sources.length) return [];
+  return sources.map((source) => ({
     asset: {
-      id: `ui-${state.file.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
+      id: `ui-${source.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
       format: "stl",
       provenance: "patient-derived",
       units: state.scanUnits,
       vertex_count: 0,
       face_count: 0,
-      reference: state.file.name,
+      reference: source.reference,
     },
-    arch: state.scanArch || null,
+    arch: source.arch,
     source: "intraoral-scan",
-  }];
+  }));
 }
 
 function deltaPayload(row) {

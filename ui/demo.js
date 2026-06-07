@@ -13,15 +13,32 @@ export const demoInitialOffsets = {
   33: { x: -0.28, y: -0.12, z: 0 },
 };
 
-export function syntheticCrowdingRows(stageCount = 12) {
+// The two STL scans the Sample Test Case loads as its "already uploaded" records.
+// These are the exact models rendered in the sample's 3D preview.
+export const canonicalScanSources = [
+  {
+    name: "sample-test-case-upper.stl",
+    url: "./example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
+    arch: "maxillary",
+  },
+  {
+    name: "sample-test-case-lower.stl",
+    url: "./example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
+    arch: "mandibular",
+  },
+];
+
+export function syntheticCrowdingRows(stageCount = 12, options = {}) {
   const rows = [];
+  const movementStages = options.includeBaseline ? Math.max(1, stageCount - 1) : stageCount;
   for (let stage = 0; stage < stageCount; stage += 1) {
     for (const [tooth, offset] of Object.entries(demoInitialOffsets)) {
+      const isBaseline = options.includeBaseline && stage === 0;
       rows.push({
         stage,
         tooth,
-        x: round(-offset.x / stageCount),
-        y: round(-offset.y / stageCount),
+        x: isBaseline ? 0 : round(-offset.x / movementStages),
+        y: isBaseline ? 0 : round(-offset.y / movementStages),
         z: 0,
         tip: 0,
         torque: 0,

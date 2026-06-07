@@ -10,8 +10,16 @@ import { displacement, rotationApplications, toothKind } from "./core.js";
 import { toothPositions } from "./state.js";
 import { parseStlGeometry } from "./stl.js";
 
-const GHOST = new THREE.MeshStandardMaterial({ color: 0xc4d0d6, transparent: true, opacity: 0.45, roughness: 0.7 });
-const PLANNED = new THREE.MeshStandardMaterial({ color: 0xf6f1e6, roughness: 0.62, metalness: 0.02 });
+const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
+const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
+const SCAN = new THREE.MeshPhysicalMaterial({
+  color: 0xf6ead6,
+  roughness: 0.38,
+  metalness: 0,
+  clearcoat: 0.18,
+  clearcoatRoughness: 0.58,
+  side: THREE.DoubleSide,
+});
 const ATTACHMENT = new THREE.MeshStandardMaterial({ color: 0xb45309 });
 const ATTACHMENT_BOX = new THREE.BoxGeometry(0.9, 0.55, 0.45);
 const LINE_MAT = new THREE.LineBasicMaterial({ color: 0x2563eb });
@@ -78,6 +86,37 @@ function makeTextSprite(text) {
   return sprite;
 }
 
+// A readable FDI tooth-number badge: white text on an accent pill, drawn from a
+// 2D canvas texture and billboarded. depthTest off keeps it legible through the
+// teeth/scan. Reused per update (cleared with the proxies group).
+function makeToothNumberSprite(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 72;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgba(15,118,110,0.94)";
+  const w = canvas.width;
+  const h = canvas.height;
+  const r = 22;
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(8, 8, w - 16, h - 16, r);
+    ctx.fill();
+  } else {
+    ctx.fillRect(8, 8, w - 16, h - 16);
+  }
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 44px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, w / 2, h / 2 + 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(3.4, 1.9, 1);
+  return sprite;
+}
+
 // pose translation (x mesiodistal-ish, y front-back, z occlusogingival/vertical)
 // -> world (x, up=z, depth=y), times exaggeration.
 function worldDelta(pose, exaggeration) {
@@ -105,6 +144,9 @@ function plannedQuaternion(pose, frame) {
 export function createViewer(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio || 1);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
   container.replaceChildren(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -116,11 +158,21 @@ export function createViewer(container) {
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.65);
-  dir.position.set(40, 80, 40);
-  scene.add(dir);
-  scene.add(new THREE.GridHelper(90, 18, 0xdbe3e7, 0xeef2f4));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8fa2ad, 0.78));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.36));
+  const key = new THREE.DirectionalLight(0xfffbf2, 1.18);
+  key.position.set(34, 58, 42);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xe4f2ff, 0.58);
+  fill.position.set(-38, 26, -22);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xffffff, 0.48);
+  rim.position.set(0, 24, -55);
+  scene.add(rim);
+  const grid = new THREE.GridHelper(90, 18, 0xd5dde2, 0xe8edf0);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.52;
+  scene.add(grid);
 
   // Persistent arch labels so the stacked maxillary/mandibular arches are
   // unambiguous (depthTest off keeps them readable through the teeth).
@@ -133,10 +185,18 @@ export function createViewer(container) {
 
   const proxies = new THREE.Group();
   scene.add(proxies);
+  const uploadedScans = new THREE.Group();
+  scene.add(uploadedScans);
   // Per-update line geometries are freshly allocated each rebuild (unlike the
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
   let lineGeometries = [];
+  // Tooth-number label sprites are cached by FDI value and reused across updates.
+  // Each sprite owns a GPU texture; proxies.clear() only detaches it, so creating
+  // a fresh sprite per update (every stage scrub / view toggle) would leak a
+  // texture each time. Caching keeps exactly one sprite per tooth for the viewer's
+  // lifetime; dispose() frees them.
+  const toothLabelSprites = new Map();
   // The camera frames the arch once, on first populated render. Later updates
   // (stage scrub, view toggle) must not yank a camera the user has panned or
   // zoomed; an explicit recenter() re-frames on demand.
@@ -164,14 +224,16 @@ export function createViewer(container) {
     requestAnimationFrame(loop);
   })();
 
-  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration }) {
+  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels }) {
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
+    uploadedScans.visible = view === "current" || view === "overlay";
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
     proxies.clear();
     const frame = frames && frames[stageIndex];
     if (!frame) return;
-    const showCurrent = view === "current" || view === "overlay";
+    const hasExactScan = uploadedScans.visible && uploadedScans.children.length > 0;
+    const showCurrent = (view === "current" || view === "overlay") && !hasExactScan;
     const showPlanned = view === "planned" || view === "overlay";
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
@@ -189,6 +251,19 @@ export function createViewer(container) {
         ghost.quaternion.copy(archQuaternion(pose.tooth));
         proxies.add(ghost);
       }
+      // Optional FDI tooth-number label, floating above the tooth at its
+      // currently-displayed position, so a user can see which tooth is which.
+      if (showToothLabels) {
+        const labelAt = showPlanned ? base.clone().add(worldDelta(pose, exaggeration)) : base;
+        let label = toothLabelSprites.get(pose.tooth);
+        if (!label) {
+          label = makeToothNumberSprite(String(pose.tooth));
+          toothLabelSprites.set(pose.tooth, label);
+        }
+        label.position.copy(labelAt).add(new THREE.Vector3(0, 2.4, 0));
+        proxies.add(label);
+      }
+
       if (showPlanned) {
         const moved = base.clone().add(worldDelta(pose, exaggeration));
         const geometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
@@ -212,14 +287,17 @@ export function createViewer(container) {
       }
     }
     if (!fitted) {
-      fitCameraToProxies();
+      fitCameraToScene();
       fitted = true;
     }
   }
 
-  function fitCameraToProxies() {
-    if (!proxies.children.length) return;
-    const box = new THREE.Box3().setFromObject(proxies);
+  function fitCameraToScene() {
+    const fitTarget = new THREE.Group();
+    if (uploadedScans.visible && uploadedScans.children.length) fitTarget.add(uploadedScans.clone());
+    if (proxies.children.length) fitTarget.add(proxies.clone());
+    if (!fitTarget.children.length) return;
+    const box = new THREE.Box3().setFromObject(fitTarget);
     if (box.isEmpty()) return;
     // Fit a bounding sphere using the limiting (narrower) of the vertical and
     // horizontal field of view so a wide dental arch is fully framed and
@@ -252,7 +330,7 @@ export function createViewer(container) {
   }
 
   function recenter() {
-    fitCameraToProxies();
+    fitCameraToScene();
   }
 
   async function loadMeshes(renderMeshes = []) {
@@ -275,17 +353,76 @@ export function createViewer(container) {
     return loaded;
   }
 
+  async function loadScanSources(sources = []) {
+    const scanSources = sources.filter((source) => source?.name?.toLowerCase().endsWith(".stl"));
+    const key = scanSources.map(sourceKey).join("|");
+    if (uploadedScans.userData.key === key) return { loaded: false, count: uploadedScans.children.length };
+    uploadedScans.userData.key = key;
+    uploadedScans.traverse((child) => {
+      if (child.isMesh) child.geometry.dispose();
+    });
+    uploadedScans.clear();
+    if (!scanSources.length) return { loaded: false, count: 0 };
+
+    for (const source of scanSources) {
+      const geometry = parseStlGeometry(await sourceBuffer(source));
+      orientScanGeometry(geometry);
+      const mesh = new THREE.Mesh(geometry, SCAN);
+      mesh.name = source.name;
+      uploadedScans.add(mesh);
+    }
+
+    const box = new THREE.Box3().setFromObject(uploadedScans);
+    if (!box.isEmpty()) {
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      uploadedScans.position.set(-center.x, -box.min.y + 0.6, -center.z);
+    }
+    fitted = false;
+    return { loaded: true, count: uploadedScans.children.length };
+  }
+
+  function loadUploadedScans(files = []) {
+    return loadScanSources(files.map((file) => ({ name: file.name, file })));
+  }
+
   function dispose() {
     running = false;
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
+    for (const sprite of toothLabelSprites.values()) {
+      sprite.material.map?.dispose();
+      sprite.material.dispose();
+    }
+    toothLabelSprites.clear();
     window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
   }
 
   window.addEventListener("resize", resize);
-  return { update, resize, dispose, loadMeshes, zoomBy, recenter };
+  return { update, resize, dispose, loadMeshes, loadScanSources, loadUploadedScans, zoomBy, recenter };
+}
+
+function orientScanGeometry(geometry) {
+  // OrthoCAD/STL exports commonly use Z as vertical height. Three.js uses Y as
+  // up in this viewer, so rotate the scan into the dental floor plane:
+  // source (x, y, z) -> world (x, z, -y).
+  geometry.rotateX(-Math.PI / 2);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
+}
+
+function sourceKey(source) {
+  if (source.file) return `${source.name}:${source.file.size}:${source.file.lastModified}`;
+  return `${source.name}:${source.url}`;
+}
+
+async function sourceBuffer(source) {
+  if (source.file) return source.file.arrayBuffer();
+  const response = await fetch(source.url);
+  if (!response.ok) throw new Error(`could not load ${source.name}`);
+  return response.arrayBuffer();
 }
 
 // A material placeholder: mergeGroupGeometry only copies position/normal, so the

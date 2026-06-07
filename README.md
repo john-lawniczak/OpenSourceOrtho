@@ -28,19 +28,61 @@ New users can start with [HOW_TO.md](HOW_TO.md).
 
 The first static UI prototype lives in [ui/](ui/README.md).
 
-The UI includes two workflows:
+Scaffolding for the **lite** iOS and Android apps - thin native clients over the
+same engine - lives in [mobile/](mobile/README.md).
 
-- **Clinician mode**: a professional planning workspace for staged movement, records,
+The UI opens by default into a guided, step-by-step experience; the dense
+technician workspace is one click away via the **Guided / Technician** toggle in
+the left sidebar. A light/dark switch is anchored in the top bar.
+
+- **Guided mode (default)**: a six-step wizard for non-technical users -
+  **Upload → Teeth & time → Details → Review → 3D preview → Print / send**. It
+  explains limits in plain language, lets you choose which teeth move and how
+  long each tray is worn, animates the plan in 3D, surfaces a prominent
+  **Ask AI about your plan** box, and exports printable files. It is designed to
+  produce questions for a dental professional, not a do-it-yourself treatment plan.
+- **Technician mode**: a professional planning workspace for staged movement, records,
   clinical controls, findings, mesh rendering, print metadata, and plan JSON.
-- **Guided Review mode**: an educational, non-diagnostic flow for people who have an STL or
-  want to try a synthetic 12-month crowding demo. It is designed to explain limits,
-  visualize movement, and produce questions for a dental professional, not to create
-  a do-it-yourself treatment plan.
+- **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
+  (same step chips), pre-loaded with the two bundled test-case STL scans and a
+  Balanced 10-day pace. It starts at step 1 so a first-time viewer can walk the
+  whole flow, and it renders the real scans in 3D (the per-tooth movement layer is
+  simulated over the whole-arch shell). It snapshots and restores your working
+  state, so opening it never changes your own plan, uploads, or editors.
+- **Print / send**: the final guided step builds printable 3D files (one model
+  per stage plus a manifest) via `POST /api/print-package` and offers a zip
+  download and a pre-filled email draft (`.eml`) you can open in your mail app to
+  send the files to yourself or a print service.
+- **Auto-segmentation (experimental)**: an on-device, dependency-free heuristic
+  proposes per-tooth meshes from a whole-arch scan via `POST /api/segment`
+  (cutting at the valleys between crowns). It is a reviewable draft with per-tooth
+  confidence - you correct the FDI numbers and **explicitly** apply it; nothing is
+  auto-accepted, and scans never leave the machine. A `SegmentationModel` seam lets
+  a local learned model (e.g. Teeth3DS) replace the heuristic later.
+- **Generate Plan**: a one-click pipeline (the guided **Build my plan** button,
+  and the Technician Review panel) that builds a
+  cap-respecting staged plan from the best available target - your authored
+  movement; per-tooth crown **landmarks** (real arch-form deviation targets plus a
+  space analysis that budgets IPR, adds attachments, and checks crown collisions);
+  segmented crown geometry; or, if only a raw scan is loaded, a clearly-labeled
+  educational template. A deterministic orchestration step runs explicit named
+  checks and a verdict (`CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
+  optional model review is consent-gated and linted. It is a proposal, not a
+  diagnosis or treatment approval.
+- **Plan versions**: save named snapshots of a plan and restore any version back
+  into the editor. Backed by a local case store (`.orthoplan-cases.json`,
+  override with `ORTHOPLAN_CASE_STORE`); available in the UI Versions panel, the
+  HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
+  `case-list`, `case-versions`).
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
-  plan context, findings, data gaps, and timeline. The local helper works
-  without external services. Live connectors for OpenAI, Claude Code, and any
-  OpenAI-compatible host (MCP/Odysseus/open-source local models) are available
-  and gated behind an explicit per-session consent that data leaves the machine.
+  plan context, findings, data gaps, and timeline. The AI box shows the
+  **provider selector and an API-key field with plain-language instructions**
+  directly, so it is obvious how to enable a real model; the key field is hidden
+  for the **local helper**, which works without any key or external service. Live
+  connectors for OpenAI, Claude (Anthropic), and any OpenAI-compatible host
+  (MCP/Odysseus/open-source local models) are available and gated behind an
+  explicit per-session consent that data leaves the machine. The key is read only
+  when you press **Ask AI** and is never persisted.
 
 It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
 
@@ -80,21 +122,24 @@ The first workflow is simple:
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
-For a quick demo, open the app, switch to **Guided**, and click **Try 12-Month Demo**.
-The demo uses synthetic crowding offsets and staged movement over twelve 30-day stages.
-The 3D view stacks a labeled **Upper arch** above a **Lower arch** and loads bundled
-rounded crown meshes (served from `ui/demo-meshes/`, exercising the same per-tooth
-mesh-loading path real scans use). These crowns are synthetic educational proxies
-for visual clarity, not patient anatomy, and do not claim clinical feasibility. Use
-the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to zoom and orbit.
+For a quick demo, open the app and click **Sample Test Case** in the left
+sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
+test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), and starts at
+step 1 so you can walk the whole flow. The 3D preview renders the real scans with
+a simulated movement layer; drag the stage slider to watch the planned movement
+across stages. The per-tooth movement over a whole-arch shell is schematic, not a
+clinical prediction. Use the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to
+zoom and orbit, the **Tooth #** toggle to label teeth, and **Exit Sample Test
+Case** to return - your own work is untouched.
 
-In **Review**, use **Plan AI** to ask educational questions about the active
-plan. The default local helper stays on this machine. To use an external
-connector (OpenAI, Claude Code, or an OpenAI-compatible endpoint), open
-**Connector Settings**, enter a key/endpoint, and tick the acknowledgement that
-scoped plan context will be sent off the machine. The key is read only when you
-press **Ask AI**; it is never written to plans, case snapshots, or `localStorage`
-and is never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
+ask educational questions about the active plan. The default local helper stays on
+this machine and needs no key. To use an external model, pick a provider
+(OpenAI, Claude, or an OpenAI-compatible endpoint) in the AI box and paste your
+API key in the field shown there; advanced agent/MCP-endpoint and consent options
+live under **Advanced connector settings**. The key is read only when you press
+**Ask AI**; it is never written to plans, case snapshots, or `localStorage` and is
+never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 
@@ -184,6 +229,36 @@ ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
 The dev server exposes registered meshes only by asset id at `/api/mesh/<mesh_asset_id>`.
 The UI renders real linked STL meshes when available and falls back to schematic
 proxy teeth when no registered mesh can be loaded.
+
+## Contribute Your Data
+
+The engine gets better when more real scans and results are tested against it.
+You can contribute STL intraoral scans and the plans/results you produced from
+them. Every contributed dataset is tracked by a stable, **non-identifying**
+specimen id (`spec-<uuid>`) so data stays organized as the collection scales -
+without ever storing patient identity.
+
+Privacy is enforced in code, not just requested. The manifest model
+(`orthoplan/model/dataset.py`) stores redacted metadata only (never mesh bytes),
+reduces filenames to a basename, forbids unknown fields, and has **no** name,
+date-of-birth, contact, or record-number fields by construction (locked by a
+test). Register a contribution locally with:
+
+```bash
+orthoplan register-contribution upper.stl lower.stl \
+  --arch maxillary --units mm --i-confirm-no-phi \
+  --out datasets/<your-folder>/manifest.json
+```
+
+The `--i-confirm-no-phi` flag is required and asserts you have removed
+patient-identifying information. The first tracked specimen is the bundled
+example at `ui/example-scans/canonical-orthocad-001/manifest.json`. See
+[docs/DATA_CONTRIBUTION.md](docs/DATA_CONTRIBUTION.md) for the full workflow and
+manifest schema, and [docs/SAFETY.md](docs/SAFETY.md) before sharing anything.
+
+New to dental terminology? The [Glossary](docs/GLOSSARY.md) explains key terms
+(IPR, tip, torque, crowding, FDI numbering) and includes a tooth-numbering
+diagram; it is also reachable in the app via the **Key Terms** sidebar button.
 
 ## Contributing
 
