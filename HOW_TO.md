@@ -27,23 +27,25 @@ recreate `.venv` with Python 3.11 or 3.12 instead.
 ## 2. Basic Workflow
 
 The app opens in **Guided** mode by default. Switch between modes with the
-**Clinician / Guided** toggle on the left sidebar:
+**Guided / Technician** toggle on the left sidebar (a light/dark switch sits in
+the top bar):
 
 - **Guided**: a six-step wizard for non-technical users -
   **Upload → Teeth & time → Details → Review → 3D preview → Print / send** -
   with Back/Next and a progress rail. Choose which teeth move and how long each
   tray is worn, build the plan, watch it animate in 3D, ask the AI about it, and
   export printable files.
-- **Clinician**: advanced staged movement, clinical controls, findings, print
+- **Technician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
 
 To see a complete, isolated example, click **Sample Test Case** in the left
-sidebar: it runs the guided wizard pre-filled with simulated crowding-correction
-demo data and opens on the 3D preview (drag the stage slider to watch the teeth
-move). It snapshots and restores your own work, so nothing leaks into your
-editors; use **Exit sample** to return.
+sidebar: it runs the guided wizard pre-loaded with the two bundled test-case STL
+scans and a Balanced 10-day pace, starting at step 1 so you can walk the whole
+flow. The 3D preview shows the real scans with a simulated movement layer (drag
+the stage slider). It snapshots and restores your own work, so nothing leaks into
+your editors; use **Exit Sample Test Case** to return.
 
-The Clinician workflow:
+The Technician workflow:
 
 1. Upload or reference an STL surface scan.
 2. Confirm scan units before trusting millimeter measurements.
@@ -63,10 +65,19 @@ The Clinician workflow:
 orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out report.json
 ```
 
-To try the synthetic educational demo, open the app and click **Sample Test
-Case** in the left sidebar. It runs the guided wizard with fabricated crowding
-offsets and staged movement, opening on the 3D preview. It is not patient-specific
-and does not say whether any treatment is needed or possible.
+In the 3D preview you can toggle **Tooth #** to overlay FDI tooth numbers on each
+tooth, which helps when choosing which teeth to move.
+
+### Auto-segmenting teeth (experimental)
+
+A whole-arch STL is one shell, not per-tooth meshes, so real per-tooth planning
+needs segmentation. In the **Technician** Review side panel, **Auto-Segmentation
+(experimental)** proposes per-tooth regions from a loaded server-local scan (the
+Sample Test Case / example scans) via `POST /api/segment`. It runs on this machine
+(scans are PHI; nothing is sent off-device). The result is a **draft**: review the
+per-tooth confidence, correct each FDI number, include/exclude teeth, then
+**Apply accepted segmentation to plan** - nothing is auto-applied. It is not a
+diagnosis and does not indicate whether treatment is needed or possible.
 
 ### Generating a plan
 
