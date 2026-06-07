@@ -31,15 +31,29 @@ The first static UI prototype lives in [ui/](ui/README.md).
 Scaffolding for the **lite** iOS and Android apps - thin native clients over the
 same engine - lives in [mobile/](mobile/README.md).
 
-The UI includes two workflows:
+The UI opens by default into a guided, step-by-step experience; the dense
+technician workspace is one click away via the **Clinician / Guided** toggle in
+the left sidebar.
 
+- **Guided mode (default)**: a six-step wizard for non-technical users -
+  **Upload → Teeth & time → Details → Review → 3D preview → Print / send**. It
+  explains limits in plain language, lets you choose which teeth move and how
+  long each tray is worn, animates the plan in 3D, surfaces a prominent
+  **Ask AI about your plan** box, and exports printable files. It is designed to
+  produce questions for a dental professional, not a do-it-yourself treatment plan.
 - **Clinician mode**: a professional planning workspace for staged movement, records,
   clinical controls, findings, mesh rendering, print metadata, and plan JSON.
-- **Guided Review mode**: an educational, non-diagnostic flow for people who have an STL or
-  want to try a synthetic 12-month crowding demo. It is designed to explain limits,
-  visualize movement, and produce questions for a dental professional, not to create
-  a do-it-yourself treatment plan.
-- **Generate Plan**: a one-click pipeline in the Review panel that builds a
+- **Sample test case**: a fully isolated demonstration that reuses the guided
+  wizard (same step chips) pre-filled with simulated crowding-correction demo
+  data, so a first-time viewer can see exactly what the flow looks like and watch
+  the teeth move across stages. It snapshots and restores your working state, so
+  opening it never changes your own plan, uploads, or editors.
+- **Print / send**: the final guided step builds printable 3D files (one model
+  per stage plus a manifest) via `POST /api/print-package` and offers a zip
+  download and a pre-filled email draft (`.eml`) you can open in your mail app to
+  send the files to yourself or a print service.
+- **Generate Plan**: a one-click pipeline (the guided **Build my plan** button,
+  and the Clinician Review panel) that builds a
   cap-respecting staged plan from the best available target - your authored
   movement; per-tooth crown **landmarks** (real arch-form deviation targets plus a
   space analysis that budgets IPR, adds attachments, and checks crown collisions);
@@ -54,10 +68,14 @@ The UI includes two workflows:
   HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
   `case-list`, `case-versions`).
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
-  plan context, findings, data gaps, and timeline. The local helper works
-  without external services. Live connectors for OpenAI, Claude Code, and any
-  OpenAI-compatible host (MCP/Odysseus/open-source local models) are available
-  and gated behind an explicit per-session consent that data leaves the machine.
+  plan context, findings, data gaps, and timeline. The AI box shows the
+  **provider selector and an API-key field with plain-language instructions**
+  directly, so it is obvious how to enable a real model; the key field is hidden
+  for the **local helper**, which works without any key or external service. Live
+  connectors for OpenAI, Claude (Anthropic), and any OpenAI-compatible host
+  (MCP/Odysseus/open-source local models) are available and gated behind an
+  explicit per-session consent that data leaves the machine. The key is read only
+  when you press **Ask AI** and is never persisted.
 
 It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
 
@@ -97,21 +115,24 @@ The first workflow is simple:
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
-For a quick demo, open the app, switch to **Guided**, and click **Try 12-Month Demo**.
-The demo uses synthetic crowding offsets and staged movement over twelve 30-day stages.
-The 3D view stacks a labeled **Upper arch** above a **Lower arch** and loads bundled
-rounded crown meshes (served from `ui/demo-meshes/`, exercising the same per-tooth
+For a quick demo, open the app and click **Sample Test Case** in the left
+sidebar. The sample reuses the guided wizard pre-filled with simulated
+crowding-correction data and opens on the 3D preview; drag the stage slider to
+watch the teeth move from crowded toward aligned. It loads bundled rounded crown
+meshes (served from `ui/demo-meshes/`, exercising the same per-tooth
 mesh-loading path real scans use). These crowns are synthetic educational proxies
 for visual clarity, not patient anatomy, and do not claim clinical feasibility. Use
-the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to zoom and orbit.
+the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to zoom and orbit, and
+**Exit sample** to return - your own work is untouched.
 
-In **Review**, use **Plan AI** to ask educational questions about the active
-plan. The default local helper stays on this machine. To use an external
-connector (OpenAI, Claude Code, or an OpenAI-compatible endpoint), open
-**Connector Settings**, enter a key/endpoint, and tick the acknowledgement that
-scoped plan context will be sent off the machine. The key is read only when you
-press **Ask AI**; it is never written to plans, case snapshots, or `localStorage`
-and is never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+In the guided **Review** step (or the Clinician Review panel), use **Plan AI** to
+ask educational questions about the active plan. The default local helper stays on
+this machine and needs no key. To use an external model, pick a provider
+(OpenAI, Claude, or an OpenAI-compatible endpoint) in the AI box and paste your
+API key in the field shown there; advanced agent/MCP-endpoint and consent options
+live under **Advanced connector settings**. The key is read only when you press
+**Ask AI**; it is never written to plans, case snapshots, or `localStorage` and is
+never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 

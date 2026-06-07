@@ -228,8 +228,7 @@ body[data-mode="simple"] #guided {
 }
 
 body[data-mode="simple"] .panel,
-body[data-mode="simple"] .journey-nav,
-body[data-mode="simple"] .mode-switch {
+body[data-mode="simple"] .journey-nav {
   display: none;
 }
 
@@ -237,27 +236,11 @@ body[data-mode="advanced"] #guided {
   display: none;
 }
 
-/* Sample test case: a standalone screen. Hide every other surface so it reads as
-   an isolated demonstration, not part of the guided or technician flows. */
-#sample {
-  display: none;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 22px;
-}
-
-body[data-mode="sample"] #sample {
-  display: block;
-}
-
-body[data-mode="sample"] #guided,
-body[data-mode="sample"] .panel,
-body[data-mode="sample"] .journey-nav,
-body[data-mode="sample"] .tech-banner,
-body[data-mode="sample"] .step-list,
-body[data-mode="sample"] .data-gap-panel,
-body[data-mode="sample"] .topbar,
-body[data-mode="sample"] .mode-switch {
+/* The Clinician/Guided toggle lives on the left and stays visible in both modes.
+   The only time it is hidden is inside the isolated sample, which has its own
+   "Exit sample" control so leaving always restores the user's working state. */
+body[data-sample="1"] .mode-switch,
+body[data-sample="1"] .guided-or {
   display: none;
 }
 
@@ -267,6 +250,52 @@ body[data-mode="sample"] .mode-switch {
   background: var(--panel);
   border: 1px solid var(--line);
   padding: 22px;
+}
+
+.sample-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: #fff8e1;
+  border: 1px solid #d6a928;
+  color: #5f3a04;
+}
+
+body[data-theme="dark"] .sample-banner {
+  background: #2a2412;
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+.guided-status {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* AI provider + key are always visible so it is obvious how to enable a real AI. */
+.ai-connector {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+}
+
+.ai-connector select,
+.ai-connector input {
+  width: 100%;
+}
+
+.ai-key-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .guided-head {

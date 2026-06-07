@@ -121,6 +121,7 @@ export function renderAll() {
   document.body.dataset.mode = state.userMode;
   document.body.dataset.theme = state.theme;
   document.body.dataset.step = state.activeStep;
+  document.body.dataset.sample = state.sample.active ? "1" : "";
   document.body.dataset.generationDetail = state.detailMode.generation;
   document.body.dataset.aiDetail = state.detailMode.ai;
   el("themeToggle").textContent = state.theme === "dark" ? "Light Mode" : "Dark Mode";
@@ -241,6 +242,15 @@ function filterResultForArch(result) {
   };
 }
 
+const AI_KEY_HELP = {
+  local: "The local helper runs on this machine and needs no API key.",
+  openai: "Paste your OpenAI API key (from platform.openai.com). It is used only for this session and never saved.",
+  "claude-code": "Paste your Anthropic API key (from console.anthropic.com). It is used only for this session and never saved.",
+  mcp: "Paste the API key your MCP host expects (set the endpoint under Advanced). Used only for this session.",
+  odysseus: "Paste your Odysseus API key. It is used only for this session and never saved.",
+  "open-source": "Paste the API key for your model endpoint (set it under Advanced). Used only for this session.",
+};
+
 export function renderChat() {
   el("chatProvider").value = state.chat.provider;
   el("chatModel").value = state.chat.model;
@@ -249,6 +259,11 @@ export function renderChat() {
   el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
   el("agentEndpoint").value = state.chat.agentEndpoint;
   el("sendChat").disabled = state.chat.busy || !state.chat.input.trim();
+  // The local helper needs no key, so hide the key field for it; for any real
+  // provider show the field with provider-specific, plain-language instructions.
+  const isLocal = state.chat.provider === "local";
+  el("aiKeyField").hidden = isLocal;
+  el("aiKeyHelp").textContent = AI_KEY_HELP[state.chat.provider] || AI_KEY_HELP.local;
   const secretStatus = state.chat.apiKeyPresent ? " · key in session" : "";
   const agentStatus = state.chat.agentAccessEnabled ? " · agent access staged" : "";
   el("chatStatus").textContent = `${state.chat.status}${secretStatus}${agentStatus}`;

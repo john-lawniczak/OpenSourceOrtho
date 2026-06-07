@@ -33,10 +33,14 @@ live provider construction live in `orthoplan/ai_connectors.py`.
 - `ChatSession`: auditable session record containing plan id, plan hash,
   connector, context scope, and messages.
 
-The UI exposes connector, model preference, context scope, session-only API key
-entry, and an agent/MCP endpoint field. The API key is read from the DOM only at
-send time, is transmitted solely to the selected connector, and is never stored
-in app state, `localStorage`, plans, case snapshots, reports, or docs.
+The UI surfaces the **provider selector and a session-only API-key field
+directly in the Plan AI box**, with provider-specific, plain-language help, so it
+is obvious how to enable a real model. The key field is hidden for the **local
+helper** (which needs no key). Model preference, context scope, the agent/MCP
+endpoint, and the external-egress consent live under **Advanced connector
+settings**. The API key is read from the DOM only at send time, is transmitted
+solely to the selected connector, and is never stored in app state,
+`localStorage`, plans, case snapshots, reports, or docs.
 
 ## Current Endpoints
 

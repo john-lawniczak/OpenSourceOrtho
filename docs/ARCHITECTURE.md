@@ -31,10 +31,14 @@ The likely future split:
 - Three.js or VTK/PyVista: interactive 3D visualization
 - Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
 
-The browser UI never reimplements the engine. `orthoplan/api.py` exposes a single pure evaluation entry point, and `orthoplan/server.py` serves it over `POST /api/evaluate`. The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
+The browser UI never reimplements the engine. `orthoplan/api.py` exposes pure entry points, and `orthoplan/server.py` serves them: `POST /api/evaluate` for findings/frames, and `POST /api/print-package` (`print_package_payload`, reusing `export_print_package`) which returns a base64 zip of stage proxy STLs + manifest and an `.eml` draft for the guided Print / send step. The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
 
-The first UI prototype is a static browser workspace under `ui/`. It mirrors
-the Python data contract but does not yet run backend STL inspection.
+The UI is a static browser workspace under `ui/`. It opens by default into a
+guided, six-step wizard (`ui/guided.js`) for non-technical users; the dense
+Clinician workspace is one toggle away. A self-contained **Sample test case**
+(`ui/sample.js`) reuses the guided wizard with demo data and snapshots/restores
+the user's working state so it stays isolated. The UI mirrors the Python data
+contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
 local mesh workspace. Plan JSON still does not contain mesh bytes; it contains
