@@ -13,15 +13,17 @@ export const demoInitialOffsets = {
   33: { x: -0.28, y: -0.12, z: 0 },
 };
 
+// The two STL scans the Sample Test Case loads as its "already uploaded" records.
+// These are the exact models rendered in the sample's 3D preview.
 export const canonicalScanSources = [
   {
-    name: "308806025_shell_occlusion_u.stl",
-    url: "./example-scans/canonical-orthocad-001/308806025_shell_occlusion_u.stl",
+    name: "sample-test-case-upper.stl",
+    url: "./example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
     arch: "maxillary",
   },
   {
-    name: "308806025_shell_occlusion_l.stl",
-    url: "./example-scans/canonical-orthocad-001/308806025_shell_occlusion_l.stl",
+    name: "sample-test-case-lower.stl",
+    url: "./example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
     arch: "mandibular",
   },
 ];

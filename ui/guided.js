@@ -166,6 +166,11 @@ function renderGuidedTeeth() {
   document.querySelectorAll("#guidedDuration [data-wear]").forEach((button) => {
     button.classList.toggle("is-active", Number(button.dataset.wear) === wear);
   });
+  // Balanced (10) is the default and the only always-visible choice; if a
+  // non-default pace is active, open the "Other pacing options" disclosure so the
+  // selected button stays visible instead of hidden behind the summary.
+  const more = el("guidedDurationMore");
+  if (more && wear && wear !== 10) more.open = true;
   const summary = el("guidedDurationSummary");
   if (summary) {
     const t = state.lastEval?.timeline;
@@ -175,27 +180,37 @@ function renderGuidedTeeth() {
   }
 }
 
+// Step 4: a plain-language summary + projected timeline as clear bullet points.
+// (Engine findings and data gaps are intentionally not surfaced here - they are
+// audience-specific detail that lives in the Technician review, not the guided
+// summary for a first-time user.)
 function renderGuidedReview() {
-  const timeline = el("guidedTimeline");
-  if (timeline) {
-    const t = state.lastEval?.timeline;
-    timeline.textContent = t
-      ? `${t.stage_count} stage(s) · about ${t.projected_duration_weeks} weeks at ${t.wear_interval_days}-day wear. ${t.caveat}`
-      : "No plan evaluated yet.";
+  const headline = el("guidedHeadline");
+  const summary = el("guidedSummary");
+  const t = state.lastEval?.timeline;
+  if (!t) {
+    if (headline) headline.innerHTML = "";
+    if (summary) summary.innerHTML = "<li>Build your plan in step 2 to see a summary and timeline here.</li>";
+    return;
   }
-  const findings = el("guidedFindings");
-  if (findings) {
-    const items = state.lastEval?.findings || [];
-    findings.innerHTML = items.length
-      ? items.map((finding) => `<li>${escapeText(finding.message || finding.code || "observation")}</li>`).join("")
-      : "<li>No automated observations on this plan. This is not an approval.</li>";
+  // The headline carries the two things that matter most: how many trays, and how
+  // long overall. Everything else is supporting detail below it.
+  const trays = t.stage_count;
+  if (headline) {
+    headline.innerHTML = `
+      <strong class="guided-headline-main">${trays} ${trays === 1 ? "tray" : "trays"} · about ${t.projected_duration_weeks} weeks total</strong>
+      <span class="guided-headline-sub">${t.wear_interval_days} days of wear per tray</span>
+    `;
   }
-  const gaps = el("guidedGaps");
-  if (gaps) {
-    const items = state.lastEval?.data_gaps || [];
-    gaps.innerHTML = items.length
-      ? items.map((gap) => `<li>${escapeText(gap)}</li>`).join("")
-      : "<li>No missing-records flags.</li>";
+  const teeth = planTeeth().length;
+  if (summary) {
+    summary.innerHTML = [
+      `<li><strong>${trays}</strong> aligner stage(s) — one tray per stage, worn in sequence.</li>`,
+      `<li><strong>${t.wear_interval_days} days</strong> of wear per tray.</li>`,
+      `<li><strong>${t.projected_duration_days} days</strong> (~${t.projected_duration_weeks} weeks) projected total.</li>`,
+      `<li><strong>${teeth} ${teeth === 1 ? "tooth" : "teeth"}</strong> moved by this plan.</li>`,
+      `<li class="guided-summary-note">${escapeText(t.caveat)}</li>`,
+    ].join("");
   }
 }
 

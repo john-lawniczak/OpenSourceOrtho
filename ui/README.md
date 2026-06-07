@@ -27,26 +27,34 @@ python3 -m orthoplan.server        # or: orthoplan serve
 
 Then open `http://127.0.0.1:8000`.
 
-The app opens in Guided mode by default. The sidebar **Sample Test Case** button
-opens an isolated demonstration that reuses the guided wizard with simulated demo
-data; it snapshots and restores the user's working state, so it never replaces the
-normal Guided or Clinician flows.
+The app opens in Guided mode by default. A light/dark switch is anchored at the
+top-right of the window in every mode. The sidebar **Sample Test Case** button
+opens an isolated walkthrough that reuses the guided wizard, pre-loaded with the
+two bundled test-case STL scans; it snapshots and restores the user's working
+state, so it never replaces the normal Guided or Technician flows. The same button
+becomes **Exit Sample Test Case** while the sample is active, and the
+Guided/Technician toggle stays available throughout so the sample can be viewed in
+either mode.
 
 ## Modes
 
-The sidebar **Clinician / Guided** toggle (always visible on the left) exposes two
+The sidebar **Guided / Technician** toggle (always visible on the left) exposes two
 workflows:
 
 - **Guided** (default) is a six-step wizard for non-technical users -
   **Upload → Teeth & time → Details → Review → 3D preview → Print / send** - with
   a progress rail and Back/Next, showing one step at a time. It lets a user upload
-  an STL (or open the Sample Test Case), choose which teeth move and the tray-wear
-  duration, build the plan, review it with a prominent Ask-AI box, preview it in
-  3D, and export printable files. It acknowledges that the preview is not a
-  diagnosis or treatment plan. The built-in demo uses synthetic tooth-shaped
-  models with crown/cusp detail for clarity; it does not represent patient anatomy.
-- **Clinician** is the advanced workspace for records, caps, staged movement,
+  an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
+  default, with Faster/Gentle behind a disclosure), build the plan, review it as a
+  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
+  printable files. It acknowledges that the preview is not a diagnosis or treatment
+  plan.
+- **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
+
+The Sample Test Case renders the exact bundled STL models
+(`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`); the
+per-tooth movement layer over a whole-arch shell is schematic.
 
 The 3D viewer, AI box, and upload control are single instances relocated into the
 active surface (delegated events + id-based renders), so there is never a second
@@ -98,12 +106,13 @@ same browser; they are not uploaded to a server database.
 ## Canonical scan fixture
 
 `ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
-OrthoCAD shell STLs used to keep exact scan rendering stable as the product
-evolves (and as the first tracked data contribution). You can load them via the
-normal upload control to see exact whole-arch scan rendering. The sidebar **Sample
-Test Case** is a separate, isolated demonstration that uses bundled demo crowns in
-an overlay view so the simulated tooth movement is clearly visible across stages;
-it does not load the canonical STL.
+OrthoCAD shell STLs (`sample-test-case-{upper,lower}.stl`) used to keep exact scan
+rendering stable as the product evolves (and as the first tracked data
+contribution). You can load them via the normal upload control to see exact
+whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
+STLs as its already-present records and renders them in an overlay view, with a
+simulated tooth-movement layer animating across stages; the per-tooth movement
+over a whole-arch shell is schematic.
 
 ## 3D viewer
 

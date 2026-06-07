@@ -14,25 +14,32 @@
     </script>
   </head>
   <body>
+    <header class="app-topbar">
+      <div class="brand-block">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="28" height="28">
+            <path fill="currentColor" d="M32 13c-6 0-9 3-14 3-4 0-7-2-9-1-2 1-2 5-1 11 1 7 3 11 5 17 1 4 2 8 4 8 3 0 3-9 6-9s3 9 6 9c2 0 3-4 4-8 2-6 4-10 5-17 1-6 1-10-1-11-2-1-5 1-9 1-6 0-9-3-14-3z"/>
+          </svg>
+        </span>
+        <div>
+          <h1>OpenSource Ortho</h1>
+          <p>Open aligner-planning workspace</p>
+        </div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle light / dark mode">
+        <span class="theme-toggle-track" aria-hidden="true">
+          <span class="theme-toggle-glyph sun">☀</span>
+          <span class="theme-toggle-glyph moon">☾</span>
+          <span class="theme-toggle-thumb"></span>
+        </span>
+      </button>
+    </header>
     <main class="app-shell">
       <aside class="sidebar" aria-label="Plan workflow">
-        <div class="brand-block">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 64 64" width="28" height="28">
-              <path fill="currentColor" d="M32 13c-6 0-9 3-14 3-4 0-7-2-9-1-2 1-2 5-1 11 1 7 3 11 5 17 1 4 2 8 4 8 3 0 3-9 6-9s3 9 6 9c2 0 3-4 4-8 2-6 4-10 5-17 1-6 1-10-1-11-2-1-5 1-9 1-6 0-9-3-14-3z"/>
-            </svg>
-          </span>
-          <div>
-            <h1>OpenSource Ortho</h1>
-            <p>Open aligner-planning workspace</p>
-          </div>
-        </div>
-
         <div class="mode-switch" aria-label="Workspace mode">
-          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Clinician</button>
           <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
+          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Technician</button>
         </div>
-        <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
         <button class="sample-launch" id="sampleLaunch" type="button">Sample Test Case</button>
 
         <nav class="step-list" aria-label="Workflow steps">
@@ -69,7 +76,7 @@
           </div>
           <div>
             <label for="wearInterval">Wear Days</label>
-            <input id="wearInterval" type="number" min="1" value="14" />
+            <input id="wearInterval" type="number" min="1" value="10" />
           </div>
         </header>
         <div class="tech-banner advanced-only">
@@ -122,7 +129,7 @@
 
           <section class="gstep" data-gstep="upload">
             <h3>1 · Upload your STL files</h3>
-            <p>STL files are the detailed 3D scans of your teeth, usually from a dental scanner. Add your upper and/or lower scans, or try the built-in sample.</p>
+            <p>STL (STereoLithography) files are the detailed 3D scan models of your teeth. Add your upper and/or lower scans.</p>
             <div id="guidedUploadHost">
               <div id="simpleUpload" class="upload-stack">
                 <label class="upload-target" for="simpleStlFile">
@@ -133,10 +140,6 @@
                 <div id="simpleUploadFileList" class="upload-file-list"></div>
               </div>
             </div>
-            <div class="guided-or">
-              <span>or</span>
-              <button class="primary-action" id="guidedUseSample" type="button">Use the built-in sample</button>
-            </div>
             <label class="toggle">
               <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
               <input id="simpleAcknowledged" type="checkbox" />
@@ -145,6 +148,7 @@
 
           <section class="gstep" data-gstep="plan">
             <h3>2 · Which teeth move, and how long</h3>
+            <p class="guided-define"><strong>What is a stage?</strong> A stage is one aligner tray — a single step in the sequence. Each tray nudges your teeth a little, and you wear it for the number of days you choose before swapping to the next one. More movement needed means more stages, which means more trays and more total time.</p>
             <div class="guided-build">
               <label>What are you exploring?
                 <select id="simpleGoal">
@@ -163,36 +167,32 @@
             <div id="guidedTeeth" class="guided-teeth"></div>
             <h4>How long should each tray be worn?</h4>
             <div id="guidedDuration" class="guided-duration">
-              <button data-wear="7" type="button">Faster · 7-day trays</button>
               <button data-wear="10" type="button">Balanced · 10-day trays</button>
-              <button data-wear="14" type="button">Gentle · 14-day trays</button>
+              <details class="guided-duration-more" id="guidedDurationMore">
+                <summary>Other pacing options</summary>
+                <button data-wear="7" type="button">Faster · 7-day trays</button>
+                <button data-wear="14" type="button">Gentle · 14-day trays</button>
+              </details>
             </div>
             <p id="guidedDurationSummary" class="guided-hint"></p>
           </section>
 
           <section class="gstep" data-gstep="details">
             <h3>3 · Small details (optional)</h3>
-            <p>You can skip this. Make the on-screen movement easier to see — this only changes the preview, not the plan.</p>
-            <label class="guided-range">Exaggerate movement in the preview
+            <p>Make the on-screen movement easier to see — this only changes the preview, not the plan.</p>
+            <label class="guided-range">Preview movement scale
               <input id="guidedExaggeration" type="range" min="1" max="40" step="1" value="12" />
               <span id="guidedExaggerationValue">×12</span>
             </label>
-            <p class="viewer-caveat">Need fine control (per-tooth caps, attachments, IPR, raw plan JSON)? Open the Technician view.</p>
+            <p class="guided-hint">Real aligners move teeth a fraction of a millimeter per stage — too small to see on screen. This slider multiplies the movement in the 3D preview only, so you can actually watch it (×12 means shown twelve times larger than reality). Your saved plan and print files always use the true, un-exaggerated values.</p>
+            <p class="viewer-caveat">Want fine control — per-tooth movement caps, attachments, IPR, and the raw plan JSON? Switch to the Technician view with the toggle in the sidebar.</p>
           </section>
 
           <section class="gstep" data-gstep="review">
             <h3>4 · Review your plan</h3>
-            <p id="guidedTimeline" class="guided-timeline"></p>
-            <div class="guided-review-cols">
-              <div>
-                <h4>What we noticed</h4>
-                <ul id="guidedFindings"></ul>
-              </div>
-              <div>
-                <h4>Missing records</h4>
-                <ul id="guidedGaps"></ul>
-              </div>
-            </div>
+            <p class="guided-hint">The headline below is the key result — how many trays, and how long overall. The details follow.</p>
+            <div id="guidedHeadline" class="guided-headline"></div>
+            <ul id="guidedSummary" class="guided-summary"></ul>
             <div class="guided-ai">
               <h4>Ask AI about your plan</h4>
               <p class="guided-hint">Ask anything about this preview in plain language. Answers are educational only.</p>
@@ -202,7 +202,7 @@
 
           <section class="gstep" data-gstep="preview">
             <h3>5 · See the full 3D plan</h3>
-            <p>Drag the stage slider to watch the planned movement across the trays.</p>
+            <p>A <strong>stage</strong> is one aligner tray — a single step in the sequence. Stage&nbsp;0 is your starting position; each later stage nudges the teeth a little closer to the goal, and you would wear that tray for the number of days you chose before moving to the next. Drag the stage slider to watch the planned movement tray by tray.</p>
             <div id="guidedPreviewHost"></div>
           </section>
 
@@ -391,7 +391,7 @@
               <p id="sampleStatusChip" class="sample-status-chip" hidden></p>
               <div class="workflow-card">
                 <h2>Step 5: Review The Progression</h2>
-                <p>Use the view buttons and stage slider to inspect the current, planned, or overlay preview.</p>
+                <p>A <strong>stage</strong> is one aligner tray — a single step in the sequence (stage 0 is the starting position). Use the view buttons and stage slider to inspect the current, planned, or overlay preview at each stage.</p>
               </div>
               <!-- #viewerBlock is a single instance relocated between the
                    technician review and the guided 3D step by guided.js. -->

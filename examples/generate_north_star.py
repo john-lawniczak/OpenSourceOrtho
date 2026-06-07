@@ -99,8 +99,8 @@ def _seed_plan() -> TreatmentPlan:
         id="north-star-canonical-001",
         title=f"North Star - landmark-derived alignment for specimen {SPECIMEN_ID}",
         settings=TreatmentSettings(timeline=TimelineSettings(wear_interval_days=14)),
-        scans=[_scan("north-star-upper", "308806025_shell_occlusion_u.stl", "maxillary"),
-               _scan("north-star-lower", "308806025_shell_occlusion_l.stl", "mandibular")],
+        scans=[_scan("north-star-upper", "sample-test-case-upper.stl", "maxillary"),
+               _scan("north-star-lower", "sample-test-case-lower.stl", "mandibular")],
     )
 
 
