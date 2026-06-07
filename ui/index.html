@@ -405,6 +405,7 @@
                       <button class="dim is-active" data-dim="3d" type="button">3D</button>
                       <button class="dim" data-dim="2d" type="button">2D</button>
                     </span>
+                    <button class="viewer-aux" id="toothLabelToggle" type="button" aria-pressed="false" title="Show or hide FDI tooth numbers over the teeth">Tooth #</button>
                     <label class="arch-filter">
                       Show
                       <select id="scanArchFilter">
@@ -462,6 +463,18 @@
                 </label>
                 <button class="primary-action" id="generatePlan" type="button">Generate Plan</button>
                 <div id="generationReport" class="status-block"></div>
+              </section>
+              <section class="generate-panel segment-panel advanced-only" aria-label="Auto-segmentation">
+                <div class="ai-chat-heading">
+                  <h2>Auto-Segmentation (experimental)</h2>
+                  <span id="segmentStatus"></span>
+                </div>
+                <p class="viewer-caveat">Proposes per-tooth regions from a whole-arch scan, on this machine (your data stays local). Drafts only: review and correct each tooth number, then apply explicitly. Never auto-applied, and not a diagnosis or a sign that treatment is needed, possible, or complete.</p>
+                <button class="primary-action" id="proposeSegment" type="button">Propose tooth segmentation</button>
+                <ul id="segmentFindings" class="segment-findings"></ul>
+                <div id="segmentList" class="segment-list"></div>
+                <button id="applySegment" type="button" hidden>Apply accepted segmentation to plan</button>
+                <p id="segmentApplied" class="viewer-caveat"></p>
               </section>
               <section class="generate-panel" aria-label="Plan versions">
                 <div class="ai-chat-heading">

@@ -14,6 +14,7 @@ import {
   toggleExcludedTooth,
 } from "./guided.js";
 import { enterSample, exitSample, sampleActive } from "./sample.js";
+import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -92,6 +93,16 @@ el("landmarksFile").addEventListener("change", async (event) => {
 
 document.body.addEventListener("input", (event) => {
   const target = event.target;
+  // Segmentation edits update state in place and deliberately do NOT trigger a
+  // full re-render, so typing a corrected tooth number never loses input focus.
+  if (target.dataset.segmentTooth) {
+    setSegmentToothEdit(target.dataset.segmentTooth, target.value);
+    return;
+  }
+  if (target.dataset.segmentInclude) {
+    setSegmentInclude(target.dataset.segmentInclude, target.checked);
+    return;
+  }
   if (target.dataset.availability) {
     state.availability[target.dataset.availability] = target.checked;
   }
@@ -202,6 +213,18 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "guidedBuild") {
     generatePlan();
+    renderAll();
+  }
+  if (button?.id === "toothLabelToggle") {
+    state.showToothLabels = !state.showToothLabels;
+    renderAll();
+  }
+  if (button?.id === "proposeSegment") {
+    proposeSegmentation().then(() => renderAll());
+    renderAll();
+  }
+  if (button?.id === "applySegment") {
+    applySegmentation();
     renderAll();
   }
   if (button?.id === "guidedPrint") {
