@@ -4,6 +4,15 @@ import { recenterViewer, renderAll, renderAvailability, renderChat, renderGenera
 import { planJson } from "./plan.js";
 import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
 import { closestDatasetTarget } from "./core.js";
+import {
+  downloadPrintArtifact,
+  goGuided,
+  guidedBack,
+  guidedNext,
+  runPrintPackage,
+  setWearInterval,
+  toggleExcludedTooth,
+} from "./guided.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -14,15 +23,21 @@ el("themeToggle").addEventListener("click", () => {
   renderAll();
 });
 
-document.querySelectorAll(".mode-choice").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.userMode = button.dataset.userMode;
-    state.activeStep = "upload";
-    document.querySelectorAll(".mode-choice").forEach((item) => item.classList.remove("is-active"));
-    button.classList.add("is-active");
-    renderAll();
-  });
-});
+function setUserMode(mode) {
+  state.userMode = mode;
+  if (mode === "simple" && !state.guided.step) state.guided.step = "upload";
+  renderAll();
+  maybeRecenterPreview();
+}
+
+// The 3D viewer is first sized while its guided step is hidden (1x1). When the
+// user lands on the preview step, re-fit the camera now that the container has a
+// real size. Deferred a frame so layout reflows before measuring.
+function maybeRecenterPreview() {
+  if (state.userMode === "simple" && state.guided.step === "preview") {
+    requestAnimationFrame(() => recenterViewer());
+  }
+}
 
 document.querySelectorAll(".step").forEach((button) => {
   button.addEventListener("click", () => {
@@ -78,6 +93,15 @@ document.body.addEventListener("input", (event) => {
   if (target.dataset.availability) {
     state.availability[target.dataset.availability] = target.checked;
   }
+  if (target.dataset.guidedTooth) {
+    toggleExcludedTooth(target.dataset.guidedTooth);
+  }
+  if (target.id === "guidedExaggeration") {
+    // The guided slider mirrors the technician numeric exaggeration field so the
+    // viewer reads one source of truth.
+    el("exaggeration").value = target.value;
+    el("guidedExaggerationValue").textContent = `×${target.value}`;
+  }
   if (target.dataset.row) {
     const row = state.rows[Number(target.dataset.row)];
     const field = target.dataset.field;
@@ -130,6 +154,51 @@ document.body.addEventListener("click", (event) => {
   const detailModeTarget = closestDatasetTarget(target, "detailMode");
   const restoreVersionTarget = closestDatasetTarget(target, "restoreVersion");
   const removeRowTarget = closestDatasetTarget(target, "remove");
+  const userModeTarget = closestDatasetTarget(target, "userMode");
+  const guidedStepTarget = closestDatasetTarget(target, "gstep");
+  const printArtifactTarget = closestDatasetTarget(target, "printArtifact");
+  const wearTarget = closestDatasetTarget(target, "wear");
+
+  if (wearTarget) {
+    setWearInterval(Number(wearTarget.dataset.wear));
+    renderAll();
+    return;
+  }
+  if (userModeTarget) {
+    setUserMode(userModeTarget.dataset.userMode);
+    return;
+  }
+  if (guidedStepTarget) {
+    goGuided(guidedStepTarget.dataset.gstep);
+    renderAll();
+    maybeRecenterPreview();
+    return;
+  }
+  if (button?.id === "guidedBack") {
+    guidedBack();
+    renderAll();
+    maybeRecenterPreview();
+  }
+  if (button?.id === "guidedNext") {
+    guidedNext();
+    renderAll();
+    maybeRecenterPreview();
+  }
+  if (button?.id === "guidedUseSample") {
+    loadCanonicalCase(4);
+    goGuided("plan");
+    renderAll();
+  }
+  if (button?.id === "guidedBuild") {
+    if (state.files.length) generatePlan();
+    else renderAll();
+  }
+  if (button?.id === "guidedPrint") {
+    runPrintPackage();
+  }
+  if (printArtifactTarget) {
+    downloadPrintArtifact(printArtifactTarget.dataset.printArtifact);
+  }
 
   if (button?.id === "addStage") {
     state.rows.push({
@@ -169,19 +238,8 @@ document.body.addEventListener("click", (event) => {
     state.detailMode[detailModeTarget.dataset.detailMode] = detailModeTarget.dataset.detailValue;
     renderAll();
   }
-  if (button?.id === "simpleReview") {
-    if (!state.simpleAcknowledged) return;
-    state.activeStep = "review";
-    state.view = "overlay";
-    renderAll();
-  }
   if (button?.id === "uploadNext") {
     goToStep("availability");
-    renderAll();
-  }
-  if (button?.id === "simpleNext") {
-    goToStep("review");
-    state.view = "overlay";
     renderAll();
   }
   if (button?.id === "downloadPlan") downloadJson("orthoplan-plan.json", planJson());

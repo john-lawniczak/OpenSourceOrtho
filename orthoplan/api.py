@@ -11,6 +11,9 @@ them instead of crashing.
 
 from __future__ import annotations
 
+import base64
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
@@ -21,7 +24,7 @@ from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.optimizer import optimize_staging
 from orthoplan.planning.timeline import project_timeline
-from orthoplan.printing import build_print_export_status
+from orthoplan.printing import build_print_export_status, export_print_package
 from orthoplan.viz.progress import build_stage_progress_frames
 
 
@@ -94,3 +97,41 @@ def evaluate_plan_payload(payload: dict[str, Any]) -> dict[str, Any]:
     except ValidationError as exc:
         return {"ok": False, "errors": _format_errors(exc)}
     return evaluate_plan(plan)
+
+
+def print_package_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Validate a plan and build a downloadable print package. Never raises.
+
+    Reuses :func:`export_print_package` (stage proxy STLs + manifest + zip + an
+    ``.eml`` draft that already embeds the zip as an attachment) and returns the
+    artifacts base64-encoded so the JSON-only dev server can hand them to the
+    browser for download / emailing. The ``.eml`` opens in a mail client with the
+    files pre-attached, which is the "email it to yourself / attach it" path.
+    """
+
+    try:
+        plan = TreatmentPlan.model_validate(payload)
+    except ValidationError as exc:
+        return {"ok": False, "errors": _format_errors(exc)}
+
+    status = build_print_export_status(plan)
+    with tempfile.TemporaryDirectory() as tmp:
+        result = export_print_package(plan, tmp, make_zip=True, make_email_draft=True)
+        zip_path = Path(result.zip_path) if result.zip_path else None
+        eml_path = Path(result.email_draft_path) if result.email_draft_path else None
+        zip_bytes = zip_path.read_bytes() if zip_path else b""
+        eml_bytes = eml_path.read_bytes() if eml_path else b""
+        zip_name = zip_path.name if zip_path else "print-package.zip"
+        eml_name = eml_path.name if eml_path else "print-package.eml"
+
+    return {
+        "ok": True,
+        "filename": zip_name,
+        "zip_base64": base64.b64encode(zip_bytes).decode("ascii"),
+        "zip_sha256": result.zip_sha256,
+        "email_filename": eml_name,
+        "email_eml_base64": base64.b64encode(eml_bytes).decode("ascii"),
+        "delivery_email": status.delivery_email,
+        "stage_count": len(result.artifact_paths),
+        "caveat": result.caveat,
+    }

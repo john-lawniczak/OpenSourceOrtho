@@ -19,12 +19,7 @@ export function planJson() {
     scans: scanPayload(),
     mesh_assets: [],
     tooth_meshes: [],
-    fixed_teeth: parseToothList(state.clinicalControls.fixedTeeth).map((tooth) => ({
-      tooth,
-      stage_start: 0,
-      stage_end: null,
-      reason: "UI clinical control",
-    })),
+    fixed_teeth: fixedTeeth(),
     movement_exclusions: parseMovementExclusions(state.clinicalControls.movementExclusions),
     attachments: parseToothList(state.clinicalControls.attachmentTeeth).map((tooth) => ({
       tooth,
@@ -43,6 +38,19 @@ export function planJson() {
       deltas: bucket.rows.map(deltaPayload),
     })),
   };
+}
+
+// Fixed teeth = technician-entered list PLUS any teeth the guided user chose to
+// hold still (excluded). Merged here so both flows share one plan contract.
+function fixedTeeth() {
+  const fromControls = parseToothList(state.clinicalControls.fixedTeeth).map((tooth) => tooth.value);
+  const merged = new Set([...fromControls, ...(state.guided.excludedTeeth || [])]);
+  return [...merged].map((value) => ({
+    tooth: { system: "FDI", value },
+    stage_start: 0,
+    stage_end: null,
+    reason: "UI clinical control",
+  }));
 }
 
 function parseToothList(value) {
