@@ -179,11 +179,9 @@ p {
   background: #fff8e1;
   border-color: #d6a928;
   color: #5f3a04;
-  display: grid;
-  gap: 4px;
-  min-height: 68px;
+  font-weight: 600;
   padding: 10px 12px;
-  text-align: left;
+  text-align: center;
 }
 
 .sample-launch strong {
@@ -235,8 +233,31 @@ body[data-mode="simple"] .mode-switch {
   display: none;
 }
 
-body[data-mode="advanced"] #guided,
-body[data-mode="advanced"] .sample-launch {
+body[data-mode="advanced"] #guided {
+  display: none;
+}
+
+/* Sample test case: a standalone screen. Hide every other surface so it reads as
+   an isolated demonstration, not part of the guided or technician flows. */
+#sample {
+  display: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 22px;
+}
+
+body[data-mode="sample"] #sample {
+  display: block;
+}
+
+body[data-mode="sample"] #guided,
+body[data-mode="sample"] .panel,
+body[data-mode="sample"] .journey-nav,
+body[data-mode="sample"] .tech-banner,
+body[data-mode="sample"] .step-list,
+body[data-mode="sample"] .data-gap-panel,
+body[data-mode="sample"] .topbar,
+body[data-mode="sample"] .mode-switch {
   display: none;
 }
 
