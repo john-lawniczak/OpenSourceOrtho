@@ -10,7 +10,7 @@ packages = ["orthoplan"]
 
 [project]
 name = "opensource-ortho"
-version = "1.0.0"
+version = "1.1.0"
 description = "Open-source orthodontic treatment-planning research toolkit for clear-aligner workflows."
 readme = "README.md"
 requires-python = ">=3.11"
