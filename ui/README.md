@@ -5,8 +5,8 @@
 
 Browser prototype for the data-model workflow:
 
-1. Guided educational STL review and synthetic 12-month crowding demo
-2. STL upload metadata
+1. Guided six-step wizard (default) + isolated Sample Test Case demonstration
+2. multi-file STL upload metadata with browser-side upload persistence
 3. data availability toggles
 4. movement cap controls
 5. stage movement table
@@ -27,33 +27,54 @@ python3 -m orthoplan.server        # or: orthoplan serve
 
 Then open `http://127.0.0.1:8000`.
 
-The Upload step includes a short Getting Started panel for first-time users.
+The app opens in Guided mode by default. A light/dark switch is anchored at the
+top-right of the window in every mode. The sidebar **Sample Test Case** button
+opens an isolated walkthrough that reuses the guided wizard, pre-loaded with the
+two bundled test-case STL scans; it snapshots and restores the user's working
+state, so it never replaces the normal Guided or Technician flows. The same button
+becomes **Exit Sample Test Case** while the sample is active, and the
+Guided/Technician toggle stays available throughout so the sample can be viewed in
+either mode.
 
 ## Modes
 
-The sidebar mode switch exposes two workflows:
+The sidebar **Guided / Technician** toggle (always visible on the left) exposes two
+workflows:
 
-- **Guided** is for non-technical educational review. It lets a user upload an STL
-  or launch a synthetic crowding demo, acknowledges that the preview is not a
-  diagnosis or treatment plan, and focuses the review surface on visualization and
-  findings. The built-in demo uses synthetic tooth-shaped models with crown/cusp
-  detail for clarity; it does not represent patient anatomy.
-- **Clinician** is the advanced workspace for records, caps, staged movement,
+- **Guided** (default) is a six-step wizard for non-technical users -
+  **Upload → Teeth & time → Details → Review → 3D preview → Print / send** - with
+  a progress rail and Back/Next, showing one step at a time. It lets a user upload
+  an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
+  default, with Faster/Gentle behind a disclosure), build the plan, review it as a
+  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
+  printable files. It acknowledges that the preview is not a diagnosis or treatment
+  plan.
+- **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
+
+The Sample Test Case renders the exact bundled STL models
+(`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`); the
+per-tooth movement layer over a whole-arch shell is schematic.
+
+The 3D viewer, AI box, and upload control are single instances relocated into the
+active surface (delegated events + id-based renders), so there is never a second
+WebGL context.
 
 ## Plan AI
 
-The Review panel includes a compact chat surface. It posts the current
-plan-shaped JSON to `POST /api/chat` with a selected connector, model
+The Review surface includes a prominent **Ask AI about your plan** box. It posts
+the current plan-shaped JSON to `POST /api/chat` with a selected connector, model
 preference, and context scope. The default `local` connector produces an
-educational explanation without leaving the local server. External connectors
-for OpenAI, Claude Code, MCP hosts, Odysseus, and open-source models are visible
-in the UI but return a clear "not enabled" response until an explicit provider
-gateway is configured.
+educational explanation without leaving the local server. External connectors for
+OpenAI, Claude (Anthropic), MCP hosts, Odysseus, and open-source models perform
+live completions once a provider is selected, a key/endpoint is supplied, and
+per-session egress consent (`share_acknowledged`) is given.
 
-The connector settings panel includes session-only API key entry and future
-agent/MCP access controls. API keys are not written into plan JSON, case
-snapshots, or exported reports.
+The **provider selector and a session-only API-key field are shown directly in
+the AI box** with provider-specific, plain-language help (the key field is hidden
+for the no-key local helper); the agent/MCP endpoint and egress consent live under
+**Advanced connector settings**. API keys are read only at send time and are not
+written into plan JSON, case snapshots, `localStorage`, or exported reports.
 
 Context scopes:
 
@@ -78,7 +99,20 @@ shows an "engine offline" message instead of silently falling back to a second,
 divergent implementation.
 
 Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
-remains the source of truth for mesh inspection.
+remains the source of truth for mesh inspection. Uploaded STL files are stored
+locally in IndexedDB so a small upper/lower scan set survives reloads on the
+same browser; they are not uploaded to a server database.
+
+## Canonical scan fixture
+
+`ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
+OrthoCAD shell STLs (`sample-test-case-{upper,lower}.stl`) used to keep exact scan
+rendering stable as the product evolves (and as the first tracked data
+contribution). You can load them via the normal upload control to see exact
+whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
+STLs as its already-present records and renders them in an overlay view, with a
+simulated tooth-movement layer animating across stages; the per-tooth movement
+over a whole-arch shell is schematic.
 
 ## 3D viewer
 
@@ -90,24 +124,61 @@ constraints, surfaced in the on-screen caveat:
   available from the Python API. Otherwise it falls back to schematic proxy teeth.
   Plan JSON still does not store mesh bytes; local mesh serving is limited to
   `/api/mesh/<mesh_asset_id>` files registered in the local mesh workspace.
+- Uploaded or canonical whole-arch STL scans render as an exact enamel-colored
+  scan layer in Current and Overlay views. Current schematic proxy teeth are hidden
+  when that exact scan layer is present, so the user is not shown two competing
+  "current" anatomies.
+- Whole-arch scans are rotated from common STL dental coordinates into the viewer
+  frame (`x, y, z` -> `x, z, -y`) so the occlusal plane lies on the 3D grid and
+  tooth height points upward.
 - Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
   movement is visible next to ~10 mm teeth.
 - Rotation is drawn **only** where the engine sets `rotation_renderable`. The
   approximate crown-surface PCA frame (`tooth_frames` in the API) is metadata
   only; by itself it does not authorize rendered rotation.
+- A **Tooth #** toolbar toggle overlays FDI tooth-number badges on each tooth so a
+  user can see which teeth they are focusing on. It is off by default and follows
+  the displayed (current or planned) tooth position.
 
 Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
 To update it, replace `ui/vendor/three.module.js` and `ui/vendor/OrbitControls.js`
 with a matching pinned pair.
 
+## Auto-segmentation (experimental)
+
+A whole-arch STL is a single shell, not per-tooth meshes, so real per-tooth
+planning needs segmentation. The Technician Review side panel **Auto-Segmentation
+(experimental)** proposes per-tooth regions from a loaded server-local scan via
+`POST /api/segment`:
+
+- It runs **on this machine** (scans are PHI; segmentation never calls a hosted
+  API). Today the local model is a dependency-free **valley-based heuristic**
+  (`orthoplan/segmentation/heuristic.py` + `arch_profile.py`): it walks the arch
+  and cuts at the height valleys between crowns (balanced by equal spacing, then
+  snapped to the nearest real gap). `orthoplan/segmentation/auto.py` is the seam
+  where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can be dropped in
+  behind the same contract.
+- The response is a **draft proposal**, never auto-applied: per-tooth confidence
+  (separation, not certainty), advisory model-provenance findings (all pass
+  `lint_finding`), and a ready-to-merge plan fragment (`mesh_assets` +
+  `tooth_meshes`). Each proposed tooth mesh is written into the local mesh
+  workspace and served by `/api/mesh/<id>`.
+- The UI lets the user correct each tooth number and include/exclude teeth, then
+  **explicitly** apply the accepted set; only then does `plan.js` merge it into the
+  plan. It only operates on server-local scans (the Sample Test Case / example
+  scans), because uploaded bytes stay in the browser.
+
 ## Print Export
 
 The Settings step has print-export fields for format, delivery email, dental model
 material, thermoforming material, and acknowledgement. The Review step renders backend
-readiness status from `print_export`. `orthoplan print-package` generates stage proxy STL
-files, a hash-bound manifest, optional deterministic zip package, and optional email draft
-from the supplied plan data.
+readiness status from `print_export`. The guided **Print / send** step builds the
+files in-browser via `POST /api/print-package` (which reuses `export_print_package`)
+and offers a zip download plus an `.eml` draft that opens pre-attached in a mail
+client. The same package is available from the CLI: `orthoplan print-package`
+generates stage proxy STL files, a hash-bound manifest, optional deterministic zip
+package, and optional email draft from the supplied plan data.
 
 ## Tests
 

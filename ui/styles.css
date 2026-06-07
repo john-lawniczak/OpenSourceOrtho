@@ -54,8 +54,42 @@ button:disabled {
   opacity: 0.55;
 }
 
+/* Full-width top bar holding the brand and the light/dark switch, so the switch
+   is anchored in a real bar (not floating in the corner) and content fits. */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 60px;
+  padding: 0 18px;
+  background: #111b20;
+  color: #f6fbfc;
+  border-bottom: 1px solid #0a1216;
+}
+
+.app-topbar .brand-block {
+  gap: 12px;
+}
+
+.app-topbar .brand-mark {
+  width: 40px;
+  height: 40px;
+}
+
+.app-topbar .brand-block h1 {
+  color: #f6fbfc;
+}
+
+.app-topbar .brand-block p {
+  color: #a8bac2;
+}
+
 .app-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
   display: grid;
   grid-template-columns: 304px minmax(0, 1fr);
 }
@@ -127,8 +161,13 @@ p {
 .step,
 .mode,
 .mode-choice,
+.sample-launch,
 .primary-action,
-.theme-toggle {
+.theme-toggle,
+.download-actions button,
+.workflow-actions button,
+.journey-nav button,
+.upload-file-list button {
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -164,10 +203,86 @@ p {
   padding: 0 10px;
 }
 
+/* Light/Dark switch, living at the right of the top bar like most sites. */
 .theme-toggle {
-  background: transparent;
-  color: #d8e4e9;
-  border-color: #344951;
+  position: relative;
+  flex: 0 0 auto;
+  width: 62px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid #34464f;
+  border-radius: 999px;
+  background: #0f171b;
+  cursor: pointer;
+}
+
+.theme-toggle-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+}
+
+.theme-toggle-glyph {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.theme-toggle-glyph.sun {
+  color: #d6a928;
+}
+
+.theme-toggle-glyph.moon {
+  color: var(--muted);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--accent);
+  transition: left 0.16s ease;
+}
+
+body[data-theme="dark"] .theme-toggle-thumb {
+  left: calc(100% - 25px);
+}
+
+.sample-launch {
+  background: #fff8e1;
+  border-color: #d6a928;
+  color: #5f3a04;
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.sample-launch strong {
+  font-size: 13px;
+}
+
+.sample-launch span {
+  color: #7c4a03;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body[data-theme="dark"] .sample-launch {
+  background: #2a2412;
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+body[data-theme="dark"] .sample-launch span {
+  color: #fcd34d;
 }
 
 body[data-mode="simple"] .step-list,
@@ -181,6 +296,383 @@ body[data-mode="simple"] .topbar {
 
 body[data-mode="simple"] .advanced-only {
   display: none;
+}
+
+/* Mode switching between the guided wizard and the technician workspace. Guided
+   is the default, primary experience; the technician panels/nav are hidden. */
+#guided {
+  display: none;
+}
+
+body[data-mode="simple"] #guided {
+  display: block;
+}
+
+body[data-mode="simple"] .panel,
+body[data-mode="simple"] .journey-nav {
+  display: none;
+}
+
+body[data-mode="advanced"] #guided {
+  display: none;
+}
+
+/* The Guided/Technician toggle lives in the sidebar and stays visible in both
+   modes AND inside the sample, so the user can move between views while the
+   sample is active. The sidebar Sample button doubles as the exit. */
+
+/* ---- Guided wizard --------------------------------------------------- */
+
+#guided {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 22px;
+}
+
+.sample-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: #fff8e1;
+  border: 1px solid #d6a928;
+  color: #5f3a04;
+}
+
+body[data-theme="dark"] .sample-banner {
+  background: #2a2412;
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+.guided-status {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* AI provider + key are always visible so it is obvious how to enable a real AI. */
+.ai-connector {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+}
+
+.ai-connector select,
+.ai-connector input {
+  width: 100%;
+}
+
+.ai-key-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.guided-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.guided-head h2 {
+  margin: 0 0 4px;
+}
+
+.guided-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.ghost-toggle {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--accent);
+  padding: 7px 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tech-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.guided-rail li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-rail li span {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--panel-alt);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.guided-rail li.is-active {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.guided-rail li.is-active span {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.guided-rail li.is-done span {
+  background: var(--accent);
+  color: var(--accent-ink);
+  opacity: 0.55;
+}
+
+.gstep {
+  display: none;
+}
+
+.gstep.is-active {
+  display: block;
+}
+
+.gstep h3 {
+  margin: 0 0 6px;
+}
+
+.gstep > p {
+  color: var(--muted);
+  margin: 0 0 16px;
+  max-width: 64ch;
+}
+
+.guided-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  color: var(--muted);
+}
+
+.guided-build {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.guided-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-teeth {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  margin: 8px 0 20px;
+}
+
+.guided-tooth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-size: 13px;
+}
+
+.guided-tooth.is-excluded {
+  opacity: 0.5;
+}
+
+.guided-duration {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.guided-duration button {
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  cursor: pointer;
+}
+
+.guided-duration button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Balanced (10-day) is the default, primary choice; the other paces sit one
+   layer down behind this disclosure. */
+.guided-duration-more {
+  flex-basis: 100%;
+}
+
+.guided-duration-more summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+
+.guided-duration-more > button {
+  margin: 0 8px 4px 0;
+}
+
+/* Plain-language definition callout (e.g. "what is a stage?"). */
+.guided-define {
+  border-left: 3px solid var(--accent);
+  background: var(--panel-alt);
+  padding: 10px 14px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* Step 4 headline: the key result (trays + total time), prominent above details. */
+.guided-headline {
+  display: grid;
+  gap: 3px;
+  margin: 4px 0 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--panel-alt);
+}
+
+.guided-headline:empty {
+  display: none;
+}
+
+.guided-headline-main {
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.guided-headline-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Step 4 plain-language summary + timeline bullets. */
+.guided-summary {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.guided-summary li {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.guided-summary li.guided-summary-note {
+  border: none;
+  background: transparent;
+  padding: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.guided-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 460px;
+}
+
+.guided-range input[type="range"] {
+  flex: 1;
+}
+
+.guided-review-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin: 16px 0 22px;
+}
+
+.guided-review-cols ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-timeline {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+}
+
+/* The AI box is a prominent, inviting part of the Review step. */
+.guided-ai {
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--panel-alt);
+}
+
+.guided-ai h4 {
+  margin: 0 0 4px;
+}
+
+.guided-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .data-gap-panel {
@@ -222,6 +714,46 @@ li {
   grid-template-columns: minmax(220px, 1fr) 180px 130px;
   gap: 12px;
   margin-bottom: 18px;
+}
+
+.journey-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.journey-nav button {
+  align-items: center;
+  background: var(--panel);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 58px;
+  padding: 10px;
+  text-align: left;
+}
+
+.journey-nav button.is-active {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.journey-nav strong {
+  align-items: center;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.journey-nav span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 label {
@@ -299,32 +831,6 @@ textarea {
   gap: 14px;
 }
 
-.simple-steps {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.simple-steps div {
-  border: 1px solid var(--line);
-  background: var(--panel);
-  padding: 12px;
-  display: grid;
-  gap: 6px;
-}
-
-.simple-steps strong {
-  color: var(--accent);
-  font-size: 20px;
-}
-
-.simple-steps span {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
 .upload-target {
   min-height: 148px;
   border: 1px dashed #8aa0aa;
@@ -333,6 +839,86 @@ textarea {
   place-items: center;
   text-align: center;
   color: var(--ink);
+}
+
+.upload-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.upload-file-list {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  min-height: 52px;
+  padding: 10px;
+}
+
+.upload-file-list p {
+  font-size: 12px;
+}
+
+.upload-file-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.upload-file-heading strong {
+  font-size: 12px;
+}
+
+.upload-file-heading button,
+.upload-file-list li button {
+  min-height: 28px;
+  padding: 0 8px;
+}
+
+.upload-file-list ul {
+  display: grid;
+  gap: 6px;
+}
+
+.upload-file-list li {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 38px;
+  padding: 6px 8px;
+}
+
+.upload-file-list li span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-file-list li small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.guided-explain {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.guided-explain h2 {
+  font-size: 14px;
+}
+
+.guided-explain p {
+  font-size: 13px;
 }
 
 .upload-target input {
@@ -367,7 +953,8 @@ textarea {
 .howto-panel,
 .print-settings,
 .status-block,
-.ai-chat {
+.ai-chat,
+.workflow-card {
   border: 1px solid var(--line);
   background: var(--panel-alt);
   padding: 12px;
@@ -376,9 +963,65 @@ textarea {
 
 .howto-panel h2,
 .print-settings h2,
-.ai-chat h2 {
+.ai-chat h2,
+.workflow-card h2 {
   font-size: 14px;
   margin-bottom: 0;
+}
+
+.workflow-card {
+  display: grid;
+  gap: 8px;
+}
+
+.sample-panel {
+  background: #fff8e1;
+  border-color: #d6a928;
+  box-shadow: inset 4px 0 0 #d6a928;
+}
+
+body[data-theme="dark"] .sample-panel {
+  background: #2a2412;
+  border-color: #fbbf24;
+  box-shadow: inset 4px 0 0 #fbbf24;
+}
+
+body:not([data-step="sample"]) .sample-only {
+  display: none;
+}
+
+.sample-badge {
+  color: #7c4a03;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body[data-theme="dark"] .sample-badge {
+  color: #fcd34d;
+}
+
+.sample-status-chip {
+  background: #fff8e1;
+  border: 1px solid #d6a928;
+  color: #5f3a04;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  margin: 0 0 12px;
+  max-width: 100%;
+  padding: 8px 10px;
+}
+
+body[data-theme="dark"] .sample-status-chip {
+  background: #2a2412;
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+.workflow-card p {
+  font-size: 13px;
 }
 
 .howto-panel ol {
@@ -414,6 +1057,33 @@ textarea {
 .chat-controls {
   grid-template-columns: repeat(2, minmax(120px, 1fr));
   margin-bottom: 10px;
+}
+
+.detail-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(84px, 1fr));
+  gap: 4px;
+  max-width: 220px;
+}
+
+.detail-switch button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.detail-switch button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+body[data-generation-detail="basic"] .advanced-generation,
+body[data-ai-detail="basic"] .advanced-ai {
+  display: none;
 }
 
 .chat-messages {
@@ -490,6 +1160,24 @@ textarea {
 .metadata-grid dd {
   margin: 4px 0 0;
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.workflow-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.workflow-actions.inline {
+  justify-content: flex-start;
+  margin-top: 2px;
+}
+
+.next-action {
+  min-width: 210px;
 }
 
 .toggle-grid {
@@ -554,6 +1242,31 @@ td input {
   margin-bottom: 12px;
 }
 
+.scan-status {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink);
+  font-size: 13px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+}
+
+.download-actions {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.download-actions h2 {
+  margin-bottom: 2px;
+}
+
+.download-actions button {
+  width: 100%;
+}
+
 .stage-slider {
   margin-left: auto;
   min-width: 220px;
@@ -602,10 +1315,10 @@ td input {
   }
 
   .topbar,
+  .journey-nav,
   .upload-row,
   .simple-hero,
   .simple-grid,
-  .simple-steps,
   .field-grid,
   .field-grid.compact,
   .toggle-grid,
@@ -692,6 +1405,21 @@ td input {
   margin-left: 8px;
 }
 
+.viewer-aux {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  min-height: 34px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.viewer-aux.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
 .exaggeration {
   display: inline-flex;
   align-items: center;
@@ -703,6 +1431,20 @@ td input {
 
 .exaggeration input {
   width: 56px;
+}
+
+.arch-filter {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 12px;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.arch-filter select {
+  min-height: 34px;
+  width: 136px;
 }
 
 .ipr-map {
@@ -726,4 +1468,270 @@ td input {
 .ipr-contact input {
   min-height: 30px;
   padding: 4px 6px;
+}
+
+/* Glossary / Key Terms */
+.glossary-link {
+  background: transparent;
+  color: #d8e4e9;
+  border: 1px solid #344951;
+  border-radius: 8px;
+  min-height: 36px;
+  margin: 14px 0 4px;
+  text-align: left;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.glossary-link:hover {
+  border-color: var(--accent);
+}
+
+.tooth-chart {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin: 0 auto 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.glossary-search input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tooth-map {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.tooth-map .quadrant {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.tooth-map .quadrant h3 {
+  font-size: 13px;
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+
+.tooth-map .quadrant ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.glossary dl {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.glossary dl div {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+
+.glossary dt {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.glossary dd {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .tooth-map {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Generate Plan panel */
+.generate-panel {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-alt);
+  padding: 12px;
+  margin-bottom: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.generate-panel .gen-steps {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.generate-panel .gen-steps li.warning {
+  color: var(--warn);
+}
+
+.generate-panel .gen-steps li.skipped {
+  color: var(--muted);
+}
+
+.generate-panel .gen-steps li.ok {
+  color: var(--accent);
+}
+
+.landmark-import {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.landmark-import input {
+  font-size: 12px;
+}
+
+.version-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.version-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 8px 10px;
+}
+
+.version-list li small {
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.version-list li p {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+.version-list li code {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.version-list li button {
+  flex: 0 0 auto;
+}
+
+/* Auto-segmentation proposal (advisory, reviewable, never auto-applied). */
+.segment-findings {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.segment-findings li {
+  border: none;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.segment-list {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.segment-row {
+  display: grid;
+  grid-template-columns: auto 48px auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 6px 8px;
+}
+
+.segment-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+}
+
+.segment-tooth {
+  min-height: 30px;
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.segment-arch {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.segment-conf {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  overflow: hidden;
+}
+
+.segment-conf-bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.segment-conf-num {
+  min-width: 34px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+#applySegment {
+  width: 100%;
+  margin-top: 6px;
 }

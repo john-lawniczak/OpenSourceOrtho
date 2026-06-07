@@ -82,3 +82,11 @@ export function createLatest() {
     isCurrent: (value) => value === token,
   };
 }
+
+export function closestDatasetTarget(target, key) {
+  if (!target) return null;
+  if (target.dataset?.[key] !== undefined) return target;
+  if (typeof target.closest !== "function") return null;
+  const attr = key.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`);
+  return target.closest(`[data-${attr}]`);
+}

@@ -1,10 +1,29 @@
 export const state = {
   theme: "light",
-  userMode: "advanced",
+  // The guided wizard is the default, primary experience for non-technical
+  // first-time users. The dense technician workspace ("advanced") is opt-in via
+  // the Technician view toggle.
+  userMode: "simple",
   activeStep: "upload",
+  // Guided wizard sub-state (the simplified primary flow). The wizard owns its
+  // own step cursor so it is independent of the technician panel navigation.
+  guided: {
+    step: "upload",
+    excludedTeeth: [],
+    print: { busy: false, status: "", result: null },
+  },
+  // When true, the guided wizard is showing the isolated sample demonstration
+  // (working state is snapshotted and restored on exit). See sample.js.
+  sample: { active: false },
   view: "current",
   dim: "3d",
   file: null,
+  files: [],
+  scanSources: [],
+  scanArchFilter: "both",
+  scanRenderStatus: "No uploaded scan is loaded.",
+  sampleStatus: "",
+  uploadStorageStatus: "",
   scanUnits: "unverified",
   scanArch: "",
   // Latest response from the Python engine (POST /api/evaluate). The UI never
@@ -23,11 +42,43 @@ export const state = {
     agentAccessEnabled: false,
     agentEndpoint: "",
   },
+  // Latest /api/generate-plan orchestration result, shown in the Review panel.
+  generation: {
+    busy: false,
+    status: "",
+    acknowledged: false,
+    notes: "",
+    landmarks: null,
+    landmarksStatus: "",
+    result: null,
+  },
+  detailMode: {
+    generation: "basic",
+    ai: "basic",
+  },
+  // Saved plan versions (case store) for the current Plan ID.
+  versions: {
+    busy: false,
+    status: "",
+    note: "",
+    list: [],
+  },
   simpleGoal: "general-alignment",
   simpleAcknowledged: false,
   demoInitialOffsets: {},
   // When true, the 3D viewer loads the bundled demo crown meshes per tooth class.
   useDemoMeshes: false,
+  // When true, the 3D viewer draws FDI tooth-number labels over each tooth.
+  showToothLabels: false,
+  // Advisory auto-segmentation proposal (POST /api/segment). Never auto-applied:
+  // `applied` holds only what the user explicitly accepted (and may have corrected).
+  segmentation: {
+    busy: false,
+    status: "",
+    proposal: null,
+    edits: {},
+    applied: null,
+  },
   availability: {
     intraoral_scan: true,
     segmented_teeth: false,
@@ -59,10 +110,10 @@ export const state = {
     movementExclusions: "",
     iprContacts: {},
   },
-  rows: [
-    { stage: 0, tooth: "11", x: 0.2, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 },
-    { stage: 1, tooth: "11", x: 0.1, y: 0.1, z: 0, tip: 0, torque: 0, rotation: 0 },
-  ],
+  // Empty by default: the guided "teeth that move" list and the technician stage
+  // table both derive from rows, so there are no placeholder teeth until the user
+  // uploads a scan and builds a plan (or opens the Sample Test Case).
+  rows: [],
 };
 
 export const iprContactPairs = [
@@ -123,6 +174,38 @@ export async function evaluatePlan(payload) {
   return response.json();
 }
 
+export async function requestPlanGeneration(payload) {
+  const response = await fetch("/api/generate-plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["generation request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function savePlanVersion(payload) {
+  const response = await fetch("/api/plan/version", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["save failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function listCaseVersions(caseId) {
+  const response = await fetch(`/api/cases/${encodeURIComponent(caseId)}`);
+  if (!response.ok) return { ok: false, versions: [] };
+  return response.json();
+}
+
 export async function askPlanAssistant(payload) {
   const response = await fetch("/api/chat", {
     method: "POST",
@@ -132,6 +215,32 @@ export async function askPlanAssistant(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["chat request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestSegmentation(payload) {
+  const response = await fetch("/api/segment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["segmentation request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestPrintPackage(payload) {
+  const response = await fetch("/api/print-package", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["print package request failed"]).join("; "));
   }
   return response.json();
 }

@@ -1,0 +1,21 @@
+# Mobile build artifacts (kept out of the repo; scaffolding sources are tracked).
+
+# --- iOS / Xcode ---
+ios/build/
+ios/.build/
+ios/DerivedData/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/**/*.xcodeproj/project.xcworkspace/xcuserdata/
+*.ipa
+
+# --- Android / Gradle ---
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+*.apk
+*.aab
+*.keystore

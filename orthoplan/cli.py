@@ -6,6 +6,15 @@ import sys
 
 from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.cli_cases import (
+    add_case_parsers,
+    cmd_case_list,
+    cmd_case_save,
+    cmd_case_versions,
+)
+from orthoplan.cli_contribution import add_contribution_parser, cmd_register_contribution
+from orthoplan.cli_landmarks import add_landmarks_parser, cmd_landmarks_template
+from orthoplan.cli_mesh import add_mesh_parsers, cmd_inspect_stl, cmd_register_mesh
 from orthoplan.cli_packages import (
     add_measurement_lab_parser,
     add_print_package_parser,
@@ -13,9 +22,6 @@ from orthoplan.cli_packages import (
     cmd_print_package,
 )
 from orthoplan.io.serialization import plan_to_json, read_plan, write_plan
-from orthoplan.io.stl_import import inspect_stl
-from orthoplan.mesh_workspace import register_stl_mesh
-from orthoplan.model.assets import MeshProvenance, bounding_box_sanity
 from orthoplan.model.gaps import data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.model.settings import TimelineSettings, TreatmentSettings
@@ -36,22 +42,8 @@ def build_parser() -> argparse.ArgumentParser:
     new_plan.add_argument("--wear-interval", type=int, default=14, help="aligner wear days")
     new_plan.add_argument("--out", default=None, help="write plan JSON to this path")
 
-    inspect = sub.add_parser("inspect-stl", help="show units-unverified STL metadata")
-    inspect.add_argument("path")
-    inspect.add_argument(
-        "--provenance",
-        choices=[p.value for p in MeshProvenance],
-        default=MeshProvenance.PATIENT_DERIVED.value,
-    )
-
-    register = sub.add_parser("register-mesh", help="copy an STL into the local mesh workspace")
-    register.add_argument("path")
-    register.add_argument("--workspace", default=None, help="mesh workspace directory")
-    register.add_argument(
-        "--provenance",
-        choices=[p.value for p in MeshProvenance],
-        default=MeshProvenance.IMPORTED.value,
-    )
+    add_mesh_parsers(sub)
+    add_contribution_parser(sub)
 
     summary = sub.add_parser("plan-summary", help="summarize a serialized plan")
     summary.add_argument("path")
@@ -79,6 +71,8 @@ def build_parser() -> argparse.ArgumentParser:
     acquisition.add_argument("path")
     acquisition.add_argument("--json", action="store_true", help="emit acquisition advice as JSON")
 
+    add_case_parsers(sub)
+    add_landmarks_parser(sub)
     add_print_package_parser(sub)
     add_measurement_lab_parser(sub)
     return parser
@@ -97,36 +91,6 @@ def _cmd_new_plan(args: argparse.Namespace) -> int:
         print(f"Wrote draft plan to {args.out}")
     else:
         print(plan_to_json(plan))
-    return 0
-
-
-def _cmd_inspect_stl(args: argparse.Namespace) -> int:
-    try:
-        asset = inspect_stl(args.path, provenance=MeshProvenance(args.provenance))
-    except (OSError, ValueError) as exc:
-        print(f"inspect-stl error: {exc}", file=sys.stderr)
-        return 2
-    print(asset.model_dump_json(indent=2))
-    note = bounding_box_sanity(asset)
-    print(f"\nScale note: {note}" if note else "\nScale note: none")
-    return 0
-
-
-def _cmd_register_mesh(args: argparse.Namespace) -> int:
-    try:
-        asset = register_stl_mesh(
-            args.path,
-            workspace=args.workspace,
-            provenance=MeshProvenance(args.provenance),
-        )
-    except (OSError, ValueError) as exc:
-        print(f"register-mesh error: {exc}", file=sys.stderr)
-        return 2
-    print(asset.model_dump_json(indent=2))
-    print(
-        "\nAdd this asset id to a plan mesh_assets/tooth_meshes link, then run "
-        "`orthoplan serve` with ORTHOPLAN_MESH_WORKSPACE pointing to the same workspace."
-    )
     return 0
 
 
@@ -262,13 +226,18 @@ def _cmd_acquisition(args: argparse.Namespace) -> int:
 
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
-    "inspect-stl": _cmd_inspect_stl,
-    "register-mesh": _cmd_register_mesh,
+    "inspect-stl": cmd_inspect_stl,
+    "register-mesh": cmd_register_mesh,
+    "register-contribution": cmd_register_contribution,
     "plan-summary": _cmd_plan_summary,
     "serve": _cmd_serve,
     "advise": _cmd_advise,
     "report": _cmd_report,
     "acquisition": _cmd_acquisition,
+    "case-save": cmd_case_save,
+    "case-list": cmd_case_list,
+    "case-versions": cmd_case_versions,
+    "landmarks-template": cmd_landmarks_template,
     "print-package": cmd_print_package,
     "measurement-lab": cmd_measurement_lab,
 }

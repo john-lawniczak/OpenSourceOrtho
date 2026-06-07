@@ -16,18 +16,36 @@ The UI must show what the system actually knows:
 
 ## Core Views
 
-The UI should support two distinct product surfaces:
+The UI supports distinct product surfaces, switched by a single **Guided /
+Technician** toggle that stays on the left in both modes (and remains visible
+inside the Sample Test Case). A light/dark switch is anchored in the top bar:
 
-- **Guided review** for non-technical users: upload or demo, acknowledge limits,
-  visualize an educational movement timeline, and convert findings into questions
-  for a dental professional.
-- **Clinician review** for professional users: staged movement authoring, records,
+- **Guided wizard** (the default, primary surface) for non-technical users: a
+  step-by-step flow with a progress rail of six chips - **Upload → Teeth & time →
+  Details → Review → 3D preview → Print / send**. One step is visible at a time
+  with Back/Next. It acknowledges limits in plain language, lets the user choose
+  which teeth move (excluded teeth become fixed) and the tray-wear duration,
+  animates the plan in 3D, and exports printable files. The heavy singletons (3D
+  viewer, AI box, upload control) are single instances relocated into the active
+  step, so there is never a second WebGL context.
+- **Technician review** for professional users: staged movement authoring, records,
   clinical controls, mesh rendering, rule findings, optimized staging, print
-  metadata, and plan JSON.
+  metadata, plan JSON, and the experimental on-device auto-segmentation panel
+  (reviewable per-tooth proposal, never auto-applied).
+- **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
+  (same chips/panels), pre-loaded with the two bundled test-case STL scans and a
+  Balanced 10-day pace, starting at step 1. Entering it snapshots the user's
+  working state (including any segmentation) and restores it on exit. The
+  Guided/Technician toggle stays visible inside it, and the sidebar Sample button
+  doubles as "Exit Sample Test Case", so the demo can never leak into or be left
+  in the user's own editors.
 - **Plan AI review** for both workflows: scoped chat over the current plan,
-  findings, data gaps, and timeline. It must label the connector and context
-  scope, keep raw API keys out of persisted plan data, and never present AI text
-  as diagnosis or approval.
+  findings, data gaps, and timeline. The provider selector and a session-only
+  API-key field are surfaced directly (with provider-specific, plain-language
+  help; the key field is hidden for the no-key local helper) so enabling a real
+  model is discoverable. It must label the connector and context scope, keep raw
+  API keys out of persisted plan data, and never present AI text as diagnosis or
+  approval.
 
 The first production-grade clinician UI should include:
 

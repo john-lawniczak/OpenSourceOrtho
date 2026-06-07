@@ -14,25 +14,33 @@
     </script>
   </head>
   <body>
+    <header class="app-topbar">
+      <div class="brand-block">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="28" height="28">
+            <path fill="currentColor" d="M32 13c-6 0-9 3-14 3-4 0-7-2-9-1-2 1-2 5-1 11 1 7 3 11 5 17 1 4 2 8 4 8 3 0 3-9 6-9s3 9 6 9c2 0 3-4 4-8 2-6 4-10 5-17 1-6 1-10-1-11-2-1-5 1-9 1-6 0-9-3-14-3z"/>
+          </svg>
+        </span>
+        <div>
+          <h1>OpenSource Ortho</h1>
+          <p>Open aligner-planning workspace</p>
+        </div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle light / dark mode">
+        <span class="theme-toggle-track" aria-hidden="true">
+          <span class="theme-toggle-glyph sun">☀</span>
+          <span class="theme-toggle-glyph moon">☾</span>
+          <span class="theme-toggle-thumb"></span>
+        </span>
+      </button>
+    </header>
     <main class="app-shell">
       <aside class="sidebar" aria-label="Plan workflow">
-        <div class="brand-block">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 64 64" width="28" height="28">
-              <path fill="currentColor" d="M32 13c-6 0-9 3-14 3-4 0-7-2-9-1-2 1-2 5-1 11 1 7 3 11 5 17 1 4 2 8 4 8 3 0 3-9 6-9s3 9 6 9c2 0 3-4 4-8 2-6 4-10 5-17 1-6 1-10-1-11-2-1-5 1-9 1-6 0-9-3-14-3z"/>
-            </svg>
-          </span>
-          <div>
-            <h1>OpenSource Ortho</h1>
-            <p>Open aligner-planning workspace</p>
-          </div>
-        </div>
-
         <div class="mode-switch" aria-label="Workspace mode">
-          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Clinician</button>
           <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
+          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Technician</button>
         </div>
-        <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
+        <button class="sample-launch" id="sampleLaunch" type="button">Sample Test Case</button>
 
         <nav class="step-list" aria-label="Workflow steps">
           <button class="step is-active" data-step="upload" type="button">Upload</button>
@@ -41,6 +49,8 @@
           <button class="step" data-step="stages" type="button">Stages</button>
           <button class="step" data-step="review" type="button">Review</button>
         </nav>
+
+        <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open key terms and tooth numbering">Key Terms &amp; Tooth Map</button>
 
         <section class="data-gap-panel" aria-label="Data gaps">
           <h2>Data Gaps</h2>
@@ -66,71 +76,179 @@
           </div>
           <div>
             <label for="wearInterval">Wear Days</label>
-            <input id="wearInterval" type="number" min="1" value="14" />
+            <input id="wearInterval" type="number" min="1" value="10" />
           </div>
         </header>
+        <div class="tech-banner advanced-only">
+          <span>Technician view — full controls</span>
+          <button class="ghost-toggle" data-user-mode="simple" type="button">← Back to guided</button>
+        </div>
+        <nav class="journey-nav" aria-label="Guided workflow">
+          <button class="is-active" data-journey-step="upload" type="button">
+            <strong>1</strong>
+            <span>Load STL files</span>
+          </button>
+          <button data-journey-step="review" type="button">
+            <strong>2</strong>
+            <span>Review preview</span>
+          </button>
+          <button data-journey-step="stages" type="button">
+            <strong>3</strong>
+            <span>Refine stages</span>
+          </button>
+          <button data-journey-step="settings" type="button">
+            <strong>4</strong>
+            <span>Export handoff</span>
+          </button>
+        </nav>
 
-        <section class="panel" id="panel-simple">
-          <div class="simple-hero">
+        <!-- Guided wizard: the primary, simplified flow for first-time users.
+             Heavy singletons (upload stack, 3D viewer, AI chat) are relocated
+             into these step hosts by guided.js placeSharedBlocks(). -->
+        <section id="guided" aria-label="Guided plan wizard">
+          <div class="guided-head">
             <div>
-              <h2>Guided STL Review</h2>
-              <p>Explore an educational tooth-movement visualization and learn what records an orthodontist would need. This is not a diagnosis, treatment plan, or aligner prescription.</p>
+              <h2 id="guidedHeading">Plan your aligners, step by step</h2>
+              <p class="guided-sub">Educational only — this does not diagnose, prescribe, or say whether treatment is safe or complete.</p>
             </div>
-            <button class="primary-action" id="loadDemo" type="button">Try 12-Month Demo</button>
           </div>
-          <div class="simple-grid">
-            <label class="upload-target" for="simpleStlFile">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <span id="simpleUploadLabel">Choose your STL</span>
-              <input id="simpleStlFile" type="file" accept=".stl" />
+
+          <div class="sample-banner" id="sampleBanner" hidden>
+            <span>Sample test case — a simulated walkthrough so you can see every step. Your own work is untouched.</span>
+            <button class="ghost-toggle" id="sampleExit" type="button">Exit sample</button>
+          </div>
+
+          <ol class="guided-rail" id="guidedRail">
+            <li data-gstep-nav="upload"><span>1</span> Upload</li>
+            <li data-gstep-nav="plan"><span>2</span> Teeth &amp; time</li>
+            <li data-gstep-nav="details"><span>3</span> Details</li>
+            <li data-gstep-nav="review"><span>4</span> Review</li>
+            <li data-gstep-nav="preview"><span>5</span> 3D preview</li>
+            <li data-gstep-nav="print"><span>6</span> Print / send</li>
+          </ol>
+
+          <section class="gstep" data-gstep="upload">
+            <h3>1 · Upload your STL files</h3>
+            <p>STL (STereoLithography) files are the detailed 3D scan models of your teeth. Add your upper and/or lower scans.</p>
+            <div id="guidedUploadHost">
+              <div id="simpleUpload" class="upload-stack">
+                <label class="upload-target" for="simpleStlFile">
+                  <span class="upload-icon" aria-hidden="true">↑</span>
+                  <span id="simpleUploadLabel">Choose your STL files</span>
+                  <input id="simpleStlFile" type="file" accept=".stl" multiple />
+                </label>
+                <div id="simpleUploadFileList" class="upload-file-list"></div>
+              </div>
+            </div>
+            <label class="toggle">
+              <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
+              <input id="simpleAcknowledged" type="checkbox" />
             </label>
-            <div class="simple-panel">
-              <label>
-                What are you exploring?
+          </section>
+
+          <section class="gstep" data-gstep="plan">
+            <h3>2 · Which teeth move, and how long</h3>
+            <p class="guided-define"><strong>What is a stage?</strong> A stage is one aligner tray — a single step in the sequence. Each tray nudges your teeth a little, and you wear it for the number of days you choose before swapping to the next one. More movement needed means more stages, which means more trays and more total time.</p>
+            <div class="guided-build">
+              <label>What are you exploring?
                 <select id="simpleGoal">
-                  <option value="general-alignment">General alignment</option>
+                  <option value="general-alignment" selected>General alignment</option>
                   <option value="crowding">Crowding</option>
                   <option value="spacing">Spacing</option>
                   <option value="front-teeth">Front teeth appearance</option>
                   <option value="bite">Bite concern</option>
                 </select>
               </label>
-              <label class="toggle">
-                <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
-                <input id="simpleAcknowledged" type="checkbox" />
-              </label>
-              <button class="primary-action" id="simpleReview" type="button">Review Educational Preview</button>
+              <button class="primary-action" id="guidedBuild" type="button">Build my plan</button>
             </div>
-          </div>
-          <div class="simple-steps">
-            <div><strong>1</strong><span>Upload an STL or use the synthetic demo.</span></div>
-            <div><strong>2</strong><span>Review the visual movement timeline.</span></div>
-            <div><strong>3</strong><span>Review and refine the staged preview.</span></div>
-            <div><strong>4</strong><span>Prepare 3D model prints for professional review.</span></div>
+            <p class="guided-hint">"Build my plan" turns your scan into a step-by-step sequence of small tooth movements (the aligner stages). You can then review it, preview it in 3D, and export the print files.</p>
+            <p id="guidedBuildStatus" class="guided-status" hidden></p>
+            <p class="guided-hint">These are the teeth the plan moves. Uncheck any you'd like to keep still.</p>
+            <div id="guidedTeeth" class="guided-teeth"></div>
+            <h4>How long should each tray be worn?</h4>
+            <div id="guidedDuration" class="guided-duration">
+              <button data-wear="10" type="button">Balanced · 10-day trays</button>
+              <details class="guided-duration-more" id="guidedDurationMore">
+                <summary>Other pacing options</summary>
+                <button data-wear="7" type="button">Faster · 7-day trays</button>
+                <button data-wear="14" type="button">Gentle · 14-day trays</button>
+              </details>
+            </div>
+            <p id="guidedDurationSummary" class="guided-hint"></p>
+          </section>
+
+          <section class="gstep" data-gstep="details">
+            <h3>3 · Small details (optional)</h3>
+            <p>Make the on-screen movement easier to see — this only changes the preview, not the plan.</p>
+            <label class="guided-range">Preview movement scale
+              <input id="guidedExaggeration" type="range" min="1" max="40" step="1" value="12" />
+              <span id="guidedExaggerationValue">×12</span>
+            </label>
+            <p class="guided-hint">Real aligners move teeth a fraction of a millimeter per stage — too small to see on screen. This slider multiplies the movement in the 3D preview only, so you can actually watch it (×12 means shown twelve times larger than reality). Your saved plan and print files always use the true, un-exaggerated values.</p>
+            <p class="viewer-caveat">Want fine control — per-tooth movement caps, attachments, IPR, and the raw plan JSON? Switch to the Technician view with the toggle in the sidebar.</p>
+          </section>
+
+          <section class="gstep" data-gstep="review">
+            <h3>4 · Review your plan</h3>
+            <p class="guided-hint">The headline below is the key result — how many trays, and how long overall. The details follow.</p>
+            <div id="guidedHeadline" class="guided-headline"></div>
+            <ul id="guidedSummary" class="guided-summary"></ul>
+            <div class="guided-ai">
+              <h4>Ask AI about your plan</h4>
+              <p class="guided-hint">Ask anything about this preview in plain language. Answers are educational only.</p>
+              <div id="guidedAiHost"></div>
+            </div>
+          </section>
+
+          <section class="gstep" data-gstep="preview">
+            <h3>5 · See the full 3D plan</h3>
+            <p>A <strong>stage</strong> is one aligner tray — a single step in the sequence. Stage&nbsp;0 is your starting position; each later stage nudges the teeth a little closer to the goal, and you would wear that tray for the number of days you chose before moving to the next. Drag the stage slider to watch the planned movement tray by tray.</p>
+            <div id="guidedPreviewHost"></div>
+          </section>
+
+          <section class="gstep" data-gstep="print">
+            <h3>6 · Print or send your files</h3>
+            <p>Build the 3D-print files (one model per stage, plus a manifest). Download the zip to print the trays, or download the email draft to send the files to yourself or a print service.</p>
+            <button class="primary-action" id="guidedPrint" type="button">Build my print files</button>
+            <p id="guidedPrintStatus" class="guided-hint"></p>
+            <div id="guidedPrintLinks" class="workflow-actions inline" hidden>
+              <button data-print-artifact="zip" type="button">Download zip again</button>
+              <button data-print-artifact="email" type="button">Download email draft (.eml)</button>
+            </div>
+            <p class="viewer-caveat">The email draft opens in your mail app with the files already attached. Printing, materials, post-processing, and any physical use are your own responsibility and risk.</p>
+          </section>
+
+          <div class="guided-nav">
+            <button id="guidedBack" type="button">Back</button>
+            <button class="primary-action" id="guidedNext" type="button">Next</button>
           </div>
         </section>
 
-        <section class="panel is-active" id="panel-upload">
+        <!-- Hidden home for the relocated upload stack when in Technician view. -->
+        <div id="techUploadHost" hidden></div>
+
+        <section class="panel" id="panel-upload">
           <div class="panel-heading">
             <h2>Upload STL</h2>
-            <p>Surface scan geometry only. Units must be confirmed before cap checks.</p>
+            <p>Add upper, lower, or both STL scans.</p>
           </div>
           <div class="howto-panel">
             <h2>Getting Started</h2>
             <ol>
-              <li>Upload or reference a surface STL and confirm units before using millimeter checks.</li>
-              <li>Declare which records are available; missing data limits what the engine can assess.</li>
-              <li>Enter staged tooth movement, then review findings, acquisition advice, and report/export status.</li>
-              <li>For physical workflows, use validated materials, confirmed scale, and calibrated equipment; aligner sheets are normally thermoformed over models, not simply printed and worn.</li>
-              <li>Use dental model resin and selected thermoforming sheets such as PETG, TPU/polyurethane, or EVA-family materials; clean, cure, remove supports, and smooth printed models per material instructions.</li>
+              <li>Upload STL scans here, or use the Sample Test Case button in the sidebar for the built-in example.</li>
+              <li>Confirm units before relying on millimeter movement checks.</li>
+              <li>Review findings and data gaps before exporting anything.</li>
             </ol>
           </div>
           <div class="upload-row">
-            <label class="upload-target" for="stlFile">
-              <span class="upload-icon" aria-hidden="true">↑</span>
-              <span id="uploadLabel">Choose STL file</span>
-              <input id="stlFile" type="file" accept=".stl" />
-            </label>
+            <div class="upload-stack">
+              <label class="upload-target" for="stlFile">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span id="uploadLabel">Choose STL files</span>
+                <input id="stlFile" type="file" accept=".stl" multiple />
+              </label>
+              <div id="uploadFileList" class="upload-file-list"></div>
+            </div>
             <div class="field-grid compact">
               <label>
                 Units
@@ -153,20 +271,35 @@
             </div>
           </div>
           <dl class="metadata-grid" id="scanMetadata"></dl>
+          <div class="workflow-actions">
+            <button class="primary-action next-action" id="uploadNext" type="button">Next: Data Availability</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-availability">
           <div class="panel-heading">
             <h2>Data Availability</h2>
-            <p>Only declared data is available to the plan.</p>
+            <p>Mark the records you actually have.</p>
+          </div>
+          <div class="workflow-card">
+            <h2>Step 2: Declare Records</h2>
+            <p>Missing records limit what the engine can check and drive acquisition guidance.</p>
           </div>
           <div class="toggle-grid" id="availabilityGrid"></div>
+          <div class="workflow-actions">
+            <button data-step-target="upload" type="button">Back: Upload</button>
+            <button class="primary-action next-action" data-step-target="settings" type="button">Next: Settings</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-settings">
           <div class="panel-heading">
             <h2>Movement Settings</h2>
-            <p>Configurable heuristics, not approval.</p>
+            <p>Set caps and export metadata.</p>
+          </div>
+          <div class="workflow-card">
+            <h2>Step 3: Set Review Rules</h2>
+            <p>Caps and clinical controls shape warnings; they do not approve treatment.</p>
           </div>
           <div class="field-grid">
             <label>Linear mm<input id="capLinear" type="number" min="0.01" step="0.01" value="0.25" /></label>
@@ -206,6 +339,10 @@
             <div class="ipr-map" id="iprContactMap" aria-label="IPR contact map"></div>
             <p class="viewer-caveat">Clinical controls are planning metadata. They help the engine flag conflicts; they do not predict biological response or aligner tracking.</p>
           </div>
+          <div class="workflow-actions">
+            <button data-step-target="availability" type="button">Back: Data</button>
+            <button class="primary-action next-action" data-step-target="stages" type="button">Next: Stages</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-stages">
@@ -215,6 +352,10 @@
               <p>FDI tooth IDs, millimeters, and degrees.</p>
             </div>
             <button class="primary-action" id="addStage" type="button">Add Stage</button>
+          </div>
+          <div class="workflow-card">
+            <h2>Step 4: Build The Timeline</h2>
+            <p>Each row is one tooth movement at one stage. Use small increments, then review the cumulative sequence with the stage slider.</p>
           </div>
           <div class="stage-table-wrap">
             <table class="stage-table">
@@ -234,60 +375,158 @@
               <tbody id="stageRows"></tbody>
             </table>
           </div>
+          <div class="workflow-actions">
+            <button data-step-target="settings" type="button">Back: Settings</button>
+            <button class="primary-action next-action" data-step-target="review" type="button">Next: Review</button>
+          </div>
         </section>
 
         <section class="panel" id="panel-review">
           <div class="review-grid">
             <section class="review-main">
               <div class="panel-heading">
-                <h2>Progress Preview</h2>
+                <h2 id="reviewHeading">Progress Preview</h2>
                 <p id="timelineText"></p>
               </div>
-              <div class="viewer-toolbar">
-                <button class="mode is-active" data-view="current" type="button">Current</button>
-                <button class="mode" data-view="planned" type="button">Planned</button>
-                <button class="mode" data-view="overlay" type="button">Overlay</button>
-                <span class="dim-toggle">
-                  <button class="dim is-active" data-dim="3d" type="button">3D</button>
-                  <button class="dim" data-dim="2d" type="button">2D</button>
-                </span>
-                <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="12" /></label>
-                <label class="stage-slider">
-                  Stage <span id="stageValue">0</span>
-                  <input id="stageSlider" type="range" min="0" max="0" value="0" />
-                </label>
+              <p id="sampleStatusChip" class="sample-status-chip" hidden></p>
+              <div class="workflow-card">
+                <h2>Step 5: Review The Progression</h2>
+                <p>A <strong>stage</strong> is one aligner tray — a single step in the sequence (stage 0 is the starting position). Use the view buttons and stage slider to inspect the current, planned, or overlay preview at each stage.</p>
               </div>
-              <div class="viewer3d-wrap">
-                <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
-                <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
-                  <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
-                  <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
-                  <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+              <!-- #viewerBlock is a single instance relocated between the
+                   technician review and the guided 3D step by guided.js. -->
+              <div id="techViewerHost">
+                <div id="viewerBlock">
+                  <div class="viewer-toolbar">
+                    <button class="mode is-active" data-view="current" type="button">Current</button>
+                    <button class="mode" data-view="planned" type="button">Planned</button>
+                    <button class="mode" data-view="overlay" type="button">Overlay</button>
+                    <span class="dim-toggle">
+                      <button class="dim is-active" data-dim="3d" type="button">3D</button>
+                      <button class="dim" data-dim="2d" type="button">2D</button>
+                    </span>
+                    <button class="viewer-aux" id="toothLabelToggle" type="button" aria-pressed="false" title="Show or hide FDI tooth numbers over the teeth">Tooth #</button>
+                    <label class="arch-filter">
+                      Show
+                      <select id="scanArchFilter">
+                        <option value="both">Both arches</option>
+                        <option value="maxillary">Upper only</option>
+                        <option value="mandibular">Lower only</option>
+                      </select>
+                    </label>
+                    <label class="exaggeration">Exaggerate ×<input id="exaggeration" type="number" min="1" max="200" step="1" value="12" /></label>
+                    <label class="stage-slider">
+                      Stage <span id="stageValue">0</span>
+                      <input id="stageSlider" type="range" min="0" max="0" value="0" />
+                    </label>
+                  </div>
+                  <p id="scanRenderStatus" class="scan-status"></p>
+                  <div class="viewer3d-wrap">
+                    <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+                    <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
+                      <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                      <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
+                      <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                    </div>
+                  </div>
+                  <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
+                  <p class="viewer-caveat">STL scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
                 </div>
               </div>
-              <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
-              <p class="viewer-caveat">Schematic proxy teeth, not the scanned mesh. Translation is the engine's cumulative movement, scaled by the shown ×exaggeration for visibility. PCA crown frames are exposed as approximate metadata only; rotation is not drawn unless a future trusted anatomical frame marks it renderable. The crown-centroid pivot is a visualization assumption.</p>
             </section>
             <aside class="review-side">
+              <section class="generate-panel" aria-label="Generate plan">
+                <div class="ai-chat-heading">
+                  <h2>Generate Plan</h2>
+                  <span id="generationStatus">Ready</span>
+                </div>
+                <div class="detail-switch" aria-label="Generate Plan detail level">
+                  <button class="is-active" data-detail-mode="generation" data-detail-value="basic" type="button">Basic</button>
+                  <button data-detail-mode="generation" data-detail-value="advanced" type="button">Advanced</button>
+                </div>
+                <p class="viewer-caveat">Builds staged movement from authored rows, landmarks, segmented crowns, or the educational template.</p>
+                <div class="advanced-generation">
+                  <label class="chat-input">
+                    Optional notes
+                    <textarea id="generationNotes" rows="3" placeholder="e.g. Focus on the lateral incisors (FDI 12 and 22) — they are off-plane and that is what I want to align."></textarea>
+                  </label>
+                  <p id="generationConnector" class="viewer-caveat"></p>
+                  <label class="landmark-import">
+                    <span>Import landmarks JSON</span>
+                    <input id="landmarksFile" type="file" accept=".json,application/json" />
+                  </label>
+                  <p id="landmarksStatus" class="viewer-caveat">No landmarks imported. Template: <code>orthoplan landmarks-template</code>.</p>
+                </div>
+                <label class="toggle">
+                  <span>I understand a generated plan is educational/heuristic and is not a diagnosis, treatment plan, or approval.</span>
+                  <input id="generationAck" type="checkbox" />
+                </label>
+                <button class="primary-action" id="generatePlan" type="button">Generate Plan</button>
+                <div id="generationReport" class="status-block"></div>
+              </section>
+              <section class="generate-panel segment-panel advanced-only" aria-label="Auto-segmentation">
+                <div class="ai-chat-heading">
+                  <h2>Auto-Segmentation (experimental)</h2>
+                  <span id="segmentStatus"></span>
+                </div>
+                <p class="viewer-caveat">Proposes per-tooth regions from a whole-arch scan, on this machine (your data stays local). Drafts only: review and correct each tooth number, then apply explicitly. Never auto-applied, and not a diagnosis or a sign that treatment is needed, possible, or complete.</p>
+                <button class="primary-action" id="proposeSegment" type="button">Propose tooth segmentation</button>
+                <ul id="segmentFindings" class="segment-findings"></ul>
+                <div id="segmentList" class="segment-list"></div>
+                <button id="applySegment" type="button" hidden>Apply accepted segmentation to plan</button>
+                <p id="segmentApplied" class="viewer-caveat"></p>
+              </section>
+              <section class="generate-panel" aria-label="Plan versions">
+                <div class="ai-chat-heading">
+                  <h2>Versions</h2>
+                  <span id="versionStatus"></span>
+                </div>
+                <p class="viewer-caveat">Save named snapshots of this plan (the case is keyed by Plan ID). Versions are stored locally by the dev server and can be restored into the editor.</p>
+                <label class="chat-input">
+                  Note
+                  <textarea id="versionNote" rows="2" placeholder="e.g. after IPR pass"></textarea>
+                </label>
+                <button class="primary-action" id="saveVersion" type="button">Save Version</button>
+                <ul id="versionList" class="version-list"></ul>
+              </section>
+              <section class="download-actions" aria-label="Downloads">
+                <h2>Downloads</h2>
+                <button class="primary-action" id="downloadPlan" type="button">Download Plan JSON</button>
+                <button id="downloadEvaluation" type="button">Download Evaluation JSON</button>
+                <button id="downloadPrintMetadata" type="button">Download Print Metadata</button>
+              </section>
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>
-              <section class="ai-chat" aria-label="Plan AI chat">
+              <div id="techAiHost">
+              <section class="ai-chat" id="aiChatBlock" aria-label="Plan AI chat">
                 <div class="ai-chat-heading">
                   <h2>Plan AI</h2>
                   <span id="chatStatus">Local helper ready</span>
                 </div>
-                <div class="field-grid chat-controls">
-                  <label>Connector
+                <div class="detail-switch" aria-label="Plan AI detail level">
+                  <button class="is-active" data-detail-mode="ai" data-detail-value="basic" type="button">Basic</button>
+                  <button data-detail-mode="ai" data-detail-value="advanced" type="button">Advanced</button>
+                </div>
+                <!-- Connector + API key are always visible so it is obvious how to
+                     turn on a real AI. The key field hides for the local helper. -->
+                <div class="ai-connector">
+                  <label>AI provider
                     <select id="chatProvider">
-                      <option value="local">Local helper</option>
+                      <option value="local">Local helper (no key needed)</option>
                       <option value="openai">OpenAI</option>
-                      <option value="claude-code">Claude Code</option>
+                      <option value="claude-code">Claude (Anthropic)</option>
                       <option value="mcp">MCP host</option>
                       <option value="odysseus">Odysseus</option>
                       <option value="open-source">Open-source model</option>
                     </select>
                   </label>
+                  <label class="ai-key-field" id="aiKeyField">Your API key
+                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Paste your API key" />
+                  </label>
+                  <p class="ai-key-help" id="aiKeyHelp"></p>
+                </div>
+                <div class="field-grid chat-controls advanced-ai">
                   <label>Model
                     <input id="chatModel" value="local-educational-helper" />
                   </label>
@@ -305,11 +544,8 @@
                   <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
                 </label>
                 <button class="primary-action" id="sendChat" type="button">Ask AI</button>
-                <details class="ai-settings">
-                  <summary>Connector Settings</summary>
-                  <label>API key
-                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Session only; not saved" />
-                  </label>
+                <details class="ai-settings advanced-ai">
+                  <summary>Advanced connector settings</summary>
                   <label class="toggle">
                     <span>Allow an external AI agent to request scoped plan context</span>
                     <input id="agentAccessEnabled" type="checkbox" />
@@ -317,10 +553,10 @@
                   <label>Agent/MCP endpoint
                     <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
                   </label>
-                  <p class="viewer-caveat">The API key is session-only: it is never saved to disk, never written into plans or case snapshots, and is sent to the selected connector only when you press Ask AI. When an external connector is selected, that key and the scoped plan context are transmitted to it. The local helper sends nothing off this machine. Account linking should move to OAuth or an MCP permission handshake later.</p>
                 </details>
-                <p class="viewer-caveat">AI answers are educational only. External connectors require the acknowledgement above and receive the scoped plan context you select; use the context selector deliberately.</p>
+                <p class="viewer-caveat">Your API key is used only for this session: it is never saved to disk and is sent only to the provider you pick, only when you press Ask AI. The local helper sends nothing off this machine. AI answers are educational only.</p>
               </section>
+              </div>
               <h2 class="advanced-only">Print Export</h2>
               <div id="printExportStatus" class="status-block advanced-only"></div>
               <h2 class="advanced-only">Optimized Staging</h2>
@@ -328,6 +564,64 @@
               <h2 class="advanced-only">Plan JSON</h2>
               <textarea id="planJson" class="advanced-only" readonly></textarea>
             </aside>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-glossary">
+          <div class="panel-heading">
+            <h2>Key Terms &amp; Tooth Numbering</h2>
+            <p>Plain-language reference for people new to dentistry. Educational only; not a diagnosis.</p>
+          </div>
+          <div class="workflow-card">
+            <h2>FDI Tooth Numbering</h2>
+            <p>Teeth are named by two digits: the first is the <strong>quadrant</strong>, the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar. The engine uses FDI internally.</p>
+          </div>
+          <img class="tooth-chart" src="./tooth-chart.svg" alt="Mouth diagram showing FDI tooth numbers on the upper and lower arches" />
+          <div class="tooth-map" aria-label="FDI quadrant map">
+            <div class="quadrant">
+              <h3>Q1 &middot; Upper right</h3>
+              <ul><li>11 central incisor</li><li>12 lateral incisor</li><li>13 canine</li><li>14 first premolar</li><li>15 second premolar</li><li>16 first molar</li><li>17 second molar</li><li>18 third molar</li></ul>
+            </div>
+            <div class="quadrant">
+              <h3>Q2 &middot; Upper left</h3>
+              <ul><li>21 central incisor</li><li>22 lateral incisor</li><li>23 canine</li><li>24 first premolar</li><li>25 second premolar</li><li>26 first molar</li><li>27 second molar</li><li>28 third molar</li></ul>
+            </div>
+            <div class="quadrant">
+              <h3>Q4 &middot; Lower right</h3>
+              <ul><li>41 central incisor</li><li>42 lateral incisor</li><li>43 canine</li><li>44 first premolar</li><li>45 second premolar</li><li>46 first molar</li><li>47 second molar</li><li>48 third molar</li></ul>
+            </div>
+            <div class="quadrant">
+              <h3>Q3 &middot; Lower left</h3>
+              <ul><li>31 central incisor</li><li>32 lateral incisor</li><li>33 canine</li><li>34 first premolar</li><li>35 second premolar</li><li>36 first molar</li><li>37 second molar</li><li>38 third molar</li></ul>
+            </div>
+          </div>
+          <div class="glossary">
+            <h2>Key Terms (A&ndash;Z)</h2>
+            <label class="glossary-search">
+              <span class="sr-only">Search key terms</span>
+              <input id="glossarySearch" type="search" placeholder="Search key terms (e.g. IPR, torque, crowding)" autocomplete="off" />
+            </label>
+            <p id="glossaryEmpty" class="chat-empty" hidden>No terms match your search.</p>
+            <dl>
+              <div><dt>Arch</dt><dd>One jaw's row of teeth: maxillary (upper) or mandibular (lower).</dd></div>
+              <div><dt>Attachment</dt><dd>A small composite bump bonded to a tooth so an aligner can grip and move it. Planning intent only.</dd></div>
+              <div><dt>Crowding</dt><dd>Too little space, so teeth overlap or twist.</dd></div>
+              <div><dt>Data gap</dt><dd>A missing record (roots, CBCT, occlusion&hellip;) that limits what the engine can assess.</dd></div>
+              <div><dt>Extrusion / Intrusion</dt><dd>Moving a tooth out of (extrusion) or into (intrusion) the bone vertically.</dd></div>
+              <div><dt>Finding</dt><dd>A structured, controlled-vocabulary observation from a rule or a linted advisory. Never an approval.</dd></div>
+              <div><dt>Fixed tooth</dt><dd>A tooth intended to stay still; the generator will not move it.</dd></div>
+              <div><dt>IPR</dt><dd>Interproximal reduction: removing a sliver of enamel between two teeth to create space (in mm).</dd></div>
+              <div><dt>Malocclusion</dt><dd>A "bad bite": teeth that do not meet/align as intended. The app does not diagnose this.</dd></div>
+              <div><dt>Movement cap</dt><dd>The maximum per-stage movement treated as a review threshold (linear, vertical, angular, rotation).</dd></div>
+              <div><dt>Occlusion</dt><dd>How upper and lower teeth meet when biting.</dd></div>
+              <div><dt>Rotation</dt><dd>Turning a tooth around its own long axis.</dd></div>
+              <div><dt>Segmentation</dt><dd>Splitting a whole-arch scan into individual per-tooth meshes. Needed to move teeth individually.</dd></div>
+              <div><dt>Stage</dt><dd>One step of an aligner sequence, holding per-tooth movement values.</dd></div>
+              <div><dt>Tip / Torque</dt><dd>Tip = tilting along the arch; torque = tilting the crown in/out.</dd></div>
+              <div><dt>Units</dt><dd>The real-world scale of a scan (mm, cm&hellip;); confirm before millimeter checks run.</dd></div>
+              <div><dt>Wear interval</dt><dd>How many days each aligner stage is worn; sets the projected (not promised) duration.</dd></div>
+            </dl>
+            <p class="viewer-caveat">Full glossary, the FDI&harr;Universal&harr;Palmer table, and the tooth-map diagram live in <code>docs/GLOSSARY.md</code>.</p>
           </div>
         </section>
       </section>

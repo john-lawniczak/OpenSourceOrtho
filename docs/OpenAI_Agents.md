@@ -66,6 +66,47 @@ an explicit egress-consent flag (`share_acknowledged`) is set. The key is never
 persisted nor echoed back. See [AI_CHAT_MCP.md](AI_CHAT_MCP.md) for the endpoint
 contract and the connector kinds.
 
+## Plan Generation Orchestration
+
+Beyond `advise` and chat, the model layer also backs the OPTIONAL review step of
+plan generation (`orthoplan/generation.py`). The generation pipeline is
+deterministic first:
+
+1. review scan inputs, 2. generate cap-respecting staging
+(`planning/generate.py`), 3. validate with `run_rules`, 4. a deterministic
+correctness review producing a `CONSISTENT` / `ISSUES` / `NOT_APPLICABLE`
+verdict, then 5. an optional model advisory review.
+
+The model step reuses the existing `advisory.py` pipeline (`request_advisory`),
+so it inherits every guarantee: untrusted output is parsed into a strict schema,
+each item becomes a `Finding(provenance=MODEL)`, and the batch passes
+`quarantine_findings`/`lint_finding`. The same prohibitions apply - no model
+`mechanics` findings, no verdict/approval language, warnings need a data gap and a
+follow-up question, accepted findings render with `[ADVISORY - unverified]`.
+
+Optional free-text user **notes** (e.g. "focus on the lateral incisors") are
+appended to the review prompt by `build_advisory_request(plan, notes=...)`. Notes
+are context for the reviewer only: they never change deterministic staging, never
+relax the boundary in the system prompt, and the model's output still passes
+`lint_finding()`.
+
+When no external model is connected (the default), notes are still acted on
+offline by `evaluation/local_review.py::local_notes_advisory` - a deterministic,
+linted educational finding (MODEL provenance, `[ADVISORY - unverified]`) that
+reflects the focus back and relates it to the plan's actual movements. It does not
+reason freely; it routes the user to a professional.
+
+The model step is opt-in and consent-gated: it runs only when an external
+connector is selected AND the egress acknowledgement (`share_acknowledged`) is
+set, exactly like the chat connector. The connector is configured in the Plan AI
+box - the **provider selector and the session-only API-key field are surfaced
+directly** (the key field is hidden for the no-key local helper), and the
+agent/MCP endpoint plus the egress consent live under **Advanced connector
+settings** - and is reused by Generate Plan. With the local connector or no
+consent, the pipeline completes fully offline and the model step is recorded as
+`skipped`. The deterministic correctness verdict is never produced or overridden
+by a model.
+
 ## Commit Status
 
 When provider behavior changes, update this file in the same commit and summarize the change in your pull request description.

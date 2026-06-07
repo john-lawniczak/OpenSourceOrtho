@@ -6,7 +6,7 @@ OpenSource Ortho is a Python-first planning and visualization toolkit. The first
 
 1. The user uploads an intraoral-scan mesh, usually an STL file.
 2. The mesh is imported and labeled with provenance: patient-derived, imported, manual, model-generated, or synthetic.
-3. Teeth are segmented into individual tooth meshes. The first implementation should be manual or imported segmentation; machine learning can come later.
+3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device heuristic auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. A learned model (e.g. Teeth3DS) can replace the heuristic behind the `SegmentationModel` seam; it must run locally (scans are PHI).
 4. A `TreatmentPlan` stores each stage. Each `Stage` contains `ToothDelta` values for individual teeth.
 5. The planning layer checks each stage against user-configured `MovementCaps`.
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
@@ -31,10 +31,15 @@ The likely future split:
 - Three.js or VTK/PyVista: interactive 3D visualization
 - Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
 
-The browser UI never reimplements the engine. `orthoplan/api.py` exposes a single pure evaluation entry point, and `orthoplan/server.py` serves it over `POST /api/evaluate`. The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
+The browser UI never reimplements the engine. `orthoplan/api.py` exposes pure entry points, and `orthoplan/server.py` serves them: `POST /api/evaluate` for findings/frames, `POST /api/print-package` (`print_package_payload`, reusing `export_print_package`) which returns a base64 zip of stage proxy STLs + manifest and an `.eml` draft for the guided Print / send step, and `POST /api/segment` (`segment_payload`) which runs the on-device segmenter on a server-local scan and returns a reviewable per-tooth proposal (confidence, linted advisory findings, and a ready-to-merge `mesh_assets`/`tooth_meshes` fragment). The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
 
-The first UI prototype is a static browser workspace under `ui/`. It mirrors
-the Python data contract but does not yet run backend STL inspection.
+The UI is a static browser workspace under `ui/`. It opens by default into a
+guided, six-step wizard (`ui/guided.js`) for non-technical users; the dense
+Technician workspace is one toggle away. A self-contained **Sample test case**
+(`ui/sample.js`) reuses the guided wizard, pre-loaded with the bundled test-case
+STL scans, and snapshots/restores the user's working state (including any applied
+segmentation) so it stays isolated. The UI mirrors the Python data
+contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
 local mesh workspace. Plan JSON still does not contain mesh bytes; it contains
@@ -129,6 +134,43 @@ For local real-mesh visualization, `planning/mesh_transform.py` can transform ex
 supplied per-tooth vertices by cumulative translation while preserving the same rotation
 honesty rule. The server/UI path uses the same stage frames; real STL meshes are visual
 geometry, not a different planning engine.
+
+## Plan Generation
+
+`planning/generate.py` turns the best available target into cap-respecting staging
+by reusing the existing optimizer (`planning/optimizer.py`) - it never re-implements
+staging or caps. Target resolution is, in order: authored movement; a
+**landmark-derived** plan (per-tooth crown landmarks → real arch-form deviation
+targets + arch-length/space analysis in `planning/arch_analysis.py`, assembled with
+IPR, attachments, and approximate collision bounds in `planning/landmark_plan.py`);
+a geometry-derived arch-form fit over visible segmented crowns
+(`planning/arch_form.py`); or a labeled educational template. It has no model calls.
+
+The top-level `generation.py` gateway composes the deterministic generator with
+`run_rules` validation, a deterministic correctness review, and an optional
+consent-gated model review reusing `evaluation/advisory.py`. The UI consumes the
+returned staged plan through the same stage-frame contract as everything else; it
+does not re-stage. See [SAFETY.md](SAFETY.md) for the boundary.
+
+The correctness review emits explicit named **checks**, each with a pass/fail and
+a severity. Gate checks (`caps-respected`, `fixed-teeth-unmoved`,
+`exclusions-respected`, `targets-reached`, `stages-contiguous`) decide the verdict
+(`CONSISTENT`/`ISSUES`/`NOT_APPLICABLE`, never an approval). `scale-confirmed` is a
+warning check and `collisions-checked` is informational (it reports when the
+overlap check is vacuous because no segmented teeth exist). `targets-reached`
+regression-checks that the staged plan's cumulative movement actually reaches the
+requested target, so a staging bug cannot pass silently.
+
+## Plan Versions
+
+`cases.py` stores a `CaseStore` of `CaseRecord`s, each holding ordered
+`PlanVersion` snapshots (full plan JSON + content hash + engine version + note).
+A "case" groups versions of one plan; the default case id is the plan id.
+`case_api.py` wraps this in dict-in/dict-out functions used by both the server
+(`POST /api/plan/version`, `GET /api/cases`, `GET /api/cases/<case_id>`) and the
+CLI (`case-save`, `case-list`, `case-versions`). The store path defaults to
+`.orthoplan-cases.json` and is overridable via `ORTHOPLAN_CASE_STORE`. The UI's
+Versions panel saves snapshots and restores any version back into the editor.
 
 ## Handoff Reports
 

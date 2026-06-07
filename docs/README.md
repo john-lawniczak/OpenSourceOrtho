@@ -14,6 +14,8 @@ This directory holds the project docs that should evolve with the product.
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance
 - [AI_CHAT_MCP.md](AI_CHAT_MCP.md) - scoped AI chat and MCP connector data model
 - [LLM_PROMPTS.md](LLM_PROMPTS.md) - safe optional LLM review prompt templates
+- [GLOSSARY.md](GLOSSARY.md) - dental key terms and the FDI tooth-numbering diagram
+- [DATA_CONTRIBUTION.md](DATA_CONTRIBUTION.md) - contributing scans and the privacy-safe specimen-id tracking
 
 The user how-to lives at [../HOW_TO.md](../HOW_TO.md), the UI prototype lives at
 [../ui/](../ui/README.md), synthetic example plans at [../examples/](../examples/README.md),

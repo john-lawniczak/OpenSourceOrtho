@@ -78,6 +78,39 @@ This is not treatment advice. "Would clear" means the engine would no longer fla
 absence of that data; it does not mean a movement, patient, or plan is safe or acceptable.
 The advisor predicts nothing about what newly acquired data would show.
 
+## Plan Generation Boundary
+
+The "Generate Plan" action (`orthoplan/generation.py` + `orthoplan/planning/generate.py`)
+is **deterministic** and produces a *proposal*, never an approval. It resolves a target from
+whatever exists, in priority order:
+
+1. **Authored** - existing per-tooth movement is re-staged into cap-sized increments.
+2. **Landmark-derived** - when per-tooth crown **landmarks** (operator-identified crown
+   centers, read from the visible scan) are supplied, the target is the real deviation of
+   each tooth from the fitted arch, plus a deterministic arch-length/space analysis that
+   budgets **IPR**, adds **attachments** on moved teeth, and attaches approximate per-tooth
+   collision bounds. Landmarks carry an `approximate` flag; the space analysis uses a
+   population crown-width table (a labeled heuristic with a data gap, not this patient's
+   measured crowns). This is geometric processing of operator-identified visible positions -
+   it infers no roots/bone and is not an approval.
+3. **Geometry-derived** - when segmented per-tooth crowns exist, a straightening target is
+   computed from their *visible* occlusal-plane positions by fitting a smooth arch curve
+   (`planning/arch_form.py`). This is geometric processing of data already in the scan. It is
+   explicitly a scan-axis heuristic: it does **not** infer roots, bone, or biological response,
+   does not resolve mesiodistal/buccolingual axes, and is not a clinical alignment goal.
+4. **Educational-synthetic** - when only a raw scan is loaded, a clearly-labeled generic
+   crowding template is used. The result is **not derived from the user's teeth**; it carries a
+   prominent warning and `requires_acknowledgement`. This is a text warning, not a functional
+   freeze - the engine still produces a visible educational preview.
+
+The orchestration layer runs the generator, validates with the deterministic engine, and runs
+a correctness review. Its verdict is **`CONSISTENT` / `ISSUES` / `NOT_APPLICABLE`** - a
+statement that staging is internally consistent with the configured caps and fixed-tooth
+controls, **never** that a plan is safe, approved, clinically appropriate, or complete. The
+optional model review step is opt-in, gated on the same egress consent as the chat layer, and
+its output passes the `lint_finding()` gate above (no `mechanics` findings, no verdict
+language). With no connector, generation runs fully offline.
+
 ## Printing And Manufacturing Boundary
 
 Print export settings, readiness checks, and generated packages are informational outputs from

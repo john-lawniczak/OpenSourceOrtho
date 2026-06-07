@@ -69,6 +69,54 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
     assert not errors, f"uncaught page errors: {errors}"
 
 
+def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None:
+    with sync_playwright() as pw:
+        try:
+            browser = pw.chromium.launch(headless=True)
+        except Exception as exc:  # noqa: BLE001 - browser binary may be missing
+            pytest.skip(f"playwright chromium unavailable: {exc}")
+
+        page = browser.new_page(viewport={"width": 1280, "height": 900})
+        errors: list[str] = []
+        page.on("pageerror", lambda exc: errors.append(str(exc)))
+        try:
+            page.goto(server_url, wait_until="networkidle")
+            page.wait_for_selector("#panel-upload.is-active", timeout=15000)
+            assert "Open sample" not in page.locator(".journey-nav").inner_text()
+            page.click(".sample-launch")
+            page.wait_for_selector("#panel-review.is-active", timeout=15000)
+            page.wait_for_selector("#findingList li", timeout=15000)
+
+            chip = page.locator("#sampleStatusChip").inner_text()
+            assert "Sample test case" in chip
+            assert "real upper/lower OrthoCAD STL scan layer" in chip
+            assert "simulated 4-month tooth movement" in chip
+
+            assert page.locator("#planTitle").input_value() == (
+                "Canonical OrthoCAD simulated 4-month progression"
+            )
+            assert page.locator("#scanUnits").input_value() == "mm"
+
+            max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")
+            assert max_stage > 0
+            page.locator("#stageSlider").evaluate(
+                """slider => {
+                  slider.value = slider.max;
+                  slider.dispatchEvent(new Event('input', { bubbles: true }));
+                }"""
+            )
+            page.wait_for_function(
+                """() => {
+                  const slider = document.querySelector('#stageSlider');
+                  return document.querySelector('#stageValue')?.innerText === slider?.max;
+                }"""
+            )
+        finally:
+            browser.close()
+
+    assert not errors, f"uncaught page errors: {errors}"
+
+
 def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> None:
     with sync_playwright() as pw:
         try:

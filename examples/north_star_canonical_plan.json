@@ -1,0 +1,1970 @@
+{
+  "id": "north-star-canonical-001",
+  "title": "North Star - landmark-derived alignment for specimen spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "numbering_system": "FDI",
+  "coordinate_frame": {
+    "name": "scan-local",
+    "handedness": "right-handed",
+    "axes": {
+      "x": "unknown",
+      "y": "unknown",
+      "z": "occlusogingival"
+    },
+    "origin": "scan-local origin (not an anatomical landmark)"
+  },
+  "data": {
+    "intraoral_scan": true,
+    "segmented_teeth": false,
+    "roots": false,
+    "cbct": false,
+    "periodontal_status": false,
+    "occlusion_scan": false,
+    "photos": false,
+    "radiographs": false,
+    "clinician_notes": false
+  },
+  "settings": {
+    "movement_caps": {
+      "default": {
+        "linear_mm": 0.25,
+        "angular_deg": 1.0,
+        "rotation_deg": 2.0,
+        "intrusion_extrusion_mm": 0.1,
+        "reference": "Heuristic defaults from clear-aligner staging literature; user-configurable."
+      },
+      "per_tooth_overrides": {}
+    },
+    "timeline": {
+      "wear_interval_days": 14
+    },
+    "print_export": {
+      "enabled": false,
+      "export_format": "stl",
+      "delivery_email": null,
+      "model_material": "validated dental model resin",
+      "thermoforming_material": "user-selected aligner sheet material",
+      "safety_acknowledged": false,
+      "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material instructions and chosen process explicitly allow it."
+    }
+  },
+  "scans": [
+    {
+      "asset": {
+        "id": "north-star-upper",
+        "format": "stl-binary",
+        "provenance": "patient-derived",
+        "units": "mm",
+        "vertex_count": 0,
+        "face_count": 0,
+        "bounds": null,
+        "quality": null,
+        "sha256": null,
+        "created_at": "2026-01-01T00:00:00Z",
+        "reference": "sample-test-case-upper.stl"
+      },
+      "arch": "maxillary",
+      "source": "intraoral-scan",
+      "notes": null
+    },
+    {
+      "asset": {
+        "id": "north-star-lower",
+        "format": "stl-binary",
+        "provenance": "patient-derived",
+        "units": "mm",
+        "vertex_count": 0,
+        "face_count": 0,
+        "bounds": null,
+        "quality": null,
+        "sha256": null,
+        "created_at": "2026-01-01T00:00:00Z",
+        "reference": "sample-test-case-lower.stl"
+      },
+      "arch": "mandibular",
+      "source": "intraoral-scan",
+      "notes": null
+    }
+  ],
+  "mesh_assets": [
+    {
+      "id": "lm-11",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -7.4375,
+          -3.329,
+          0.0
+        ],
+        "max_xyz": [
+          -0.21250000000000036,
+          2.451,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736260Z",
+      "reference": null
+    },
+    {
+      "id": "lm-12",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -12.289499999999999,
+          -2.733,
+          0.0
+        ],
+        "max_xyz": [
+          -6.7645,
+          1.6869999999999998,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736434Z",
+      "reference": null
+    },
+    {
+      "id": "lm-13",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -18.095,
+          -9.759,
+          0.0
+        ],
+        "max_xyz": [
+          -11.635,
+          -4.590999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736442Z",
+      "reference": null
+    },
+    {
+      "id": "lm-14",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -23.058,
+          -14.48,
+          0.0
+        ],
+        "max_xyz": [
+          -17.107999999999997,
+          -9.719999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736448Z",
+      "reference": null
+    },
+    {
+      "id": "lm-15",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -26.682,
+          -19.347,
+          0.0
+        ],
+        "max_xyz": [
+          -21.072,
+          -14.859000000000002,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736589Z",
+      "reference": null
+    },
+    {
+      "id": "lm-16",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -33.278,
+          -28.679000000000002,
+          0.0
+        ],
+        "max_xyz": [
+          -24.778,
+          -21.878999999999998,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736594Z",
+      "reference": null
+    },
+    {
+      "id": "lm-17",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -37.3225,
+          -36.467,
+          0.0
+        ],
+        "max_xyz": [
+          -29.247499999999995,
+          -30.007,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736599Z",
+      "reference": null
+    },
+    {
+      "id": "lm-21",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          0.21250000000000036,
+          -3.329,
+          0.0
+        ],
+        "max_xyz": [
+          7.4375,
+          2.451,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736604Z",
+      "reference": null
+    },
+    {
+      "id": "lm-22",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          6.7645,
+          -6.333,
+          0.0
+        ],
+        "max_xyz": [
+          12.289499999999999,
+          -1.9130000000000003,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736607Z",
+      "reference": null
+    },
+    {
+      "id": "lm-23",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          12.235,
+          -9.759,
+          0.0
+        ],
+        "max_xyz": [
+          18.695,
+          -4.590999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736610Z",
+      "reference": null
+    },
+    {
+      "id": "lm-24",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          17.107999999999997,
+          -14.48,
+          0.0
+        ],
+        "max_xyz": [
+          23.058,
+          -9.719999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736613Z",
+      "reference": null
+    },
+    {
+      "id": "lm-25",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          21.072,
+          -19.347,
+          0.0
+        ],
+        "max_xyz": [
+          26.682,
+          -14.859000000000002,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736617Z",
+      "reference": null
+    },
+    {
+      "id": "lm-26",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          24.778,
+          -28.679000000000002,
+          0.0
+        ],
+        "max_xyz": [
+          33.278,
+          -21.878999999999998,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736620Z",
+      "reference": null
+    },
+    {
+      "id": "lm-27",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          29.247499999999995,
+          -36.467,
+          0.0
+        ],
+        "max_xyz": [
+          37.3225,
+          -30.007,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736623Z",
+      "reference": null
+    },
+    {
+      "id": "lm-41",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -5.137499999999999,
+          -1.973,
+          0.0
+        ],
+        "max_xyz": [
+          -0.6324999999999998,
+          1.631,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736702Z",
+      "reference": null
+    },
+    {
+      "id": "lm-42",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -9.8855,
+          -3.609,
+          0.0
+        ],
+        "max_xyz": [
+          -5.0405,
+          0.2669999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736708Z",
+      "reference": null
+    },
+    {
+      "id": "lm-43",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -15.8145,
+          -7.321999999999999,
+          0.0
+        ],
+        "max_xyz": [
+          -10.1195,
+          -2.7659999999999996,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736711Z",
+      "reference": null
+    },
+    {
+      "id": "lm-44",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -20.914,
+          -12.034,
+          0.0
+        ],
+        "max_xyz": [
+          -14.964,
+          -7.273999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736715Z",
+      "reference": null
+    },
+    {
+      "id": "lm-45",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -25.3055,
+          -17.317,
+          0.0
+        ],
+        "max_xyz": [
+          -19.270500000000002,
+          -12.489,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736718Z",
+      "reference": null
+    },
+    {
+      "id": "lm-46",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -32.891999999999996,
+          -27.625999999999998,
+          0.0
+        ],
+        "max_xyz": [
+          -23.541999999999998,
+          -20.146,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736721Z",
+      "reference": null
+    },
+    {
+      "id": "lm-47",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          -37.4855,
+          -36.286,
+          0.0
+        ],
+        "max_xyz": [
+          -28.560500000000005,
+          -29.146,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736724Z",
+      "reference": null
+    },
+    {
+      "id": "lm-31",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          0.13249999999999984,
+          -1.973,
+          0.0
+        ],
+        "max_xyz": [
+          4.637499999999999,
+          1.631,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736728Z",
+      "reference": null
+    },
+    {
+      "id": "lm-32",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          5.0405,
+          -2.009,
+          0.0
+        ],
+        "max_xyz": [
+          9.8855,
+          1.867,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736732Z",
+      "reference": null
+    },
+    {
+      "id": "lm-33",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          10.1195,
+          -7.321999999999999,
+          0.0
+        ],
+        "max_xyz": [
+          15.8145,
+          -2.7659999999999996,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736735Z",
+      "reference": null
+    },
+    {
+      "id": "lm-34",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          14.964,
+          -12.034,
+          0.0
+        ],
+        "max_xyz": [
+          20.914,
+          -7.273999999999999,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736738Z",
+      "reference": null
+    },
+    {
+      "id": "lm-35",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          19.270500000000002,
+          -17.317,
+          0.0
+        ],
+        "max_xyz": [
+          25.3055,
+          -12.489,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736741Z",
+      "reference": null
+    },
+    {
+      "id": "lm-36",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          23.541999999999998,
+          -27.625999999999998,
+          0.0
+        ],
+        "max_xyz": [
+          32.891999999999996,
+          -20.146,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736744Z",
+      "reference": null
+    },
+    {
+      "id": "lm-37",
+      "format": "synthetic-box",
+      "provenance": "synthetic",
+      "units": "mm",
+      "vertex_count": 0,
+      "face_count": 0,
+      "bounds": {
+        "min_xyz": [
+          28.560500000000005,
+          -36.286,
+          0.0
+        ],
+        "max_xyz": [
+          37.4855,
+          -29.146,
+          7.0
+        ]
+      },
+      "quality": null,
+      "sha256": null,
+      "created_at": "2026-06-06T19:40:50.736747Z",
+      "reference": null
+    }
+  ],
+  "tooth_meshes": [
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "11"
+      },
+      "mesh_asset_id": "lm-11",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "12"
+      },
+      "mesh_asset_id": "lm-12",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "13"
+      },
+      "mesh_asset_id": "lm-13",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "14"
+      },
+      "mesh_asset_id": "lm-14",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "15"
+      },
+      "mesh_asset_id": "lm-15",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "16"
+      },
+      "mesh_asset_id": "lm-16",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "17"
+      },
+      "mesh_asset_id": "lm-17",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "21"
+      },
+      "mesh_asset_id": "lm-21",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "22"
+      },
+      "mesh_asset_id": "lm-22",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "23"
+      },
+      "mesh_asset_id": "lm-23",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "24"
+      },
+      "mesh_asset_id": "lm-24",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "25"
+      },
+      "mesh_asset_id": "lm-25",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "26"
+      },
+      "mesh_asset_id": "lm-26",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "27"
+      },
+      "mesh_asset_id": "lm-27",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "41"
+      },
+      "mesh_asset_id": "lm-41",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "42"
+      },
+      "mesh_asset_id": "lm-42",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "43"
+      },
+      "mesh_asset_id": "lm-43",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "44"
+      },
+      "mesh_asset_id": "lm-44",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "45"
+      },
+      "mesh_asset_id": "lm-45",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "46"
+      },
+      "mesh_asset_id": "lm-46",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "47"
+      },
+      "mesh_asset_id": "lm-47",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "31"
+      },
+      "mesh_asset_id": "lm-31",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "32"
+      },
+      "mesh_asset_id": "lm-32",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "33"
+      },
+      "mesh_asset_id": "lm-33",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "34"
+      },
+      "mesh_asset_id": "lm-34",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "35"
+      },
+      "mesh_asset_id": "lm-35",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "36"
+      },
+      "mesh_asset_id": "lm-36",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "37"
+      },
+      "mesh_asset_id": "lm-37",
+      "source": "synthetic",
+      "local_frame": null,
+      "notes": "approximate crown box from landmark + crown-width table"
+    }
+  ],
+  "fixed_teeth": [],
+  "movement_exclusions": [],
+  "attachments": [
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "12"
+      },
+      "type": "optimized",
+      "surface": "buccal",
+      "stage_start": 0,
+      "stage_end": null,
+      "purpose": "landmark-derived movement"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "13"
+      },
+      "type": "optimized",
+      "surface": "buccal",
+      "stage_start": 0,
+      "stage_end": null,
+      "purpose": "landmark-derived movement"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "22"
+      },
+      "type": "optimized",
+      "surface": "buccal",
+      "stage_start": 0,
+      "stage_end": null,
+      "purpose": "landmark-derived movement"
+    },
+    {
+      "tooth": {
+        "system": "FDI",
+        "value": "32"
+      },
+      "type": "optimized",
+      "surface": "buccal",
+      "stage_start": 0,
+      "stage_end": null,
+      "purpose": "landmark-derived movement"
+    }
+  ],
+  "interproximal_reductions": [
+    {
+      "tooth_a": {
+        "system": "FDI",
+        "value": "17"
+      },
+      "tooth_b": {
+        "system": "FDI",
+        "value": "16"
+      },
+      "amount_mm": 0.5,
+      "stage_index": 0,
+      "source": "model",
+      "notes": "landmark-derived space analysis"
+    },
+    {
+      "tooth_a": {
+        "system": "FDI",
+        "value": "16"
+      },
+      "tooth_b": {
+        "system": "FDI",
+        "value": "15"
+      },
+      "amount_mm": 0.5,
+      "stage_index": 0,
+      "source": "model",
+      "notes": "landmark-derived space analysis"
+    },
+    {
+      "tooth_a": {
+        "system": "FDI",
+        "value": "15"
+      },
+      "tooth_b": {
+        "system": "FDI",
+        "value": "14"
+      },
+      "amount_mm": 0.5,
+      "stage_index": 0,
+      "source": "model",
+      "notes": "landmark-derived space analysis"
+    },
+    {
+      "tooth_a": {
+        "system": "FDI",
+        "value": "14"
+      },
+      "tooth_b": {
+        "system": "FDI",
+        "value": "13"
+      },
+      "amount_mm": 0.5,
+      "stage_index": 0,
+      "source": "model",
+      "notes": "landmark-derived space analysis"
+    },
+    {
+      "tooth_a": {
+        "system": "FDI",
+        "value": "13"
+      },
+      "tooth_b": {
+        "system": "FDI",
+        "value": "12"
+      },
+      "amount_mm": 0.5,
+      "stage_index": 0,
+      "source": "model",
+      "notes": "landmark-derived space analysis"
+    },
+    {
+      "tooth_a": {
+        "system": "FDI",
+        "value": "12"
+      },
+      "tooth_b": {
+        "system": "FDI",
+        "value": "11"
+      },
+      "amount_mm": 0.192,
+      "stage_index": 0,
+      "source": "model",
+      "notes": "landmark-derived space analysis"
+    }
+  ],
+  "planned_spacing": [],
+  "stages": [
+    {
+      "index": 0,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "11"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.07233333272112996,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "13"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.21495380900409375,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "14"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.10443003721028177,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "15"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.10484697233387408,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "16"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.10277043593989887,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "17"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.09714088754782324,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "21"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.04160906815648946,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "22"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.23536511348691116,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "23"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.02445082322908121,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "24"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.05688640860714855,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "25"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.0869447309366933,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "26"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.13039661027771743,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "27"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.1702204578205624,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "31"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.1279257148984424,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "32"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.22499437834371636,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "33"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.22517953629699772,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "34"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.18668605900573176,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "35"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.14073138894506343,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "36"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.057698154068575036,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "37"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.025237400020053258,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "41"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.16534647539989214,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "42"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.21994951768190818,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "43"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.17290806633573919,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "44"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.11437188459106018,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "45"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.0508858948063633,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "46"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.056047821708155254,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "47"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.1583569151377091,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 1,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "13"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.21495380900409375,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "22"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.23536511348691116,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "31"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.1279257148984424,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "32"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.22499437834371636,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 2,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "13"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.21495380900409375,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "22"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.23536511348691116,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "32"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.22499437834371636,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 3,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "22"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.23536511348691116,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "32"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.22499437834371636,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 4,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "22"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.23536511348691116,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "32"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.22499437834371636,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 5,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "22"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": 0.23536511348691116,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        },
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "32"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.22499437834371636,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 6,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 7,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "index": 8,
+      "deltas": [
+        {
+          "tooth": {
+            "system": "FDI",
+            "value": "12"
+          },
+          "translate_x_mm": 0.0,
+          "translate_y_mm": -0.23458709010800463,
+          "translate_z_mm": 0.0,
+          "rotate_tip_deg": 0.0,
+          "rotate_torque_deg": 0.0,
+          "rotate_rotation_deg": 0.0,
+          "coordinate_frame": "scan-local",
+          "source": "manual",
+          "mesh_asset_id": null
+        }
+      ],
+      "notes": null
+    }
+  ]
+}
