@@ -52,6 +52,15 @@ _MIN_CONFIDENCE = 0.25
 # Fewer detected teeth than this on a whole-arch scan is treated as an unreliable
 # signal, so the segmenter falls back to the canonical count rather than collapse.
 _MIN_DETECTED_TEETH = 6
+# Crown counting uses a FINER profile than boundary placement: real maxillary
+# crowns (flat posterior occlusal plane, curve of Spee/Wilson) merge into one peak
+# at coarse resolution, so the count under-reads. A finer profile with a lower
+# prominence ratio resolves them; a half-tooth minimum separation stops one crown
+# from splitting into several. Tuned against the real sample scans AND the
+# synthetic harness (full/missing/open-gap) - see test_segmentation_real_scan.
+_COUNT_BUCKETS_PER_TOOTH = 16
+_COUNT_PROMINENCE_RATIO = 0.18
+_COUNT_SEPARATION_FRACTION = 0.5
 # When the detected tooth count differs from the canonical arch, FDI labels are a
 # positional guess (we cannot know which tooth is absent from geometry alone), so
 # confidence is scaled down to push the user to review the numbers.
@@ -85,21 +94,38 @@ def resolve_tooth_count(profile: list[float], canonical: int) -> int:
 
     Counting crowns is robust to open extraction gaps: a gum-filled hole has no
     peak, so it never inflates the count, whereas counting the valleys between
-    crowns mistakes the two shoulders of a wide gap for two separate cuts. Falls
-    back to ``canonical`` when the signal is unusable (0 peaks), and is bounded to
-    ``[_MIN_DETECTED_TEETH, canonical]`` for safety.
+    crowns mistakes the two shoulders of a wide gap for two separate cuts. The
+    minimum peak separation scales with the profile's resolution (~half a tooth)
+    so a single crown is not split. Falls back to ``canonical`` when the signal is
+    unusable (0 peaks), and is bounded to ``[_MIN_DETECTED_TEETH, canonical]``.
     """
 
-    peaks = detect_cut_count(profile, max_cuts=canonical, find_minima=False)
+    buckets_per_tooth = max(1, len(profile) // canonical)
+    separation = max(2, round(_COUNT_SEPARATION_FRACTION * buckets_per_tooth))
+    peaks = detect_cut_count(
+        profile,
+        max_cuts=canonical,
+        find_minima=False,
+        prominence_ratio=_COUNT_PROMINENCE_RATIO,
+        min_separation=separation,
+    )
     if peaks <= 0:
         return canonical
     return max(_MIN_DETECTED_TEETH, min(canonical, peaks))
 
 
-def teeth_from_profile(arch: ArchName, profile: list[float]) -> tuple[str, ...]:
-    """FDI labels for the crowns detected in ``profile`` (shared by both segmenters)."""
+def teeth_from_signal(
+    arch: ArchName, positions: list[float], heights: list[float]
+) -> tuple[str, ...]:
+    """FDI labels for the crowns in an arch signal (shared by both segmenters).
+
+    Counting builds its OWN fine height profile (independent of the coarser
+    profile the segmenters use to PLACE boundaries) so merged real crowns resolve
+    without disturbing boundary placement or per-tooth purity.
+    """
 
     canonical = len(default_arch_order(arch))
+    profile = height_profile(positions, heights, canonical * _COUNT_BUCKETS_PER_TOOTH)[0]
     return teeth_for_count(arch, resolve_tooth_count(profile, canonical))
 
 
@@ -179,7 +205,7 @@ def auto_segment_arch(
     buckets = resolution * _BUCKETS_PER_TOOTH
     profile, lo, span = height_profile(positions, heights, buckets)
 
-    teeth = tooth_values if tooth_values is not None else teeth_from_profile(arch, profile)
+    teeth = tooth_values if tooth_values is not None else teeth_from_signal(arch, positions, heights)
     n = len(teeth)
     if len(facets) < n * _MIN_TRIANGLES_PER_TOOTH:
         return []

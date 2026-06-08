@@ -30,7 +30,7 @@ from orthoplan.segmentation.heuristic import (
     Triangle,
     ToothSegment,
     default_arch_order,
-    teeth_from_profile,
+    teeth_from_signal,
 )
 
 _MIN_TRIANGLES_PER_TOOTH = 4
@@ -102,9 +102,9 @@ def hybrid_segment_arch_with_diagnostics(
     if tooth_values is not None:
         teeth = tooth_values
     else:
-        # Count from the physical HEIGHT valleys (the most reliable "how many
-        # crowns" signal); the cost-signal scores above still PLACE the cuts.
-        teeth = teeth_from_profile(arch, height_profile(positions, heights, buckets)[0])
+        # Count crowns from the height signal (its own fine profile); the cost
+        # signal scored above still PLACES the cuts at `buckets` resolution.
+        teeth = teeth_from_signal(arch, positions, heights)
     count = len(teeth)
     if len(facets) < count * _MIN_TRIANGLES_PER_TOOTH:
         return [], HybridSegmentationDiagnostics(mesh_processing_backend(), (), ())
