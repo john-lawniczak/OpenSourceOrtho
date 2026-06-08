@@ -431,6 +431,21 @@
                   </div>
                   <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
                   <p class="viewer-caveat">STL scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
+                  <section id="manualEdit" class="manual-edit" aria-label="Manual target authoring">
+                    <h3>Manual target</h3>
+                    <p id="manualEditGate" class="viewer-caveat"></p>
+                    <p id="manualEditSelection" class="manual-edit-selection">No tooth selected.</p>
+                    <div class="manual-edit-controls" role="group" aria-label="Nudge selected tooth in-plane">
+                      <button id="manualNudgeXMinus" data-manual-nudge="x-" type="button" disabled aria-label="Move target left 0.2 mm">X −</button>
+                      <button id="manualNudgeXPlus" data-manual-nudge="x+" type="button" disabled aria-label="Move target right 0.2 mm">X +</button>
+                      <button id="manualNudgeYMinus" data-manual-nudge="y-" type="button" disabled aria-label="Move target back 0.2 mm">Y −</button>
+                      <button id="manualNudgeYPlus" data-manual-nudge="y+" type="button" disabled aria-label="Move target forward 0.2 mm">Y +</button>
+                      <button id="manualTargetReset" type="button" disabled>Reset</button>
+                      <button id="manualClearSelection" type="button" disabled>Deselect</button>
+                    </div>
+                    <p id="manualEditReadout" class="manual-edit-readout"></p>
+                    <p class="viewer-caveat">Authors crown translation only (no rotation, no vertical movement) in scan-local axes. This is a geometric target, not a treatment goal or approval. Generate Plan splits it into cap-respecting stages.</p>
+                  </section>
                 </div>
               </div>
             </section>

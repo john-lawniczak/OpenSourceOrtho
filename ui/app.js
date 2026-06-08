@@ -15,6 +15,7 @@ import {
 } from "./guided.js";
 import { enterSample, exitSample, sampleActive } from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
+import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -247,6 +248,20 @@ document.body.addEventListener("click", (event) => {
     });
     renderAll();
   }
+  if (button?.dataset.manualNudge) {
+    applyManualNudge(button.dataset.manualNudge);
+  }
+  if (button?.id === "manualTargetReset") {
+    const tooth = state.manualEdit.selectedTooth;
+    if (tooth) {
+      state.rows = clearTarget(state.rows, tooth);
+      renderAll();
+    }
+  }
+  if (button?.id === "manualClearSelection") {
+    state.manualEdit.selectedTooth = null;
+    renderAll();
+  }
   if (button?.id === "loadDemo") {
     loadSyntheticDemo();
   }
@@ -353,6 +368,19 @@ function downloadJson(filename, value) {
   const href = link.href;
   link.remove();
   URL.revokeObjectURL(href);
+}
+
+// Apply one planar nudge to the selected tooth's authored target. `direction` is
+// "x-" | "x+" | "y-" | "y+". Gated on confirmed scan units so a mm nudge is
+// never authored against unverified scale. Movement itself is recomputed by the
+// engine on the next evaluation (the UI never computes poses).
+function applyManualNudge(direction) {
+  const tooth = state.manualEdit.selectedTooth;
+  if (!tooth || !scaleConfirmed(state.scanUnits)) return;
+  const axis = direction[0]; // "x" or "y"
+  const delta = direction.endsWith("-") ? -NUDGE_STEP_MM : NUDGE_STEP_MM;
+  state.rows = nudgeTarget(state.rows, tooth, axis, delta);
+  renderAll();
 }
 
 function loadSyntheticDemo() {

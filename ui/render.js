@@ -11,6 +11,7 @@ import { createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js"
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
 import { renderGuided } from "./guided.js";
+import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -29,6 +30,12 @@ function ensureViewer() {
   if (viewer || viewerFailed) return viewer;
   try {
     viewer = createViewer(el("viewer3d"));
+    // Clicking a tooth selects it for manual target authoring. Selection is only
+    // honored when scan units are confirmed (set in updateViewer).
+    viewer.setSelectionHandler((tooth) => {
+      state.manualEdit.selectedTooth = tooth;
+      renderAll();
+    });
   } catch (error) {
     viewerFailed = true;
     el("viewer3d").hidden = true;
@@ -106,6 +113,8 @@ function updateViewer(result) {
     });
   }
   const visibleResult = filterResultForArch(result);
+  v.setSelectionEnabled(scaleConfirmed(state.scanUnits));
+  v.setSelectedTooth(state.manualEdit.selectedTooth);
   v.update({
     frames: visibleResult.frames,
     toothFrames: visibleResult.tooth_frames,
@@ -183,6 +192,7 @@ export function renderAll() {
   renderScanStatus();
   renderSampleStatus();
   renderSegmentation();
+  renderManualEdit();
   renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   el("stageValue").textContent = el("stageSlider").value;
@@ -669,6 +679,52 @@ function segmentRowMarkup(tooth) {
       <span class="segment-conf"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
       <span class="segment-conf-num">${pct}%</span>
     </div>`;
+}
+
+// Manual target authoring panel. The user clicks a tooth in the 3D preview and
+// nudges its final IN-PLANE position; the authored target is a normal manual
+// stage delta in state.rows, so Generate Plan re-stages it into cap-respecting
+// stages. Authoring is gated on confirmed scan units (mm) - the engine treats
+// other units as unverified, so a mm nudge would be meaningless.
+function renderManualEdit() {
+  const panel = el("manualEdit");
+  if (!panel) return; // panel not present (e.g. trimmed markup)
+  const confirmed = scaleConfirmed(state.scanUnits);
+  const selected = state.manualEdit.selectedTooth;
+  panel.dataset.scaleConfirmed = confirmed ? "1" : "";
+  panel.dataset.selected = selected ? "1" : "";
+
+  const gate = el("manualEditGate");
+  if (gate) {
+    gate.textContent = confirmed
+      ? "Click a tooth in the preview, then nudge its final position. Generate Plan splits the target into cap-respecting stages."
+      : "Confirm the scan units (set Units to mm) before authoring a target - millimetre nudges are meaningless while units are unverified.";
+  }
+
+  const selectionLabel = el("manualEditSelection");
+  if (selectionLabel) {
+    selectionLabel.textContent = selected ? `Selected tooth: ${selected}` : "No tooth selected.";
+  }
+
+  const readout = el("manualEditReadout");
+  if (readout) {
+    if (selected) {
+      const t = targetFor(state.rows, selected);
+      readout.textContent =
+        `Target (geometric, crown translation only): x ${t.x.toFixed(2)} mm, y ${t.y.toFixed(2)} mm ` +
+        `(${targetMagnitudeMm(t).toFixed(2)} mm in-plane). Not a treatment goal or approval.`;
+    } else {
+      readout.textContent = "";
+    }
+  }
+
+  const editable = confirmed && Boolean(selected);
+  for (const id of ["manualNudgeXMinus", "manualNudgeXPlus", "manualNudgeYMinus", "manualNudgeYPlus", "manualTargetReset"]) {
+    const btn = el(id);
+    if (btn) btn.disabled = !editable;
+  }
+  const clearBtn = el("manualClearSelection");
+  if (clearBtn) clearBtn.disabled = !selected;
 }
 
 function renderDownloadActions() {

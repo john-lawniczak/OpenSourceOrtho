@@ -70,6 +70,14 @@ export const state = {
   useDemoMeshes: false,
   // When true, the 3D viewer draws FDI tooth-number labels over each tooth.
   showToothLabels: false,
+  // Manual target authoring: the user clicks a tooth in the 3D preview and
+  // nudges its final in-plane position. The authored target lives in `rows` as a
+  // normal source:"manual" stage delta (see manual_edit.js), so only selection
+  // and a status string are held here.
+  manualEdit: {
+    selectedTooth: null,
+    status: "",
+  },
   // Advisory auto-segmentation proposal (POST /api/segment). Never auto-applied:
   // `applied` holds only what the user explicitly accepted (and may have corrected).
   segmentation: {
