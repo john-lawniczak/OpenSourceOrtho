@@ -35,7 +35,26 @@ test("countNoteMarkup warns only when an arch is not a full arch", () => {
   const short = Array.from({ length: FULL_ARCH_TEETH - 1 }, () => ({ arch: "maxillary" }));
   const note = countNoteMarkup(short);
   assert.match(note, /Proposed 13 maxillary/);
+});
+
+test("countNoteMarkup is ambiguous (merge OR missing) when no gap is marked", () => {
+  const short = Array.from({ length: FULL_ARCH_TEETH - 2 }, () => ({ arch: "maxillary" }));
+  const note = countNoteMarkup(short, 0);
+  // Does not assert a tooth is missing - it may be merged crowns.
+  assert.match(note, /merged/);
+  assert.match(note, /a tooth may be absent/);
   assert.match(note, /Re-anchor/);
+});
+
+test("countNoteMarkup is confirmatory when the reviewer marked the gap", () => {
+  const short = Array.from({ length: FULL_ARCH_TEETH - 1 }, () => ({ arch: "maxillary" }));
+  const note = countNoteMarkup(short, 1);
+  assert.match(note, /your 1 marked gap\b/);
+  // No re-prompt to enter a missing tooth once the gap is marked.
+  assert.doesNotMatch(note, /Re-anchor/);
+  assert.doesNotMatch(note, /enter its FDI/);
+  // Plural form for multiple gaps.
+  assert.match(countNoteMarkup(Array.from({ length: FULL_ARCH_TEETH - 2 }, () => ({ arch: "maxillary" })), 2), /marked gaps/);
 });
 
 test("countNoteMarkup escapes arch names", () => {

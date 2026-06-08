@@ -20,19 +20,29 @@ export function confidenceTier(pct) {
   return "high";
 }
 
-// Actionable banner (HTML) when a proposed arch is not a full arch: tells the
-// reviewer to mark the missing tooth and re-anchor so the FDI labels line up.
-// Returns "" when every arch is complete.
-export function countNoteMarkup(teeth) {
+// Banner (HTML) when a proposed arch is not a full arch. Returns "" when every
+// arch is complete. The message depends on whether the reviewer has marked a gap,
+// because a count below a full arch is ambiguous: a tooth may be absent OR two
+// crowns may have merged into one region (common on the flat upper occlusal
+// plane). `markedGapCount` is how many missing teeth the user has entered.
+export function countNoteMarkup(teeth, markedGapCount = 0) {
   const byArch = {};
   for (const tooth of teeth || []) byArch[tooth.arch] = (byArch[tooth.arch] || 0) + 1;
   const counts = Object.entries(byArch);
   if (!counts.length || !counts.some(([, n]) => n !== FULL_ARCH_TEETH)) return "";
   const summary = counts.map(([arch, n]) => `${n} ${escapeHtml(arch)}`).join(", ");
+  if (markedGapCount > 0) {
+    const gapWord = markedGapCount === 1 ? "gap" : "gaps";
+    return (
+      `<p class="segment-count-note">Proposed ${summary} for your ${markedGapCount} ` +
+      `marked ${gapWord}. Review the tooth numbers below, then apply.</p>`
+    );
+  }
   return (
     `<p class="segment-count-note">Proposed ${summary} — a full arch is ${FULL_ARCH_TEETH} teeth. ` +
-    "If a tooth is absent, enter its FDI number in “Missing teeth” above and " +
-    "use “Re-anchor labels” so the numbers line up around the gap.</p>"
+    "Some crowns may have merged into one region, or a tooth may be absent. If a tooth " +
+    "is missing, enter its FDI number in “Missing teeth” above and use “Re-anchor labels”; " +
+    "otherwise review the tooth numbers below.</p>"
   );
 }
 
