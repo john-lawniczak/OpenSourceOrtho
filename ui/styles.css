@@ -317,10 +317,12 @@ body[data-mode="simple"] .journey-nav {
    from the sidebar in guided mode too. When one is the active step, surface it
    over the wizard so the sidebar links are not dead ends. The ID selectors beat
    the `body[data-mode="simple"] .panel { display: none }` rule above. */
+body[data-mode="simple"][data-step="toothmap"] #guided,
 body[data-mode="simple"][data-step="glossary"] #guided,
 body[data-mode="simple"][data-step="photos"] #guided {
   display: none;
 }
+body[data-mode="simple"][data-step="toothmap"] #panel-toothmap,
 body[data-mode="simple"][data-step="glossary"] #panel-glossary,
 body[data-mode="simple"][data-step="photos"] #panel-photos {
   display: block;
