@@ -32,9 +32,12 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   clinical controls, mesh rendering, rule findings, optimized staging, print
   metadata, plan JSON, and the experimental on-device auto-segmentation panel
   (reviewable per-tooth proposal, never auto-applied). Each proposed tooth shows a
-  tier-coloured confidence (low/mid/high); when an arch is not a full arch a banner
-  prompts the reviewer to enter the missing tooth and **Re-anchor labels**, which
-  re-runs the proposal so the FDI numbers line up around the gap. The review draft
+  tier-coloured confidence (low/mid/high); when an arch has fewer regions than a
+  full arch a banner explains the ambiguity - a tooth may be absent OR two crowns
+  may have merged into one region (common on the flat upper occlusal plane). If a
+  tooth is missing the reviewer marks it and uses **Re-anchor labels** to line the
+  FDI numbers up around the gap; once a gap is marked the banner becomes
+  confirmatory rather than re-prompting. The review draft
   (proposal, per-tooth corrections, marked missing teeth, applied fragment) is
   persisted in the browser keyed by plan id, so it survives a reload; restoring a
   saved plan version also brings back its applied per-tooth meshes. This working

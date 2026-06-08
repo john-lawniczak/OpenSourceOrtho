@@ -12,6 +12,7 @@ import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
 import { renderGuided } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
+import { parseMissingTeeth } from "./segment.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -667,9 +668,10 @@ function renderSegmentation() {
     reanchor.hidden = false;
     reanchor.disabled = seg.busy;
   }
+  const markedGapCount = parseMissingTeeth(seg.missingTeeth).length;
   list.innerHTML =
     `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` +
-    countNoteMarkup(proposal.teeth) +
+    countNoteMarkup(proposal.teeth, markedGapCount) +
     proposal.teeth.map(segmentRowMarkup).join("");
   el("applySegment").hidden = false;
   el("segmentApplied").textContent = seg.applied
