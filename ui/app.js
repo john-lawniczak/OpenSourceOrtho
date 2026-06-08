@@ -2,7 +2,13 @@ import { askPlanAssistant, el, listCaseVersions, maxStage, requestPlanGeneration
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
-import { clearUploadedFiles, restoreUploadedFiles, saveUploadedFiles } from "./storage.js";
+import {
+  clearUploadedFiles,
+  restoreSegmentationReview,
+  restoreUploadedFiles,
+  saveSegmentationReview,
+  saveUploadedFiles,
+} from "./storage.js";
 import { closestDatasetTarget } from "./core.js";
 import {
   downloadPrintArtifact,
@@ -98,11 +104,17 @@ document.body.addEventListener("input", (event) => {
   // full re-render, so typing a corrected tooth number never loses input focus.
   if (target.dataset.segmentTooth) {
     setSegmentToothEdit(target.dataset.segmentTooth, target.value);
+    persistSegmentationReview();
     return;
   }
   if (target.dataset.segmentInclude) {
     setSegmentInclude(target.dataset.segmentInclude, target.checked);
+    persistSegmentationReview();
     return;
+  }
+  if (target.id === "segmentMissingTeeth") {
+    state.segmentation.missingTeeth = target.value;
+    persistSegmentationReview();
   }
   if (target.dataset.availability) {
     state.availability[target.dataset.availability] = target.checked;
@@ -224,11 +236,15 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "proposeSegment" || button?.id === "reanchorSegment") {
     // Re-anchor re-runs the proposal with the current "missing teeth" so the FDI
     // labels line up around the gap; same code path as a fresh proposal.
-    proposeSegmentation().then(() => renderAll());
+    proposeSegmentation().then(() => {
+      persistSegmentationReview();
+      renderAll();
+    });
     renderAll();
   }
   if (button?.id === "applySegment") {
     applySegmentation();
+    persistSegmentationReview();
     renderAll();
   }
   if (button?.id === "guidedPrint") {
@@ -423,6 +439,38 @@ function loadSyntheticDemo() {
   renderAll();
 }
 
+// Persist the segmentation review (proposal, corrections, marked gaps, applied
+// fragment) for the current plan id so it survives a page reload.
+function persistSegmentationReview() {
+  const planId = el("planId").value.trim();
+  if (!planId) return;
+  const { proposal, edits, applied, missingTeeth } = state.segmentation;
+  saveSegmentationReview(planId, { proposal, edits, applied, missingTeeth });
+}
+
+// Rehydrate a saved segmentation review for a plan id (on load or version
+// restore). Returns true when something was restored.
+function loadSegmentationReview(planId) {
+  const review = restoreSegmentationReview(planId);
+  if (!review) return false;
+  state.segmentation.proposal = review.proposal || null;
+  state.segmentation.edits = review.edits || {};
+  state.segmentation.applied = review.applied || null;
+  state.segmentation.missingTeeth = review.missingTeeth || "";
+  const missingInput = el("segmentMissingTeeth");
+  if (missingInput) missingInput.value = state.segmentation.missingTeeth;
+  return true;
+}
+
+function restoreStoredSegmentation() {
+  if (loadSegmentationReview(el("planId").value.trim())) {
+    if (state.segmentation.proposal) {
+      state.segmentation.status = "Restored your earlier segmentation review from this browser.";
+    }
+    renderAll();
+  }
+}
+
 async function restoreStoredUploads() {
   try {
     const files = await restoreUploadedFiles();
@@ -613,6 +661,17 @@ function restorePlan(snapshot) {
   }
   if (snapshot.data) state.availability = { ...state.availability, ...snapshot.data };
   state.rows = rowsFromPlan(snapshot);
+  // Bring back this plan's segmentation review draft (corrections, marked gaps),
+  // then let the saved snapshot's applied per-tooth meshes win - they are the
+  // authoritative segmentation for the version being restored.
+  loadSegmentationReview(snapshot.id || "");
+  if (snapshot.mesh_assets?.length || snapshot.tooth_meshes?.length) {
+    state.segmentation.applied = {
+      mesh_assets: snapshot.mesh_assets || [],
+      tooth_meshes: snapshot.tooth_meshes || [],
+    };
+  }
+  persistSegmentationReview();
   state.activeStep = "review";
   state.view = "overlay";
   state.versions.status = `Restored ${snapshot.id || "plan"} into the editor`;
@@ -623,4 +682,5 @@ function restorePlan(snapshot) {
 renderAvailability();
 renderAll();
 restoreStoredUploads();
+restoreStoredSegmentation();
 loadVersions();
