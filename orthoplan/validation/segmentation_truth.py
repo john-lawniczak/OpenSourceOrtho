@@ -34,6 +34,9 @@ _ARCH_SPAN = 1.6 * pi
 _RADIUS = 22.0
 _CROWN_HEIGHT = 9.0
 _VALLEY_HEIGHT = 3.0
+# Open extraction sites are filled with a flat "gum" surface below the inter-crown
+# valleys, so the hole reads as the deepest, widest valley on the arch.
+_GUM_HEIGHT_RATIO = 0.4
 # Triangles per tooth. Each tooth's triangles span the inner 90% of its sector,
 # leaving a 10% no-triangle embrasure so a height valley forms between crowns.
 _TRIS_PER_TOOTH = 16
@@ -72,6 +75,7 @@ class SyntheticArch:
 def build_synthetic_arch(
     tooth_values: tuple[str, ...],
     *,
+    gaps: tuple[str, ...] = (),
     radius: float = _RADIUS,
     crown_height: float = _CROWN_HEIGHT,
     valley_height: float = _VALLEY_HEIGHT,
@@ -82,36 +86,49 @@ def build_synthetic_arch(
     Each tooth is a cluster of small triangles at a known arc sector; height peaks
     at the sector center and falls to ``valley_height`` at the edges, so the
     embrasures between teeth read as valleys to the segmenter.
+
+    ``gaps`` models open EXTRACTION sites: a listed tooth keeps its full-arch
+    sector position but is filled with a flat, low "gum" surface (below the
+    inter-crown valleys) instead of a crown, leaving a real one-tooth-wide hole.
+    The gap's triangles carry no ground-truth tooth (they are not a crown), and
+    the arch's ``tooth_values`` are the teeth actually present.
     """
 
     n = len(tooth_values)
     sector = _ARCH_SPAN / n
     start = -_ARCH_SPAN / 2.0
+    gap_set = set(gaps)
+    gum_height = valley_height * _GUM_HEIGHT_RATIO
     vertices: list[Vec3] = []
     truth: dict[tuple[int, int, int], str] = {}
     arc_center: dict[str, float] = {}
+    present: list[str] = []
 
     for i, tooth in enumerate(tooth_values):
         center = start + (i + 0.5) * sector
-        arc_center[tooth] = center
+        is_gap = tooth in gap_set
         half = 0.5 * _SECTOR_FILL * sector
         for t in range(tris_per_tooth):
-            # Local offset in [-half, half] across the crown.
+            # Local offset in [-half, half] across the sector.
             frac = (t / (tris_per_tooth - 1)) - 0.5 if tris_per_tooth > 1 else 0.0
             theta = center + frac * 2.0 * half
-            # cos drops from 1 at the crown center to 0 at the sector edge.
-            height = valley_height + (crown_height - valley_height) * cos(frac * pi)
+            # Crown: cos peak. Gap: flat gum floor below the inter-crown valleys.
+            height = gum_height if is_gap else valley_height + (crown_height - valley_height) * cos(frac * pi)
             cx = radius * cos(theta)
             cy = radius * sin(theta)
             centroid: Vec3 = (cx, cy, height)
-            truth[_centroid_key(centroid)] = tooth
+            if not is_gap:
+                truth[_centroid_key(centroid)] = tooth
             for off in _TRI_OFFSETS:
                 vertices.append((cx + off[0], cy + off[1], height + off[2]))
+        if not is_gap:
+            arc_center[tooth] = center
+            present.append(tooth)
 
     return SyntheticArch(
         vertices=vertices,
         truth_by_centroid=truth,
-        tooth_values=tooth_values,
+        tooth_values=tuple(present),
         arc_center=arc_center,
     )
 
