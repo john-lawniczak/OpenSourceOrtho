@@ -73,9 +73,10 @@ tooth, which helps when choosing which teeth to move.
 A whole-arch STL is one shell, not per-tooth meshes, so real per-tooth planning
 needs segmentation. In the **Technician** Review side panel, **Auto-Segmentation
 (experimental)** proposes per-tooth regions from a loaded server-local scan (the
-Sample Test Case / example scans) via `POST /api/segment`. It runs on this machine
-(scans are PHI; nothing is sent off-device). The result is a **draft**: review the
-per-tooth confidence, correct each FDI number, include/exclude teeth, then
+Sample Test Case / example scans) via `POST /api/segment`. It uses local hybrid
+geometry cues: arch position, crown-height valleys, curvature, and face-normal
+changes. It runs on this machine (scans are PHI; nothing is sent off-device).
+The result is a **draft**: review the per-tooth confidence, correct each FDI number, include/exclude teeth, then
 **Apply accepted segmentation to plan** - nothing is auto-applied. It is not a
 diagnosis and does not indicate whether treatment is needed or possible.
 

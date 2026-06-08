@@ -148,7 +148,8 @@ def segment_payload(
         )
         return {
             "ok": True,
-            "model": {"name": segmenter.name, "version": segmenter.version},
+            "model": _segmenter_metadata(segmenter),
+            "method": _SEGMENTATION_METHOD,
             "requires_review": True,
             "caveat": SEGMENTATION_CAVEAT,
             "advisory_findings": [
@@ -164,3 +165,17 @@ def segment_payload(
         }
     except Exception as exc:  # noqa: BLE001 - payload API must never raise
         return {"ok": False, "errors": [f"segmentation failed: {exc}"]}
+
+
+_SEGMENTATION_METHOD = (
+    "Hybrid geometry proposal: arch-position graph cuts scored by "
+    "height valleys, curvature, and face-normal changes."
+)
+
+
+def _segmenter_metadata(segmenter) -> dict[str, str]:
+    return {
+        "name": segmenter.name,
+        "version": segmenter.version,
+        "backend": getattr(segmenter, "backend", "pure-python"),
+    }

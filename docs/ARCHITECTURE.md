@@ -6,7 +6,7 @@ OpenSource Ortho is a Python-first planning and visualization toolkit. The first
 
 1. The user uploads an intraoral-scan mesh, usually an STL file.
 2. The mesh is imported and labeled with provenance: patient-derived, imported, manual, model-generated, or synthetic.
-3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device heuristic auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. A learned model (e.g. Teeth3DS) can replace the heuristic behind the `SegmentationModel` seam; it must run locally (scans are PHI).
+3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device hybrid geometric auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. It combines arch position, crown-height valleys, curvature, and face-normal changes into graph-cut-style boundaries, with optional Open3D mesh-processing support. A learned model (e.g. Teeth3DS) can replace the geometric proposal behind the `SegmentationModel` seam; it must run locally (scans are PHI).
 4. A `TreatmentPlan` stores each stage. Each `Stage` contains `ToothDelta` values for individual teeth.
 5. The planning layer checks each stage against user-configured `MovementCaps`.
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
@@ -22,7 +22,7 @@ Python is a good first language here because:
 
 - dental mesh and medical-imaging libraries are mature in Python
 - Pydantic gives us explicit, serializable plan objects
-- PyVista/VTK and Open3D can support early visualization and mesh processing
+- Open3D can support optional mesh processing; PyVista/VTK can support early visualization
 - later web UIs can consume the same JSON frame contract
 
 The likely future split:

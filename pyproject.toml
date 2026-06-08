@@ -34,6 +34,9 @@ providers = [
 mesh = [
   "trimesh>=4.0"
 ]
+mesh-processing = [
+  "open3d>=0.18"
+]
 e2e = [
   "playwright>=1.40"
 ]

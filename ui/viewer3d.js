@@ -12,6 +12,8 @@ import { parseStlGeometry } from "./stl.js";
 
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
+// Highlight for the tooth currently selected for manual target authoring.
+const SELECTED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.5, emissive: 0x0f766e, emissiveIntensity: 0.55 });
 const SCAN = new THREE.MeshPhysicalMaterial({
   color: 0xf6ead6,
   roughness: 0.38,
@@ -158,6 +160,47 @@ export function createViewer(container) {
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
 
+  // Manual tooth selection. Picking is enabled only when the host turns it on
+  // (e.g. after scan units are confirmed). A pointer press that moves more than
+  // a few pixels is an orbit drag, not a click, so it never steals selection
+  // from OrbitControls.
+  const raycaster = new THREE.Raycaster();
+  let selectionEnabled = false;
+  let selectedTooth = null;
+  let onSelect = null;
+  let pressX = 0;
+  let pressY = 0;
+
+  function pickToothAt(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const ndc = new THREE.Vector2(
+      ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1,
+      -((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 + 1,
+    );
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(proxies.children, false);
+    for (const hit of hits) {
+      const tooth = hit.object?.userData?.tooth;
+      if (tooth) return tooth;
+    }
+    return null;
+  }
+
+  function onPointerDown(event) {
+    pressX = event.clientX;
+    pressY = event.clientY;
+  }
+
+  function onPointerUp(event) {
+    if (!selectionEnabled || !onSelect) return;
+    if (Math.hypot(event.clientX - pressX, event.clientY - pressY) > 5) return; // orbit drag
+    const tooth = pickToothAt(event);
+    if (tooth) onSelect(tooth);
+  }
+
+  renderer.domElement.addEventListener("pointerdown", onPointerDown);
+  renderer.domElement.addEventListener("pointerup", onPointerUp);
+
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8fa2ad, 0.78));
   scene.add(new THREE.AmbientLight(0xffffff, 0.36));
   const key = new THREE.DirectionalLight(0xfffbf2, 1.18);
@@ -249,6 +292,7 @@ export function createViewer(container) {
         const ghost = new THREE.Mesh(ghostGeometry, GHOST);
         ghost.position.copy(base);
         ghost.quaternion.copy(archQuaternion(pose.tooth));
+        ghost.userData.tooth = pose.tooth;
         proxies.add(ghost);
       }
       // Optional FDI tooth-number label, floating above the tooth at its
@@ -267,9 +311,10 @@ export function createViewer(container) {
       if (showPlanned) {
         const moved = base.clone().add(worldDelta(pose, exaggeration));
         const geometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
-        const mesh = new THREE.Mesh(geometry, PLANNED);
+        const mesh = new THREE.Mesh(geometry, selectedTooth === pose.tooth ? SELECTED : PLANNED);
         mesh.position.copy(moved);
         mesh.quaternion.copy(archQuaternion(pose.tooth).multiply(plannedQuaternion(pose, toothFrames?.[pose.tooth])));
+        mesh.userData.tooth = pose.tooth;
         proxies.add(mesh);
 
         if (activeAttachments.has(pose.tooth)) {
@@ -386,8 +431,25 @@ export function createViewer(container) {
     return loadScanSources(files.map((file) => ({ name: file.name, file })));
   }
 
+  function setSelectionHandler(fn) {
+    onSelect = fn;
+  }
+
+  function setSelectionEnabled(enabled) {
+    selectionEnabled = Boolean(enabled);
+    if (!selectionEnabled) selectedTooth = null;
+  }
+
+  // Records which tooth is highlighted. The highlight is applied on the next
+  // update() rebuild, so callers that change selection should re-render.
+  function setSelectedTooth(tooth) {
+    selectedTooth = tooth || null;
+  }
+
   function dispose() {
     running = false;
+    renderer.domElement.removeEventListener("pointerdown", onPointerDown);
+    renderer.domElement.removeEventListener("pointerup", onPointerUp);
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
     for (const sprite of toothLabelSprites.values()) {
@@ -401,7 +463,10 @@ export function createViewer(container) {
   }
 
   window.addEventListener("resize", resize);
-  return { update, resize, dispose, loadMeshes, loadScanSources, loadUploadedScans, zoomBy, recenter };
+  return {
+    update, resize, dispose, loadMeshes, loadScanSources, loadUploadedScans, zoomBy, recenter,
+    setSelectionHandler, setSelectionEnabled, setSelectedTooth,
+  };
 }
 
 function orientScanGeometry(geometry) {

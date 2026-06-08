@@ -1,9 +1,10 @@
 """Local segmentation-model abstraction and the advisory proposal it produces.
 
 ``load_local_segmenter()`` returns the segmenter used by ``POST /api/segment``.
-Today it is the dependency-free heuristic (``segmentation/heuristic.py``). This
-module is the seam where an on-device learned model (e.g. a Teeth3DS / MeshSegNet
-network) can be dropped in WITHOUT changing callers, by implementing
+Today it is a local hybrid geometric segmenter with a dependency-free baseline
+and optional Open3D mesh-processing support. This module is still the seam where
+an on-device learned model (e.g. a Teeth3DS / MeshSegNet network) can be dropped
+in WITHOUT changing callers, by implementing
 :class:`SegmentationModel`. Such a model MUST run locally: intraoral scans are
 PHI, so segmentation never calls a hosted API.
 
@@ -27,6 +28,7 @@ from orthoplan.evaluation.finding import (
 from orthoplan.model.assets import ArchName
 from orthoplan.model.geometry import Vec3
 from orthoplan.segmentation.heuristic import ToothSegment, auto_segment_arch
+from orthoplan.segmentation.hybrid import hybrid_segment_arch, mesh_processing_backend
 
 SEGMENTATION_CAVEAT = (
     "Automated segmentation is a draft produced by a model, not a measurement. "
@@ -56,6 +58,23 @@ class HeuristicArchSegmenter:
         return auto_segment_arch(vertices, arch=arch)
 
 
+class HybridArchSegmenter:
+    """Local hybrid segmenter using arch position, height, normals, and curvature."""
+
+    name = "hybrid-arch-graph-cut"
+    version = "0.1.0"
+
+    def segment(self, vertices: list[Vec3], *, arch: ArchName) -> list[ToothSegment]:
+        segments = hybrid_segment_arch(vertices, arch=arch)
+        if segments:
+            return segments
+        return auto_segment_arch(vertices, arch=arch)
+
+    @property
+    def backend(self) -> str:
+        return mesh_processing_backend()
+
+
 def load_local_segmenter() -> SegmentationModel:
     """Return the active on-device segmenter.
 
@@ -65,7 +84,7 @@ def load_local_segmenter() -> SegmentationModel:
     mesh export, and UI are unaffected.
     """
 
-    return HeuristicArchSegmenter()
+    return HybridArchSegmenter()
 
 
 class ProposedTooth(BaseModel):

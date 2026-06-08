@@ -153,12 +153,14 @@ planning needs segmentation. The Technician Review side panel **Auto-Segmentatio
 `POST /api/segment`:
 
 - It runs **on this machine** (scans are PHI; segmentation never calls a hosted
-  API). Today the local model is a dependency-free **valley-based heuristic**
-  (`orthoplan/segmentation/heuristic.py` + `arch_profile.py`): it walks the arch
-  and cuts at the height valleys between crowns (balanced by equal spacing, then
-  snapped to the nearest real gap). `orthoplan/segmentation/auto.py` is the seam
-  where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can be dropped in
-  behind the same contract.
+  API). Today the local model is a hybrid geometry proposal
+  (`orthoplan/segmentation/hybrid.py`): it walks the arch, scores candidate
+  boundaries from height valleys, curvature, and face-normal changes, then splits
+  triangles with graph-cut-style balanced boundaries. Open3D can be installed via
+  the optional `mesh-processing` extra for future mesh-processing acceleration,
+  while the pure-Python path remains the default baseline. `orthoplan/segmentation/auto.py`
+  is the seam where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can
+  be dropped in behind the same contract.
 - The response is a **draft proposal**, never auto-applied: per-tooth confidence
   (separation, not certainty), advisory model-provenance findings (all pass
   `lint_finding`), and a ready-to-merge plan fragment (`mesh_assets` +
