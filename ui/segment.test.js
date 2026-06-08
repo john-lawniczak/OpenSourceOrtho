@@ -1,8 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { applySegmentation, isValidFdi, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
+import { applySegmentation, isValidFdi, parseMissingTeeth, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { state } from "./state.js";
+
+test("parseMissingTeeth keeps valid FDI, drops junk, de-duplicates", () => {
+  assert.deepEqual(parseMissingTeeth("15, 38"), ["15", "38"]);
+  assert.deepEqual(parseMissingTeeth("15 15  15"), ["15"]);
+  assert.deepEqual(parseMissingTeeth(" 15 , bad, 9, 21 "), ["15", "21"]);
+  assert.deepEqual(parseMissingTeeth(""), []);
+  assert.deepEqual(parseMissingTeeth(null), []);
+});
 
 function seedProposal() {
   state.segmentation.proposal = {

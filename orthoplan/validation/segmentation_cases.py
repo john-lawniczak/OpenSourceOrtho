@@ -12,7 +12,7 @@ freely and is visible in the recorded ``observed`` metrics.
 
 from __future__ import annotations
 
-from orthoplan.segmentation.auto import load_local_segmenter
+from orthoplan.segmentation.auto import load_local_segmenter, tooth_values_for_arch
 from orthoplan.validation.measurement_models import (
     MeasurementTruthResult,
     MeasurementValue,
@@ -78,11 +78,10 @@ def segmentation_missing_tooth() -> MeasurementTruthResult:
     those regions stay clean (purity), rather than fabricating an extra split.
 
     ``triangle_label_accuracy`` is recorded but deliberately NOT gated here: which
-    tooth is absent cannot be known from crown geometry alone, so FDI labels on a
-    gap arch are a positional guess (confidence is lowered and the API raises a
-    review advisory). Closing that gap needs a user signal (mark the missing
-    tooth) and is the follow-on task; this case proves the count/region win and
-    guards it from regressing.
+    tooth is absent cannot be known from crown geometry alone, so without a user
+    signal the FDI labels on a gap arch are a positional guess (confidence is
+    lowered and the API raises a review advisory). The ``-marked`` case below shows
+    that signal closing the gap; this case proves the count/region win on its own.
     """
 
     case_id = "segmentation-missing-tooth"
@@ -115,5 +114,60 @@ def segmentation_missing_tooth() -> MeasurementTruthResult:
     if score.region_purity < min_region_purity:
         failures.append(
             f"region purity {score.region_purity} below floor {min_region_purity}"
+        )
+    return result(case_id, failures, expected=expected, observed=observed)
+
+
+def segmentation_missing_tooth_marked() -> MeasurementTruthResult:
+    """Marking the missing tooth restores correct FDI labels on a gap arch.
+
+    Same gap arch as ``segmentation-missing-tooth``, but the user marks which tooth
+    is absent, so the regions are labelled by the canonical order minus that tooth.
+    ``triangle_label_accuracy`` should recover from the unmarked positional guess
+    (~0.19) back to full-arch quality - that is the user signal turning the label
+    drop into a gain. Gated against the unmarked baseline to stay self-calibrating.
+    """
+
+    case_id = "segmentation-missing-tooth-marked"
+    teeth = tuple(t for t in full_arch_truth(_ARCH) if t != _EXTRACTED_TOOTH)
+    arch = build_synthetic_arch(teeth)
+    segmenter = load_local_segmenter()
+
+    marked = score_segmentation(
+        segmenter.segment(
+            arch.vertices,
+            arch=_ARCH,
+            tooth_values=tooth_values_for_arch(_ARCH, [_EXTRACTED_TOOTH]),
+        ),
+        arch,
+    )
+    unmarked = score_segmentation(segmenter.segment(arch.vertices, arch=_ARCH), arch)
+
+    min_label_accuracy = 0.55
+    expected: dict[str, MeasurementValue] = {
+        "true_tooth_count": marked.expected_count,
+        "min_triangle_label_accuracy": min_label_accuracy,
+        "must_beat_unmarked": True,
+    }
+    observed: dict[str, MeasurementValue] = {
+        "observed_tooth_count": marked.observed_count,
+        "marked_triangle_label_accuracy": marked.triangle_label_accuracy,
+        "unmarked_triangle_label_accuracy": unmarked.triangle_label_accuracy,
+        "region_purity": marked.region_purity,
+    }
+
+    failures: list[str] = []
+    if marked.observed_count != marked.expected_count:
+        failures.append(
+            f"tooth count {marked.observed_count} != {marked.expected_count}"
+        )
+    if marked.triangle_label_accuracy < min_label_accuracy:
+        failures.append(
+            f"label accuracy {marked.triangle_label_accuracy} below floor {min_label_accuracy}"
+        )
+    if marked.triangle_label_accuracy <= unmarked.triangle_label_accuracy:
+        failures.append(
+            f"marking the gap did not improve labels: marked "
+            f"{marked.triangle_label_accuracy} <= unmarked {unmarked.triangle_label_accuracy}"
         )
     return result(case_id, failures, expected=expected, observed=observed)

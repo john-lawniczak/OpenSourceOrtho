@@ -24,6 +24,7 @@ from orthoplan.segmentation.auto import (
     build_advisory_findings,
     build_count_advisories,
     load_local_segmenter,
+    tooth_values_for_arch,
 )
 from orthoplan.segmentation.mesh_export import write_segment_meshes
 
@@ -67,8 +68,22 @@ def _scan_list(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
+def _missing_teeth(payload: dict[str, Any]) -> list[str]:
+    """FDI numbers the user marked as absent, used to anchor segmentation labels."""
+
+    raw = payload.get("missing_teeth")
+    if not isinstance(raw, list):
+        return []
+    return [str(tooth).strip() for tooth in raw if str(tooth).strip()]
+
+
 def _segment_one_scan(
-    scan: dict[str, Any], segmenter, *, ui_root: Path, workspace: str | Path | None
+    scan: dict[str, Any],
+    segmenter,
+    *,
+    ui_root: Path,
+    workspace: str | Path | None,
+    missing_teeth: list[str] | None = None,
 ) -> tuple[list[ProposedTooth], list[MeshAsset], list[SegmentedToothMesh], str | None]:
     """Segment a single scan dict. Returns (proposed, assets, links, error)."""
 
@@ -81,7 +96,10 @@ def _segment_one_scan(
         return [], [], [], f"could not determine arch for scan: {reference!r}"
 
     _asset, vertices = read_stl_geometry(path)
-    segments = segmenter.segment(vertices, arch=arch)
+    # User-marked gaps anchor the FDI labels for this arch; None lets the segmenter
+    # detect the tooth count itself.
+    tooth_values = tooth_values_for_arch(arch, missing_teeth)
+    segments = segmenter.segment(vertices, arch=arch, tooth_values=tooth_values)
     proposed: list[ProposedTooth] = []
     assets: list[MeshAsset] = []
     links: list[SegmentedToothMesh] = []
@@ -123,6 +141,7 @@ def segment_payload(
             return {"ok": False, "errors": ["no scan reference provided"]}
 
         segmenter = load_local_segmenter()
+        missing_teeth = _missing_teeth(payload)
         proposed: list[ProposedTooth] = []
         assets_by_id: dict[str, MeshAsset] = {}
         links: list[SegmentedToothMesh] = []
@@ -130,7 +149,7 @@ def segment_payload(
         resolved_any = False
         for scan in scans:
             rows, assets, scan_links, error = _segment_one_scan(
-                scan, segmenter, ui_root=ui_root, workspace=workspace
+                scan, segmenter, ui_root=ui_root, workspace=workspace, missing_teeth=missing_teeth
             )
             if error:
                 errors.append(error)

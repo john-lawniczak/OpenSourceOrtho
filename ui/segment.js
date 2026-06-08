@@ -15,6 +15,19 @@ export function isValidFdi(value) {
   return FDI_RE.test(String(value || "").trim());
 }
 
+// Parse the user's "missing teeth" field into a list of valid FDI numbers. Geometry
+// cannot tell which tooth is absent, so this signal lets the engine anchor the
+// proposed tooth numbers around the gap. Invalid tokens are dropped (the field is
+// free text), and the result is de-duplicated.
+export function parseMissingTeeth(value) {
+  const seen = new Set();
+  for (const token of String(value || "").split(/[,\s]+/)) {
+    const fdi = token.trim();
+    if (isValidFdi(fdi)) seen.add(fdi);
+  }
+  return [...seen];
+}
+
 export async function proposeSegmentation() {
   const seg = state.segmentation;
   if (seg.busy) return;
@@ -28,10 +41,11 @@ export async function proposeSegmentation() {
       "your browser, so the local server cannot segment them yet.";
     return;
   }
+  const missingTeeth = parseMissingTeeth(seg.missingTeeth);
   seg.busy = true;
   seg.status = "Proposing per-tooth segmentation on this machine...";
   try {
-    const result = await requestSegmentation({ scans });
+    const result = await requestSegmentation({ scans, missing_teeth: missingTeeth });
     if (result.ok === false) {
       seg.proposal = null;
       seg.status = (result.errors || ["segmentation failed"]).join("; ");

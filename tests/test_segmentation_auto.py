@@ -147,3 +147,36 @@ def test_segment_payload_rejects_unresolvable_scan(tmp_path: Path) -> None:
 def test_segment_payload_requires_a_scan(tmp_path: Path) -> None:
     result = segment_payload({}, ui_dir=tmp_path, workspace=tmp_path)
     assert result["ok"] is False
+
+
+def test_tooth_values_for_arch_drops_marked_gap() -> None:
+    from orthoplan.segmentation.auto import tooth_values_for_arch
+
+    full = default_arch_order("maxillary")
+    labels = tooth_values_for_arch("maxillary", ["15"])
+    assert labels == tuple(t for t in full if t != "15")
+    assert len(labels) == len(full) - 1
+    # Nothing marked, or a tooth from the other arch -> no override (None).
+    assert tooth_values_for_arch("maxillary", []) is None
+    assert tooth_values_for_arch("maxillary", ["38"]) is None
+
+
+def test_segment_payload_anchors_labels_around_marked_gap(tmp_path: Path) -> None:
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    _write_arch_stl(ui_dir / "scan.stl")
+
+    result = segment_payload(
+        {"scans": [{"reference": "scan.stl", "arch": "maxillary"}], "missing_teeth": ["15"]},
+        ui_dir=ui_dir,
+        workspace=tmp_path / "ws",
+    )
+    assert result["ok"] is True
+    teeth = [t["tooth"] for t in result["teeth"]]
+    # The marked tooth is skipped and the arch is one tooth shorter than a full arch.
+    assert "15" not in teeth
+    assert len(teeth) == len(default_arch_order("maxillary")) - 1
+    # A count-difference advisory is surfaced for review.
+    assert any(
+        "tooth count" in f["title"].lower() for f in result["advisory_findings"]
+    )

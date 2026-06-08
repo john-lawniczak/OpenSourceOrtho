@@ -90,6 +90,20 @@ def test_segmentation_cases_registered_in_lab() -> None:
     assert {"segmentation-full-arch-accuracy", "segmentation-missing-tooth"} <= ids
 
 
+def test_marking_the_gap_recovers_label_accuracy() -> None:
+    result = run_measurement_lab("segmentation-missing-tooth-marked")[0]
+    assert result.passed is True
+    # The user signal beats the unmarked positional guess and clears the floor.
+    assert (
+        result.observed["marked_triangle_label_accuracy"]
+        > result.observed["unmarked_triangle_label_accuracy"]
+    )
+    assert (
+        result.observed["marked_triangle_label_accuracy"]
+        >= result.expected["min_triangle_label_accuracy"]
+    )
+
+
 def test_detect_cut_count_counts_real_valleys_not_a_fixed_number() -> None:
     from orthoplan.segmentation.arch_profile import detect_cut_count
 
