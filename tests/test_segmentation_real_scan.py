@@ -11,12 +11,14 @@ returns a plausible number of crowns within the algorithm's own bounds, and
 produces valid confidences. It also RECORDS the observed crown counts so the
 current sim-to-real gap is visible and tracked.
 
-Observed at the time of writing (crown-peak counting):
+Observed at the time of writing (crown-peak counting at fine resolution):
 - mandibular (lower): 14 / 14 crowns - correct, confidence ~0.5-0.85.
-- maxillary (upper): 7 / 14 crowns - a real UNDERCOUNT. The upper scan's occlusal
-  height profile (palate, crown orientation) does not present 14 clean peaks, so
-  the counter tuned on synthetic arches misses about half. Closing that gap is the
-  tracked follow-up; this test guards against gross regression in the meantime.
+- maxillary (upper): 12 / 14 crowns. The upper occlusal plane is flat across the
+  posterior teeth (curve of Spee/Wilson, palate), so two adjacent crowns still
+  merge into one height peak even at fine resolution - 12/14 is the realistic
+  ceiling for 1-D height counting. (Counting at the original coarse resolution
+  found only 7; the finer count profile recovered the other five.) The remaining
+  two are a positional guess the user closes via mark-the-gap / re-anchor.
 """
 
 from __future__ import annotations
@@ -77,19 +79,22 @@ def test_real_scan_segments_within_plausible_bounds(filename: str, arch: str) ->
     assert all(s.triangles for s in segments)
 
 
-def test_lower_arch_is_counted_well_on_real_geometry() -> None:
-    """The mandibular scan is the working real-data case: most of a full arch.
+# Real-data crown-count floors. These lock in the counts the fine-resolution
+# crown-peak counter recovers, so a future change that regresses real-scan counting
+# (e.g. an over-aggressive prominence threshold) is caught - even where the count
+# is below a full arch because crowns genuinely merge in the 1-D height signal.
+_REAL_COUNT_FLOOR = {"maxillary": 10, "mandibular": 12}
 
-    This guards the case that already survives real geometry, so a future change
-    that breaks real-scan counting (e.g. an over-aggressive peak threshold) is
-    caught even though the upper scan's gap is not yet closed.
-    """
 
-    path = _SCAN_DIR / "sample-test-case-lower.stl"
+@pytest.mark.parametrize("filename,arch", _SCANS)
+def test_real_scan_crown_count_does_not_regress(filename: str, arch: str) -> None:
+    path = _SCAN_DIR / filename
     if not path.is_file():
         pytest.skip(f"bundled scan not present: {path}")
 
     _asset, vertices = read_stl_geometry(path)
-    segments = load_local_segmenter().segment(vertices, arch="mandibular")
-    # Most of a 14-tooth arch should be recovered on this clean lower scan.
-    assert len(segments) >= 12, f"mandibular regressed: detected {len(segments)} crowns"
+    segments = load_local_segmenter().segment(vertices, arch=arch)
+    floor = _REAL_COUNT_FLOOR[arch]
+    assert len(segments) >= floor, (
+        f"{arch} crown count regressed: detected {len(segments)}, floor {floor}"
+    )
