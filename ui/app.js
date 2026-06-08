@@ -161,6 +161,7 @@ document.body.addEventListener("click", (event) => {
   const target = event.target;
   const button = target.closest?.("button");
   const stepTarget = closestDatasetTarget(target, "stepTarget");
+  const infoBackTarget = closestDatasetTarget(target, "infoBack");
   const journeyTarget = closestDatasetTarget(target, "journeyStep");
   const removeUploadTarget = closestDatasetTarget(target, "removeUpload");
   const clearUploadsTarget = closestDatasetTarget(target, "clearUploads");
@@ -269,6 +270,10 @@ document.body.addEventListener("click", (event) => {
     goToStep(stepTarget.dataset.stepTarget);
     renderAll();
   }
+  if (infoBackTarget) {
+    goToStep(state.returnStep || "upload");
+    renderAll();
+  }
   if (journeyTarget) {
     goToStep(journeyTarget.dataset.journeyStep);
     renderAll();
@@ -321,7 +326,15 @@ function uploadLabel(files, emptyLabel) {
   return `${files.length} STL files selected`;
 }
 
+// Reference panels (Key Terms / Tooth Map, Imaging & Photos guide) are reachable
+// from the sidebar in BOTH guided and technician mode. They are not workflow
+// steps, so opening one remembers where to return to.
+const INFO_STEPS = ["glossary", "photos"];
+
 function goToStep(step) {
+  if (INFO_STEPS.includes(step) && !INFO_STEPS.includes(state.activeStep)) {
+    state.returnStep = state.activeStep;
+  }
   state.activeStep = step;
 }
 

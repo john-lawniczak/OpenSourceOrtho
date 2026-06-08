@@ -5,6 +5,10 @@ export const state = {
   // the Technician view toggle.
   userMode: "simple",
   activeStep: "upload",
+  // Where the "Back" button in a reference panel (Key Terms, Imaging guide)
+  // returns to, so those panels are reachable from either mode without trapping
+  // the user. Set when an info step is opened (see goToStep in app.js).
+  returnStep: "upload",
   // Guided wizard sub-state (the simplified primary flow). The wizard owns its
   // own step cursor so it is independent of the technician panel navigation.
   guided: {

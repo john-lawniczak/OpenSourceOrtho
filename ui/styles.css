@@ -313,6 +313,19 @@ body[data-mode="simple"] .journey-nav {
   display: none;
 }
 
+/* Reference panels (Key Terms / Tooth Map, Imaging & Photos guide) are opened
+   from the sidebar in guided mode too. When one is the active step, surface it
+   over the wizard so the sidebar links are not dead ends. The ID selectors beat
+   the `body[data-mode="simple"] .panel { display: none }` rule above. */
+body[data-mode="simple"][data-step="glossary"] #guided,
+body[data-mode="simple"][data-step="photos"] #guided {
+  display: none;
+}
+body[data-mode="simple"][data-step="glossary"] #panel-glossary,
+body[data-mode="simple"][data-step="photos"] #panel-photos {
+  display: block;
+}
+
 body[data-mode="advanced"] #guided {
   display: none;
 }
@@ -795,6 +808,88 @@ textarea {
 .panel-heading.split {
   grid-template-columns: 1fr auto;
   align-items: center;
+}
+
+.info-back {
+  justify-self: start;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.info-back:hover {
+  border-color: var(--accent);
+}
+
+/* Imaging & Photos guide: relative-value comparison table. */
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0 18px;
+  font-size: 14px;
+}
+
+.records-table th,
+.records-table td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.records-table thead th {
+  background: var(--panel-alt, rgba(127, 127, 127, 0.08));
+  font-weight: 600;
+}
+
+.records-table tbody th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.records-score {
+  display: inline-block;
+  min-width: 44px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #08312c;
+}
+
+.records-score[data-tier="high"] {
+  background: #6ee7b7;
+}
+
+.records-score[data-tier="mid"] {
+  background: #fde68a;
+}
+
+.records-score[data-tier="low"] {
+  background: #fca5a5;
+}
+
+@media (max-width: 640px) {
+  .records-table,
+  .records-table thead,
+  .records-table tbody,
+  .records-table tr,
+  .records-table th,
+  .records-table td {
+    display: block;
+  }
+  .records-table thead {
+    display: none;
+  }
+  .records-table tbody th {
+    white-space: normal;
+    border-bottom: none;
+  }
 }
 
 .upload-row {
