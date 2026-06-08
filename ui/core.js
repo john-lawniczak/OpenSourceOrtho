@@ -7,6 +7,35 @@ export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
 }
 
+// Each arch normally has 14 teeth in this app (third molars excluded), mirroring
+// the engine's default_arch_order length. A proposed count below this means a
+// tooth looks absent - the cue to mark the gap and re-anchor the labels.
+export const FULL_ARCH_TEETH = 14;
+
+// Confidence tier from a 0-100 percentage. Low confidence (often a count
+// mismatch) should stand out so the reviewer checks those tooth numbers first.
+export function confidenceTier(pct) {
+  if (pct < 45) return "low";
+  if (pct < 65) return "mid";
+  return "high";
+}
+
+// Actionable banner (HTML) when a proposed arch is not a full arch: tells the
+// reviewer to mark the missing tooth and re-anchor so the FDI labels line up.
+// Returns "" when every arch is complete.
+export function countNoteMarkup(teeth) {
+  const byArch = {};
+  for (const tooth of teeth || []) byArch[tooth.arch] = (byArch[tooth.arch] || 0) + 1;
+  const counts = Object.entries(byArch);
+  if (!counts.length || !counts.some(([, n]) => n !== FULL_ARCH_TEETH)) return "";
+  const summary = counts.map(([arch, n]) => `${n} ${escapeHtml(arch)}`).join(", ");
+  return (
+    `<p class="segment-count-note">Proposed ${summary} — a full arch is ${FULL_ARCH_TEETH} teeth. ` +
+    "If a tooth is absent, enter its FDI number in “Missing teeth” above and " +
+    "use “Re-anchor labels” so the numbers line up around the gap.</p>"
+  );
+}
+
 // Group stage rows by their stage number and reindex to a contiguous 0..n-1
 // sequence so exported plans satisfy the Python contiguity invariant even when
 // the UI stage numbers have gaps (e.g. 0, 2, 5 -> 0, 1, 2).

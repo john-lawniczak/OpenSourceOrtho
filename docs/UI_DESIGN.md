@@ -31,7 +31,10 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
 - **Technician review** for professional users: staged movement authoring, records,
   clinical controls, mesh rendering, rule findings, optimized staging, print
   metadata, plan JSON, and the experimental on-device auto-segmentation panel
-  (reviewable per-tooth proposal, never auto-applied).
+  (reviewable per-tooth proposal, never auto-applied). Each proposed tooth shows a
+  tier-coloured confidence (low/mid/high); when an arch is not a full arch a banner
+  prompts the reviewer to enter the missing tooth and **Re-anchor labels**, which
+  re-runs the proposal so the FDI numbers line up around the gap.
 - **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
   (same chips/panels), pre-loaded with the two bundled test-case STL scans and a
   Balanced 10-day pace, starting at step 1. Entering it snapshots the user's

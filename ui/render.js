@@ -7,7 +7,7 @@ import {
   state,
   toothPositions,
 } from "./state.js";
-import { createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
+import { confidenceTier, countNoteMarkup, createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
 import { renderGuided } from "./guided.js";
@@ -654,15 +654,22 @@ function renderSegmentation() {
         .join("")
     : "";
 
+  const reanchor = el("reanchorSegment");
   const list = el("segmentList");
   if (!proposal?.teeth?.length) {
     list.innerHTML = seg.status ? `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` : "";
     el("applySegment").hidden = true;
     el("segmentApplied").textContent = "";
+    if (reanchor) reanchor.hidden = true;
     return;
+  }
+  if (reanchor) {
+    reanchor.hidden = false;
+    reanchor.disabled = seg.busy;
   }
   list.innerHTML =
     `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` +
+    countNoteMarkup(proposal.teeth) +
     proposal.teeth.map(segmentRowMarkup).join("");
   el("applySegment").hidden = false;
   el("segmentApplied").textContent = seg.applied
@@ -673,14 +680,15 @@ function renderSegmentation() {
 function segmentRowMarkup(tooth) {
   const edit = state.segmentation.edits[tooth.mesh_asset_id] || { tooth: tooth.tooth, included: true };
   const pct = Math.round((tooth.confidence || 0) * 100);
-  const review = pct < 45 ? "Review" : "";
+  const tier = confidenceTier(pct);
+  const review = tier === "low" ? "Review" : "";
   return `
     <div class="segment-row">
       <input type="checkbox" data-segment-include="${escapeHtml(tooth.mesh_asset_id)}" ${edit.included ? "checked" : ""} aria-label="Include this tooth" />
       <input class="segment-tooth" data-segment-tooth="${escapeHtml(tooth.mesh_asset_id)}" value="${escapeHtml(edit.tooth)}" maxlength="2" aria-label="FDI tooth number" />
       <span class="segment-arch">${escapeHtml(tooth.arch)}</span>
-      <span class="segment-conf"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
-      <span class="segment-conf-num">${pct}%${review ? ` · ${review}` : ""}</span>
+      <span class="segment-conf" data-tier="${tier}"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
+      <span class="segment-conf-num" data-tier="${tier}">${pct}%${review ? ` · ${review}` : ""}</span>
     </div>`;
 }
 
