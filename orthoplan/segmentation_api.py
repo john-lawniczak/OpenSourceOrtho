@@ -22,6 +22,7 @@ from orthoplan.segmentation.auto import (
     SEGMENTATION_CAVEAT,
     ProposedTooth,
     build_advisory_findings,
+    build_count_advisories,
     load_local_segmenter,
 )
 from orthoplan.segmentation.mesh_export import write_segment_meshes
@@ -146,6 +147,10 @@ def segment_payload(
         overall = (
             round(sum(p.confidence for p in proposed) / len(proposed), 3) if proposed else 0.0
         )
+        count_by_arch: dict[ArchName, int] = {}
+        for tooth in proposed:
+            count_by_arch[tooth.arch] = count_by_arch.get(tooth.arch, 0) + 1
+        advisory_findings = build_advisory_findings(overall) + build_count_advisories(count_by_arch)
         return {
             "ok": True,
             "model": _segmenter_metadata(segmenter),
@@ -153,7 +158,7 @@ def segment_payload(
             "requires_review": True,
             "caveat": SEGMENTATION_CAVEAT,
             "advisory_findings": [
-                finding.model_dump(mode="json") for finding in build_advisory_findings(overall)
+                finding.model_dump(mode="json") for finding in advisory_findings
             ],
             "teeth": [tooth.model_dump(mode="json") for tooth in proposed],
             "overall_confidence": overall,

@@ -76,16 +76,46 @@ def test_full_arch_case_passes_and_records_metrics() -> None:
     assert result.observed["triangle_label_accuracy"] >= result.expected["min_triangle_label_accuracy"]
 
 
-def test_missing_tooth_case_records_count_error() -> None:
+def test_missing_tooth_case_recovers_correct_count() -> None:
     result = run_measurement_lab("segmentation-missing-tooth")[0]
     assert result.passed is True
-    # Documents the current cascade: the segmenter forces the canonical count, so
-    # a missing tooth shows up as a nonzero count error. When data-driven counting
-    # lands this should fall to 0 and this expectation can tighten.
-    assert result.observed["tooth_count_error"] >= 1
+    # Data-driven counting: a missing tooth yields the right number of regions.
+    assert result.observed["tooth_count_error"] == 0
+    assert result.observed["observed_tooth_count"] == result.expected["true_tooth_count"]
     assert result.observed["region_purity"] >= result.expected["min_region_purity"]
 
 
 def test_segmentation_cases_registered_in_lab() -> None:
     ids = {r.case_id for r in run_measurement_lab()}
     assert {"segmentation-full-arch-accuracy", "segmentation-missing-tooth"} <= ids
+
+
+def test_detect_cut_count_counts_real_valleys_not_a_fixed_number() -> None:
+    from orthoplan.segmentation.arch_profile import detect_cut_count
+
+    # Three crowns (peaks) separated by two deep valleys.
+    profile = [9.0, 3.0, 9.0, 3.0, 9.0]
+    assert detect_cut_count(profile, max_cuts=13) == 2
+    # A flat profile carries no usable valleys -> 0 (caller falls back to canonical).
+    assert detect_cut_count([5.0] * 8, max_cuts=13) == 0
+    # max_cuts caps the result.
+    assert detect_cut_count(profile, max_cuts=1) == 1
+
+
+def test_detect_cut_count_finds_peaks_when_requested() -> None:
+    from orthoplan.segmentation.arch_profile import detect_cut_count
+
+    # Inverted signal: boundaries are peaks (hybrid cost signal).
+    profile = [1.0, 8.0, 1.0, 8.0, 1.0]
+    assert detect_cut_count(profile, max_cuts=13, find_minima=False) == 2
+
+
+def test_count_advisory_only_fires_on_non_canonical_arch() -> None:
+    from orthoplan.segmentation.auto import build_count_advisories
+    from orthoplan.segmentation.heuristic import default_arch_order
+
+    full = len(default_arch_order("maxillary"))
+    assert build_count_advisories({"maxillary": full}) == []
+    advisories = build_count_advisories({"maxillary": full - 1})
+    assert len(advisories) == 1
+    assert "review" in advisories[0].message.lower()

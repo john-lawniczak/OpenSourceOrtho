@@ -20,16 +20,15 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from dataclasses import dataclass
-from math import atan2
 
 from orthoplan.model.assets import ArchName
 from orthoplan.model.geometry import Vec3
 from orthoplan.segmentation.arch_profile import (
-    arc_positions,
+    arc_signal,
     bucket_of,
+    detect_cut_count,
     find_boundaries,
     height_profile,
-    wrap_origin,
 )
 
 Triangle = tuple[Vec3, Vec3, Vec3]
@@ -50,12 +49,60 @@ _BUCKETS_PER_TOOTH = 6
 # Confidence stays capped below 1.0: even valley cuts are a draft, not a measurement.
 _MAX_CONFIDENCE = 0.8
 _MIN_CONFIDENCE = 0.25
+# Fewer detected teeth than this on a whole-arch scan is treated as an unreliable
+# signal, so the segmenter falls back to the canonical count rather than collapse.
+_MIN_DETECTED_TEETH = 6
+# When the detected tooth count differs from the canonical arch, FDI labels are a
+# positional guess (we cannot know which tooth is absent from geometry alone), so
+# confidence is scaled down to push the user to review the numbers.
+_COUNT_MISMATCH_PENALTY = 0.6
 
 
 def default_arch_order(arch: ArchName) -> tuple[str, ...]:
     """Anatomical FDI ordering used to label sectors around the given arch."""
 
     return _MAXILLARY_ARCH_ORDER if arch == "maxillary" else _MANDIBULAR_ARCH_ORDER
+
+
+def teeth_for_count(arch: ArchName, count: int) -> tuple[str, ...]:
+    """FDI labels for ``count`` detected crowns, in anatomical order.
+
+    When ``count`` matches the canonical arch the labels are exact. When fewer
+    crowns are detected (a shorter or partial arch, or a missing tooth) the labels
+    are a best-effort positional slice from the patient's right - valid FDI in
+    order, but not a claim about WHICH tooth is absent. That ambiguity is why the
+    caller lowers confidence and the API raises a review advisory.
+    """
+
+    order = default_arch_order(arch)
+    if count >= len(order):
+        return order
+    return order[:count]
+
+
+def resolve_tooth_count(
+    profile: list[float], canonical: int, *, find_minima: bool = True
+) -> int:
+    """Data-driven tooth count from the arch ``profile``, bounded for safety.
+
+    Detects the number of real embrasures instead of assuming the canonical
+    count. Falls back to ``canonical`` when the signal is unusable (0 cuts) and
+    never returns more than canonical or fewer than ``_MIN_DETECTED_TEETH``.
+    """
+
+    cuts = detect_cut_count(profile, max_cuts=canonical - 1, find_minima=find_minima)
+    if cuts <= 0:
+        return canonical
+    return max(_MIN_DETECTED_TEETH, min(canonical, cuts + 1))
+
+
+def teeth_from_profile(
+    arch: ArchName, profile: list[float], *, find_minima: bool = True
+) -> tuple[str, ...]:
+    """FDI labels for the crowns detected in ``profile`` (shared by both segmenters)."""
+
+    canonical = len(default_arch_order(arch))
+    return teeth_for_count(arch, resolve_tooth_count(profile, canonical, find_minima=find_minima))
 
 
 @dataclass(frozen=True)
@@ -121,24 +168,29 @@ def auto_segment_arch(
     """
 
     facets = _facets(vertices)
-    teeth = tooth_values or default_arch_order(arch)
+    if len(facets) < _MIN_TRIANGLES_PER_TOOTH:
+        return []
+
+    centroids = [_tri_centroid(f) for f in facets]
+    positions, heights = arc_signal(centroids)
+
+    canonical = len(default_arch_order(arch))
+    # Profile resolution is fixed by the canonical (max) count, so tooth-count
+    # detection does not depend on the very thing it is trying to discover.
+    resolution = len(tooth_values) if tooth_values is not None else canonical
+    buckets = resolution * _BUCKETS_PER_TOOTH
+    profile, lo, span = height_profile(positions, heights, buckets)
+
+    teeth = tooth_values if tooth_values is not None else teeth_from_profile(arch, profile)
     n = len(teeth)
     if len(facets) < n * _MIN_TRIANGLES_PER_TOOTH:
         return []
 
-    centroids = [_tri_centroid(f) for f in facets]
-    cx = sum(c[0] for c in centroids) / len(centroids)
-    cy = sum(c[1] for c in centroids) / len(centroids)
-    angles = [atan2(c[1] - cy, c[0] - cx) for c in centroids]
-    positions = arc_positions(angles, wrap_origin(angles))
-    heights = [c[2] for c in centroids]
-
-    buckets = n * _BUCKETS_PER_TOOTH
-    profile, lo, span = height_profile(positions, heights, buckets)
     boundaries = find_boundaries(profile, n - 1)
     boundary_buckets = [bucket for bucket, _ in boundaries]
     proms = [prominence for _, prominence in boundaries]
     max_prom = max(proms) if proms else 0.0
+    penalty = _COUNT_MISMATCH_PENALTY if (tooth_values is None and n != canonical) else 1.0
 
     groups: list[list[int]] = [[] for _ in range(n)]
     for i, position in enumerate(positions):
@@ -154,7 +206,7 @@ def auto_segment_arch(
                 tooth_value=teeth[index],
                 triangles=[facets[i] for i in indices],
                 centroid=_mean3([centroids[i] for i in indices]),
-                confidence=_segment_confidence(index, proms, max_prom),
+                confidence=round(_segment_confidence(index, proms, max_prom) * penalty, 3),
             )
         )
     return segments

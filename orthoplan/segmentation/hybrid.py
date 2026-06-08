@@ -19,26 +19,27 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from dataclasses import dataclass
-from math import atan2
-
 from orthoplan.model.assets import ArchName
 from orthoplan.model.geometry import Vec3
 from orthoplan.segmentation.arch_profile import (
-    arc_positions,
+    arc_signal,
     bucket_of,
     height_profile,
-    wrap_origin,
 )
 from orthoplan.segmentation.heuristic import (
     Triangle,
     ToothSegment,
     default_arch_order,
+    teeth_from_profile,
 )
 
 _MIN_TRIANGLES_PER_TOOTH = 4
 _BUCKETS_PER_TOOTH = 8
 _MAX_CONFIDENCE = 0.86
 _MIN_CONFIDENCE = 0.22
+# Confidence multiplier when the detected count differs from the canonical arch
+# (FDI labels become a positional guess; the user must review the numbers).
+_COUNT_MISMATCH_PENALTY = 0.6
 
 
 @dataclass(frozen=True)
@@ -87,25 +88,32 @@ def hybrid_segment_arch_with_diagnostics(
     tooth_values: tuple[str, ...] | None = None,
 ) -> tuple[list[ToothSegment], HybridSegmentationDiagnostics]:
     facets = _facets(vertices)
-    teeth = tooth_values or default_arch_order(arch)
+    if len(facets) < _MIN_TRIANGLES_PER_TOOTH:
+        return [], HybridSegmentationDiagnostics(mesh_processing_backend(), (), ())
+
+    centroids = [_tri_centroid(facet) for facet in facets]
+    positions, heights = arc_signal(centroids)
+    normals = [_normal(facet) for facet in facets]
+
+    canonical = len(default_arch_order(arch))
+    resolution = len(tooth_values) if tooth_values is not None else canonical
+    buckets = resolution * _BUCKETS_PER_TOOTH
+    scores, lo, span = _score_arch_buckets(positions, heights, normals, buckets)
+    if tooth_values is not None:
+        teeth = tooth_values
+    else:
+        # Count from the physical HEIGHT valleys (the most reliable "how many
+        # crowns" signal); the cost-signal scores above still PLACE the cuts.
+        teeth = teeth_from_profile(arch, height_profile(positions, heights, buckets)[0])
     count = len(teeth)
     if len(facets) < count * _MIN_TRIANGLES_PER_TOOTH:
         return [], HybridSegmentationDiagnostics(mesh_processing_backend(), (), ())
 
-    centroids = [_tri_centroid(facet) for facet in facets]
-    center_x = sum(c[0] for c in centroids) / len(centroids)
-    center_y = sum(c[1] for c in centroids) / len(centroids)
-    angles = [atan2(c[1] - center_y, c[0] - center_x) for c in centroids]
-    positions = arc_positions(angles, wrap_origin(angles))
-    heights = [c[2] for c in centroids]
-    normals = [_normal(facet) for facet in facets]
-
-    buckets = count * _BUCKETS_PER_TOOTH
-    scores, lo, span = _score_arch_buckets(positions, heights, normals, buckets)
     boundaries = _find_graph_cut_boundaries(scores, count - 1)
     boundary_buckets = [bucket for bucket, _score in boundaries]
     boundary_scores = [score for _bucket, score in boundaries]
     max_score = max(boundary_scores) if boundary_scores else 0.0
+    penalty = _COUNT_MISMATCH_PENALTY if (tooth_values is None and count != canonical) else 1.0
 
     groups: list[list[int]] = [[] for _ in range(count)]
     for index, position in enumerate(positions):
@@ -124,7 +132,7 @@ def hybrid_segment_arch_with_diagnostics(
                 tooth_value=teeth[index],
                 triangles=[facets[i] for i in indices],
                 centroid=_mean3([centroids[i] for i in indices]),
-                confidence=_segment_confidence(index, boundary_scores, max_score),
+                confidence=round(_segment_confidence(index, boundary_scores, max_score) * penalty, 3),
             )
         )
     return segments, HybridSegmentationDiagnostics(
