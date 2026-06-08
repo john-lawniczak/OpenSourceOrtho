@@ -53,12 +53,14 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   per stage plus a manifest) via `POST /api/print-package` and offers a zip
   download and a pre-filled email draft (`.eml`) you can open in your mail app to
   send the files to yourself or a print service.
-- **Auto-segmentation (experimental)**: an on-device, dependency-free heuristic
-  proposes per-tooth meshes from a whole-arch scan via `POST /api/segment`
-  (cutting at the valleys between crowns). It is a reviewable draft with per-tooth
-  confidence - you correct the FDI numbers and **explicitly** apply it; nothing is
-  auto-accepted, and scans never leave the machine. A `SegmentationModel` seam lets
-  a local learned model (e.g. Teeth3DS) replace the heuristic later.
+- **Auto-segmentation (experimental)**: an on-device hybrid geometry segmenter
+  proposes per-tooth meshes from a whole-arch scan via `POST /api/segment`.
+  It uses arch position, height valleys, curvature, and face-normal changes to
+  choose graph-cut-style boundaries, with optional Open3D mesh-processing support.
+  It is a reviewable draft with per-tooth confidence - you correct the FDI numbers
+  and **explicitly** apply it; nothing is auto-accepted, and scans never leave the
+  machine. A `SegmentationModel` seam lets a local learned model (e.g. Teeth3DS)
+  replace the geometric proposal later.
 - **Generate Plan**: a one-click pipeline (the guided **Build my plan** button,
   and the Technician Review panel) that builds a
   cap-respecting staged plan from the best available target - your authored

@@ -671,13 +671,14 @@ function renderSegmentation() {
 function segmentRowMarkup(tooth) {
   const edit = state.segmentation.edits[tooth.mesh_asset_id] || { tooth: tooth.tooth, included: true };
   const pct = Math.round((tooth.confidence || 0) * 100);
+  const review = pct < 45 ? "Review" : "";
   return `
     <div class="segment-row">
       <input type="checkbox" data-segment-include="${escapeHtml(tooth.mesh_asset_id)}" ${edit.included ? "checked" : ""} aria-label="Include this tooth" />
       <input class="segment-tooth" data-segment-tooth="${escapeHtml(tooth.mesh_asset_id)}" value="${escapeHtml(edit.tooth)}" maxlength="2" aria-label="FDI tooth number" />
       <span class="segment-arch">${escapeHtml(tooth.arch)}</span>
       <span class="segment-conf"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
-      <span class="segment-conf-num">${pct}%</span>
+      <span class="segment-conf-num">${pct}%${review ? ` · ${review}` : ""}</span>
     </div>`;
 }
 

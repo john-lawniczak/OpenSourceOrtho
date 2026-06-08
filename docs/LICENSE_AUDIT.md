@@ -35,6 +35,7 @@ copyleft (GPL/LGPL) dependencies.
 |-------|---------|---------|---------|-------|
 | `providers` | openai | 2.41 | Apache-2.0 | advisory layer only |
 | `mesh` | trimesh | 4.x | MIT | optional mesh quality metadata |
+| `mesh-processing` | open3d | 0.x | MIT | optional local mesh-processing backend for segmentation experiments |
 | `e2e` | playwright | 1.60 | Apache-2.0 | headless test only |
 | `e2e` | pyee | 13.0 | MIT | transitive (playwright) |
 | `e2e` | greenlet | 3.5 | MIT AND PSF-2.0 | transitive (playwright) |
@@ -60,5 +61,7 @@ release.
 - AI/segmentation tools: code, model-weight, and dataset licenses are separate —
   none are currently a dependency.
 - 3D Slicer extensions can carry GPL — not a dependency; referenced only.
+- Blender and PyMeshLab/MeshLab are GPL — keep them as external workflow tools
+  unless the project intentionally accepts GPL obligations.
 - Trademarks (Invisalign/ClinCheck/SmartTrack): nominative reference only, never
   in code identifiers or UI labels.

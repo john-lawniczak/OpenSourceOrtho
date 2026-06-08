@@ -67,6 +67,15 @@ test("applySegmentation skips an invalid FDI correction instead of breaking the 
   assert.match(state.segmentation.status, /invalid FDI/i);
 });
 
+test("applySegmentation skips duplicate FDI corrections", () => {
+  seedProposal();
+  setSegmentToothEdit("a2", "11");
+  applySegmentation();
+  const values = state.segmentation.applied.tooth_meshes.map((m) => m.tooth.value);
+  assert.deepEqual(values, ["11", "13"]);
+  assert.match(state.segmentation.status, /duplicate tooth number/i);
+});
+
 test("applySegmentation yields no fragment when nothing valid is selected", () => {
   seedProposal();
   for (const id of ["a1", "a2", "a3"]) setSegmentInclude(id, false);

@@ -41,9 +41,11 @@ export async function proposeSegmentation() {
       for (const tooth of result.teeth) {
         seg.edits[tooth.mesh_asset_id] = { tooth: tooth.tooth, included: true };
       }
+      const backend = result.model?.backend ? ` · ${result.model.backend}` : "";
+      const method = result.method ? ` · ${result.method}` : "";
       seg.status =
         `Draft ready · ${result.teeth.length} teeth · overall confidence ` +
-        `${result.overall_confidence}. Review and correct, then apply.`;
+        `${result.overall_confidence}${backend}${method}. Review and correct, then apply.`;
     }
   } catch (error) {
     seg.proposal = null;
@@ -62,6 +64,8 @@ export function applySegmentation() {
   const includedIds = new Set();
   const toothMeshes = [];
   let invalid = 0;
+  let duplicate = 0;
+  const seenTeeth = new Set();
   for (const link of proposal.plan_fragment.tooth_meshes) {
     const edit = seg.edits[link.mesh_asset_id];
     if (!edit || !edit.included) continue;
@@ -70,12 +74,19 @@ export function applySegmentation() {
       invalid += 1;
       continue;
     }
+    if (seenTeeth.has(value)) {
+      duplicate += 1;
+      continue;
+    }
+    seenTeeth.add(value);
     includedIds.add(link.mesh_asset_id);
     toothMeshes.push({ ...link, tooth: { system: "FDI", value } });
   }
   const meshAssets = proposal.plan_fragment.mesh_assets.filter((asset) => includedIds.has(asset.id));
   seg.applied = toothMeshes.length ? { mesh_assets: meshAssets, tooth_meshes: toothMeshes } : null;
-  const skipped = invalid ? ` Skipped ${invalid} tooth(s) with an invalid FDI number (use two digits, each 1-8).` : "";
+  const skippedInvalid = invalid ? ` Skipped ${invalid} tooth(s) with an invalid FDI number (use two digits, each 1-8).` : "";
+  const skippedDuplicate = duplicate ? ` Skipped ${duplicate} duplicate tooth number(s); each accepted mesh needs a unique FDI number.` : "";
+  const skipped = `${skippedInvalid}${skippedDuplicate}`;
   if (seg.applied) {
     seg.status = `Applied ${toothMeshes.length} per-tooth mesh(es) to the plan. Still a draft — not a diagnosis.${skipped}`;
   } else {

@@ -11,6 +11,7 @@ from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.segmentation.auto import build_advisory_findings, load_local_segmenter
 from orthoplan.segmentation.heuristic import auto_segment_arch, default_arch_order
+from orthoplan.segmentation.hybrid import hybrid_segment_arch_with_diagnostics
 from orthoplan.segmentation.mesh_export import binary_stl_bytes
 from orthoplan.segmentation_api import segment_payload
 
@@ -60,7 +61,20 @@ def test_auto_segment_returns_empty_when_too_sparse() -> None:
 def test_load_local_segmenter_is_on_device_and_named() -> None:
     segmenter = load_local_segmenter()
     assert segmenter.name and segmenter.version
+    assert "hybrid" in segmenter.name
     assert hasattr(segmenter, "segment")
+
+
+def test_hybrid_segment_uses_surface_signal_boundaries() -> None:
+    segments, diagnostics = hybrid_segment_arch_with_diagnostics(
+        _arch_vertices(facets_per_tooth=12),
+        arch="maxillary",
+    )
+
+    assert segments
+    assert diagnostics.backend in {"pure-python", "open3d+pure-python"}
+    assert len(diagnostics.boundary_buckets) == len(default_arch_order("maxillary")) - 1
+    assert any(score > 0 for score in diagnostics.boundary_scores)
 
 
 def test_advisory_findings_are_model_provenance_and_lint_clean() -> None:
@@ -85,6 +99,9 @@ def test_segment_payload_produces_reviewable_proposal(tmp_path: Path) -> None:
 
     assert result["ok"] is True
     assert result["requires_review"] is True
+    assert result["model"]["name"] == "hybrid-arch-graph-cut"
+    assert result["model"]["backend"] in {"pure-python", "open3d+pure-python"}
+    assert "graph cuts" in result["method"]
     assert result["teeth"]
     assert set(t["tooth"] for t in result["teeth"]) == set(default_arch_order("maxillary"))
     assert all(0.0 <= t["confidence"] <= 1.0 for t in result["teeth"])

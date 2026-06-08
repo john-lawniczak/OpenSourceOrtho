@@ -21,7 +21,7 @@ Last recorded source review: 2026-06-04.
 | 3D Slicer license/commercial-use notes | https://slicer.readthedocs.io/en/5.10/user_guide/about.html | License/regulatory reference for a possible host platform. | License notes, medical-device disclaimers, extension guidance. |
 | 3D Slicer platform | https://www.slicer.org/ | Open-source platform reference for imaging, segmentation, and possible extension hosting. | Platform roadmap, extension APIs, segmentation and DICOM workflows. |
 | SlicerCMF | https://cmf.slicer.org/ | Dental/craniofacial workflow reference inside 3D Slicer. | Extension status, algorithms, dependency/license updates. |
-| Open3D MIT note | https://www.open3d.org/ | Candidate geometry and mesh-processing dependency. | License, Python API changes, mesh registration and visualization features. |
+| Open3D MIT note | https://www.open3d.org/ | Optional `mesh-processing` dependency for local geometry/segmentation experiments. | License, Python API changes, mesh registration and visualization features. |
 | PyVista MIT note | https://pyvista.org/ | Candidate Python visualization layer. | License, VTK compatibility, web/desktop rendering options. |
 | VTK BSD-3-Clause note | https://github.com/Kitware/VTK | Mature scientific visualization backend reference/dependency. | License, Python packaging, rendering features. |
 | pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Candidate dependency for future CBCT/DICOM support. | License, API changes, DICOM parsing/security guidance. |
@@ -34,8 +34,8 @@ Last recorded source review: 2026-06-04.
 
 Open3D
 
-- Use for point-cloud and mesh processing, registration experiments, geometry utilities, and potential visualization prototypes.
-- Good fit for Python-first research tooling.
+- Use for point-cloud and mesh processing, registration experiments, geometry utilities, and potential segmentation prototypes.
+- Good fit for Python-first research tooling; available as the optional `mesh-processing` extra.
 
 trimesh
 
