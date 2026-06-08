@@ -118,6 +118,50 @@ def segmentation_missing_tooth() -> MeasurementTruthResult:
     return result(case_id, failures, expected=expected, observed=observed)
 
 
+def segmentation_open_gap() -> MeasurementTruthResult:
+    """An open extraction site (gum-filled hole) is counted correctly.
+
+    A real extraction leaves a one-tooth-wide hole filled with low gum, not evenly
+    respaced teeth. That wide valley is the case that tempted the counter to
+    over-count (its two shoulders look like two cuts). Counting crown PEAKS instead
+    of valleys handles it: the gum hole has no peak, so the count stays correct
+    (``tooth_count_error == 0``) and the present crowns segment cleanly (purity).
+    Records label accuracy (unmarked, a positional guess - the user can mark the
+    gap to recover it, as in the -marked case).
+    """
+
+    case_id = "segmentation-open-gap"
+    arch = build_synthetic_arch(full_arch_truth(_ARCH), gaps=(_EXTRACTED_TOOTH,))
+    segments = load_local_segmenter().segment(arch.vertices, arch=_ARCH)
+    score = score_segmentation(segments, arch)
+    count_error = abs(score.observed_count - score.expected_count)
+
+    min_region_purity = 0.78
+    expected: dict[str, MeasurementValue] = {
+        "present_tooth_count": score.expected_count,
+        "max_tooth_count_error": 0,
+        "min_region_purity": min_region_purity,
+    }
+    observed: dict[str, MeasurementValue] = {
+        "observed_tooth_count": score.observed_count,
+        "tooth_count_error": count_error,
+        "region_purity": score.region_purity,
+        "triangle_label_accuracy": score.triangle_label_accuracy,
+    }
+
+    failures: list[str] = []
+    if count_error != 0:
+        failures.append(
+            f"open-gap tooth count error {count_error}: detected "
+            f"{score.observed_count} for {score.expected_count} present crowns"
+        )
+    if score.region_purity < min_region_purity:
+        failures.append(
+            f"region purity {score.region_purity} below floor {min_region_purity}"
+        )
+    return result(case_id, failures, expected=expected, observed=observed)
+
+
 def segmentation_missing_tooth_marked() -> MeasurementTruthResult:
     """Marking the missing tooth restores correct FDI labels on a gap arch.
 

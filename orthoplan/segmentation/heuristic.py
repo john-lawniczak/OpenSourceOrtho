@@ -80,29 +80,27 @@ def teeth_for_count(arch: ArchName, count: int) -> tuple[str, ...]:
     return order[:count]
 
 
-def resolve_tooth_count(
-    profile: list[float], canonical: int, *, find_minima: bool = True
-) -> int:
-    """Data-driven tooth count from the arch ``profile``, bounded for safety.
+def resolve_tooth_count(profile: list[float], canonical: int) -> int:
+    """Data-driven tooth count = the number of crown PEAKS in the height profile.
 
-    Detects the number of real embrasures instead of assuming the canonical
-    count. Falls back to ``canonical`` when the signal is unusable (0 cuts) and
-    never returns more than canonical or fewer than ``_MIN_DETECTED_TEETH``.
+    Counting crowns is robust to open extraction gaps: a gum-filled hole has no
+    peak, so it never inflates the count, whereas counting the valleys between
+    crowns mistakes the two shoulders of a wide gap for two separate cuts. Falls
+    back to ``canonical`` when the signal is unusable (0 peaks), and is bounded to
+    ``[_MIN_DETECTED_TEETH, canonical]`` for safety.
     """
 
-    cuts = detect_cut_count(profile, max_cuts=canonical - 1, find_minima=find_minima)
-    if cuts <= 0:
+    peaks = detect_cut_count(profile, max_cuts=canonical, find_minima=False)
+    if peaks <= 0:
         return canonical
-    return max(_MIN_DETECTED_TEETH, min(canonical, cuts + 1))
+    return max(_MIN_DETECTED_TEETH, min(canonical, peaks))
 
 
-def teeth_from_profile(
-    arch: ArchName, profile: list[float], *, find_minima: bool = True
-) -> tuple[str, ...]:
+def teeth_from_profile(arch: ArchName, profile: list[float]) -> tuple[str, ...]:
     """FDI labels for the crowns detected in ``profile`` (shared by both segmenters)."""
 
     canonical = len(default_arch_order(arch))
-    return teeth_for_count(arch, resolve_tooth_count(profile, canonical, find_minima=find_minima))
+    return teeth_for_count(arch, resolve_tooth_count(profile, canonical))
 
 
 @dataclass(frozen=True)

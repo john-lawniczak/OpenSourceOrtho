@@ -90,6 +90,53 @@ def test_segmentation_cases_registered_in_lab() -> None:
     assert {"segmentation-full-arch-accuracy", "segmentation-missing-tooth"} <= ids
 
 
+def test_build_synthetic_arch_models_an_open_gap() -> None:
+    full = full_arch_truth("maxillary")
+    arch = build_synthetic_arch(full, gaps=("15",))
+    # The gap tooth is absent from the present set and from the ground truth.
+    assert "15" not in arch.tooth_values
+    assert arch.expected_count == len(full) - 1
+    assert "15" not in set(arch.truth_by_centroid.values())
+    # The other crowns keep their identities.
+    assert set(arch.tooth_values) == set(t for t in full if t != "15")
+
+
+def test_open_gap_is_counted_by_crown_peaks_not_valleys() -> None:
+    # The whole point of the open-gap harness: detection counts the present crowns
+    # (13), not 14 - a wide gum hole must not read as an extra tooth.
+    result = run_measurement_lab("segmentation-open-gap")[0]
+    assert result.passed is True
+    assert result.observed["tooth_count_error"] == 0
+    assert result.observed["observed_tooth_count"] == result.expected["present_tooth_count"]
+
+
+def test_crown_peaks_not_valleys_are_counted() -> None:
+    from orthoplan.segmentation.arch_profile import detect_cut_count
+
+    # Three crowns (interior peaks), then a wide flat gum hole on the right. Counting
+    # crown peaks sees exactly 3 crowns regardless of the hole; leading/trailing low
+    # buckets keep the end crowns interior, as a real arch profile always ramps up.
+    # (The valley over-count this avoids is proven end-to-end by the
+    # segmentation-open-gap lab case.)
+    profile = [1.0, 9.0, 3.0, 9.0, 3.0, 9.0, 1.0, 1.0, 1.0, 1.0]
+    assert detect_cut_count(profile, max_cuts=14, find_minima=False) == 3
+
+
+def test_resolve_tooth_count_floors_and_falls_back() -> None:
+    from orthoplan.segmentation.heuristic import resolve_tooth_count
+
+    # A flat profile has no crowns -> fall back to the canonical count.
+    assert resolve_tooth_count([5.0] * 8, canonical=14) == 14
+    # A clean full arch's worth of crowns is detected as the canonical count.
+    arch = build_synthetic_arch(full_arch_truth("maxillary"))
+    from orthoplan.segmentation.arch_profile import arc_signal, height_profile
+    from orthoplan.segmentation.heuristic import _facets, _tri_centroid
+
+    positions, heights = arc_signal([_tri_centroid(f) for f in _facets(arch.vertices)])
+    profile = height_profile(positions, heights, 14 * 8)[0]
+    assert resolve_tooth_count(profile, canonical=14) == 14
+
+
 def test_marking_the_gap_recovers_label_accuracy() -> None:
     result = run_measurement_lab("segmentation-missing-tooth-marked")[0]
     assert result.passed is True

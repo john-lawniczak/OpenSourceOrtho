@@ -131,16 +131,20 @@ file-backed golden STL fixtures plus expected millimeter/degree outputs with tol
 Failures print the exact expected-vs-actual mismatch.
 
 It also includes **segmentation accuracy** cases (`segmentation-full-arch-accuracy`,
-`segmentation-missing-tooth`). These build a synthetic arch whose per-triangle tooth
-membership is known by construction, run the active on-device segmenter, and score
-two axes: `region_purity` (did the cuts separate the right crowns, independent of
-labels) and `triangle_label_accuracy` (did the right FDI number land on the right
-region). The segmenter derives the tooth count from the arch's height valleys
-rather than assuming a full arch, so an arch with a tooth missing is segmented into
-the correct number of regions (`tooth_count_error == 0`) instead of fabricating an
-extra split. Which tooth is absent cannot be known from crown geometry, so FDI
-labels on a gap arch are a positional guess - confidence is lowered and a review
-advisory is raised; closing that gap needs a user signal and is tracked separately.
+`segmentation-missing-tooth`, `segmentation-open-gap`, `segmentation-missing-tooth-marked`).
+These build a synthetic arch whose per-triangle tooth membership is known by
+construction, run the active on-device segmenter, and score two axes: `region_purity`
+(did the cuts separate the right crowns, independent of labels) and
+`triangle_label_accuracy` (did the right FDI number land on the right region).
+
+The segmenter derives the tooth count by counting **crown peaks** in the arch's
+height profile rather than assuming a full arch, so the count is right whether a
+tooth is congenitally absent (`segmentation-missing-tooth`) or left an open
+extraction hole filled with gum (`segmentation-open-gap`) - a gum hole has no peak,
+so it never reads as an extra tooth (`tooth_count_error == 0`). Which tooth is
+absent cannot be known from crown geometry, so FDI labels on a gap arch are a
+positional guess until the user marks the gap; `segmentation-missing-tooth-marked`
+shows that signal restoring label accuracy.
 
 ## 8. Print package export
 
