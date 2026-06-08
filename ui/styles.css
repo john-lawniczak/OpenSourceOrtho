@@ -1821,11 +1821,41 @@ td input {
   background: var(--accent);
 }
 
+/* Tier color so low-confidence regions (often a count mismatch) stand out. */
+.segment-conf[data-tier="high"] .segment-conf-bar {
+  background: #10b981;
+}
+.segment-conf[data-tier="mid"] .segment-conf-bar {
+  background: #f59e0b;
+}
+.segment-conf[data-tier="low"] .segment-conf-bar {
+  background: #ef4444;
+}
+
 .segment-conf-num {
   min-width: 34px;
   font-size: 11px;
   color: var(--muted);
   text-align: right;
+}
+
+.segment-conf-num[data-tier="low"] {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.segment-count-note {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  font-size: 13px;
+}
+
+#reanchorSegment {
+  width: 100%;
+  margin-top: 6px;
 }
 
 #applySegment {

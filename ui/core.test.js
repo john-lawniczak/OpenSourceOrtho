@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  FULL_ARCH_TEETH,
+  confidenceTier,
+  countNoteMarkup,
   createLatest,
   closestDatasetTarget,
   degToRad,
@@ -14,6 +17,32 @@ import {
 } from "./core.js";
 import { parseStlGeometry } from "./stl.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
+
+test("confidenceTier buckets a percentage into low/mid/high", () => {
+  assert.equal(confidenceTier(20), "low");
+  assert.equal(confidenceTier(44), "low");
+  assert.equal(confidenceTier(45), "mid");
+  assert.equal(confidenceTier(64), "mid");
+  assert.equal(confidenceTier(65), "high");
+  assert.equal(confidenceTier(100), "high");
+});
+
+test("countNoteMarkup warns only when an arch is not a full arch", () => {
+  const full = Array.from({ length: FULL_ARCH_TEETH }, () => ({ arch: "maxillary" }));
+  assert.equal(countNoteMarkup(full), "");
+  assert.equal(countNoteMarkup([]), "");
+
+  const short = Array.from({ length: FULL_ARCH_TEETH - 1 }, () => ({ arch: "maxillary" }));
+  const note = countNoteMarkup(short);
+  assert.match(note, /Proposed 13 maxillary/);
+  assert.match(note, /Re-anchor/);
+});
+
+test("countNoteMarkup escapes arch names", () => {
+  const note = countNoteMarkup([{ arch: "<b>x</b>" }]);
+  assert.match(note, /&lt;b&gt;x&lt;\/b&gt;/);
+  assert.doesNotMatch(note, /<b>x<\/b>/);
+});
 
 test("toothKind classifies FDI teeth by last digit", () => {
   assert.equal(toothKind("11"), "incisor");

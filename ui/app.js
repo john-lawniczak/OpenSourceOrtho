@@ -221,7 +221,9 @@ document.body.addEventListener("click", (event) => {
     state.showToothLabels = !state.showToothLabels;
     renderAll();
   }
-  if (button?.id === "proposeSegment") {
+  if (button?.id === "proposeSegment" || button?.id === "reanchorSegment") {
+    // Re-anchor re-runs the proposal with the current "missing teeth" so the FDI
+    // labels line up around the gap; same code path as a fresh proposal.
     proposeSegmentation().then(() => renderAll());
     renderAll();
   }
