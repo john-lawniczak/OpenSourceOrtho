@@ -51,6 +51,7 @@
         </nav>
 
         <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open key terms and tooth numbering">Key Terms &amp; Tooth Map</button>
+        <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging &amp; Photos Guide</button>
 
         <section class="data-gap-panel" aria-label="Data gaps">
           <h2>Data Gaps</h2>
@@ -584,6 +585,7 @@
 
         <section class="panel" id="panel-glossary">
           <div class="panel-heading">
+            <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Key Terms &amp; Tooth Numbering</h2>
             <p>Plain-language reference for people new to dentistry. Educational only; not a diagnosis.</p>
           </div>
@@ -638,6 +640,77 @@
             </dl>
             <p class="viewer-caveat">Full glossary, the FDI&harr;Universal&harr;Palmer table, and the tooth-map diagram live in <code>docs/GLOSSARY.md</code>.</p>
           </div>
+        </section>
+
+        <section class="panel" id="panel-photos">
+          <div class="panel-heading">
+            <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
+            <h2>Imaging &amp; Photos Guide</h2>
+            <p>A quick, plain-language guide to the records you can bring and how much each one helps. Educational only &mdash; this is not a diagnosis, and it does not tell you what care you need.</p>
+          </div>
+
+          <div class="workflow-card">
+            <h2>What the engine actually uses</h2>
+            <p>The planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>STL scan</strong>: it segments the arch into per-tooth meshes and proposes movement. It never sees roots, bone, nerves, or the airway, so extra imaging mostly <em>closes data gaps</em> (see <strong>Data Gaps</strong> and <strong>Acquire Next</strong> in the sidebar) rather than changing the core plan. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+          </div>
+
+          <table class="records-table">
+            <caption class="sr-only">Relative value of each imaging input</caption>
+            <thead>
+              <tr><th scope="col">Input</th><th scope="col">Helps</th><th scope="col">What it adds</th><th scope="col">Rough cost (USD)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">CBCT (DICOM)</th>
+                <td><span class="records-score" data-tier="high">10/10</span></td>
+                <td>A full 3D scan of crowns, <strong>roots, and bone</strong> (and airway). The only input that reveals what is under the gum, so it removes the most data gaps.</td>
+                <td>~$100&ndash;$400 (often bundled with a consult). Higher radiation; clinician-ordered.</td>
+              </tr>
+              <tr>
+                <th scope="row">STL + Periapical X-rays</th>
+                <td><span class="records-score" data-tier="high">7&ndash;8/10</span></td>
+                <td>Crown surface plus close-up 2D views of <strong>specific roots and surrounding bone</strong> &mdash; targeted root context where it matters.</td>
+                <td>STL ~$0&ndash;$150 + ~$25&ndash;$50 per film (full-mouth series ~$100&ndash;$200).</td>
+              </tr>
+              <tr>
+                <th scope="row">STL + Panoramic X-ray</th>
+                <td><span class="records-score" data-tier="high">7/10</span></td>
+                <td>Crown surface plus a single 2D <strong>whole-jaw overview</strong> of roots, eruption, and obvious anomalies.</td>
+                <td>STL ~$0&ndash;$150 + panoramic ~$60&ndash;$150.</td>
+              </tr>
+              <tr>
+                <th scope="row">STL + Photos</th>
+                <td><span class="records-score" data-tier="mid">6/10</span></td>
+                <td>Crown surface plus <strong>bite and soft-tissue context</strong> and a visual baseline to track change against. No new 3D measurements.</td>
+                <td>STL ~$0&ndash;$150 + photos ~$0 (smartphone).</td>
+              </tr>
+              <tr>
+                <th scope="row">STL only</th>
+                <td><span class="records-score" data-tier="mid">5/10</span></td>
+                <td>The <strong>core input</strong>: the crown-surface mesh the engine segments and moves. No roots or bone, so root-dependent limits stay unknown.</td>
+                <td>~$0 with your own scanner; ~$50&ndash;$150 at an office (or from impressions).</td>
+              </tr>
+              <tr>
+                <th scope="row">Panoramic X-ray only</th>
+                <td><span class="records-score" data-tier="mid">5/10</span></td>
+                <td>A whole-jaw overview, but <strong>no 3D crown surface</strong> for the engine to plan movement on.</td>
+                <td>~$60&ndash;$150.</td>
+              </tr>
+              <tr>
+                <th scope="row">Photos only</th>
+                <td><span class="records-score" data-tier="low">3/10</span></td>
+                <td>Helpful visual context and progress tracking, but <strong>no measurable geometry</strong> to plan from.</td>
+                <td>~$0 (smartphone).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="workflow-card">
+            <h2>If you are starting from scratch</h2>
+            <p>An <strong>intraoral STL scan</strong> is the one record that unlocks the planner &mdash; start there. Add <strong>smartphone photos</strong> for free to capture your bite and a baseline. Bring an <strong>X-ray or CBCT</strong> only when a licensed professional recommends one; those reveal roots and bone the surface scan cannot, and they involve radiation.</p>
+          </div>
+
+          <p class="viewer-caveat">Costs are rough US estimates and vary widely by region, provider, and whether imaging is bundled with a visit. The relative-value scores describe how much each input helps <em>this engine</em> close data gaps &mdash; they are not medical advice and do not rank treatments.</p>
         </section>
       </section>
     </main>

@@ -55,6 +55,12 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   upstream provider of selectable crowns rather than something this tool modifies.
   Selectable proxies exist in the **planned / overlay** views, so author targets
   there. Copy keeps it a geometric target, never a treatment goal or approval.
+- **Reference panels** reachable from the sidebar in BOTH guided and technician
+  mode: **Key Terms & Tooth Map** (plain-language glossary + FDI tooth map) and
+  **Imaging & Photos Guide** (which records help, what each adds, and rough US
+  cost, with a relative-value table). They are not workflow steps - opening one
+  surfaces it over the guided wizard and a **Back** button returns to the prior
+  step, so the sidebar links are never dead ends in guided mode.
 - **Plan AI review** for both workflows: scoped chat over the current plan,
   findings, data gaps, and timeline. The provider selector and a session-only
   API-key field are surfaced directly (with provider-specific, plain-language
