@@ -70,14 +70,19 @@ def segmentation_full_arch_accuracy() -> MeasurementTruthResult:
 
 
 def segmentation_missing_tooth() -> MeasurementTruthResult:
-    """Measure the cost of a missing tooth (the labelling cascade).
+    """A missing tooth must yield the right COUNT and clean regions.
 
-    The segmenter currently assumes the full canonical FDI arch, so an extraction
-    gap is mislabelled: ``observed_tooth_count`` stays at the canonical count
-    while fewer crowns exist (``tooth_count_error`` > 0). This case GATES that the
-    geometry still separates cleanly (purity) and most teeth keep a correct label,
-    and RECORDS the count error so a future data-driven tooth-count fix shows up
-    as ``tooth_count_error`` -> 0. Tighten the count expectation once that lands.
+    The segmenter detects the number of crowns from the arch's height valleys
+    instead of assuming the canonical count, so an arch with a tooth absent is
+    segmented into the correct number of regions (``tooth_count_error == 0``) and
+    those regions stay clean (purity), rather than fabricating an extra split.
+
+    ``triangle_label_accuracy`` is recorded but deliberately NOT gated here: which
+    tooth is absent cannot be known from crown geometry alone, so FDI labels on a
+    gap arch are a positional guess (confidence is lowered and the API raises a
+    review advisory). Closing that gap needs a user signal (mark the missing
+    tooth) and is the follow-on task; this case proves the count/region win and
+    guards it from regressing.
     """
 
     case_id = "segmentation-missing-tooth"
@@ -87,12 +92,11 @@ def segmentation_missing_tooth() -> MeasurementTruthResult:
     score = score_segmentation(segments, arch)
     count_error = abs(score.observed_count - score.expected_count)
 
-    min_region_purity = 0.78
-    min_labels_recovered = score.expected_count - 1
+    min_region_purity = 0.80
     expected: dict[str, MeasurementValue] = {
         "true_tooth_count": score.expected_count,
+        "max_tooth_count_error": 0,
         "min_region_purity": min_region_purity,
-        "min_labels_recovered": min_labels_recovered,
     }
     observed: dict[str, MeasurementValue] = {
         "observed_tooth_count": score.observed_count,
@@ -103,12 +107,13 @@ def segmentation_missing_tooth() -> MeasurementTruthResult:
     }
 
     failures: list[str] = []
+    if count_error != 0:
+        failures.append(
+            f"tooth count error {count_error}: detected {score.observed_count} "
+            f"for {score.expected_count} crowns"
+        )
     if score.region_purity < min_region_purity:
         failures.append(
             f"region purity {score.region_purity} below floor {min_region_purity}"
-        )
-    if score.labels_recovered < min_labels_recovered:
-        failures.append(
-            f"labels recovered {score.labels_recovered} below floor {min_labels_recovered}"
         )
     return result(case_id, failures, expected=expected, observed=observed)

@@ -135,9 +135,12 @@ It also includes **segmentation accuracy** cases (`segmentation-full-arch-accura
 membership is known by construction, run the active on-device segmenter, and score
 two axes: `region_purity` (did the cuts separate the right crowns, independent of
 labels) and `triangle_label_accuracy` (did the right FDI number land on the right
-region). The gap between them, and the recorded `tooth_count_error` on a missing
-tooth, make the labelling cascade measurable so future segmenter work can prove a
-gain rather than merely change the output.
+region). The segmenter derives the tooth count from the arch's height valleys
+rather than assuming a full arch, so an arch with a tooth missing is segmented into
+the correct number of regions (`tooth_count_error == 0`) instead of fabricating an
+extra split. Which tooth is absent cannot be known from crown geometry, so FDI
+labels on a gap arch are a positional guess - confidence is lowered and a review
+advisory is raised; closing that gap needs a user signal and is tracked separately.
 
 ## 8. Print package export
 

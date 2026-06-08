@@ -10,9 +10,24 @@ Everything here is pure list math (no numpy) and deterministic.
 
 from __future__ import annotations
 
-from math import tau
+from math import atan2, tau
 
+Vec3 = tuple[float, float, float]
 NEG_INF = float("-inf")
+
+
+def arc_signal(centroids: list[Vec3]) -> tuple[list[float], list[float]]:
+    """Arc positions (around the arch centroid) and occlusal heights for centroids.
+
+    Shared by both segmenters so they walk the dental horseshoe identically: the
+    polar angle about the mesh centroid becomes a contiguous arc position, and the
+    z coordinate is the occlusal height profiled into valleys between crowns.
+    """
+
+    center_x = sum(c[0] for c in centroids) / len(centroids)
+    center_y = sum(c[1] for c in centroids) / len(centroids)
+    angles = [atan2(c[1] - center_y, c[0] - center_x) for c in centroids]
+    return arc_positions(angles, wrap_origin(angles)), [c[2] for c in centroids]
 
 
 def wrap_origin(angles: list[float]) -> float:
@@ -84,6 +99,75 @@ def _prominence(profile: list[float], index: int) -> float:
     left_peak = max(profile[: index + 1])
     right_peak = max(profile[index:])
     return min(left_peak, right_peak) - profile[index]
+
+
+def _prominence_peak(profile: list[float], index: int) -> float:
+    """Prominence of a PEAK: how far it rises above the higher flanking valley."""
+
+    left_valley = min(profile[: index + 1])
+    right_valley = min(profile[index:])
+    return profile[index] - max(left_valley, right_valley)
+
+
+def _significant_extrema(
+    profile: list[float], *, find_minima: bool
+) -> list[tuple[int, float]]:
+    """Interior local extrema as ``(index, prominence)`` pairs.
+
+    Minima locate height valleys (embrasures); maxima locate boundary-score peaks
+    in the hybrid segmenter's cost signal. Prominence ranks how real each is.
+    """
+
+    out: list[tuple[int, float]] = []
+    for index in range(1, len(profile) - 1):
+        left, here, right = profile[index - 1], profile[index], profile[index + 1]
+        if find_minima:
+            if here <= left and here <= right and here < max(left, right):
+                out.append((index, _prominence(profile, index)))
+        elif here >= left and here >= right and here > min(left, right):
+            out.append((index, _prominence_peak(profile, index)))
+    return out
+
+
+def detect_cut_count(
+    profile: list[float],
+    *,
+    max_cuts: int,
+    prominence_ratio: float = 0.35,
+    find_minima: bool = True,
+    min_separation: int = 2,
+) -> int:
+    """Count the significant inter-tooth boundaries WITHOUT assuming a tooth count.
+
+    Real embrasures are the most prominent extrema in the 1D arch signal. Keeping
+    only those at least ``prominence_ratio`` of the strongest one lets a clean arch
+    report one boundary per real gap and a shorter or partial arch report fewer -
+    instead of always forcing the canonical number of cuts. Returns ``0`` when the
+    signal carries no usable extrema, signalling the caller to fall back to its
+    canonical count rather than invent a split.
+    """
+
+    if max_cuts <= 0 or len(profile) < 3:
+        return 0
+    extrema = _significant_extrema(profile, find_minima=find_minima)
+    if not extrema:
+        return 0
+    max_prominence = max(prominence for _index, prominence in extrema)
+    if max_prominence <= 0:
+        return 0
+    threshold = prominence_ratio * max_prominence
+    ranked = sorted(
+        (pair for pair in extrema if pair[1] >= threshold),
+        key=lambda pair: pair[1],
+        reverse=True,
+    )
+    selected: list[int] = []
+    for index, _prominence_value in ranked:
+        if all(abs(index - chosen) >= min_separation for chosen in selected):
+            selected.append(index)
+        if len(selected) >= max_cuts:
+            break
+    return len(selected)
 
 
 def find_boundaries(profile: list[float], cuts: int) -> list[tuple[int, float]]:

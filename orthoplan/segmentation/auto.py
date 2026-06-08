@@ -27,7 +27,11 @@ from orthoplan.evaluation.finding import (
 )
 from orthoplan.model.assets import ArchName
 from orthoplan.model.geometry import Vec3
-from orthoplan.segmentation.heuristic import ToothSegment, auto_segment_arch
+from orthoplan.segmentation.heuristic import (
+    ToothSegment,
+    auto_segment_arch,
+    default_arch_order,
+)
 from orthoplan.segmentation.hybrid import hybrid_segment_arch, mesh_processing_backend
 
 SEGMENTATION_CAVEAT = (
@@ -126,5 +130,36 @@ def build_advisory_findings(overall_confidence: float) -> list[Finding]:
             ),
         ),
     ]
+    accepted, _rejected = quarantine_findings(candidates)
+    return accepted
+
+
+def build_count_advisories(count_by_arch: dict[ArchName, int]) -> list[Finding]:
+    """Advisory findings when a scan's detected crown count is not a full arch.
+
+    The segmenter derives the tooth count from the scan instead of assuming a full
+    arch, so a different count is expected and informative - but it also means the
+    FDI numbers are a positional guess (we cannot tell WHICH tooth is absent from
+    crown geometry), so the user is told to review the numbers.
+    """
+
+    candidates: list[Finding] = []
+    for arch, observed in sorted(count_by_arch.items()):
+        expected = len(default_arch_order(arch))
+        if not observed or observed == expected:
+            continue
+        candidates.append(
+            Finding(
+                severity=FindingSeverity.INFO,
+                category=FindingCategory.EDUCATION,
+                provenance=FindingProvenance.MODEL,
+                title="Detected tooth count differs from a full arch",
+                message=(
+                    f"This {arch} scan segmented into {observed} crowns, not the usual "
+                    f"{expected}. Tooth numbers are assigned by position, so review "
+                    "them - especially around any missing or extra tooth."
+                ),
+            )
+        )
     accepted, _rejected = quarantine_findings(candidates)
     return accepted
