@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from orthoplan.validation import measurement_cases as cases
+from orthoplan.validation import segmentation_cases as seg_cases
 from orthoplan.validation.measurement_models import MeasurementTruthResult
 
 CaseFn = Callable[[], MeasurementTruthResult]
@@ -25,6 +26,8 @@ def measurement_truth_cases() -> dict[str, CaseFn]:
         "rotation-gating": cases.rotation_gating,
         "movement-cap-resultant": cases.movement_cap_resultant,
         "segmentation-linkage": cases.segmentation_linkage,
+        "segmentation-full-arch-accuracy": seg_cases.segmentation_full_arch_accuracy,
+        "segmentation-missing-tooth": seg_cases.segmentation_missing_tooth,
         "report-reproducibility": cases.report_reproducibility,
     }
 
