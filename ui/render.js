@@ -153,6 +153,8 @@ export function renderAll() {
   state.chat.agentEndpoint = el("agentEndpoint").value;
   state.generation.acknowledged = el("generationAck").checked;
   state.generation.notes = el("generationNotes").value;
+  const segMissing = el("segmentMissingTeeth");
+  if (segMissing) state.segmentation.missingTeeth = segMissing.value;
   state.versions.note = el("versionNote").value;
   state.caps = {
     linear_mm: numberValue("capLinear"),

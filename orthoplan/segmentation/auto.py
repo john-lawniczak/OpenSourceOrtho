@@ -48,7 +48,13 @@ class SegmentationModel(Protocol):
     name: str
     version: str
 
-    def segment(self, vertices: list[Vec3], *, arch: ArchName) -> list[ToothSegment]:
+    def segment(
+        self,
+        vertices: list[Vec3],
+        *,
+        arch: ArchName,
+        tooth_values: tuple[str, ...] | None = None,
+    ) -> list[ToothSegment]:
         ...
 
 
@@ -58,8 +64,14 @@ class HeuristicArchSegmenter:
     name = "heuristic-arch-valley"
     version = "0.2.0"
 
-    def segment(self, vertices: list[Vec3], *, arch: ArchName) -> list[ToothSegment]:
-        return auto_segment_arch(vertices, arch=arch)
+    def segment(
+        self,
+        vertices: list[Vec3],
+        *,
+        arch: ArchName,
+        tooth_values: tuple[str, ...] | None = None,
+    ) -> list[ToothSegment]:
+        return auto_segment_arch(vertices, arch=arch, tooth_values=tooth_values)
 
 
 class HybridArchSegmenter:
@@ -68,15 +80,42 @@ class HybridArchSegmenter:
     name = "hybrid-arch-graph-cut"
     version = "0.1.0"
 
-    def segment(self, vertices: list[Vec3], *, arch: ArchName) -> list[ToothSegment]:
-        segments = hybrid_segment_arch(vertices, arch=arch)
+    def segment(
+        self,
+        vertices: list[Vec3],
+        *,
+        arch: ArchName,
+        tooth_values: tuple[str, ...] | None = None,
+    ) -> list[ToothSegment]:
+        segments = hybrid_segment_arch(vertices, arch=arch, tooth_values=tooth_values)
         if segments:
             return segments
-        return auto_segment_arch(vertices, arch=arch)
+        return auto_segment_arch(vertices, arch=arch, tooth_values=tooth_values)
 
     @property
     def backend(self) -> str:
         return mesh_processing_backend()
+
+
+def tooth_values_for_arch(
+    arch: ArchName, missing_teeth: list[str] | None
+) -> tuple[str, ...] | None:
+    """Explicit FDI labels for an arch with the user-marked teeth removed.
+
+    Geometry cannot tell WHICH tooth is absent, so the user marks the gap(s). With
+    that signal the detected regions are labelled by the canonical order minus the
+    marked teeth - turning a positional mislabel into a correct one. Returns
+    ``None`` when nothing relevant is marked, so the segmenter falls back to
+    detecting the count itself.
+    """
+
+    if not missing_teeth:
+        return None
+    order = default_arch_order(arch)
+    marked = {str(tooth).strip() for tooth in missing_teeth} & set(order)
+    if not marked:
+        return None
+    return tuple(tooth for tooth in order if tooth not in marked)
 
 
 def load_local_segmenter() -> SegmentationModel:

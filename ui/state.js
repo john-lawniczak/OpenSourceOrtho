@@ -90,6 +90,10 @@ export const state = {
     proposal: null,
     edits: {},
     applied: null,
+    // Comma/space-separated FDI numbers the user marks as absent. Geometry cannot
+    // tell which tooth is missing, so this signal anchors the proposed FDI labels
+    // around the gap (see segment.js / tooth_values_for_arch).
+    missingTeeth: "",
   },
   availability: {
     intraoral_scan: true,

@@ -486,6 +486,11 @@
                   <span id="segmentStatus"></span>
                 </div>
                 <p class="viewer-caveat">Proposes per-tooth regions from a whole-arch scan, on this machine (your data stays local). Drafts only: review and correct each tooth number, then apply explicitly. Never auto-applied, and not a diagnosis or a sign that treatment is needed, possible, or complete.</p>
+                <label class="chat-input">
+                  Missing teeth (FDI, optional)
+                  <input id="segmentMissingTeeth" type="text" placeholder="e.g. 15, 38" autocomplete="off" />
+                </label>
+                <p class="viewer-caveat">If a tooth is absent, list its FDI number(s) here so the proposed tooth numbers line up around the gap &mdash; the scan's shape alone cannot tell which tooth is missing.</p>
                 <button class="primary-action" id="proposeSegment" type="button">Propose tooth segmentation</button>
                 <ul id="segmentFindings" class="segment-findings"></ul>
                 <div id="segmentList" class="segment-list"></div>
