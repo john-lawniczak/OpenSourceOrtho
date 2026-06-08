@@ -1735,3 +1735,37 @@ td input {
   width: 100%;
   margin-top: 6px;
 }
+
+.manual-edit {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.manual-edit h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.manual-edit-selection {
+  margin: 6px 0;
+  font-weight: 600;
+}
+
+.manual-edit-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.manual-edit-controls button {
+  min-width: 46px;
+}
+
+.manual-edit-readout {
+  margin: 6px 0;
+  font-size: 12px;
+  color: var(--muted);
+}

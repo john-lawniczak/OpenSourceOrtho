@@ -39,6 +39,22 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   Guided/Technician toggle stays visible inside it, and the sidebar Sample button
   doubles as "Exit Sample Test Case", so the demo can never leak into or be left
   in the user's own editors.
+- **Manual target authoring**: in the 3D preview the user clicks a tooth to
+  select it, then nudges its final IN-PLANE position (mesiodistal `x` and
+  front-back `y`) in 0.2 mm steps. The authored target is written into the plan
+  as a normal `source:"manual"` stage delta, so the engine still computes all
+  movement and **Generate Plan** re-stages the target into cap-respecting stages
+  (its existing "authored" path) - the aligner count follows from the standard
+  timeline projection. The tool deliberately authors crown translation only: no
+  rotation (the scan-local frame is `rotation_renderable=false`) and no vertical
+  `z` movement (unreliable to judge from a front view). Editing is gated on
+  confirmed scan units (`mm`); millimetre nudges against unverified scale are
+  blocked with an explanation. Picking resolves the tooth from the rendered
+  proxy/crown (each tagged with its FDI value); when a scan is segmented the real
+  per-tooth render mesh is the pick target, so the segmentation API is the
+  upstream provider of selectable crowns rather than something this tool modifies.
+  Selectable proxies exist in the **planned / overlay** views, so author targets
+  there. Copy keeps it a geometric target, never a treatment goal or approval.
 - **Plan AI review** for both workflows: scoped chat over the current plan,
   findings, data gaps, and timeline. The provider selector and a session-only
   API-key field are surfaced directly (with provider-specific, plain-language
