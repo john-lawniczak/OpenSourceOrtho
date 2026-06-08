@@ -34,7 +34,11 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   (reviewable per-tooth proposal, never auto-applied). Each proposed tooth shows a
   tier-coloured confidence (low/mid/high); when an arch is not a full arch a banner
   prompts the reviewer to enter the missing tooth and **Re-anchor labels**, which
-  re-runs the proposal so the FDI numbers line up around the gap.
+  re-runs the proposal so the FDI numbers line up around the gap. The review draft
+  (proposal, per-tooth corrections, marked missing teeth, applied fragment) is
+  persisted in the browser keyed by plan id, so it survives a reload; restoring a
+  saved plan version also brings back its applied per-tooth meshes. This working
+  state lives in the browser, not the `TreatmentPlan` model.
 - **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
   (same chips/panels), pre-loaded with the two bundled test-case STL scans and a
   Balanced 10-day pace, starting at step 1. Entering it snapshots the user's
