@@ -130,6 +130,15 @@ used by the CLI, API, reporting, and visualization frame contracts. The lab incl
 file-backed golden STL fixtures plus expected millimeter/degree outputs with tolerances.
 Failures print the exact expected-vs-actual mismatch.
 
+It also includes **segmentation accuracy** cases (`segmentation-full-arch-accuracy`,
+`segmentation-missing-tooth`). These build a synthetic arch whose per-triangle tooth
+membership is known by construction, run the active on-device segmenter, and score
+two axes: `region_purity` (did the cuts separate the right crowns, independent of
+labels) and `triangle_label_accuracy` (did the right FDI number land on the right
+region). The gap between them, and the recorded `tooth_count_error` on a missing
+tooth, make the labelling cascade measurable so future segmenter work can prove a
+gain rather than merely change the output.
+
 ## 8. Print package export
 
 ```bash
