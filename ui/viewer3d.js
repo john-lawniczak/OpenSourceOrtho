@@ -795,6 +795,21 @@ export function createViewer(container) {
     proximityOverlay.visible = proximityVisible && Boolean(proximityMesh);
   }
 
+  // Show the true registered occlusion by moving the LOWER arch mesh by the
+  // registration offset (already mapped to viewer-local axes by the caller). An
+  // as-scanned export already occludes, so the caller passes null/zero there and
+  // the arch sits at its scanned position. Idempotent: called every render.
+  function setArchRegistration(offset) {
+    const x = offset?.x || 0;
+    const y = offset?.y || 0;
+    const z = offset?.z || 0;
+    for (const mesh of uploadedScans.children) {
+      if (mesh.isMesh && mesh.userData.arch === "lower") {
+        mesh.position.set(x, y, z);
+      }
+    }
+  }
+
   function clearScaleBar() {
     if (scaleBarGeometry) {
       scaleBarGeometry.dispose();
@@ -898,7 +913,7 @@ export function createViewer(container) {
   window.addEventListener("resize", resize);
   return {
     update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
-    loadProximity, setProximityVisible, scanExtentMm,
+    loadProximity, setProximityVisible, scanExtentMm, setArchRegistration,
     zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
 }

@@ -142,6 +142,9 @@ export const state = {
     status: "",
     map: null,
     registration: null,
+    // When true (and the registration is an estimated alignment), the viewer moves
+    // the lower arch into the registered occlusal frame instead of its scanned pose.
+    registeredView: false,
   },
   // Empty by default: the guided "teeth that move" list and the technician stage
   // table both derive from rows, so there are no placeholder teeth until the user

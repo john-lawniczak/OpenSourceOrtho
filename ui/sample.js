@@ -50,7 +50,7 @@ export function enterSample() {
   for (const key of SNAPSHOT_STATE_KEYS) saved.state[key] = state[key];
   for (const field of SNAPSHOT_FIELDS) saved.fields[field] = el(field).value;
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
-  state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null };
+  state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null, registeredView: false };
 
   // Isolated walkthrough plan: a simulated crowding correction over 4 stages
   // (0 = the starting point), paired with the two real test-case STL scans so the
