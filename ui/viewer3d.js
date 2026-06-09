@@ -632,15 +632,22 @@ export function createViewer(container) {
   // fragments then sit on the real crowns and, together, reconstruct the arch.
   async function loadToothFragments(fragments = []) {
     let loaded = false;
+    // Each fragment is fetched independently and failures are swallowed per item
+    // so one bad/aborted fetch cannot reject Promise.all (which the caller does
+    // not catch). A partial load still renders the crowns that did arrive.
     await Promise.all(fragments.map(async (item) => {
       const tooth = item?.tooth != null ? String(item.tooth) : null;
       if (!tooth || !item.url || fragmentCache.has(tooth)) return;
-      const response = await fetch(item.url);
-      if (!response.ok) return;
-      const geometry = parseStlGeometry(await response.arrayBuffer());
-      orientScanGeometry(geometry);
-      fragmentCache.set(tooth, geometry);
-      loaded = true;
+      try {
+        const response = await fetch(item.url);
+        if (!response.ok) return;
+        const geometry = parseStlGeometry(await response.arrayBuffer());
+        orientScanGeometry(geometry);
+        fragmentCache.set(tooth, geometry);
+        loaded = true;
+      } catch {
+        // leave this tooth without a fragment; the shell still covers it
+      }
     }));
     return loaded;
   }
@@ -715,6 +722,13 @@ export function createViewer(container) {
       sprite.material.dispose();
     }
     toothLabelSprites.clear();
+    // Per-viewer fragment crowns own GPU buffers; free them (the shared
+    // synthetic/class caches are module-level and intentionally retained).
+    for (const geometry of fragmentCache.values()) geometry.dispose();
+    fragmentCache.clear();
+    uploadedScans.traverse((child) => {
+      if (child.isMesh) child.geometry.dispose();
+    });
     window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
