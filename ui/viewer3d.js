@@ -457,7 +457,10 @@ export function createViewer(container) {
       y += up ? -0.3 : 0.3; // sit slightly proud toward the bite
       anchors.set(String(tooth), { pos: new THREE.Vector3(wx, y, wz), scale });
     }
-    archLabelPos[arch] = new THREE.Vector3(center.x, up ? box.min.y - 4 : box.max.y + 4, box.max.z + 5);
+    // Float each label on the OUTSIDE (gingival side) of its arch - above the
+    // upper, below the lower - so the two never collide in the bite gap or sit
+    // on the crowns (which read as swapped).
+    archLabelPos[arch] = new THREE.Vector3(center.x, up ? box.max.y + 5 : box.min.y - 5, box.max.z + 5);
   }
 
   // Dolly the camera toward (factor < 1) or away from (factor > 1) the target,
