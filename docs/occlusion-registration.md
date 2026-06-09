@@ -97,8 +97,17 @@ detail (see next steps).
       status tells the user to confirm units otherwise. Text logic in `ui/scale.js`
       (unit-tested); honesty: the scan geometry is true-scale, only tooth movement is
       exaggerated.
-- [ ] **Viewer integration**: an option to show the *true* registered occlusion
-      (vs. today's schematic separated layout), reusing `apply_registration`.
+- [x] **Viewer integration** (shipped): a "Registered bite" viewer toggle moves the
+      lower arch into the registered occlusal frame using the registration's
+      `lower_offset` (now returned by `/api/occlusion` and mapped to viewer axes by
+      `proximity.js` `registeredOffsetForViewer`; applied by `viewer3d.js`
+      `setArchRegistration`). It only changes **estimated** (separate-frame) pairs:
+      an as-scanned export already occludes, so the toggle is a no-op there and the
+      status says so. NOTE: the proximity overlay is still painted only for
+      as-scanned pairs; painting it in the registered-bite (estimated) view is a
+      further step. There is no bundled separate-frame fixture, so this path is
+      exercised by `register_bite` unit tests + the pure offset-mapping helper tests,
+      not end-to-end in the viewer.
 - [ ] **API seam**: expose registration metrics on the evaluate/segment response if
       a consumer needs them server-side.
 

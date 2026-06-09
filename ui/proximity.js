@@ -31,11 +31,29 @@ export function proximitySummary(result) {
   const mode = reg.mode === "as-scanned" ? "using the scan's own bite" : `${reg.mode} alignment`;
   const note = aligned
     ? ""
-    : " The arches were not pre-registered, so the overlay is hidden (an estimated bite would not line up with the scans).";
+    : " The arches were not pre-registered, so the overlay is hidden; use Registered bite to view the estimated alignment.";
   return (
     `Bite proximity ready (${mode}): ${counts.contact || 0} touching, ${counts.near || 0} near, ` +
     `${counts.clearance || 0} clear of ${total} cells. Geometric closeness, not bite force.${note}`
   );
+}
+
+// Map the registration's LOWER-arch offset (scan space) into the viewer's local
+// axes — the same baked rotation the scans use: scan (x,y,z) -> (x, z, -y). Returns
+// null when applying it would do nothing: an as-scanned export already occludes
+// (identity), so only an estimated alignment with a real offset is actionable.
+export function registeredOffsetForViewer(registration) {
+  if (!registration || !registration.approximate) return null;
+  const offset = registration.lower_offset;
+  if (!Array.isArray(offset) || offset.length !== 3) return null;
+  const [dx, dy, dz] = offset;
+  if (dx === 0 && dy === 0 && dz === 0) return null;
+  return { x: dx, y: dz, z: -dy };
+}
+
+// Whether toggling the registered-bite view would visibly move the lower arch.
+export function registrationActionable(registration) {
+  return registeredOffsetForViewer(registration) !== null;
 }
 
 export async function requestProximity() {
@@ -44,7 +62,7 @@ export async function requestProximity() {
   const scans = buildProximityScans(state.scanSources);
   if (!hasBothArches(scans)) {
     prox.map = null;
-    prox.enabled = false;
+    prox.registration = null;
     prox.status =
       "Load both an upper and a lower example scan first. Uploaded files stay in your " +
       "browser, so the local server cannot read them for occlusion.";
@@ -59,17 +77,16 @@ export async function requestProximity() {
     });
     if (result.ok === false) {
       prox.map = null;
-      prox.enabled = false;
+      prox.registration = null;
       prox.status = (result.errors || ["occlusion failed"]).join("; ");
       return;
     }
     prox.map = result.proximity;
     prox.registration = result.registration;
-    prox.enabled = Boolean(result.proximity?.aligned_to_scan);
     prox.status = proximitySummary(result);
   } catch (error) {
     prox.map = null;
-    prox.enabled = false;
+    prox.registration = null;
     prox.status = error.message;
   } finally {
     prox.busy = false;

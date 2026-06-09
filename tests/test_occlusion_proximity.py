@@ -94,6 +94,9 @@ def test_payload_on_bundled_scans_is_as_scanned() -> None:
     )
     assert result["ok"] is True
     assert result["registration"]["mode"] == "as-scanned"
+    # As-scanned exports already occlude, so the lower-arch offset is identity - the
+    # viewer's registered-bite view is a no-op here (it only moves separate frames).
+    assert result["registration"]["lower_offset"] == [0.0, 0.0, 0.0]
     prox = result["proximity"]
     assert prox["aligned_to_scan"] is True
     total = sum(prox["counts"].values())

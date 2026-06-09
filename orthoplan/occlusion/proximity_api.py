@@ -80,6 +80,10 @@ def proximity_payload(
             "registration": {
                 "mode": registration.mode,
                 "approximate": registration.approximate,
+                # Translation to apply to the LOWER arch to reach the shared frame.
+                # (0,0,0) for as-scanned; the viewer applies it for the registered-
+                # bite view of an estimated alignment.
+                "lower_offset": list(registration.lower_offset),
                 "occlusal_gap_mm": registration.occlusal_gap_mm,
                 "interpenetration_mm": registration.interpenetration_mm,
                 "contact_fraction": registration.contact_fraction,

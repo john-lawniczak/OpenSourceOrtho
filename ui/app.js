@@ -21,7 +21,7 @@ import {
 } from "./guided.js";
 import { enterSample, exitSample, sampleActive } from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
-import { requestProximity } from "./proximity.js";
+import { registrationActionable, requestProximity } from "./proximity.js";
 import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
@@ -392,6 +392,9 @@ document.body.addEventListener("click", (event) => {
     state.showScale = !state.showScale;
     renderAll();
   }
+  if (button?.id === "registeredBiteToggle") {
+    toggleRegisteredBite();
+  }
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
@@ -446,7 +449,7 @@ async function setUploadedFiles(files) {
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null, missingTeeth: state.segmentation.missingTeeth };
   // A new scan also invalidates any bite-proximity overlay: it was computed for the
   // previous scan pair's coordinates and uploaded files cannot be read server-side.
-  state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null };
+  state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null, registeredView: false };
   state.sampleStatus = stlFiles.length
     ? "Uploaded STL scan layer · movement preview is schematic until segmented per-tooth meshes are available."
     : "";
@@ -584,6 +587,34 @@ async function toggleProximity() {
   prox.status = "Registering the bite and mapping proximity on this machine...";
   renderAll();
   await requestProximity();
+  // The proximity toggle owns the overlay's visibility: show it only when a fetch
+  // produced a scan-aligned map (the registered-bite toggle reuses the same fetch
+  // but must NOT switch the overlay on).
+  prox.enabled = Boolean(prox.map && prox.map.aligned_to_scan);
+  renderAll();
+}
+
+async function toggleRegisteredBite() {
+  const prox = state.proximity;
+  if (prox.busy) return;
+  // The registered-bite view needs the registration, which comes from the same
+  // server occlusion pass as the proximity overlay. Fetch it on first use.
+  if (!prox.registration) {
+    prox.status = "Registering the bite on this machine...";
+    renderAll();
+    await requestProximity();
+  }
+  if (registrationActionable(prox.registration)) {
+    prox.registeredView = !prox.registeredView;
+    prox.status = prox.registeredView
+      ? "Registered bite applied: the lower arch is moved into an ESTIMATED occlusion (approximate alignment, not a measured bite)."
+      : "Registered bite off: showing the arches at their scanned positions.";
+  } else if (prox.registration) {
+    // As-scanned exports already occlude, so there is nothing to move.
+    prox.registeredView = false;
+    prox.status =
+      "These arches already occlude as scanned, so the viewer already shows the true bite — nothing to register.";
+  }
   renderAll();
 }
 

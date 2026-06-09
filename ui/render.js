@@ -14,6 +14,7 @@ import { renderGuided, toggleExcludedTooth } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 import { parseMissingTeeth } from "./segment.js";
 import { formatScaleStatus } from "./scale.js";
+import { registeredOffsetForViewer } from "./proximity.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -172,6 +173,11 @@ function updateViewer(result) {
   v.loadProximity(state.proximity.map);
   v.setProximityVisible(
     Boolean(state.proximity.enabled && state.proximity.map?.aligned_to_scan),
+  );
+  // Registered-bite view: move the lower arch into the estimated occlusal frame.
+  // null for an as-scanned export (already occluding) or when the view is off.
+  v.setArchRegistration(
+    state.proximity.registeredView ? registeredOffsetForViewer(state.proximity.registration) : null,
   );
   // True-scale reference status (with the loaded scan's measured extent, if shown).
   const unitsConfirmed = scaleConfirmed(state.scanUnits);
@@ -733,6 +739,12 @@ function renderProximity() {
   if (status) {
     status.textContent = prox.status;
     status.hidden = !prox.status;
+  }
+  const regButton = el("registeredBiteToggle");
+  if (regButton) {
+    regButton.classList.toggle("is-active", Boolean(prox.registeredView));
+    regButton.setAttribute("aria-pressed", prox.registeredView ? "true" : "false");
+    regButton.disabled = prox.busy;
   }
 }
 
