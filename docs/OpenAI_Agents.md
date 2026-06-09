@@ -50,8 +50,8 @@ The adapter is intentionally narrow:
 - converts SDK/CLI execution failures into `RuntimeError` so `orthoplan advise`
   exits cleanly instead of surfacing provider tracebacks
 - accepts an injected `api_key` and `base_url`, so the same adapter drives the
-  official OpenAI API and any OpenAI-compatible host (MCP / Odysseus /
-  open-source local model servers). An explicit key wins over `OPENAI_API_KEY`.
+  official OpenAI API and any OpenAI-compatible host (MCP /
+  open-source or self-hosted local model servers). An explicit key wins over `OPENAI_API_KEY`.
 
 Default model: `gpt-5.5`, based on current OpenAI model guidance checked during
 the initial scaffold on 2026-06-03 and rechecked during the 2026-06-04
@@ -65,6 +65,17 @@ chat path (`orthoplan/ai_chat.py` + `orthoplan/ai_connectors.py`) builds an
 an explicit egress-consent flag (`share_acknowledged`) is set. The key is never
 persisted nor echoed back. See [AI_CHAT_MCP.md](AI_CHAT_MCP.md) for the endpoint
 contract and the connector kinds.
+
+The browser presents a single **model dropdown** (no separate provider picker, no
+Basic/Advanced toggle). Each option carries its provider, so the UI maps a chosen
+model to a `(provider, model)` pair: `Local helper -> local`, `GPT-5.5 / GPT-5.4
+-> openai`, `Claude Opus 4.8 / Claude Sonnet 4.7 -> claude-code`, `Open-source
+endpoint -> open-source`. The connector kinds remain a superset of the dropdown
+(e.g. `mcp` is still a valid kind via the API). The removed **Odysseus** connector
+is gone from the kind set, the catalog, and the dropdown. The chat now always
+sends the **full plan context** (`context_scope = full_plan`); the per-request
+scope selector was removed, so the egress-consent gate is the sole control on what
+leaves the machine for an external model.
 
 ## Plan Generation Orchestration
 

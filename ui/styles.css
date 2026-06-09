@@ -842,31 +842,49 @@ li {
   max-height: calc(100vh - 108px);
   overflow: auto;
   margin-top: 0;
+  /* The panel slides as a pop-out drawer when collapsed (see below). */
+  transition: transform 0.28s ease, opacity 0.2s ease;
+}
+
+/* Collapsed: the chat slides off the right edge and gives its column width back
+   to the workspace, instead of squashing into a vertical bar. A fixed tab is the
+   only handle left, and clicking it slides the panel back in. */
+body[data-chat-collapsed="1"] .app-shell {
+  grid-template-columns: 304px minmax(0, 1fr) 0;
 }
 
 body[data-chat-collapsed="1"] .ai-rail {
-  padding-right: 12px;
+  padding: 0;
+  overflow: visible;
 }
 
 body[data-chat-collapsed="1"] .ai-chat {
-  padding: 10px;
+  transform: translateX(110%);
+  opacity: 0;
+  pointer-events: none;
 }
 
-body[data-chat-collapsed="1"] .ai-chat-body,
-body[data-chat-collapsed="1"] .chat-stage-context {
-  display: none;
-}
-
-body[data-chat-collapsed="1"] .ai-chat-heading {
-  display: grid;
-  gap: 10px;
-}
-
-body[data-chat-collapsed="1"] .ai-chat-heading h2 {
+.chat-reopen-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 30;
   writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  margin: 0 auto;
-  white-space: nowrap;
+  padding: 16px 8px;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.14);
+}
+
+.chat-reopen-tab[hidden] {
+  display: none;
 }
 
 .topbar {
@@ -1345,8 +1363,7 @@ body[data-theme="dark"] .sample-status-chip {
   color: var(--accent-ink);
 }
 
-body[data-generation-detail="basic"] .advanced-generation,
-body[data-ai-detail="basic"] .advanced-ai {
+body[data-generation-detail="basic"] .advanced-generation {
   display: none;
 }
 

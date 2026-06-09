@@ -210,9 +210,12 @@ document.body.addEventListener("input", (event) => {
   }
   if (target.id === "simpleGoal") state.simpleGoal = target.value;
   if (target.id === "simpleAcknowledged") state.simpleAcknowledged = target.checked;
-  if (target.id === "chatProvider") state.chat.provider = target.value;
-  if (target.id === "chatModel") state.chat.model = target.value;
-  if (target.id === "chatScope") state.chat.contextScope = target.value;
+  if (target.id === "chatModel") {
+    // One dropdown picks both the model and its provider (carried on the option).
+    state.chat.model = target.value;
+    const option = target.selectedOptions && target.selectedOptions[0];
+    state.chat.provider = (option && option.dataset.provider) || "local";
+  }
   if (target.id === "chatInput") state.chat.input = target.value;
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
@@ -381,7 +384,7 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "sendChat") {
     sendChatMessage();
   }
-  if (button?.id === "toggleChatPanel") {
+  if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
   }
@@ -575,6 +578,7 @@ async function sendChatMessage() {
       message,
       provider: state.chat.provider,
       model: state.chat.model,
+      // The assistant always works from the full plan context (no scope selector).
       context_scope: state.chat.contextScope,
       ui_context: buildChatUiContext(),
       api_key: apiKey || undefined,
