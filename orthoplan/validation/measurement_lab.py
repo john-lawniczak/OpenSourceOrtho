@@ -27,6 +27,7 @@ def measurement_truth_cases() -> dict[str, CaseFn]:
         "movement-cap-resultant": cases.movement_cap_resultant,
         "segmentation-linkage": cases.segmentation_linkage,
         "segmentation-full-arch-accuracy": seg_cases.segmentation_full_arch_accuracy,
+        "segmentation-realistic-arch-accuracy": seg_cases.segmentation_realistic_arch_accuracy,
         "segmentation-missing-tooth": seg_cases.segmentation_missing_tooth,
         "segmentation-open-gap": seg_cases.segmentation_open_gap,
         "segmentation-missing-tooth-marked": seg_cases.segmentation_missing_tooth_marked,

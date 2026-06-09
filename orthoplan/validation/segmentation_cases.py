@@ -21,6 +21,7 @@ from orthoplan.validation.measurement_models import (
 from orthoplan.validation.segmentation_truth import (
     build_synthetic_arch,
     full_arch_truth,
+    realistic_widths,
     score_segmentation,
 )
 
@@ -39,8 +40,10 @@ def segmentation_full_arch_accuracy() -> MeasurementTruthResult:
     segments = load_local_segmenter().segment(arch.vertices, arch=_ARCH)
     score = score_segmentation(segments, arch)
 
-    min_region_purity = 0.78
-    min_label_accuracy = 0.55
+    # Floors raised after adaptive (prominence + min-separation) cut placement
+    # removed the sliver/label-shift bug that capped this case near 0.63.
+    min_region_purity = 0.88
+    min_label_accuracy = 0.85
     expected: dict[str, MeasurementValue] = {
         "expected_tooth_count": score.expected_count,
         "min_region_purity": min_region_purity,
@@ -57,6 +60,60 @@ def segmentation_full_arch_accuracy() -> MeasurementTruthResult:
     if score.observed_count != score.expected_count:
         failures.append(
             f"tooth count: expected {score.expected_count}, got {score.observed_count}"
+        )
+    if score.region_purity < min_region_purity:
+        failures.append(
+            f"region purity {score.region_purity} below floor {min_region_purity}"
+        )
+    if score.triangle_label_accuracy < min_label_accuracy:
+        failures.append(
+            f"label accuracy {score.triangle_label_accuracy} below floor {min_label_accuracy}"
+        )
+    return result(case_id, failures, expected=expected, observed=observed)
+
+
+def segmentation_realistic_arch_accuracy() -> MeasurementTruthResult:
+    """Gate accuracy on an anatomically REALISTIC arch (the hard case).
+
+    The clean full-arch case has equal-width teeth and pristine valleys, which is
+    not what a real intraoral scan looks like. This case stresses the segmenter
+    the way a real scan does: anatomically uneven crown widths (wide molars,
+    narrow incisors), flat molar occlusal plateaus (which merge into one broad
+    peak and tempt under-counting), and per-triangle height noise. It is the
+    measurable floor that future segmenter work - including a learned backend
+    behind the same contract - must clear to claim a real-scan gain.
+    """
+
+    case_id = "segmentation-realistic-arch-accuracy"
+    teeth = full_arch_truth(_ARCH)
+    arch = build_synthetic_arch(
+        teeth, sector_weights=realistic_widths(teeth), occlusal_flat=0.6, noise=0.15
+    )
+    segments = load_local_segmenter().segment(arch.vertices, arch=_ARCH)
+    score = score_segmentation(segments, arch)
+    count_error = abs(score.observed_count - score.expected_count)
+
+    min_region_purity = 0.85
+    min_label_accuracy = 0.85
+    expected: dict[str, MeasurementValue] = {
+        "expected_tooth_count": score.expected_count,
+        "max_tooth_count_error": 0,
+        "min_region_purity": min_region_purity,
+        "min_triangle_label_accuracy": min_label_accuracy,
+    }
+    observed: dict[str, MeasurementValue] = {
+        "observed_tooth_count": score.observed_count,
+        "tooth_count_error": count_error,
+        "region_purity": score.region_purity,
+        "triangle_label_accuracy": score.triangle_label_accuracy,
+        "mean_centroid_arc_error_deg": score.mean_centroid_arc_error_deg,
+    }
+
+    failures: list[str] = []
+    if count_error != 0:
+        failures.append(
+            f"tooth count error {count_error}: detected {score.observed_count} "
+            f"for {score.expected_count} crowns"
         )
     if score.region_purity < min_region_purity:
         failures.append(

@@ -170,29 +170,65 @@ def detect_cut_count(
     return len(selected)
 
 
+def place_cuts(
+    profile: list[float], cuts: int, *, find_minima: bool = True, min_separation: int = 2
+) -> list[int]:
+    """Choose ``cuts`` boundary buckets at the most PROMINENT extrema, in order.
+
+    The cuts are the deepest valleys (``find_minima``) or strongest score peaks,
+    selected greedily by prominence subject to ``min_separation`` so two cuts can
+    never collapse onto one embrasure (the old equal-spacing snapper did, producing
+    a one-bucket sliver region that shifted every downstream FDI label by one).
+    Crucially the cuts are NOT forced to even spacing, so they land on the true
+    valleys of an anatomically uneven arch (wide molars, narrow incisors). Equal
+    spacing is only a fallback to guarantee ``cuts`` distinct boundaries when the
+    signal offers too few real extrema.
+    """
+
+    if cuts <= 0:
+        return []
+    length = len(profile)
+    ranked = sorted(
+        _significant_extrema(profile, find_minima=find_minima),
+        key=lambda pair: pair[1],
+        reverse=True,
+    )
+    chosen: list[int] = []
+    for index, _prominence_value in ranked:
+        if all(abs(index - other) >= min_separation for other in chosen):
+            chosen.append(index)
+        if len(chosen) >= cuts:
+            break
+    if len(chosen) < cuts:  # fall back to equal spacing for any shortfall
+        step = length / (cuts + 1)
+        for k in range(1, cuts + 1):
+            nominal = min(length - 2, max(1, round(k * step)))
+            if all(abs(nominal - other) >= min_separation for other in chosen):
+                chosen.append(nominal)
+            if len(chosen) >= cuts:
+                break
+    if len(chosen) < cuts:  # last resort: any distinct interior buckets
+        for index in range(1, length - 1):
+            if index not in chosen:
+                chosen.append(index)
+            if len(chosen) >= cuts:
+                break
+    return sorted(chosen[:cuts])
+
+
 def find_boundaries(profile: list[float], cuts: int) -> list[tuple[int, float]]:
     """Boundary buckets between teeth, as (bucket index, prominence) pairs.
 
-    Each cut starts at its equal-spacing position (so teeth stay balanced and we
-    never produce a few huge segments) and is then snapped to the lowest point - a
-    real interproximal valley - within half a tooth either side. The valley's
+    Cuts land on the most prominent interproximal valleys (see :func:`place_cuts`),
+    not at forced equal-spacing positions, so anatomically uneven teeth still split
+    on their real embrasures and two cuts never collide into a sliver. The valley's
     prominence drives that tooth's confidence: a deep, clean dip scores higher, a
     flat region (no real gap) scores near the floor.
     """
 
     if cuts <= 0:
         return []
-    length = len(profile)
-    step = length / (cuts + 1)
-    window = max(1, int(step / 2))
-    boundaries: list[tuple[int, float]] = []
-    previous = 0
-    for k in range(1, cuts + 1):
-        nominal = round(k * step)
-        lo = max(previous + 1, nominal - window)
-        hi = min(length - 1, nominal + window)
-        index = nominal if lo > hi else min(range(lo, hi + 1), key=lambda b: profile[b])
-        index = max(previous + 1, min(index, length - 1))
-        boundaries.append((index, _prominence(profile, index)))
-        previous = index
-    return boundaries
+    step = len(profile) / (cuts + 1)
+    min_separation = max(2, round(step / 2))
+    indices = place_cuts(profile, cuts, find_minima=True, min_separation=min_separation)
+    return [(index, _prominence(profile, index)) for index in indices]

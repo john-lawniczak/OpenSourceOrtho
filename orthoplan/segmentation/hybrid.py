@@ -25,6 +25,7 @@ from orthoplan.segmentation.arch_profile import (
     arc_signal,
     bucket_of,
     height_profile,
+    place_cuts,
 )
 from orthoplan.segmentation.heuristic import (
     Triangle,
@@ -260,29 +261,22 @@ def _boundary_scores(
 
 
 def _find_graph_cut_boundaries(scores: list[float], cuts: int) -> list[tuple[int, float]]:
-    """Pick balanced high-score cut buckets.
+    """Pick the strongest boundary-score buckets along the arch.
 
-    This is the 1D front-end to the mesh-face graph partition: candidate cut
-    costs come from surface signals, and the equal-spacing windows prevent a
-    strong single fissure/noisy region from stealing multiple teeth.
+    This is the 1D front-end to the mesh-face graph partition: candidate cut costs
+    come from surface signals (valley depth, curvature, normal change), and the
+    cuts are placed at the most prominent score PEAKS subject to a minimum
+    separation (see ``place_cuts``). Unlike the old equal-spacing windows, a cut
+    can land where the real embrasure is on an uneven arch, and two cuts never
+    collide onto one fissure and steal a tooth into a sliver region.
     """
 
     if cuts <= 0:
         return []
-    length = len(scores)
-    step = length / (cuts + 1)
-    window = max(1, int(step / 2))
-    boundaries: list[tuple[int, float]] = []
-    previous = 0
-    for k in range(1, cuts + 1):
-        nominal = round(k * step)
-        lo = max(previous + 1, nominal - window)
-        hi = min(length - 1, nominal + window)
-        index = nominal if lo > hi else max(range(lo, hi + 1), key=lambda bucket: scores[bucket])
-        index = max(previous + 1, min(index, length - 1))
-        boundaries.append((index, scores[index]))
-        previous = index
-    return boundaries
+    step = len(scores) / (cuts + 1)
+    min_separation = max(2, round(step / 2))
+    indices = place_cuts(scores, cuts, find_minima=False, min_separation=min_separation)
+    return [(index, scores[index]) for index in indices]
 
 
 def _segment_confidence(index: int, boundary_scores: list[float], max_score: float) -> float:
