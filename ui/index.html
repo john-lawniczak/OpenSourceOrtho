@@ -417,6 +417,7 @@
                     </span>
                     <button class="viewer-aux" id="toothLabelToggle" type="button" aria-pressed="false" title="Show or hide FDI tooth numbers over the teeth">Tooth #</button>
                     <button class="viewer-aux" id="proximityToggle" type="button" aria-pressed="false" title="Show where the upper and lower arches meet (geometric proximity of the registered surfaces, not bite force)">Bite proximity</button>
+                    <button class="viewer-aux" id="scaleToggle" type="button" aria-pressed="false" title="Show a true-scale millimetre reference bar beside the loaded scan (needs confirmed mm units)">Scale</button>
                     <label class="arch-filter">
                       Show
                       <select id="scanArchFilter">
@@ -439,6 +440,7 @@
                     <em>Geometric closeness of the registered crown surfaces &mdash; not bite force, contact pressure, or a diagnosis.</em>
                   </div>
                   <p id="proximityStatus" class="scan-status" hidden></p>
+                  <p id="scaleStatus" class="scan-status" hidden></p>
                   <div class="viewer3d-wrap">
                     <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
                     <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">

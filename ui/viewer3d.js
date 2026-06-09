@@ -9,6 +9,7 @@ import { OrbitControls } from "./vendor/OrbitControls.js";
 import { displacement, rotationApplications, toothKind } from "./core.js";
 import { toothPositions } from "./state.js";
 import { parseStlGeometry } from "./stl.js";
+import { SCALE_BAR_MM, scaleBarLabel } from "./scale.js";
 
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
@@ -49,6 +50,9 @@ const PROXIMITY_MAT = new THREE.MeshBasicMaterial({
   opacity: 0.85,
   side: THREE.DoubleSide,
 });
+// A true-scale ruler drawn beside a loaded scan (scan geometry is at true scale).
+const MEASURE_MAT = new THREE.LineBasicMaterial({ color: 0x475569 });
+const SCALE_TICK_H = 1.2; // height of the end ticks, in scan units
 const meshGeometryCache = new Map();
 const meshUrlCache = new Map();
 const syntheticToothCache = new Map();
@@ -289,6 +293,13 @@ export function createViewer(container) {
   scene.add(proximityOverlay);
   let proximityMesh = null;
   let proximityVisible = false;
+  // True-scale reference: a labelled ruler placed beside a loaded scan. Rebuilt by
+  // updateScaleBar from the scan's world bounding box on each render.
+  const scaleBar = new THREE.Group();
+  scaleBar.visible = false;
+  scene.add(scaleBar);
+  let scaleBarGeometry = null;
+  let scaleBarSprite = null;
   // Per-tooth anchor points sampled from the uploaded scan surface, so the
   // moving proxies sit ON the scan's crowns instead of floating in the schematic
   // arch space below it. Recomputed whenever the scan changes; empty when no scan
@@ -338,13 +349,16 @@ export function createViewer(container) {
     requestAnimationFrame(loop);
   })();
 
-  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, excluded }) {
+  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, showScale, unitsConfirmed, excluded }) {
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
     uploadedScans.visible = view === "current" || view === "overlay";
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
     proxies.clear();
     positionArchLabels();
+    // Independent of the plan frame: the ruler only needs a loaded scan, so build
+    // it before the early return below (a scan can be loaded with no plan yet).
+    updateScaleBar(showScale, unitsConfirmed);
     const frame = frames && frames[stageIndex];
     if (!frame) return;
     const hasExactScan = uploadedScans.visible && uploadedScans.children.length > 0;
@@ -781,6 +795,66 @@ export function createViewer(container) {
     proximityOverlay.visible = proximityVisible && Boolean(proximityMesh);
   }
 
+  function clearScaleBar() {
+    if (scaleBarGeometry) {
+      scaleBarGeometry.dispose();
+      scaleBarGeometry = null;
+    }
+    if (scaleBarSprite) {
+      scaleBarSprite.material.map?.dispose();
+      scaleBarSprite.material.dispose();
+      scaleBarSprite = null;
+    }
+    scaleBar.clear();
+    scaleBar.visible = false;
+  }
+
+  function scanWorldBox() {
+    if (!(uploadedScans.visible && uploadedScans.children.length)) return null;
+    const box = new THREE.Box3().setFromObject(uploadedScans);
+    return box.isEmpty() ? null : box;
+  }
+
+  // Draw a labelled scale bar of SCALE_BAR_MM along the front-bottom edge of the
+  // loaded scan. Only when a scan is loaded AND its units are confirmed mm - the
+  // scan geometry is at true scale, so the bar is an honest millimetre reference.
+  function updateScaleBar(show, unitsConfirmed) {
+    clearScaleBar();
+    if (!show || !unitsConfirmed) return false;
+    const box = scanWorldBox();
+    if (!box) return false;
+    const y = box.min.y + 0.4;
+    const z = box.max.z + 3;
+    const x0 = box.min.x;
+    const xm = x0 + SCALE_BAR_MM / 2;
+    const x1 = x0 + SCALE_BAR_MM;
+    const points = [
+      [x0, y, z], [x1, y, z], // main bar
+      [x0, y, z], [x0, y + SCALE_TICK_H, z], // left tick
+      [xm, y, z], [xm, y + SCALE_TICK_H * 0.6, z], // mid tick
+      [x1, y, z], [x1, y + SCALE_TICK_H, z], // right tick
+    ].map((p) => new THREE.Vector3(p[0], p[1], p[2]));
+    scaleBarGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    scaleBar.add(new THREE.LineSegments(scaleBarGeometry, MEASURE_MAT));
+    scaleBarSprite = makeTextSprite(scaleBarLabel());
+    scaleBarSprite.scale.set(5, 1.25, 1);
+    scaleBarSprite.position.set(xm, y + SCALE_TICK_H + 1.2, z);
+    scaleBar.add(scaleBarSprite);
+    scaleBar.visible = true;
+    return true;
+  }
+
+  // World-axis size of the loaded scan in scan units (mm when confirmed): x =
+  // mediolateral width, y = vertical height, z = anteroposterior depth. The status
+  // strip reads this; null when no scan is loaded.
+  function scanExtentMm() {
+    const box = scanWorldBox();
+    if (!box) return null;
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    return { x: size.x, y: size.y, z: size.z };
+  }
+
   function setSelectionHandler(fn) {
     onSelect = fn;
   }
@@ -815,6 +889,7 @@ export function createViewer(container) {
       if (child.isMesh) child.geometry.dispose();
     });
     clearProximity();
+    clearScaleBar();
     window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
@@ -823,7 +898,7 @@ export function createViewer(container) {
   window.addEventListener("resize", resize);
   return {
     update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
-    loadProximity, setProximityVisible,
+    loadProximity, setProximityVisible, scanExtentMm,
     zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
 }
