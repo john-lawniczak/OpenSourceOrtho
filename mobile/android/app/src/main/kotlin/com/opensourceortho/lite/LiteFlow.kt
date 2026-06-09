@@ -35,10 +35,10 @@ object LitePlanBuilder {
             put("name", "scan-local")
         })
         put("scans", buildJsonArray {
-            scans.forEach { scan ->
+            scans.forEachIndexed { index, scan ->
                 add(buildJsonObject {
                     put("asset", buildJsonObject {
-                        put("id", assetId(scan.fileName))
+                        put("id", assetId(scan.fileName, index))
                         put("format", "stl")
                         put("provenance", "patient-derived")
                         put("units", "unverified")
@@ -62,11 +62,11 @@ object LitePlanBuilder {
         else -> null
     }
 
-    private fun assetId(fileName: String): String {
+    private fun assetId(fileName: String, index: Int): String {
         val cleaned = fileName.lowercase()
             .map { if (it.isLetterOrDigit()) it else '-' }
             .joinToString("")
             .trim('-')
-        return "lite-${cleaned.ifEmpty { "scan" }}"
+        return "lite-$index-${cleaned.ifEmpty { "scan" }}"
     }
 }

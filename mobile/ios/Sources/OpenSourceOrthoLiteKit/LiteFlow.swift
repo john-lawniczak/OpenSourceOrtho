@@ -37,9 +37,9 @@ public struct SelectedScan: Sendable, Equatable {
 /// truth for the full `TreatmentPlan` shape; lite only seeds scan metadata.
 public enum LitePlanBuilder {
     public static func minimalPlan(for scans: [SelectedScan]) -> [String: AnyCodable] {
-        let scanObjects: [AnyCodable] = scans.map { scan in
+        let scanObjects: [AnyCodable] = scans.enumerated().map { index, scan in
             let asset: [String: AnyCodable] = [
-                "id": AnyCodable(.string(assetId(for: scan.fileName))),
+                "id": AnyCodable(.string(assetId(for: scan.fileName, index: index))),
                 "format": AnyCodable(.string("stl")),
                 "provenance": AnyCodable(.string("patient-derived")),
                 "units": AnyCodable(.string("unverified")),
@@ -77,13 +77,13 @@ public enum LitePlanBuilder {
         }
     }
 
-    private static func assetId(for fileName: String) -> String {
+    private static func assetId(for fileName: String, index: Int) -> String {
         let lowered = fileName.lowercased()
         let mapped = lowered.map { char -> Character in
             if char.isLetter || char.isNumber { return char }
             return "-"
         }
         let cleaned = String(mapped).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
-        return "lite-\(cleaned.isEmpty ? "scan" : cleaned)"
+        return "lite-\(index)-\(cleaned.isEmpty ? "scan" : cleaned)"
     }
 }

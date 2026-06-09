@@ -25,12 +25,24 @@ def normalize_arch_label(value: object) -> ArchName | None:
 
 def infer_arch_from_name(name: str | Path) -> ArchName | None:
     text = Path(name).name.lower()
-    if any(token in text for token in _MAXILLARY_TOKENS):
+    maxillary_match = any(token in text for token in _MAXILLARY_TOKENS)
+    mandibular_match = any(token in text for token in _MANDIBULAR_TOKENS)
+    if maxillary_match and mandibular_match:
+        return None
+    if maxillary_match:
         return MAXILLARY_ARCH
-    if any(token in text for token in _MANDIBULAR_TOKENS):
+    if mandibular_match:
         return MANDIBULAR_ARCH
     return None
 
 
 def arch_from_tooth_value(tooth_value: str) -> ArchName:
+    if (
+        not isinstance(tooth_value, str)
+        or len(tooth_value) != 2
+        or not tooth_value.isdigit()
+        or tooth_value[0] not in "12345678"
+        or tooth_value[1] not in "12345678"
+    ):
+        raise ValueError(f"Tooth value must be canonical FDI, got {tooth_value!r}")
     return MAXILLARY_ARCH if tooth_value[0] in {"1", "2", "5", "6"} else MANDIBULAR_ARCH
