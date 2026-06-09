@@ -21,6 +21,7 @@ import {
 } from "./guided.js";
 import { enterSample, exitSample, sampleActive } from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
+import { requestProximity } from "./proximity.js";
 import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
@@ -384,6 +385,9 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "sendChat") {
     sendChatMessage();
   }
+  if (button?.id === "proximityToggle") {
+    toggleProximity();
+  }
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
@@ -436,6 +440,9 @@ async function setUploadedFiles(files) {
   // the OLD scan's coordinates, so leaving them applied would render stale crowns
   // misaligned over the new scan. Drop the proposal/applied fragment.
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null, missingTeeth: state.segmentation.missingTeeth };
+  // A new scan also invalidates any bite-proximity overlay: it was computed for the
+  // previous scan pair's coordinates and uploaded files cannot be read server-side.
+  state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null };
   state.sampleStatus = stlFiles.length
     ? "Uploaded STL scan layer · movement preview is schematic until segmented per-tooth meshes are available."
     : "";
@@ -558,6 +565,22 @@ async function restoreStoredUploads() {
   } catch {
     // Browser storage is a convenience; a failed restore should never block use.
   }
+}
+
+async function toggleProximity() {
+  const prox = state.proximity;
+  if (prox.busy) return;
+  // Already have an alignable map: the toggle just shows/hides the overlay.
+  if (prox.map && prox.map.aligned_to_scan) {
+    prox.enabled = !prox.enabled;
+    renderAll();
+    return;
+  }
+  // Otherwise fetch it (server registers the scan pair and classifies clearance).
+  prox.status = "Registering the bite and mapping proximity on this machine...";
+  renderAll();
+  await requestProximity();
+  renderAll();
 }
 
 async function sendChatMessage() {

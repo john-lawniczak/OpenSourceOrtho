@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OpenSource Ortho - aligner planning workspace</title>
-    <meta name="description" content="OpenSource Ortho: an open, safety-boundary-first clear-aligner treatment-planning research toolkit." />
+    <meta name="description" content="OpenSource Ortho: an open, safety-boundary-first clear-aligner planning playground and research toolkit." />
     <meta name="theme-color" content="#0f766e" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="apple-touch-icon" href="./favicon.svg" />
@@ -416,6 +416,7 @@
                       <button class="dim" data-dim="2d" type="button">2D</button>
                     </span>
                     <button class="viewer-aux" id="toothLabelToggle" type="button" aria-pressed="false" title="Show or hide FDI tooth numbers over the teeth">Tooth #</button>
+                    <button class="viewer-aux" id="proximityToggle" type="button" aria-pressed="false" title="Show where the upper and lower arches meet (geometric proximity of the registered surfaces, not bite force)">Bite proximity</button>
                     <label class="arch-filter">
                       Show
                       <select id="scanArchFilter">
@@ -431,6 +432,13 @@
                     </label>
                   </div>
                   <p id="scanRenderStatus" class="scan-status"></p>
+                  <div id="proximityLegend" class="proximity-legend" aria-label="Bite proximity colours" hidden>
+                    <span><span class="legend-swatch prox-contact" aria-hidden="true"></span> Touching / overlapping</span>
+                    <span><span class="legend-swatch prox-near" aria-hidden="true"></span> Near</span>
+                    <span><span class="legend-swatch prox-clear" aria-hidden="true"></span> Clearance</span>
+                    <em>Geometric closeness of the registered crown surfaces &mdash; not bite force, contact pressure, or a diagnosis.</em>
+                  </div>
+                  <p id="proximityStatus" class="scan-status" hidden></p>
                   <div class="viewer3d-wrap">
                     <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
                     <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
@@ -615,12 +623,12 @@
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Imaging &amp; Photos Guide</h2>
-            <p>A quick guide to the records you can bring and how much each one helps. This is planning context, not a diagnosis, and it does not tell you what care you need.</p>
+            <p>A quick guide to the records you can bring and how much each one helps. This is safety-review context, not a diagnosis, and it does not tell you what care you need.</p>
           </div>
 
           <div class="workflow-card">
             <h2>What the engine actually uses</h2>
-            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>Stereolithography file format (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement. That is the <strong>Surface Plan</strong> tier. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware planning after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>Stereolithography file format (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement for review. That is the <strong>Surface Review</strong> tier, not a complete treatment plan. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware checks after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
           </div>
 
           <div class="workflow-card">
@@ -638,7 +646,7 @@
               <tr>
                 <th scope="row">CBCT (DICOM)</th>
                 <td><span class="records-score" data-tier="high">10/10</span></td>
-                <td>A full 3D scan of crowns, <strong>roots, and bone</strong> (and airway). The path to root/bone-aware planning once registered and reviewed.</td>
+                <td>A full 3D scan of crowns, <strong>roots, and bone</strong> (and airway). The path to root/bone-aware checks once registered and reviewed.</td>
                 <td>~$100&ndash;$400 (often bundled with a consult). Higher radiation; clinician-ordered.</td>
               </tr>
               <tr>

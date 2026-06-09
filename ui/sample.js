@@ -43,10 +43,14 @@ export function enterSample() {
     // object and give the sample a fresh one - otherwise a segmentation applied
     // inside the sample would leak into the user's real plan on exit.
     segmentation: state.segmentation,
+    // Proximity is likewise a nested, scan-specific object; snapshot it and give the
+    // sample a fresh one so a bite overlay computed inside the sample never leaks.
+    proximity: state.proximity,
   };
   for (const key of SNAPSHOT_STATE_KEYS) saved.state[key] = state[key];
   for (const field of SNAPSHOT_FIELDS) saved.fields[field] = el(field).value;
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
+  state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null };
 
   // Isolated walkthrough plan: a simulated crowding correction over 4 stages
   // (0 = the starting point), paired with the two real test-case STL scans so the
@@ -88,6 +92,7 @@ export function exitSample() {
   state.guided.step = saved.guidedStep;
   state.guided.excludedTeeth = saved.excludedTeeth;
   state.segmentation = saved.segmentation;
+  state.proximity = saved.proximity;
   state.sample.active = false;
   saved = null;
 }
