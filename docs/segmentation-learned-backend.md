@@ -1,10 +1,18 @@
 # Scope: learned tooth-segmentation backend
 
-> Status: **proposal / not yet built.** Educational tooling only — segmentation
-> proposes per-tooth regions for review; it is never a diagnosis, a treatment
-> decision, or a statement that care is needed, possible, safe, or complete.
+> Status: **Phase 1 shipped (contract + fallback + packaging + measurement); no
+> model yet.** The learned ONNX backend (`segmentation/learned.py`) drops into
+> `load_local_segmenter()` behind an install/weights check, with the heuristic as
+> the always-on fallback. There are no committed weights and no torch at runtime,
+> so the backend is inert by default and the core install stays light. The model
+> spike (export MeshSegNet -> ONNX, clear the weights' license) is still pending —
+> see "Candidate approaches" + "Model availability".
 >
-> To start building in a fresh chat, use the paste-ready prompt in
+> Educational tooling only — segmentation proposes per-tooth regions for review; it
+> is never a diagnosis, a treatment decision, or a statement that care is needed,
+> possible, safe, or complete.
+>
+> To start the model spike in a fresh chat, use the paste-ready prompt in
 > [segmentation-learned-backend-handoff.md](segmentation-learned-backend-handoff.md).
 
 ## Why
@@ -123,23 +131,52 @@ The realistic synthetic harness added in this branch is the gate:
   in `orthoplan/validation/segmentation_cases.py` (run via `run_measurement_lab`).
 - `tests/test_segmentation_real_scan.py` — the bundled-scan crown-count floor
   (14/14) and a time budget. A learned backend must **meet or beat** every floor.
-- Add, when the model lands: a **boundary-smoothness / crown-compactness** metric
-  (e.g. mean per-segment bounding-box aspect or surface-area-to-footprint) so the
-  "rough wedge" failure mode is measurable, not just visual. The synthetic arch
-  cannot fully express it; a small **labelled real-scan fixture** (PHI-free or
-  consented, kept out of git or behind a flag) would be the honest benchmark.
+- **Crown-compactness** metric (landed in Phase 1):
+  `validation/segmentation_compactness.py` scores how spatially tight each produced
+  region is (planar radius of gyration vs. an arch-scale crown radius, anchored to a
+  fixed expected count so a sprawling segmentation cannot normalise away its own
+  sprawl). The `segmentation-crown-compactness` lab case gates it. This makes the
+  "rough wedge" failure mode measurable, not just visual. **Caveat (still true):**
+  the flat synthetic arch understates the mode — it has crowns but no deep gum skirt
+  below them — so the case is a LOOSE tracking floor. A small **labelled real-scan
+  fixture** (PHI-free or consented, kept out of git or behind a flag) is the honest
+  benchmark and remains future work.
 
 ## Integration points (checklist when building)
 
-- [ ] `segmentation/learned.py` implementing the `segment(...)` contract via ONNX.
-- [ ] Register in `load_local_segmenter()` behind an install/weights check;
-      heuristic remains the fallback. Report backend in `_segmenter_metadata`.
-- [ ] Optional extra in `pyproject.toml` (`onnxruntime`, `numpy`); no torch.
-- [ ] Weights resolution (path/env/cache) + graceful absence.
-- [ ] FDI labeling via `tooth_values_for_arch`; honour missing-teeth hints.
-- [ ] New crown-compactness metric + case; keep all existing floors green.
-- [ ] Docs: update this file's status and `docs/OpenAI_Agents.md` only if a
-      model-provider path is involved (it is not for local ONNX).
+Phase 1 (contract + fallback + packaging + measurement) — done:
+
+- [x] `segmentation/learned.py` implementing the `segment(...)` contract via ONNX.
+      Model I/O sits behind a lazily-imported, injectable runner; the pure-Python
+      `segments_from_labels` (class label -> FDI -> `ToothSegment`) and
+      `build_cell_features` are the testable contract logic.
+- [x] Register in `load_local_segmenter()` behind an install/weights check
+      (`_maybe_learned_segmenter`); heuristic remains the always-on fallback and a
+      broken optional backend can never take down segmentation. Backend surfaces in
+      `_segmenter_metadata` (`name=learned-mesh-onnx`, `backend=onnxruntime`).
+- [x] Optional extra in `pyproject.toml` (`ml-seg`: `onnxruntime`, `numpy`); no
+      torch; neither imported at module load so the light core is unaffected.
+- [x] Weights resolution via `$OPENSOURCE_ORTHO_SEG_WEIGHTS` (a single `.onnx` file
+      or a per-arch directory) + graceful absence (`SegmenterUnavailable`). Weights
+      are user-supplied and never committed.
+- [x] FDI labeling via `tooth_values_for_arch` / canonical order; class `0` =
+      gingiva (discarded), `1..N` = teeth in FDI order — honours missing-teeth
+      hints through `tooth_values`.
+- [x] Crown-compactness metric + `segmentation-crown-compactness` case; all
+      existing accuracy / real-scan floors stay green.
+- [x] Docs: status updated here. `docs/OpenAI_Agents.md` is N/A — a local ONNX model
+      is not a model PROVIDER (no hosted API), so no provider-behaviour change.
+
+Model spike (next phase, gated on clearing the weights' license) — pending:
+
+- [ ] Export MeshSegNet (or alternative) PyTorch weights -> ONNX (dev-time, torch
+      at export only), pin the input/output tensor contract, and replace the
+      generic default runner's I/O accordingly.
+- [ ] Real per-cell preprocessing (decimate to <=10k cells; the 15-dim features
+      `build_cell_features` sketches) and map the model's raw classes onto the
+      `0=gingiva, 1..N=FDI-order` convention `segments_from_labels` expects.
+- [ ] Beat every harness floor (accuracy + crown-compactness + the real-scan smoke
+      budget) with weights supplied at `$OPENSOURCE_ORTHO_SEG_WEIGHTS`.
 
 ## Risks
 
