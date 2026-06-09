@@ -172,7 +172,6 @@ export function renderAll() {
   document.body.dataset.step = state.activeStep;
   document.body.dataset.sample = state.sample.active ? "1" : "";
   document.body.dataset.generationDetail = state.detailMode.generation;
-  document.body.dataset.aiDetail = state.detailMode.ai;
   document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
   el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
   const toothLabelBtn = el("toothLabelToggle");
@@ -184,9 +183,7 @@ export function renderAll() {
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
   state.simpleAcknowledged = el("simpleAcknowledged").checked;
-  state.chat.provider = el("chatProvider").value;
   state.chat.model = el("chatModel").value;
-  state.chat.contextScope = el("chatScope").value;
   state.chat.input = el("chatInput").value;
   state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
   state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
@@ -305,15 +302,12 @@ const AI_KEY_HELP = {
   local: "The local helper runs on this machine and needs no API key.",
   openai: "Paste your OpenAI API key (from platform.openai.com). It is used only for this session and never saved.",
   "claude-code": "Paste your Anthropic API key (from console.anthropic.com). It is used only for this session and never saved.",
-  mcp: "Paste the API key your MCP host expects (set the endpoint under Advanced). Used only for this session.",
-  odysseus: "Paste your Odysseus API key. It is used only for this session and never saved.",
-  "open-source": "Paste the API key for your model endpoint (set it under Advanced). Used only for this session.",
+  mcp: "Paste the API key your MCP host expects (set the endpoint under Connector settings). Used only for this session.",
+  "open-source": "Set the model endpoint under Connector settings. Paste a key only if your endpoint requires one; used only for this session.",
 };
 
 export function renderChat() {
-  el("chatProvider").value = state.chat.provider;
   el("chatModel").value = state.chat.model;
-  el("chatScope").value = state.chat.contextScope;
   el("chatInput").value = state.chat.input;
   el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
   el("agentEndpoint").value = state.chat.agentEndpoint;
@@ -324,6 +318,9 @@ export function renderChat() {
     toggle.setAttribute("aria-expanded", state.chat.collapsed ? "false" : "true");
     toggle.setAttribute("aria-label", state.chat.collapsed ? "Expand AI chat" : "Collapse AI chat");
   }
+  // The reopen tab is the only visible handle once the panel slides off-screen.
+  const reopenTab = el("chatReopenTab");
+  if (reopenTab) reopenTab.hidden = !state.chat.collapsed;
   const contextEl = el("chatStageContext");
   if (contextEl) contextEl.textContent = chatStageLabel();
   // The local helper needs no key, so hide the key field for it; for any real

@@ -37,7 +37,8 @@ export const state = {
   chat: {
     provider: "local",
     model: "local-educational-helper",
-    contextScope: "summary",
+    // The assistant always has the full plan context (no user-facing scope toggle).
+    contextScope: "full_plan",
     input: "",
     messages: [],
     status: "Ask about this plan. The local helper stays on this machine.",
@@ -59,7 +60,6 @@ export const state = {
   },
   detailMode: {
     generation: "basic",
-    ai: "basic",
   },
   // Saved plan versions (case store) for the current Plan ID.
   versions: {

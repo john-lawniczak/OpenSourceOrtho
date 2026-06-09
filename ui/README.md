@@ -63,12 +63,12 @@ WebGL context.
 ## Plan AI
 
 The Review surface includes a prominent **Ask AI about your plan** box. It posts
-the current plan-shaped JSON to `POST /api/chat` with a selected connector, model
-preference, and context scope. The default `local` connector produces an
-educational explanation without leaving the local server. External connectors for
-OpenAI, Claude (Anthropic), MCP hosts, Odysseus, and open-source models perform
-live completions once a provider is selected, a key/endpoint is supplied, and
-per-session egress consent (`share_acknowledged`) is given.
+the current plan-shaped JSON to `POST /api/chat`. A single model dropdown picks
+both the model and its provider, and the chat always sends the full plan context.
+The default `local` helper produces an educational explanation without leaving the
+local server. External models (OpenAI GPT, Claude, and open-source / self-hosted
+endpoints) perform live completions once a model is selected, a key/endpoint is
+supplied, and per-session egress consent (`share_acknowledged`) is given.
 
 The **provider selector and a session-only API-key field are shown directly in
 the AI box** with provider-specific, plain-language help (the key field is hidden

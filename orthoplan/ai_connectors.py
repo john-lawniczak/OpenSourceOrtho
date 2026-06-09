@@ -15,7 +15,7 @@ from orthoplan.evaluation.providers.base import ModelProvider
 from orthoplan.evaluation.providers.claude_code_provider import ClaudeCodeProvider
 from orthoplan.evaluation.providers.openai_provider import OpenAIProvider
 
-ConnectorKind = Literal["local", "openai", "claude-code", "mcp", "odysseus", "open-source"]
+ConnectorKind = Literal["local", "openai", "claude-code", "mcp", "open-source"]
 
 
 class AIConnector(BaseModel):
@@ -58,13 +58,6 @@ def connector_catalog() -> list[AIConnector]:
             shares_patient_data=True,
         ),
         AIConnector(
-            id="odysseus",
-            kind="odysseus",
-            label="Odysseus",
-            endpoint="user supplied",
-            shares_patient_data=True,
-        ),
-        AIConnector(
             id="open-source",
             kind="open-source",
             label="Open-source local model",
@@ -101,7 +94,7 @@ def build_chat_provider(
         return OpenAIProvider(model=model or "gpt-5.5", api_key=api_key)
     if kind == "claude-code":
         return ClaudeCodeProvider(model=model or "claude-code-default")
-    if kind in {"mcp", "odysseus", "open-source"}:
+    if kind in {"mcp", "open-source"}:
         if not endpoint:
             raise ValueError(f"Add a model endpoint URL in Connector Settings to use the {kind} connector.")
         # These hosts expose OpenAI-compatible APIs; reuse the adapter with a base

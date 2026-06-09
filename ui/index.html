@@ -703,21 +703,18 @@
           </div>
           <div class="ai-chat-body">
             <span id="chatStatus" class="chat-status">Local helper ready</span>
-            <div class="detail-switch" aria-label="Plan AI detail level">
-              <button class="is-active" data-detail-mode="ai" data-detail-value="basic" type="button">Basic</button>
-              <button data-detail-mode="ai" data-detail-value="advanced" type="button">Advanced</button>
-            </div>
-            <!-- Connector + API key are always visible so it is obvious how to
-                 turn on a real AI. The key field hides for the local helper. -->
+            <!-- One simple model dropdown picks both the provider and the model.
+                 The local helper needs no key; external models reveal the key field
+                 and (for an endpoint-based model) the connector settings below. -->
             <div class="ai-connector">
-              <label>AI provider
-                <select id="chatProvider">
-                  <option value="local">Local helper (no key needed)</option>
-                  <option value="openai">OpenAI</option>
-                  <option value="claude-code">Claude (Anthropic)</option>
-                  <option value="mcp">MCP host</option>
-                  <option value="odysseus">Odysseus</option>
-                  <option value="open-source">Open-source model</option>
+              <label>Model
+                <select id="chatModel">
+                  <option value="local-educational-helper" data-provider="local">Local helper (no key needed)</option>
+                  <option value="gpt-5.5" data-provider="openai">GPT-5.5</option>
+                  <option value="gpt-5.4" data-provider="openai">GPT-5.4</option>
+                  <option value="claude-opus-4-8" data-provider="claude-code">Claude Opus 4.8</option>
+                  <option value="claude-sonnet-4-7" data-provider="claude-code">Claude Sonnet 4.7</option>
+                  <option value="open-source" data-provider="open-source">Open-source endpoint</option>
                 </select>
               </label>
               <label class="ai-key-field" id="aiKeyField">Your API key
@@ -725,37 +722,26 @@
               </label>
               <p class="ai-key-help" id="aiKeyHelp"></p>
             </div>
-            <div class="field-grid chat-controls advanced-ai">
-              <label>Model
-                <input id="chatModel" value="local-educational-helper" />
-              </label>
-              <label>Context
-                <select id="chatScope">
-                  <option value="summary">Summary</option>
-                  <option value="clinical">Clinical metadata</option>
-                  <option value="full_plan">Full plan snapshot</option>
-                </select>
-              </label>
-            </div>
             <div id="chatMessages" class="chat-messages"></div>
             <label class="chat-input">
               Ask about this plan
               <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
             </label>
             <button class="primary-action" id="sendChat" type="button">Ask AI</button>
-            <details class="ai-settings advanced-ai">
-              <summary>Advanced connector settings</summary>
+            <details class="ai-settings">
+              <summary>Connector settings (endpoint &amp; data sharing)</summary>
               <label class="toggle">
-                <span>Allow an external AI agent to request scoped plan context</span>
+                <span>Allow an external AI model to receive your full plan context</span>
                 <input id="agentAccessEnabled" type="checkbox" />
               </label>
-              <label>Agent/MCP endpoint
+              <label>Model endpoint (for an open-source / self-hosted model)
                 <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
               </label>
             </details>
-            <p class="viewer-caveat">Your API key is used only for this session: it is never saved to disk and is sent only to the provider you pick, only when you press Ask AI. The local helper sends nothing off this machine. AI answers are educational only.</p>
+            <p class="viewer-caveat">The assistant always works from your full plan context. With the local helper that context never leaves this machine. With an external model you must tick the sharing box above: your plan context and API key are then sent only to the model you pick, only when you press Ask AI, and the key is never saved to disk. AI answers are educational only.</p>
           </div>
         </section>
+        <button id="chatReopenTab" class="chat-reopen-tab" type="button" hidden aria-label="Show AI chat">Ask AI</button>
       </aside>
     </main>
     <script type="module" src="./app.js"></script>
