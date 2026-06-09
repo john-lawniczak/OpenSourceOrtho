@@ -127,6 +127,17 @@ export const state = {
     movementExclusions: "",
     iprContacts: {},
   },
+  // Occlusal proximity overlay (red/amber/green "where the arches meet" map). The
+  // map comes from the server (POST /api/occlusion) for a server-local upper+lower
+  // scan pair; `enabled` toggles the overlay in the 3D viewer. Geometric proximity,
+  // never bite force - and only shown for an as-scanned registration.
+  proximity: {
+    enabled: false,
+    busy: false,
+    status: "",
+    map: null,
+    registration: null,
+  },
   // Empty by default: the guided "teeth that move" list and the technician stage
   // table both derive from rows, so there are no placeholder teeth until the user
   // uploads a scan and builds a plan (or opens the Sample Test Case).
@@ -232,6 +243,19 @@ export async function askPlanAssistant(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["chat request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestOcclusion(payload) {
+  const response = await fetch("/api/occlusion", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["occlusion request failed"]).join("; "));
   }
   return response.json();
 }

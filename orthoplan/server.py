@@ -27,6 +27,7 @@ from orthoplan.case_api import (
 from orthoplan.cases import default_case_store
 from orthoplan.generation import generate_plan_payload
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
+from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.segmentation_api import segment_payload
 
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
@@ -136,6 +137,7 @@ class Handler(BaseHTTPRequestHandler):
                 "/api/plan/version",
                 "/api/print-package",
                 "/api/segment",
+                "/api/occlusion",
             }:
                 self._send_json(404, {"ok": False, "errors": ["unknown endpoint"]})
                 return
@@ -167,6 +169,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(
                     200,
                     segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
+                )
+            elif path == "/api/occlusion":
+                self._send_json(
+                    200,
+                    proximity_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
                 )
             else:
                 self._send_json(200, evaluate_plan_payload(payload))

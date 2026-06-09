@@ -607,6 +607,45 @@ body[data-theme="dark"] .sample-banner {
   background: #0f766e;
 }
 
+/* Bite-proximity overlay legend: matches the viewer's clearance bands. */
+.proximity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted, #4b5563);
+}
+
+.proximity-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.proximity-legend em {
+  flex-basis: 100%;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted, #6b7280);
+}
+
+.legend-swatch.prox-contact {
+  border-radius: 3px;
+  background: #dc2626;
+}
+
+.legend-swatch.prox-near {
+  border-radius: 3px;
+  background: #f59e0b;
+}
+
+.legend-swatch.prox-clear {
+  border-radius: 3px;
+  background: #16a34a;
+}
+
 .legend-swatch.dot-hold {
   border-radius: 50%;
   background: #9fb2bd;

@@ -164,6 +164,12 @@ function updateViewer(result) {
     showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
     excluded: state.guided.excludedTeeth,
   });
+  // The occlusal proximity overlay rides the registered scans. loadProximity caches
+  // by map reference, so calling it every render is cheap when the map is unchanged.
+  v.loadProximity(state.proximity.map);
+  v.setProximityVisible(
+    Boolean(state.proximity.enabled && state.proximity.map?.aligned_to_scan),
+  );
 }
 
 export function renderAll() {
@@ -229,6 +235,7 @@ export function renderAll() {
   renderDetailModes();
   renderVersions();
   renderScanStatus();
+  renderProximity();
   renderSampleStatus();
   renderSegmentation();
   renderManualEdit();
@@ -695,6 +702,24 @@ function renderEngineOffline() {
 function renderScanStatus() {
   el("scanRenderStatus").textContent = state.scanRenderStatus;
   el("scanArchFilter").value = state.scanArchFilter;
+}
+
+function renderProximity() {
+  const button = el("proximityToggle");
+  if (!button) return;
+  const prox = state.proximity;
+  const active = Boolean(prox.enabled && prox.map?.aligned_to_scan);
+  button.classList.toggle("is-active", active);
+  button.setAttribute("aria-pressed", active ? "true" : "false");
+  button.disabled = prox.busy;
+  button.textContent = prox.busy ? "Bite…" : "Bite proximity";
+  const legend = el("proximityLegend");
+  if (legend) legend.hidden = !active;
+  const status = el("proximityStatus");
+  if (status) {
+    status.textContent = prox.status;
+    status.hidden = !prox.status;
+  }
 }
 
 function renderSampleStatus() {

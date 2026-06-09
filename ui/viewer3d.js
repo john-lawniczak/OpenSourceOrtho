@@ -36,6 +36,19 @@ const MARKER_GEO = new THREE.SphereGeometry(0.7, 16, 12);
 const ARROW_MAT = new THREE.MeshBasicMaterial({ color: 0x2563eb });
 const ARROW_HEAD = new THREE.ConeGeometry(0.5, 1.4, 12);
 const ARROW_MIN_MM = 0.3; // below this displacement, show only the marker
+// Occlusal proximity overlay: red = touching/overlapping, amber = near, green =
+// clearance. GEOMETRIC closeness of the registered surfaces, NOT bite force.
+const PROXIMITY_COLORS = {
+  contact: new THREE.Color(0xdc2626),
+  near: new THREE.Color(0xf59e0b),
+  clearance: new THREE.Color(0x16a34a),
+};
+const PROXIMITY_MAT = new THREE.MeshBasicMaterial({
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.85,
+  side: THREE.DoubleSide,
+});
 const meshGeometryCache = new Map();
 const meshUrlCache = new Map();
 const syntheticToothCache = new Map();
@@ -268,6 +281,14 @@ export function createViewer(container) {
   scene.add(proxies);
   const uploadedScans = new THREE.Group();
   scene.add(uploadedScans);
+  // Occlusal proximity overlay (red/amber/green clearance tiles). A sibling group
+  // that mirrors uploadedScans' placement offset, so the tiles sit between the
+  // rendered arches at the registered meeting plane. Built by loadProximity.
+  const proximityOverlay = new THREE.Group();
+  proximityOverlay.visible = false;
+  scene.add(proximityOverlay);
+  let proximityMesh = null;
+  let proximityVisible = false;
   // Per-tooth anchor points sampled from the uploaded scan surface, so the
   // moving proxies sit ON the scan's crowns instead of floating in the schematic
   // arch space below it. Recomputed whenever the scan changes; empty when no scan
@@ -664,6 +685,9 @@ export function createViewer(container) {
       if (child.isMesh) child.geometry.dispose();
     });
     uploadedScans.clear();
+    // The proximity overlay belongs to the previous scan pair; drop it so a new
+    // scan never shows a stale, misaligned occlusion map.
+    clearProximity();
     if (!scanSources.length) {
       scanAnchors = new Map();
       archLabelPos = {};
@@ -694,6 +718,67 @@ export function createViewer(container) {
 
   function loadUploadedScans(files = []) {
     return loadScanSources(files.map((file) => ({ name: file.name, file })));
+  }
+
+  function clearProximity() {
+    if (proximityMesh) {
+      proximityMesh.geometry.dispose();
+      proximityOverlay.remove(proximityMesh);
+      proximityMesh = null;
+    }
+    proximityOverlay.userData.map = null;
+    proximityOverlay.visible = false;
+  }
+
+  // Build the occlusal proximity overlay from a server-classified map. Each cell is
+  // a small tile at the registered meeting plane, coloured by clearance band. Scan
+  // space (x, y, z) maps to viewer-local (x, z, -y) - the same baked rotation the
+  // scans use - and the group copies uploadedScans' offset so the tiles align with
+  // the rendered arches. Only painted for an as-scanned registration: an estimated
+  // alignment moved the lower arch, so its coordinates would not match the scans.
+  function loadProximity(map) {
+    // Rebuild only when the map actually changes; update() re-renders on every
+    // stage scrub, and re-tessellating hundreds of cells each time would be wasteful.
+    if (map && proximityMesh && proximityOverlay.userData.map === map) {
+      proximityOverlay.position.copy(uploadedScans.position);
+      proximityOverlay.visible = proximityVisible;
+      return true;
+    }
+    clearProximity();
+    if (!map || !map.aligned_to_scan || !map.cells?.length) return false;
+    const half = (map.cell_size || 1) / 2;
+    const positions = [];
+    const colors = [];
+    for (const cell of map.cells) {
+      const color = PROXIMITY_COLORS[cell.band] || PROXIMITY_COLORS.clearance;
+      const x0 = cell.x - half;
+      const x1 = cell.x + half;
+      const z0 = -(cell.y - half);
+      const z1 = -(cell.y + half);
+      const y = cell.z;
+      const corners = [
+        [x0, y, z0], [x1, y, z0], [x1, y, z1],
+        [x0, y, z0], [x1, y, z1], [x0, y, z1],
+      ];
+      for (const [px, py, pz] of corners) {
+        positions.push(px, py, pz);
+        colors.push(color.r, color.g, color.b);
+      }
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    proximityMesh = new THREE.Mesh(geometry, PROXIMITY_MAT);
+    proximityOverlay.add(proximityMesh);
+    proximityOverlay.userData.map = map;
+    proximityOverlay.position.copy(uploadedScans.position);
+    proximityOverlay.visible = proximityVisible;
+    return true;
+  }
+
+  function setProximityVisible(visible) {
+    proximityVisible = Boolean(visible);
+    proximityOverlay.visible = proximityVisible && Boolean(proximityMesh);
   }
 
   function setSelectionHandler(fn) {
@@ -729,6 +814,7 @@ export function createViewer(container) {
     uploadedScans.traverse((child) => {
       if (child.isMesh) child.geometry.dispose();
     });
+    clearProximity();
     window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
@@ -737,6 +823,7 @@ export function createViewer(container) {
   window.addEventListener("resize", resize);
   return {
     update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
+    loadProximity, setProximityVisible,
     zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
 }

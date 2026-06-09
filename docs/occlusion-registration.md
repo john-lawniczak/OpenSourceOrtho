@@ -1,8 +1,9 @@
 # Scope: bite registration (opposing-arch occlusal frame)
 
-> Status: **Phase 1 shipped (registration core + occlusal grid + measurement gate).**
-> The proximity overlay and the 3D scale reference that build on it are NOT yet
-> wired into the API/UI.
+> Status: **Registration core + occlusal grid + the proximity overlay shipped.**
+> `POST /api/occlusion` registers a scan pair and returns a classified proximity
+> map the 3D viewer paints red/amber/green. The 3D scale reference that also builds
+> on this is NOT yet wired.
 >
 > Educational, on-device visualization geometry only. This computes an APPROXIMATE
 > occlusal *alignment* for review; it is never a measured bite, an occlusal-force
@@ -75,12 +76,19 @@ interpenetration on real scans. That is acceptable for a registration indicator;
 **proximity overlay** will need a finer, nearest-surface measure for true contact
 detail (see next steps).
 
-## What this unblocks (next steps, not yet built)
+## What this unblocks
 
-- [ ] **Proximity overlay**: color the registered surfaces by per-cell clearance
-      (red = heavy overlap/contact, yellow = near, green = clearance), framed as
-      geometric proximity, NOT bite force. Consumes the occlusal grid directly;
-      will likely refine cell size / use nearest-surface distance for contact detail.
+- [x] **Proximity overlay** (shipped): `orthoplan/occlusion/proximity.py` classifies
+      each shared occlusal-grid cell into `contact` / `near` / `clearance` bands
+      (clearance `<= 0.5` / `<= 1.5` / `> 1.5` scan units) and `POST /api/occlusion`
+      (`proximity_api.py`) returns the located cells. The 3D viewer
+      (`viewer3d.js` `loadProximity`) paints them red/amber/green between the
+      registered arches, toggled by the "Bite proximity" control with a legend. It
+      is painted ONLY for an `as-scanned` registration (`aligned_to_scan`): an
+      estimated alignment moved the lower arch, so its coordinates would not match
+      the rendered scans. Framed as geometric proximity, NOT bite force. NOTE: still
+      at the coarse ~0.9 mm grid cell - a future pass may use nearest-surface
+      distance for finer contact detail.
 - [ ] **3D scale reference**: a mm grid / scale bar in the viewer, using
       `extent_mm` and the confirmed scan units. Gated on units being confirmed.
 - [ ] **Viewer integration**: an option to show the *true* registered occlusion
