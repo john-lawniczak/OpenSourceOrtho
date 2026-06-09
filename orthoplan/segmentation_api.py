@@ -16,7 +16,9 @@ from typing import Any
 from orthoplan.io.stl_import import read_stl_geometry
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.assets import ArchName, MeshAsset, MeshProvenance
+from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import SegmentedToothMesh, ToothId
+from orthoplan.occlusion.registration import register_bite, registration_to_dict
 from orthoplan.planning.mesh_frame import compute_local_frame
 from orthoplan.segmentation.auto import (
     SEGMENTATION_CAVEAT,
@@ -84,16 +86,23 @@ def _segment_one_scan(
     ui_root: Path,
     workspace: str | Path | None,
     missing_teeth: list[str] | None = None,
-) -> tuple[list[ProposedTooth], list[MeshAsset], list[SegmentedToothMesh], str | None]:
-    """Segment a single scan dict. Returns (proposed, assets, links, error)."""
+) -> tuple[
+    list[ProposedTooth], list[MeshAsset], list[SegmentedToothMesh], str | None,
+    ArchName | None, list[Vec3],
+]:
+    """Segment a single scan dict. Returns (proposed, assets, links, error, arch, vertices).
+
+    ``arch`` and ``vertices`` are surfaced so the caller can register the bite across
+    a resolved upper/lower pair without re-reading the STLs.
+    """
 
     reference = scan.get("reference") or scan.get("url")
     path = _resolve_scan_path(reference, ui_dir=ui_root, workspace=workspace)
     if path is None:
-        return [], [], [], f"could not resolve scan: {reference!r}"
+        return [], [], [], f"could not resolve scan: {reference!r}", None, []
     arch = _scan_arch(scan, path)
     if arch is None:
-        return [], [], [], f"could not determine arch for scan: {reference!r}"
+        return [], [], [], f"could not determine arch for scan: {reference!r}", None, []
 
     _asset, vertices = read_stl_geometry(path)
     # User-marked gaps anchor the FDI labels for this arch; None lets the segmenter
@@ -126,7 +135,43 @@ def _segment_one_scan(
                 vertex_count=segment.vertex_count,
             )
         )
-    return proposed, assets, links, None
+    return proposed, assets, links, None, arch, vertices
+
+
+def _collect_segments(
+    scans: list[dict[str, Any]],
+    segmenter,
+    *,
+    ui_root: Path,
+    workspace: str | Path | None,
+    missing_teeth: list[str],
+) -> tuple[
+    list[ProposedTooth], dict[str, MeshAsset], list[SegmentedToothMesh],
+    list[str], dict[ArchName, list[Vec3]], bool,
+]:
+    """Segment every scan, collecting proposals, assets, errors, and per-arch vertices."""
+
+    proposed: list[ProposedTooth] = []
+    assets_by_id: dict[str, MeshAsset] = {}
+    links: list[SegmentedToothMesh] = []
+    errors: list[str] = []
+    arch_vertices: dict[ArchName, list[Vec3]] = {}
+    resolved_any = False
+    for scan in scans:
+        rows, assets, scan_links, error, arch, vertices = _segment_one_scan(
+            scan, segmenter, ui_root=ui_root, workspace=workspace, missing_teeth=missing_teeth
+        )
+        if error:
+            errors.append(error)
+            continue
+        resolved_any = True
+        proposed.extend(rows)
+        links.extend(scan_links)
+        for asset in assets:
+            assets_by_id[asset.id] = asset
+        if arch is not None and vertices:
+            arch_vertices[arch] = vertices
+    return proposed, assets_by_id, links, errors, arch_vertices, resolved_any
 
 
 def segment_payload(
@@ -141,25 +186,10 @@ def segment_payload(
             return {"ok": False, "errors": ["no scan reference provided"]}
 
         segmenter = load_local_segmenter()
-        missing_teeth = _missing_teeth(payload)
-        proposed: list[ProposedTooth] = []
-        assets_by_id: dict[str, MeshAsset] = {}
-        links: list[SegmentedToothMesh] = []
-        errors: list[str] = []
-        resolved_any = False
-        for scan in scans:
-            rows, assets, scan_links, error = _segment_one_scan(
-                scan, segmenter, ui_root=ui_root, workspace=workspace, missing_teeth=missing_teeth
-            )
-            if error:
-                errors.append(error)
-                continue
-            resolved_any = True
-            proposed.extend(rows)
-            links.extend(scan_links)
-            for asset in assets:
-                assets_by_id[asset.id] = asset
-
+        proposed, assets_by_id, links, errors, arch_vertices, resolved_any = _collect_segments(
+            scans, segmenter, ui_root=ui_root, workspace=workspace,
+            missing_teeth=_missing_teeth(payload),
+        )
         if not resolved_any:
             return {"ok": False, "errors": errors or ["no scan could be segmented"]}
 
@@ -181,6 +211,10 @@ def segment_payload(
             ],
             "teeth": [tooth.model_dump(mode="json") for tooth in proposed],
             "overall_confidence": overall,
+            # Bite registration across the two arches when BOTH were segmented in this
+            # request; null when only one arch is present. Geometric review metrics
+            # only - never a measured bite, occlusal force, or diagnosis.
+            "occlusion": _occlusion_block(arch_vertices, payload),
             "warnings": errors,
             "plan_fragment": {
                 "mesh_assets": [asset.model_dump(mode="json") for asset in assets_by_id.values()],
@@ -203,3 +237,36 @@ def _segmenter_metadata(segmenter) -> dict[str, str]:
         "version": segmenter.version,
         "backend": getattr(segmenter, "backend", "pure-python"),
     }
+
+
+_OCCLUSION_CAVEAT = (
+    "Geometric bite registration across the two arches. It is NOT a measured bite, "
+    "occlusal force, or a diagnosis - review only. The lower_offset and gaps are in "
+    "scan units; the dedicated /api/occlusion endpoint adds the per-cell proximity map."
+)
+
+
+def _occlusion_block(
+    arch_vertices: dict[ArchName, list[Vec3]], payload: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Registration metrics when BOTH arches were segmented; ``None`` otherwise.
+
+    A failure here must never sink the segmentation result, so it is isolated: any
+    error returns ``None`` rather than propagating.
+    """
+
+    upper = arch_vertices.get("maxillary")
+    lower = arch_vertices.get("mandibular")
+    if not upper or not lower:
+        return None
+    try:
+        registration = register_bite(
+            upper, lower, units_confirmed=bool(payload.get("units_confirmed", False))
+        )
+        if registration.mode == "unavailable":
+            return None
+        block = registration_to_dict(registration)
+        block["caveat"] = _OCCLUSION_CAVEAT
+        return block
+    except Exception:  # noqa: BLE001 - occlusion is advisory; never break segmentation
+        return None

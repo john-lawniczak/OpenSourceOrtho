@@ -22,7 +22,7 @@ from orthoplan.occlusion.proximity import (
     classify_proximity,
     proximity_map_to_dict,
 )
-from orthoplan.occlusion.registration import register_bite
+from orthoplan.occlusion.registration import register_bite, registration_to_dict
 from orthoplan.segmentation_api import _resolve_scan_path, _scan_arch, _scan_list
 
 
@@ -77,22 +77,7 @@ def proximity_payload(
             "ok": True,
             "requires_review": True,
             "caveat": PROXIMITY_CAVEAT,
-            "registration": {
-                "mode": registration.mode,
-                "approximate": registration.approximate,
-                # Translation to apply to the LOWER arch to reach the shared frame.
-                # (0,0,0) for as-scanned; the viewer applies it for the registered-
-                # bite view of an estimated alignment.
-                "lower_offset": list(registration.lower_offset),
-                "occlusal_gap_mm": registration.occlusal_gap_mm,
-                "interpenetration_mm": registration.interpenetration_mm,
-                "contact_fraction": registration.contact_fraction,
-                "midline_offset_mm": registration.midline_offset_mm,
-                "coverage": registration.coverage,
-                "extent_mm": list(registration.extent_mm),
-                "confidence": registration.confidence,
-                "notes": registration.notes,
-            },
+            "registration": registration_to_dict(registration),
             "proximity": proximity_map_to_dict(pmap),
             "warnings": errors,
         }
