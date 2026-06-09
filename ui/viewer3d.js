@@ -525,11 +525,11 @@ export function createViewer(container) {
     proxies.add(cone);
   }
 
-  // Sample one anchor point per tooth on the uploaded scan's occlusal surface so
-  // the moving proxies sit on the real crowns. The schematic arch layout (which
-  // has the correct RELATIVE tooth order/spread) is fitted into each scan arch's
-  // world bounding box in x/z, then a vertical ray finds the scan surface height.
-  // Result: proxies are attached to the scan teeth, not floating beneath them.
+  // One anchor point per tooth on the uploaded scan, used to place the arrow-mode
+  // marker dot (and the arrow origin) on each tooth's buccal face. The schematic
+  // arch layout (correct RELATIVE tooth order/spread) is fitted into each scan
+  // arch's world bounding box in x/z; a vertical ray finds the occlusal height,
+  // then the point is pushed onto the visible face at mid-crown (anchorArchTeeth).
   function computeScanAnchors() {
     const anchors = new Map();
     archLabelPos = {};
@@ -557,6 +557,7 @@ export function createViewer(container) {
     const scanHx = Math.max((box.max.x - box.min.x) / 2, 0.001);
     const scanHz = Math.max((box.max.z - box.min.z) / 2, 0.001);
     const up = arch === "upper";
+    const span = Math.max(box.max.y - box.min.y, 1); // arch height
     const scale = THREE.MathUtils.clamp((scanHx / sx.half) * ANCHOR_TOOTH_SCALE, 1, 4);
     for (const { tooth, p } of schematic) {
       const wx = center.x + ((p.x - sx.mid) / sx.half) * scanHx;
@@ -565,14 +566,30 @@ export function createViewer(container) {
       const hits = ray.intersectObject(mesh, false);
       // Occlusal surface faces the opposing arch: lowest hit for the upper arch,
       // highest hit for the lower. Fall back to the box face if the ray misses.
-      let y = hits.length ? (up ? hits[hits.length - 1].point.y : hits[0].point.y) : (up ? box.min.y : box.max.y);
-      y += up ? -0.3 : 0.3; // sit slightly proud toward the bite
-      anchors.set(String(tooth), { pos: new THREE.Vector3(wx, y, wz), scale });
+      const occlusal = hits.length
+        ? (up ? hits[hits.length - 1].point.y : hits[0].point.y)
+        : (up ? box.min.y : box.max.y);
+      // Place the marker on the tooth's BUCCAL face at mid-crown, not on the
+      // incisal edge: push outward from the arch centre (so dots sit on the
+      // visible faces) and lift toward the crown body (so the upper and lower
+      // rows separate instead of bunching in the central bite gap).
+      const ox = wx - center.x;
+      const oz = wz - center.z;
+      const olen = Math.hypot(ox, oz) || 1;
+      const push = scanHx * 0.1;
+      const mx = wx + (ox / olen) * push;
+      const mz = wz + (oz / olen) * push;
+      const my = occlusal + (up ? span * 0.22 : -span * 0.22);
+      anchors.set(String(tooth), { pos: new THREE.Vector3(mx, my, mz), scale });
     }
-    // Float each label on the OUTSIDE (gingival side) of its arch - above the
-    // upper, below the lower - so the two never collide in the bite gap or sit
-    // on the crowns (which read as swapped).
-    archLabelPos[arch] = new THREE.Vector3(center.x, up ? box.max.y + 5 : box.min.y - 5, box.max.z + 5);
+    // Float each label well OUTSIDE its arch - above the upper, below the lower,
+    // toward the camera - scaled to the arch so it clears the crowns and the two
+    // never collide in the bite gap or read as swapped.
+    archLabelPos[arch] = new THREE.Vector3(
+      center.x,
+      up ? box.max.y + span * 0.18 : box.min.y - span * 0.18,
+      box.max.z + scanHz * 0.35,
+    );
   }
 
   // Dolly the camera toward (factor < 1) or away from (factor > 1) the target,
