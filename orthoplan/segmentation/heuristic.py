@@ -60,7 +60,14 @@ _MIN_DETECTED_TEETH = 6
 # synthetic harness (full/missing/open-gap) - see test_segmentation_real_scan.
 _COUNT_BUCKETS_PER_TOOTH = 16
 _COUNT_PROMINENCE_RATIO = 0.18
-_COUNT_SEPARATION_FRACTION = 0.5
+# Minimum spacing between counted crown peaks, as a fraction of one average
+# tooth. Real arches cluster the narrow anterior teeth closer in arc-position
+# (polar angle about the arch centroid) than half an AVERAGE tooth, so a 0.5
+# separation merged two real incisor peaks and under-counted (the upper sample
+# read 12/14). A third of a tooth admits those true peaks while the prominence
+# threshold still rejects noise bumps - verified to leave every synthetic case
+# (incl. noisy/flat) unchanged. See test_segmentation_real_scan.
+_COUNT_SEPARATION_FRACTION = 0.35
 # When the detected tooth count differs from the canonical arch, FDI labels are a
 # positional guess (we cannot know which tooth is absent from geometry alone), so
 # confidence is scaled down to push the user to review the numbers.

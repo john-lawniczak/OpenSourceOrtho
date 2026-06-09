@@ -11,14 +11,15 @@ returns a plausible number of crowns within the algorithm's own bounds, and
 produces valid confidences. It also RECORDS the observed crown counts so the
 current sim-to-real gap is visible and tracked.
 
-Observed at the time of writing (crown-peak counting at fine resolution):
+Observed at the time of writing (crown-peak counting at fine resolution, with the
+peak separation tightened to a third of an average tooth):
 - mandibular (lower): 14 / 14 crowns - correct, confidence ~0.5-0.85.
-- maxillary (upper): 12 / 14 crowns. The upper occlusal plane is flat across the
-  posterior teeth (curve of Spee/Wilson, palate), so two adjacent crowns still
-  merge into one height peak even at fine resolution - 12/14 is the realistic
-  ceiling for 1-D height counting. (Counting at the original coarse resolution
-  found only 7; the finer count profile recovered the other five.) The remaining
-  two are a positional guess the user closes via mark-the-gap / re-anchor.
+- maxillary (upper): 14 / 14 crowns - recovered. The earlier 12/14 was not a
+  merged-peak ceiling after all: the fine count profile DID resolve all 14 peaks,
+  but a half-tooth peak separation merged two narrow anterior crowns that cluster
+  closer in arc-position than half an average tooth. A third-tooth separation
+  admits them; the prominence threshold still rejects noise. (The original coarse
+  resolution found only 7; the finer profile recovered five, this recovered two.)
 """
 
 from __future__ import annotations
@@ -79,11 +80,12 @@ def test_real_scan_segments_within_plausible_bounds(filename: str, arch: str) ->
     assert all(s.triangles for s in segments)
 
 
-# Real-data crown-count floors. These lock in the counts the fine-resolution
-# crown-peak counter recovers, so a future change that regresses real-scan counting
-# (e.g. an over-aggressive prominence threshold) is caught - even where the count
-# is below a full arch because crowns genuinely merge in the 1-D height signal.
-_REAL_COUNT_FLOOR = {"maxillary": 10, "mandibular": 12}
+# Real-data crown-count floors. These lock in the counts the crown-peak counter
+# recovers, so a future change that regresses real-scan counting (e.g. an
+# over-aggressive prominence threshold or separation) is caught. Both arches now
+# recover the full 14 after tightening the count peak separation to a third of a
+# tooth (the half-tooth separation merged two clustered anterior peaks upper).
+_REAL_COUNT_FLOOR = {"maxillary": 14, "mandibular": 14}
 
 
 @pytest.mark.parametrize("filename,arch", _SCANS)
