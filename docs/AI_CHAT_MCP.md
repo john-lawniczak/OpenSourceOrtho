@@ -3,7 +3,9 @@
 OpenSource Ortho treats AI chat as a scoped advisory layer. It can explain a
 plan, findings, data gaps, and timeline, but it must not diagnose, approve
 treatment, prescribe aligners, or replace review by a licensed dental
-professional.
+professional. AI output must never be used as authorization for printing,
+wearing, or physically applying any appliance; any physical use is the user's own
+responsibility and risk.
 
 ## Product Direction
 

@@ -378,7 +378,7 @@ export function renderGeneration() {
   el("generationAck").checked = gen.acknowledged;
   el("generationNotes").value = gen.notes;
   el("generatePlan").disabled = gen.busy;
-  el("generationStatus").textContent = gen.busy ? "Working..." : (gen.status || "Ready");
+  el("generationStatus").textContent = gen.busy ? "Working..." : (gen.status || "Idle");
   el("generationConnector").textContent = generationConnectorHint();
   if (gen.landmarksStatus) el("landmarksStatus").textContent = gen.landmarksStatus;
   el("generationReport").innerHTML = gen.result ? generationReportMarkup(gen.result) : "";
@@ -846,12 +846,12 @@ function renderPrintExport(status) {
   }
   const blockers = status.blockers?.length
     ? `<ul>${status.blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : "<p>Print package inputs are ready for export.</p>";
+    : "<p>Print package inputs are complete for export.</p>";
   const artifacts = status.artifacts?.length
     ? `<p>${escapeHtml(status.artifacts.map((item) => item.filename).join(", "))}</p>`
     : "";
   el("printExportStatus").innerHTML = `
-    <p><strong>${status.ready ? "Ready" : "Not ready"}</strong></p>
+    <p><strong>${status.ready ? "Inputs complete" : "Inputs incomplete"}</strong></p>
     ${blockers}
     ${artifacts}
     <p>${escapeHtml(status.model_material)}</p>

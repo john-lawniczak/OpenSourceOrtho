@@ -51,15 +51,16 @@ intentionally **out of scope** for lite.
 ## Safety boundary (applies to mobile exactly as to the rest of the repo)
 
 OpenSource Ortho is **not** a medical device, an Invisalign clone, a clinical
-approval tool, or an autonomous treatment planner. The mobile lite apps must
-carry the same disclaimers and must never present a plan as safe, approved,
-cleared, or ready for treatment. The engine's verdict is `CONSISTENT` or
+approval tool, an autonomous treatment planner, or complete treatment-planning
+software. The mobile lite apps must carry the same disclaimers and must never
+present a plan, generated package, or appliance as safe, approved, cleared, or
+ready for treatment or physical use. The engine's verdict is `CONSISTENT` or
 `ISSUES` only. Model-generated text is untrusted and is lint-gated by the engine
 before it ever reaches the device. See [`docs/SAFETY.md`](../docs/SAFETY.md).
 
-CBCT/DICOM support is part of the full product roadmap, not the lite scaffold.
+CBCT/DICOM support is part of the full safety-review roadmap, not the lite scaffold.
 The lite flow remains STL-only until the engine exposes local DICOM ingestion,
-registration, and reviewed root/bone-aware planning contracts.
+registration, and reviewed root/bone-aware check contracts.
 
 Each app ships a standing, non-dismissible disclaimer string sourced from
 [`API_CONTRACT.md`](API_CONTRACT.md) so the wording stays consistent with the

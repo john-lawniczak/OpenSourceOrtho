@@ -16,6 +16,12 @@ Browser prototype for the data-model workflow:
 9. plan-shaped JSON output
 10. print-export readiness and package metadata
 
+This UI is a safety-review playground. It is not complete treatment-planning
+software, does not diagnose, does not approve treatment, and does not authorize
+printing, wearing, or physically applying any output. Printable files and package
+metadata are informational geometry artifacts; any physical use is the user's own
+responsibility and risk.
+
 ## Run it
 
 The UI is backed by the Python engine and must be served by the dev server so
@@ -46,9 +52,9 @@ workflows:
   a progress rail and Back/Next, showing one step at a time. It lets a user upload
   an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
   default, with Faster/Gentle behind a disclosure), build the plan, review it as a
-  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
-  printable files. It acknowledges that the preview is not a diagnosis or treatment
-  plan.
+	  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
+	  printable files. It acknowledges that the preview is not a diagnosis or treatment
+	  plan and that physical use is the user's own responsibility and risk.
 - **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 

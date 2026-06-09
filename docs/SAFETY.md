@@ -1,6 +1,6 @@
 # Safety Boundary
 
-OpenSource Ortho is a research and development toolkit for clear-aligner treatment-planning workflows. The product direction includes accurate staged geometry and manufacturing handoff, with STL-only surface planning today and CBCT/DICOM-enhanced root/bone-aware planning as a future tier. The current project is not distributed as medical device software and is not intended to provide diagnosis, treatment approval, or autonomous decision-making.
+OpenSource Ortho is a research and development safety playground for clear-aligner planning workflows. It can represent staged geometry and produce manufacturing-oriented exports, with STL-only surface review today and CBCT/DICOM-enhanced root/bone-aware review as a future tier. The current project is not distributed as medical device software, is not complete treatment-planning software, and is not intended to provide diagnosis, treatment approval, autonomous decision-making, or clearance for physical use.
 
 ## Capability Boundary
 
@@ -16,6 +16,8 @@ OpenSource Ortho may describe:
 OpenSource Ortho must not state or imply:
 
 - a plan is safe, approved, cleared, acceptable, or ready for treatment
+- a generated package or appliance is safe, validated, or ready for intraoral use
+- the software produces a complete treatment plan
 - a patient is a good candidate for aligners
 - roots, bone, periodontal structures, pathology, or airway status are acceptable when those data or reviewed derived anatomy are unavailable
 - a movement threshold is authoritative unless it is either user-configured or cited
@@ -29,7 +31,7 @@ geometric statement, not a biomechanical one. Visualization pivots (crown
 centroid) are explicit display assumptions and never imply knowledge of root or
 bone position.
 
-CBCT/DICOM support is the planned path to root/bone-aware planning. Until a CBCT
+CBCT/DICOM support is the planned path to root/bone-aware review. Until a CBCT
 record is locally ingested, registered to the STL, segmented or imported as
 reviewed anatomy, and accepted by the relevant feature gate, root/bone-aware
 checks must remain unavailable or explicitly marked as unassessed. CBCT presence
@@ -106,11 +108,11 @@ whatever exists, in priority order:
    (`planning/arch_form.py`). This is geometric processing of data already in the scan. It is
    explicitly a scan-axis heuristic: it does **not** infer roots, bone, or biological response,
    does not resolve mesiodistal/buccolingual axes, and is not a clinical alignment goal.
-4. **Root/bone-aware** - planned future path when registered CBCT/DICOM-derived
+4. **Root/bone-aware review** - planned future path when registered CBCT/DICOM-derived
    anatomy is available and reviewed. This path may add root axes, root proximity,
    and bone-boundary constraints, but those constraints must carry provenance and
    quality status and must fail closed when the CBCT record, registration, or
-   segmentation is missing or uncertain.
+   segmentation is missing or uncertain. It is not a complete treatment plan.
 5. **Educational-synthetic** - when only a raw scan is loaded, a clearly-labeled generic
    crowding template is used. The result is **not derived from the user's teeth**; it carries a
    prominent warning and `requires_acknowledgement`. This is a text warning, not a functional
@@ -133,8 +135,8 @@ a plan safe, suitable, or guaranteed to fit. Physical workflows depend on confir
 validated model materials, appropriate thermoforming sheets, post-processing controls,
 cleaning procedures, and applicable regulatory compliance.
 
-As CBCT/DICOM support is added, manifests should also label the planning tier:
-STL-only surface plan, enhanced-records plan, or root/bone-aware plan. The
+As CBCT/DICOM support is added, manifests should also label the review tier:
+STL-only surface review, enhanced-records review, or root/bone-aware review. The
 manufacturing output must preserve unresolved data gaps and registration /
 segmentation quality rather than hiding them behind a printable file.
 
@@ -143,5 +145,9 @@ printer materials, unvalidated resins, or ordinary plastics are appropriate for 
 
 ## Regulatory Note
 
-This document is not legal advice. Anyone using or modifying this project is responsible for
-their own use, privacy, materials, manufacturing process, and regulatory obligations.
+This document is not legal advice. Anyone using, modifying, manufacturing from,
+or physically applying outputs from this project is responsible for their own
+use, risk, privacy, materials, manufacturing process, professional supervision,
+and regulatory obligations. The software and generated outputs are provided
+without warranty or liability for diagnosis, treatment, manufacturing, fit,
+materials, injury, regulatory compliance, or any other use.

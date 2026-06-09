@@ -2,11 +2,14 @@
 
 ## Scope and safety boundary
 
-OpenSource Ortho is a **research/education toolkit, not a medical device**. It
-does not diagnose, decide treatment safety or suitability, or replace a licensed
-dental professional. Please read [docs/SAFETY.md](docs/SAFETY.md). Reports that a
-finding "should have approved/cleared a plan" are out of scope by design - the
-software intentionally never makes those claims.
+OpenSource Ortho is a **clear-aligner planning safety playground and research
+toolkit, not a medical device and not complete treatment-planning software**. It
+does not diagnose, prescribe, approve treatment, decide treatment safety or
+suitability, authorize physical use, or replace a licensed dental professional.
+Any use, manufacturing, or physical application of outputs is the user's own
+responsibility and risk. Please read [docs/SAFETY.md](docs/SAFETY.md). Reports
+that a finding "should have approved/cleared a plan" are out of scope by design -
+the software intentionally never makes those claims.
 
 In-scope security issues include, for example:
 

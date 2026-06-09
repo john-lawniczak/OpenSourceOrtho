@@ -1,6 +1,6 @@
 # UI and Visualization Design
 
-Visual representation is a primary product requirement for OpenSource Ortho. The interface must help users understand proposed tooth movement accurately without implying approval.
+Visual representation is a primary product requirement for OpenSource Ortho. The interface must help users understand proposed tooth movement accurately without implying approval, complete treatment planning, appliance safety, or authorization for physical use.
 
 ## Visualization Contract
 
@@ -13,6 +13,8 @@ The UI must show what the system actually knows:
 - expose units for translations and rotations
 - show data gaps near the affected visualization, especially missing roots, CBCT, occlusion, periodontal status, and treatment notes
 - avoid colors or badges that imply safe, approved, cleared, or acceptable
+- keep own-risk physical-use language visible anywhere printable files,
+  manufacturing packages, or aligner workflows are shown
 
 ## Core Views
 
@@ -23,11 +25,12 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
 - **Guided wizard** (the default, primary surface) for non-technical users: a
   step-by-step flow with a progress rail of six chips - **Upload → Teeth & time →
   Details → Review → 3D preview → Print / send**. One step is visible at a time
-  with Back/Next. It acknowledges limits in plain language, lets the user choose
-  which teeth move (excluded teeth become fixed) and the tray-wear duration,
-  animates the plan in 3D, and exports printable files. The heavy singletons (3D
-  viewer, AI box, upload control) are single instances relocated into the active
-  step, so there is never a second WebGL context.
+	  with Back/Next. It acknowledges limits in plain language, lets the user choose
+	  which teeth move (excluded teeth become fixed) and the tray-wear duration,
+	  animates the plan in 3D, and exports printable files. The heavy singletons (3D
+	  viewer, AI box, upload control) are single instances relocated into the active
+	  step, so there is never a second WebGL context. It must never imply printable
+	  output is safe, validated, or ready for treatment.
 - **Technician review** for professional users: staged movement authoring, records,
   clinical controls, mesh rendering, rule findings, optimized staging, print
   metadata, plan JSON, and the experimental on-device auto-segmentation panel
@@ -76,9 +79,9 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   findings, data gaps, and timeline. The provider selector and a session-only
   API-key field are surfaced directly (with provider-specific, plain-language
   help; the key field is hidden for the no-key local helper) so enabling a real
-  model is discoverable. It must label the connector and context scope, keep raw
-  API keys out of persisted plan data, and never present AI text as diagnosis or
-  approval.
+	  model is discoverable. It must label the connector and context scope, keep raw
+	  API keys out of persisted plan data, and never present AI text as diagnosis or
+	  approval, a complete treatment plan, or authorization for physical use.
 
 The first production-grade clinician UI should include:
 

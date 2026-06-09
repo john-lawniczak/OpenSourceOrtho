@@ -244,7 +244,7 @@ export async function runPrintPackage() {
     } else {
       state.guided.print.result = result;
       state.guided.print.status =
-        `Ready: ${result.stage_count} stage file(s). Download the zip to 3D print, or the email draft to send the files to yourself.`;
+        `Files built: ${result.stage_count} stage file(s). Download the zip for your own review, or the email draft to send the files to yourself. Physical use remains your own responsibility and risk.`;
       downloadBase64(result.zip_base64, result.filename, "application/zip");
     }
   } catch (error) {

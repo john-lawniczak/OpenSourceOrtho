@@ -1,57 +1,63 @@
-# CBCT/DICOM Planning Roadmap
+# CBCT/DICOM Safety-Review Roadmap
 
 > Status: planned. No CBCT/DICOM parser, volume viewer, segmentation model, or
 > STL-to-CBCT registration pipeline is shipped yet.
 
-OpenSource Ortho's product direction is treatment-planning software for clear
-aligner workflows, including accurate staged geometry for users who want to
-manufacture aligners. STL-only planning remains a first-class path, but it is
+OpenSource Ortho's product direction is a safety-boundary-first clear-aligner
+planning playground and research toolkit. It can model staged geometry and
+produce manufacturing-oriented exports, but it does not claim to produce a
+complete treatment plan and any physical use is the user's own responsibility
+and risk. STL-only planning remains a first-class exploratory path, but it is
 surface-based: it sees visible crown geometry only. CBCT/DICOM support is the
-higher-fidelity path for root/bone-aware planning.
+higher-fidelity record path for root/bone-aware checks.
 
 This roadmap exists so CBCT work is built deliberately instead of as a
-half-implemented "full evaluation pipeline." A CBCT record can improve planning,
-but only if ingestion, registration, segmentation, validation, and manufacturing
-handoff are treated as product-critical systems.
+half-implemented "full evaluation pipeline." A CBCT record can improve the
+available checks, but only if ingestion, registration, segmentation, validation,
+and manufacturing handoff are treated as safety-critical systems. None of these
+phases may imply clinical approval, treatment suitability, or readiness to wear
+an appliance.
 
-## Planning Tiers
+## Safety-Review Tiers
 
-### Surface Plan: STL Only
+### Surface Review: STL Only
 
-STL-only users should still get a strong planning workflow:
+STL-only users should still get a strong exploratory workflow:
 
 - intraoral STL import and scale confirmation
 - crown segmentation and per-tooth staged movement
 - arch-form and spacing/crowding proposals
 - crown-surface collision checks
 - attachment/IPR intent tracking
-- staged model or manufacturing package export
+- staged model or manufacturing-oriented package export
 - clear data-gap findings for roots, bone, periodontal status, and occlusion
 
-This tier must never imply that root position, alveolar bone limits, periodontal
+This tier must never imply that it is a complete treatment plan or that root position, alveolar bone limits, periodontal
 support, impacted teeth, nerves, airway, pathology, or biological response were
-assessed. It is a surface-based plan.
+assessed. It is a surface-based review.
 
-### Enhanced Records Plan: STL Plus Photos/X-rays/Notes/Occlusion
+### Enhanced Records Review: STL Plus Photos/X-rays/Notes/Occlusion
 
 Additional records can add context and close specific data gaps, but most are not
 3D root/bone geometry. They should improve review, handoff questions, and
-provenance without pretending to be volumetric planning.
+provenance without pretending to be volumetric planning or clinical clearance.
 
-### Root/Bone-Aware Plan: STL Plus CBCT/DICOM
+### Root/Bone-Aware Review: STL Plus CBCT/DICOM
 
-CBCT/DICOM can unlock the highest-fidelity planning tier when the app can:
+CBCT/DICOM can unlock the highest-fidelity review tier when the app can:
 
 - ingest and display the local DICOM volume
 - register the intraoral STL surface to the CBCT volume
 - segment or import crowns, roots, and alveolar bone with reviewable confidence
 - derive trusted tooth axes and root geometry
-- run root/bone-aware constraints and visualization
+- run root/bone-aware checks and visualization
 - preserve provenance and quality metrics for every derived object
 
-CBCT should be recommended or required only when the planned movement or case
-complexity exceeds what surface data can responsibly support. It should not be a
-universal prerequisite for every STL-only workflow.
+CBCT should be recommended or required only by the workflow's configured safety
+rules or by a responsible reviewer when the movement or case context exceeds what
+surface data can responsibly support. It should not be a universal prerequisite
+for every STL-only workflow, and its presence alone must not imply a complete
+treatment plan.
 
 ## Phase 1: Contract And Ingestion
 
@@ -120,10 +126,10 @@ the learned crown segmenter: code license, weight license, and dataset license a
 separate. Do not commit third-party patient volumes, model weights, or datasets
 without explicit permission and a reviewed license.
 
-## Phase 5: Root/Bone-Aware Planning
+## Phase 5: Root/Bone-Aware Checks
 
-Goal: let planning consume trusted CBCT-derived anatomy as constraints, not as
-silent approval.
+Goal: let the engine consume trusted CBCT-derived anatomy as constraints and
+warnings, not as silent approval or a complete treatment plan.
 
 Potential checks:
 
@@ -134,17 +140,17 @@ Potential checks:
 - "cannot assess" findings when registration or segmentation quality is missing
 - tooth-specific constraints derived from reviewed anatomy
 
-The verdict vocabulary should remain limited to internal consistency terms such
-as `CONSISTENT` / `ISSUES` / `NOT_APPLICABLE` unless the project establishes a
-separate clinical/regulatory approval workflow.
+The verdict vocabulary must remain limited to internal consistency terms such as
+`CONSISTENT` / `ISSUES` / `NOT_APPLICABLE`. It must not become "safe",
+"approved", "ready", "clinically acceptable", or equivalent clearance language.
 
 ## Phase 6: Manufacturing Handoff
 
-Goal: produce the most accurate manufacturing package the available data can
-support.
+Goal: produce a reproducible manufacturing-oriented package from the available
+data while preserving every limitation and user-responsibility warning.
 
 The STL-only and CBCT-enhanced paths can both export staged geometry, but the
-manifest must label the planning tier and data limitations.
+manifest must label the review tier, data limitations, and unresolved risks.
 
 Manufacturing-specific work includes:
 
@@ -155,13 +161,14 @@ Manufacturing-specific work includes:
 - deterministic hashes tying outputs to inputs, transforms, engine version, and
   plan findings
 
-The software can generate reproducible files, but intraoral use depends on
-validated materials, fabrication process controls, professional supervision, and
-the user's regulatory obligations.
+The software can generate reproducible files, but it does not authorize wearing
+or using an appliance. Intraoral use depends on validated materials, fabrication
+process controls, professional supervision, and the user's own responsibility,
+risk, and regulatory obligations.
 
 ## Acceptance Gates
 
-Before CBCT-derived data affects movement planning:
+Before CBCT-derived data affects any movement checks:
 
 - DICOM parser and viewer are optional and local-only
 - PHI handling is documented and tested
@@ -170,17 +177,19 @@ Before CBCT-derived data affects movement planning:
 - root/bone-aware checks have deterministic tests
 - at least one validation harness exists for registration and segmentation quality
 - UI copy distinguishes STL-only, enhanced-records, and root/bone-aware plans
-- generated files label the planning tier and unresolved data gaps
+- generated files label the review tier, unresolved data gaps, and own-risk use
 
 ## Implementation Ownership
 
 - `orthoplan/io/`: DICOM metadata and volume import adapters
 - `orthoplan/model/`: CBCT record, registration, and derived-anatomy data models
 - `orthoplan/evaluation/`: deterministic data-gap and root/bone-aware findings
-- `orthoplan/planning/`: only consumes trusted, reviewed geometry contracts
+- `orthoplan/planning/`: only consumes trusted, reviewed geometry contracts as
+  exploratory constraints
 - `orthoplan/viz/` and `ui/`: viewer and display contracts
 - `docs/`: product boundary, validation, and manufacturing documentation
 
-The guiding rule: STL-only plans should be useful and polished, while CBCT/DICOM
-should unlock a higher-fidelity tier only when the data and derived anatomy are
-good enough to support that feature.
+The guiding rule: STL-only reviews should be useful and polished, while
+CBCT/DICOM should unlock a higher-fidelity safety-review tier only when the data
+and derived anatomy are good enough to support that feature. No tier claims to be
+a complete treatment plan or to make physical use safe.

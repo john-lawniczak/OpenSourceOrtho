@@ -18,7 +18,8 @@ class OptimizedStagingResult(BaseModel):
     issues: list[OptimizerIssue] = Field(default_factory=list)
     caveat: str = (
         "Deterministic staging splits authored movement into configured cap-sized increments. "
-        "It is not a biological outcome model and does not replace clinician review."
+        "It is not a biological outcome model, not a complete treatment plan, and does not "
+        "authorize physical use. Any physical use is the user's own responsibility and risk."
     )
 
 

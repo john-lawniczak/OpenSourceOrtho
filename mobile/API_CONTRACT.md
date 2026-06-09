@@ -128,8 +128,10 @@ documented here so the apps can add it later without re-deriving the contract.
 
 Both apps embed this exact wording (kept in sync with the engine `caveat`):
 
-> OpenSource Ortho is a treatment-planning research toolkit. The current build is
-> not distributed as a medical device and does not diagnose, treat, or approve
-> treatment. A `CONSISTENT` verdict means the staging is internally consistent
-> with the configured caps and controls - not that it is safe, approved, or
-> clinically appropriate. Always consult a licensed dental professional.
+> OpenSource Ortho is a clear-aligner planning safety playground and research
+> toolkit. The current build is not distributed as a medical device, is not
+> complete treatment-planning software, and does not diagnose, treat, approve
+> treatment, or authorize physical use. A `CONSISTENT` verdict means the staging
+> is internally consistent with the configured caps and controls - not that it is
+> safe, approved, or clinically appropriate. Always consult a licensed dental
+> professional; any physical use is your own responsibility and risk.

@@ -1,6 +1,6 @@
 # Architecture
 
-OpenSource Ortho is a Python-first planning and visualization toolkit for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI. The product direction is treatment-planning software with two planning tiers: STL-only surface planning today, and CBCT/DICOM-enhanced root/bone-aware planning as a deliberate roadmap.
+OpenSource Ortho is a Python-first planning and visualization safety playground for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI. It is not a complete treatment-planning system. The roadmap has two review tiers: STL-only surface review today, and CBCT/DICOM-enhanced root/bone-aware review as a deliberate future path.
 
 ## Simple Flow
 
@@ -15,7 +15,7 @@ OpenSource Ortho is a Python-first planning and visualization toolkit for clear-
 9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
 
 CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
-root/bone-aware planning once the app can ingest a local DICOM volume, register
+root/bone-aware checks once the app can ingest a local DICOM volume, register
 it to the STL, represent reviewed anatomy, and expose deterministic
 root/bone-aware findings. See [cbct-evaluation.md](cbct-evaluation.md).
 
@@ -105,9 +105,9 @@ mesh is missing.
 - data gaps attached for the UI
 - designed so the UI does not recalculate treatment movement differently from the engine; transform composition lives in `planning/transforms.py`, and `viz` only consumes it
 
-## Planning Tiers
+## Safety-Review Tiers
 
-### Surface Plan: STL Upload
+### Surface Review: STL Upload
 
 The initial user upload can be an STL of an intraoral scan. STL contains surface
 geometry only. It does not contain roots, bone, periodontal status, occlusion
@@ -115,8 +115,8 @@ dynamics, diagnosis, or CBCT anatomy.
 
 That means the UI must show these data gaps. A surface scan can support
 crown-surface visualization, staged crown movement, arch-form proposals,
-crown-collision checks, and manufacturing handoff. It cannot prove root
-position, bone safety, or periodontal suitability.
+crown-collision checks, and manufacturing-oriented handoff. It cannot prove root
+position, bone safety, periodontal suitability, or readiness for physical use.
 
 STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 
@@ -125,10 +125,10 @@ STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 - STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
 - a bounding-box sanity check can warn about implausible scale, but never infers units
 
-### Root/Bone-Aware Plan: CBCT/DICOM
+### Root/Bone-Aware Review: CBCT/DICOM
 
 CBCT/DICOM is planned as an optional higher-fidelity tier rather than a universal
-requirement. It should unlock root/bone-aware planning only after these contracts
+requirement. It should unlock root/bone-aware checks only after these contracts
 exist:
 
 - local DICOM/CBCT record ingestion with PHI-aware metadata handling
@@ -140,7 +140,8 @@ exist:
 
 CBCT-derived data must enter planning through typed model contracts with
 provenance and review status. The planner must never silently assume that STL and
-CBCT coordinate spaces are aligned.
+CBCT coordinate spaces are aligned, and no review tier may imply clinical
+approval or complete treatment planning.
 
 ## How The Plan Moves Teeth
 
@@ -224,7 +225,8 @@ per-artifact SHA-256 hashes, byte sizes, blockers, and geometry-source metadata.
 has linked segmented mesh bounds, the generated proxy is sized from those bounds; otherwise it
 is explicitly labeled as schematic proxy geometry. These are objective geometry outputs from
 the supplied plan data. Material choice, printing, post-processing, and any physical use are
-the user's responsibility and risk.
+the user's own responsibility and risk. The package is not a certification, warranty,
+clearance, or authorization to wear or physically use an appliance.
 
 The next print-geometry phase should package intentionally supplied mesh bytes and transform
 actual per-tooth vertices instead of bounded proxy solids.
