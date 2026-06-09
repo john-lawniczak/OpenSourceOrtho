@@ -80,6 +80,7 @@ class ChatRequest(BaseModel):
     provider: ConnectorKind = "local"
     model: str | None = None
     context_scope: ContextScopeName = "summary"
+    ui_context: dict[str, Any] = Field(default_factory=dict)
     session_id: str | None = None
     # Browser-supplied credentials/endpoint for live external connectors. These
     # are never persisted, never echoed back in the response, and only sent on an
@@ -157,13 +158,17 @@ def _local_answer(message: str, context: dict[str, Any]) -> str:
     findings = context.get("findings") or []
     gaps = context.get("data_gaps") or []
     timeline = context.get("timeline") or {}
+    ui_context = context.get("ui_context") or {}
     stage_count = context.get("stage_count", 0)
     duration = timeline.get("projected_duration_weeks")
     first_gap = gaps[0] if gaps else "no declared gap from the current context"
     first_finding = findings[0]["title"] if findings else "no deterministic finding from the current rules"
+    ui_label = ui_context.get("label") or "the current workspace stage"
+    ui_purpose = ui_context.get("purpose") or "review the plan context"
     asked = message.strip()
     return (
-        f"I can review the current plan context, but only as education. This plan has {stage_count} "
+        f"I can review the current plan context, but only as education. You are in {ui_label}, "
+        f"which is used to {ui_purpose}. This plan has {stage_count} "
         f"stage(s)"
         + (f" and projects to about {duration} week(s)" if duration is not None else "")
         + f". The first deterministic signal is: {first_finding}. The first data limitation is: "
@@ -239,6 +244,7 @@ def answer_chat_payload(
     scope = scope_for(request.context_scope)
     context = build_chat_context(plan, scope)
     context["scope"] = scope.name
+    context["ui_context"] = request.ui_context
     connector = connector_for(request.provider if provider is None else getattr(provider, "name", "local"))
     if request.model:
         connector.model = request.model

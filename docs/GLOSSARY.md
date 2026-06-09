@@ -6,9 +6,9 @@ or define clinical thresholds. See [SAFETY.md](SAFETY.md).
 
 ## FDI tooth numbering
 
-OpenSource Ortho identifies teeth using the **FDI two-digit system** (also called
-the ISO 3950 system). The engine uses FDI internally and rejects mixed numbering
-(see `orthoplan/model/identity.py`).
+OpenSource Ortho identifies teeth using the **FDI (FDI World Dental Federation
+notation) two-digit system** (also called the ISO 3950 system). The engine uses
+FDI internally and rejects mixed numbering (see `orthoplan/model/identity.py`).
 
 The first digit is the **quadrant**; the second is the **position** counting out
 from the front midline.

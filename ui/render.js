@@ -158,6 +158,7 @@ export function renderAll() {
   document.body.dataset.sample = state.sample.active ? "1" : "";
   document.body.dataset.generationDetail = state.detailMode.generation;
   document.body.dataset.aiDetail = state.detailMode.ai;
+  document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
   el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
   const toothLabelBtn = el("toothLabelToggle");
   if (toothLabelBtn) {
@@ -302,6 +303,14 @@ export function renderChat() {
   el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
   el("agentEndpoint").value = state.chat.agentEndpoint;
   el("sendChat").disabled = state.chat.busy || !state.chat.input.trim();
+  const toggle = el("toggleChatPanel");
+  if (toggle) {
+    toggle.textContent = state.chat.collapsed ? "Show" : "Hide";
+    toggle.setAttribute("aria-expanded", state.chat.collapsed ? "false" : "true");
+    toggle.setAttribute("aria-label", state.chat.collapsed ? "Expand AI chat" : "Collapse AI chat");
+  }
+  const contextEl = el("chatStageContext");
+  if (contextEl) contextEl.textContent = chatStageLabel();
   // The local helper needs no key, so hide the key field for it; for any real
   // provider show the field with provider-specific, plain-language instructions.
   const isLocal = state.chat.provider === "local";
@@ -318,6 +327,31 @@ export function renderChat() {
       </div>
     `).join("")
     : "<p class=\"chat-empty\">Ask what the preview can and cannot tell you.</p>";
+}
+
+function chatStageLabel() {
+  if (state.userMode === "simple") {
+    const labels = {
+      upload: "Guided step 1: Upload",
+      plan: "Guided step 2: Teeth and time",
+      details: "Guided step 3: Details",
+      review: "Guided step 4: Review",
+      preview: "Guided step 5: 3D preview",
+      print: "Guided step 6: Print / send",
+    };
+    return labels[state.guided.step] || "Guided workflow";
+  }
+  const labels = {
+    upload: "Technician: Upload",
+    availability: "Technician: Data",
+    settings: "Technician: Settings",
+    stages: "Technician: Stages",
+    review: "Technician: Review",
+    toothmap: "Reference: Tooth map",
+    glossary: "Reference: Glossary",
+    photos: "Reference: Imaging guide",
+  };
+  return labels[state.activeStep] || "Technician workflow";
 }
 
 export function renderGeneration() {

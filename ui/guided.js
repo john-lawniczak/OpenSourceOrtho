@@ -1,14 +1,14 @@
 // Guided wizard: the simplified, primary flow for non-technical first-time
 // users. It is a step-by-step walk: upload scans -> review which teeth move and
-// how long -> small details -> review the plan (with a prominent AI box) ->
-// slide through the 3D preview -> get printable files to email/attach.
+// how long -> small details -> review the plan -> slide through the 3D preview
+// -> get printable files to email/attach.
 //
 // This module owns ONLY the wizard's step routing and per-step presentation. It
-// reuses the technician singletons (the 3D viewer block, the AI chat block, the
-// upload stack) by relocating them into guided step hosts - event handling is
-// delegated on document.body and renders target elements by id, so moving a
-// subtree is safe and avoids a second WebGL context. Engine/generation/chat all
-// flow through the same helpers the technician page uses.
+// reuses the technician singletons (the 3D viewer block and the upload stack) by
+// relocating them into guided step hosts - event handling is delegated on
+// document.body and renders target elements by id, so moving a subtree is safe
+// and avoids a second WebGL context. Engine/generation/chat all flow through the
+// same helpers the technician page uses.
 
 import { el, state } from "./state.js";
 import { planJson } from "./plan.js";
@@ -99,17 +99,15 @@ const VIEWER_STEP_HOSTS = {
 };
 
 // Relocate shared singletons into the host for the active mode/step. In guided
-// mode the viewer/AI/upload live inside their wizard steps; in technician mode
-// they return to the review workspace.
+// mode the viewer/upload live inside their wizard steps; in technician mode they
+// return to the review workspace.
 export function placeSharedBlocks() {
   if (state.userMode === "simple") {
     relocate("simpleUpload", "guidedUploadHost");
     relocate("viewerBlock", VIEWER_STEP_HOSTS[currentGuidedStep()] || "guidedPreviewHost");
-    relocate("aiChatBlock", "guidedAiHost");
   } else {
     relocate("simpleUpload", "techUploadHost");
     relocate("viewerBlock", "techViewerHost");
-    relocate("aiChatBlock", "techAiHost");
   }
 }
 

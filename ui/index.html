@@ -105,7 +105,7 @@
         </nav>
 
         <!-- Guided wizard: the primary, simplified flow for first-time users.
-             Heavy singletons (upload stack, 3D viewer, AI chat) are relocated
+             Heavy singletons (upload stack and 3D viewer) are relocated
              into these step hosts by guided.js placeSharedBlocks(). -->
         <section id="guided" aria-label="Guided plan wizard">
           <div class="guided-head">
@@ -199,11 +199,6 @@
             <p class="guided-hint">The headline below is the key result — how many trays, and how long overall. The details follow.</p>
             <div id="guidedHeadline" class="guided-headline"></div>
             <ul id="guidedSummary" class="guided-summary"></ul>
-            <div class="guided-ai">
-              <h4>Ask AI about your plan</h4>
-              <p class="guided-hint">Ask anything about this preview in plain language. Answers are educational only.</p>
-              <div id="guidedAiHost"></div>
-            </div>
           </section>
 
           <section class="gstep" data-gstep="preview">
@@ -525,65 +520,6 @@
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>
-              <div id="techAiHost">
-              <section class="ai-chat" id="aiChatBlock" aria-label="Plan AI chat">
-                <div class="ai-chat-heading">
-                  <h2>Plan AI</h2>
-                  <span id="chatStatus">Local helper ready</span>
-                </div>
-                <div class="detail-switch" aria-label="Plan AI detail level">
-                  <button class="is-active" data-detail-mode="ai" data-detail-value="basic" type="button">Basic</button>
-                  <button data-detail-mode="ai" data-detail-value="advanced" type="button">Advanced</button>
-                </div>
-                <!-- Connector + API key are always visible so it is obvious how to
-                     turn on a real AI. The key field hides for the local helper. -->
-                <div class="ai-connector">
-                  <label>AI provider
-                    <select id="chatProvider">
-                      <option value="local">Local helper (no key needed)</option>
-                      <option value="openai">OpenAI</option>
-                      <option value="claude-code">Claude (Anthropic)</option>
-                      <option value="mcp">MCP host</option>
-                      <option value="odysseus">Odysseus</option>
-                      <option value="open-source">Open-source model</option>
-                    </select>
-                  </label>
-                  <label class="ai-key-field" id="aiKeyField">Your API key
-                    <input id="chatApiKey" type="password" autocomplete="off" placeholder="Paste your API key" />
-                  </label>
-                  <p class="ai-key-help" id="aiKeyHelp"></p>
-                </div>
-                <div class="field-grid chat-controls advanced-ai">
-                  <label>Model
-                    <input id="chatModel" value="local-educational-helper" />
-                  </label>
-                  <label>Context
-                    <select id="chatScope">
-                      <option value="summary">Summary</option>
-                      <option value="clinical">Clinical metadata</option>
-                      <option value="full_plan">Full plan snapshot</option>
-                    </select>
-                  </label>
-                </div>
-                <div id="chatMessages" class="chat-messages"></div>
-                <label class="chat-input">
-                  Ask about this plan
-                  <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
-                </label>
-                <button class="primary-action" id="sendChat" type="button">Ask AI</button>
-                <details class="ai-settings advanced-ai">
-                  <summary>Advanced connector settings</summary>
-                  <label class="toggle">
-                    <span>Allow an external AI agent to request scoped plan context</span>
-                    <input id="agentAccessEnabled" type="checkbox" />
-                  </label>
-                  <label>Agent/MCP endpoint
-                    <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
-                  </label>
-                </details>
-                <p class="viewer-caveat">Your API key is used only for this session: it is never saved to disk and is sent only to the provider you pick, only when you press Ask AI. The local helper sends nothing off this machine. AI answers are educational only.</p>
-              </section>
-              </div>
               <h2 class="advanced-only">Print Export</h2>
               <div id="printExportStatus" class="status-block advanced-only"></div>
               <h2 class="advanced-only">Optimized Staging</h2>
@@ -604,7 +540,7 @@
             <h2>Two ways to number teeth</h2>
             <p>Adults have 32 teeth, and dentists give each one a number so everyone is talking about the same tooth. There are two common numbering systems, so the chart below shows both:</p>
             <ul class="toothmap-systems">
-              <li><strong>FDI (two-digit)</strong> &mdash; used by most of the world and <strong>by this app internally</strong>. The first digit is the <strong>quadrant</strong> (1 upper-right, 2 upper-left, 3 lower-left, 4 lower-right); the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar.</li>
+              <li><strong>FDI (FDI World Dental Federation notation; two-digit)</strong> &mdash; used by most of the world and <strong>by this app internally</strong>. The first digit is the <strong>quadrant</strong> (1 upper-right, 2 upper-left, 3 lower-left, 4 lower-right); the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar.</li>
               <li><strong>Universal (1&ndash;32)</strong> &mdash; the chart most common in the US. It simply counts every tooth in order, starting at the upper-right wisdom tooth (<strong>1</strong>), across the top to the upper-left wisdom tooth (<strong>16</strong>), then down and back across the bottom (<strong>17</strong>&ndash;<strong>32</strong>).</li>
             </ul>
             <p class="toothmap-why"><strong>Why two?</strong> They grew up in different places &mdash; FDI is the international standard, Universal is the long-standing US habit &mdash; and both are still in everyday use. They describe the exact same teeth; only the labels differ. This app speaks FDI and shows Universal alongside it so the chart is readable either way.</p>
@@ -635,14 +571,14 @@
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Glossary &mdash; Key Terms</h2>
             <p>Plain-language definitions for people new to dentistry.</p>
-          </div>
-          <div class="glossary">
-            <h2>Key Terms (A&ndash;Z)</h2>
             <label class="glossary-search">
               <span class="sr-only">Search key terms</span>
               <input id="glossarySearch" type="search" placeholder="Search key terms (e.g. IPR, torque, crowding)" autocomplete="off" />
             </label>
             <p id="glossaryEmpty" class="chat-empty" hidden>No terms match your search.</p>
+          </div>
+          <div class="glossary">
+            <h2>Key Terms (A&ndash;Z)</h2>
             <dl>
               <div><dt>Arch</dt><dd>One jaw's row of teeth: maxillary (upper) or mandibular (lower).</dd></div>
               <div><dt>Attachment</dt><dd>A small composite bump bonded to a tooth so an aligner can grip and move it. Planning intent only.</dd></div>
@@ -747,6 +683,71 @@
           <p class="viewer-caveat">Costs are rough US estimates and vary widely by region, provider, and whether imaging is bundled with a visit. The relative-value scores describe how much each input helps <em>this engine</em> close data gaps &mdash; they are not medical advice and do not rank treatments.</p>
         </section>
       </section>
+      <aside class="ai-rail" aria-label="Plan AI assistant">
+        <section class="ai-chat" id="aiChatBlock" aria-label="Plan AI chat">
+          <div class="ai-chat-heading">
+            <div>
+              <h2>Ask AI About Your Plan</h2>
+              <p id="chatStageContext" class="chat-stage-context"></p>
+            </div>
+            <button id="toggleChatPanel" class="chat-collapse" type="button" aria-expanded="true" aria-label="Collapse AI chat" title="Show or hide AI chat">Hide</button>
+          </div>
+          <div class="ai-chat-body">
+            <span id="chatStatus" class="chat-status">Local helper ready</span>
+            <div class="detail-switch" aria-label="Plan AI detail level">
+              <button class="is-active" data-detail-mode="ai" data-detail-value="basic" type="button">Basic</button>
+              <button data-detail-mode="ai" data-detail-value="advanced" type="button">Advanced</button>
+            </div>
+            <!-- Connector + API key are always visible so it is obvious how to
+                 turn on a real AI. The key field hides for the local helper. -->
+            <div class="ai-connector">
+              <label>AI provider
+                <select id="chatProvider">
+                  <option value="local">Local helper (no key needed)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="claude-code">Claude (Anthropic)</option>
+                  <option value="mcp">MCP host</option>
+                  <option value="odysseus">Odysseus</option>
+                  <option value="open-source">Open-source model</option>
+                </select>
+              </label>
+              <label class="ai-key-field" id="aiKeyField">Your API key
+                <input id="chatApiKey" type="password" autocomplete="off" placeholder="Paste your API key" />
+              </label>
+              <p class="ai-key-help" id="aiKeyHelp"></p>
+            </div>
+            <div class="field-grid chat-controls advanced-ai">
+              <label>Model
+                <input id="chatModel" value="local-educational-helper" />
+              </label>
+              <label>Context
+                <select id="chatScope">
+                  <option value="summary">Summary</option>
+                  <option value="clinical">Clinical metadata</option>
+                  <option value="full_plan">Full plan snapshot</option>
+                </select>
+              </label>
+            </div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <label class="chat-input">
+              Ask about this plan
+              <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
+            </label>
+            <button class="primary-action" id="sendChat" type="button">Ask AI</button>
+            <details class="ai-settings advanced-ai">
+              <summary>Advanced connector settings</summary>
+              <label class="toggle">
+                <span>Allow an external AI agent to request scoped plan context</span>
+                <input id="agentAccessEnabled" type="checkbox" />
+              </label>
+              <label>Agent/MCP endpoint
+                <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
+              </label>
+            </details>
+            <p class="viewer-caveat">Your API key is used only for this session: it is never saved to disk and is sent only to the provider you pick, only when you press Ask AI. The local helper sends nothing off this machine. AI answers are educational only.</p>
+          </div>
+        </section>
+      </aside>
     </main>
     <script type="module" src="./app.js"></script>
   </body>
