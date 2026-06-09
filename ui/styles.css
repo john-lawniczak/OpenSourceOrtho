@@ -545,6 +545,35 @@ body[data-theme="dark"] .sample-banner {
   display: none;
 }
 
+/* Prominent "how the 3D view works" card near the top of the Teeth step, so the
+   click-to-hold behaviour is explained before the user reaches the viewer. */
+.viewer-legend-card {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--accent);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--panel-alt);
+}
+
+.viewer-legend-card h4 {
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+
+.viewer-legend-card p {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 13.5px;
+}
+
+.viewer-legend-card .viewer-legend {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
 /* Key for the 3D markers (matches the viewer colours: teal dot = a tooth,
    blue-grey = held still, blue arrow = planned movement). */
 .viewer-legend {
