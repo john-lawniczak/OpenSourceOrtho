@@ -7,7 +7,16 @@ import {
   state,
   toothPositions,
 } from "./state.js";
-import { confidenceTier, countNoteMarkup, createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
+import {
+  archFromTooth,
+  confidenceTier,
+  countNoteMarkup,
+  createLatest,
+  escapeHtml,
+  framePoseTotals,
+  inferArchFromName,
+  toothKind,
+} from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
 import { renderGuided, toggleExcludedTooth } from "./guided.js";
@@ -99,7 +108,7 @@ function updateViewer(result) {
   if (!v) return;
   v.resize();
   const allScanSources = state.files.length
-    ? state.files.map((file) => ({ name: file.name, file, arch: inferSourceArch(file.name) }))
+    ? state.files.map((file) => ({ name: file.name, file, arch: inferArchFromName(file.name) }))
     : state.scanSources;
   const scanSources = filterScanSources(allScanSources);
   if (scanSources.length) {
@@ -273,38 +282,12 @@ function renderReviewHeading() {
 
 function filterScanSources(sources) {
   if (state.scanArchFilter === "both") return sources;
-  return sources.filter((source) => (source.arch || inferSourceArch(source.name)) === state.scanArchFilter);
-}
-
-function inferSourceArch(name = "") {
-  const text = name.toLowerCase();
-  if (
-    text.includes("upper") ||
-    text.includes("top") ||
-    text.includes("maxilla") ||
-    text.includes("maxillary") ||
-    /(^|[-_\s])u(\.stl|[-_\s])/.test(text)
-  ) {
-    return "maxillary";
-  }
-  if (
-    text.includes("lower") ||
-    text.includes("bottom") ||
-    text.includes("mandible") ||
-    text.includes("mandibular") ||
-    /(^|[-_\s])l(\.stl|[-_\s])/.test(text)
-  ) {
-    return "mandibular";
-  }
-  return null;
+  return sources.filter((source) => (source.arch || inferArchFromName(source.name)) === state.scanArchFilter);
 }
 
 function toothMatchesArch(tooth) {
   if (state.scanArchFilter === "both") return true;
-  const q = String(tooth || "")[0];
-  let arch = null;
-  if (q === "1" || q === "2") arch = "maxillary";
-  if (q === "3" || q === "4") arch = "mandibular";
+  const arch = archFromTooth(tooth);
   if (!arch) return true;
   return arch === state.scanArchFilter;
 }

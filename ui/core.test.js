@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   FULL_ARCH_TEETH,
+  archFromTooth,
   confidenceTier,
   countNoteMarkup,
   createLatest,
@@ -11,7 +12,10 @@ import {
   displacement,
   escapeHtml,
   framePoseTotals,
+  inferArchFromName,
+  normalizeArchLabel,
   rotationApplications,
+  rowsFromPlan,
   stageBuckets,
   toothKind,
 } from "./core.js";
@@ -111,6 +115,30 @@ test("stageBuckets groups multiple rows per stage and sorts", () => {
 
 test("stageBuckets handles no rows", () => {
   assert.deepEqual(stageBuckets([]), []);
+});
+
+test("rowsFromPlan maps engine stages into editable UI rows", () => {
+  const rows = rowsFromPlan({
+    stages: [
+      {
+        index: 2,
+        deltas: [
+          {
+            tooth: { value: "11" },
+            translate_x_mm: 0.1,
+            translate_y_mm: 0.2,
+            translate_z_mm: 0.3,
+            rotate_tip_deg: 1,
+            rotate_torque_deg: 2,
+            rotate_rotation_deg: 3,
+          },
+        ],
+      },
+    ],
+  });
+  assert.deepEqual(rows, [
+    { stage: 2, tooth: "11", x: 0.1, y: 0.2, z: 0.3, tip: 1, torque: 2, rotation: 3 },
+  ]);
 });
 
 test("framePoseTotals maps tooth -> translation from a frame", () => {
@@ -223,4 +251,16 @@ test("syntheticCrowdingRows can keep stage 0 as a before-state baseline", () => 
 test("canonical scan sources expose upper and lower STL fixtures", () => {
   assert.deepEqual(canonicalScanSources.map((source) => source.arch), ["maxillary", "mandibular"]);
   assert.ok(canonicalScanSources.every((source) => source.url.endsWith(".stl")));
+});
+
+test("arch helpers normalize labels, file names, and FDI quadrants", () => {
+  assert.equal(normalizeArchLabel("upper"), "maxillary");
+  assert.equal(normalizeArchLabel("mandibular"), "mandibular");
+  assert.equal(normalizeArchLabel("unknown"), null);
+  assert.equal(inferArchFromName("sample-test-case-upper.stl"), "maxillary");
+  assert.equal(inferArchFromName("scan_l.stl"), "mandibular");
+  assert.equal(inferArchFromName("scan.stl"), null);
+  assert.equal(archFromTooth("11"), "maxillary");
+  assert.equal(archFromTooth("38"), "mandibular");
+  assert.equal(archFromTooth("99"), null);
 });
