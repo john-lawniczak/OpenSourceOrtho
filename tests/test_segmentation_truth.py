@@ -7,6 +7,7 @@ from orthoplan.validation import run_measurement_lab
 from orthoplan.validation.segmentation_truth import (
     build_synthetic_arch,
     full_arch_truth,
+    realistic_widths,
     score_segmentation,
 )
 
@@ -87,7 +88,32 @@ def test_missing_tooth_case_recovers_correct_count() -> None:
 
 def test_segmentation_cases_registered_in_lab() -> None:
     ids = {r.case_id for r in run_measurement_lab()}
-    assert {"segmentation-full-arch-accuracy", "segmentation-missing-tooth"} <= ids
+    assert {
+        "segmentation-full-arch-accuracy",
+        "segmentation-realistic-arch-accuracy",
+        "segmentation-missing-tooth",
+    } <= ids
+
+
+def test_realistic_arch_case_passes_the_hard_floor() -> None:
+    # Uneven widths + flat molar plateaus + noise: the real-scan-like stressor.
+    result = run_measurement_lab("segmentation-realistic-arch-accuracy")[0]
+    assert result.passed is True
+    assert result.observed["tooth_count_error"] == 0
+    assert result.observed["triangle_label_accuracy"] >= result.expected["min_triangle_label_accuracy"]
+
+
+def test_adaptive_cuts_avoid_sliver_regions_on_uneven_arch() -> None:
+    # The adaptive (prominence + min-separation) placement must not collapse two
+    # cuts onto one embrasure, which previously produced a 1-triangle sliver region
+    # and shifted every downstream FDI label by one position.
+    from orthoplan.segmentation.auto import load_local_segmenter
+
+    teeth = full_arch_truth("maxillary")
+    arch = build_synthetic_arch(teeth, sector_weights=realistic_widths(teeth))
+    segments = load_local_segmenter().segment(arch.vertices, arch="maxillary")
+    smallest = min(len(seg.triangles) for seg in segments)
+    assert smallest >= 3  # no degenerate sliver region
 
 
 def test_build_synthetic_arch_models_an_open_gap() -> None:
