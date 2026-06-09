@@ -85,14 +85,15 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
   `case-list`, `case-versions`).
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
-  plan context, findings, data gaps, and timeline. The AI box shows the
-  **provider selector and an API-key field with plain-language instructions**
-  directly, so it is obvious how to enable a real model; the key field is hidden
-  for the **local helper**, which works without any key or external service. Live
-  connectors for OpenAI, Claude (Anthropic), and any OpenAI-compatible host
-  (MCP/Odysseus/open-source local models) are available and gated behind an
-  explicit per-session consent that data leaves the machine. The key is read only
-  when you press **Ask AI** and is never persisted.
+  plan context, findings, data gaps, and timeline. The AI box shows a **single
+  model dropdown** (each option carries its provider) and an **API-key field with
+  plain-language instructions**, so it is obvious how to enable a real model; the
+  key field is hidden for the **local helper**, which works without any key or
+  external service. Live connectors for OpenAI (GPT), Claude (Anthropic), and any
+  OpenAI-compatible host (MCP / open-source / self-hosted local models) are
+  available and gated behind explicit per-session consent that data leaves the
+  machine. The chat always sends the full plan context. The key is read only when
+  you press **Ask AI** and is never persisted.
 
 It is not an Invisalign clone, autonomous diagnostic system, clinical approval system, or complete treatment-planning system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations. Any physical use is the user's own responsibility and risk. The software and outputs are provided without warranty or liability for diagnosis, treatment, manufacturing, fit, materials, injury, regulatory compliance, or other use. The roadmap intentionally separates STL-only surface review from CBCT/DICOM-enhanced root/bone-aware review.
 
@@ -151,12 +152,13 @@ Case** to return - your own work is untouched.
 
 In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
 ask educational questions about the active plan. The default local helper stays on
-this machine and needs no key. To use an external model, pick a provider
-(OpenAI, Claude, or an OpenAI-compatible endpoint) in the AI box and paste your
-API key in the field shown there; advanced agent/MCP-endpoint and consent options
-live under **Advanced connector settings**. The key is read only when you press
-**Ask AI**; it is never written to plans, case snapshots, or `localStorage` and is
-never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+this machine and needs no key. To use an external model, pick it from the single
+**model dropdown** (e.g. GPT-5.5, Claude Opus 4.8, or an open-source / self-hosted
+endpoint) in the AI box and paste your API key in the field shown there; the model
+endpoint and egress-consent options live under **Connector settings**. The key is
+read only when you press **Ask AI**; it is never written to plans, case snapshots,
+or `localStorage` and is never echoed back by the server. See
+[docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 
