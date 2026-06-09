@@ -388,6 +388,10 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "proximityToggle") {
     toggleProximity();
   }
+  if (button?.id === "scaleToggle") {
+    state.showScale = !state.showScale;
+    renderAll();
+  }
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();

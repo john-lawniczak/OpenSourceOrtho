@@ -13,6 +13,7 @@ import { planJson } from "./plan.js";
 import { renderGuided, toggleExcludedTooth } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 import { parseMissingTeeth } from "./segment.js";
+import { formatScaleStatus } from "./scale.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -162,6 +163,8 @@ function updateViewer(result) {
     view: guidedSelect ? "overlay" : state.view,
     exaggeration: numberValue("exaggeration") || 1,
     showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
+    showScale: state.showScale,
+    unitsConfirmed: scaleConfirmed(state.scanUnits),
     excluded: state.guided.excludedTeeth,
   });
   // The occlusal proximity overlay rides the registered scans. loadProximity caches
@@ -170,6 +173,16 @@ function updateViewer(result) {
   v.setProximityVisible(
     Boolean(state.proximity.enabled && state.proximity.map?.aligned_to_scan),
   );
+  // True-scale reference status (with the loaded scan's measured extent, if shown).
+  const unitsConfirmed = scaleConfirmed(state.scanUnits);
+  const extentMm = state.showScale && unitsConfirmed ? v.scanExtentMm() : null;
+  state.scaleStatus = formatScaleStatus({
+    enabled: state.showScale,
+    hasScan: scanSources.length > 0,
+    unitsConfirmed,
+    extentMm,
+  });
+  renderScale();
 }
 
 export function renderAll() {
@@ -236,6 +249,7 @@ export function renderAll() {
   renderVersions();
   renderScanStatus();
   renderProximity();
+  renderScale();
   renderSampleStatus();
   renderSegmentation();
   renderManualEdit();
@@ -719,6 +733,19 @@ function renderProximity() {
   if (status) {
     status.textContent = prox.status;
     status.hidden = !prox.status;
+  }
+}
+
+function renderScale() {
+  const button = el("scaleToggle");
+  if (button) {
+    button.classList.toggle("is-active", state.showScale);
+    button.setAttribute("aria-pressed", state.showScale ? "true" : "false");
+  }
+  const status = el("scaleStatus");
+  if (status) {
+    status.textContent = state.scaleStatus;
+    status.hidden = !state.scaleStatus;
   }
 }
 

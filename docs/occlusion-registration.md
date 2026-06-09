@@ -89,8 +89,14 @@ detail (see next steps).
       the rendered scans. Framed as geometric proximity, NOT bite force. NOTE: still
       at the coarse ~0.9 mm grid cell - a future pass may use nearest-surface
       distance for finer contact detail.
-- [ ] **3D scale reference**: a mm grid / scale bar in the viewer, using
-      `extent_mm` and the confirmed scan units. Gated on units being confirmed.
+- [x] **3D scale reference** (shipped): a "Scale" viewer toggle draws a labelled
+      10 mm reference bar beside a loaded scan (`viewer3d.js` `updateScaleBar`), with
+      a status strip reporting the scan's measured W×H×D extent. It is pure viewer
+      geometry from the scan's true-scale bounding box (so it works for any loaded
+      scan, not only the occlusion path) and is gated on confirmed mm units - the
+      status tells the user to confirm units otherwise. Text logic in `ui/scale.js`
+      (unit-tested); honesty: the scan geometry is true-scale, only tooth movement is
+      exaggerated.
 - [ ] **Viewer integration**: an option to show the *true* registered occlusion
       (vs. today's schematic separated layout), reusing `apply_registration`.
 - [ ] **API seam**: expose registration metrics on the evaluate/segment response if
