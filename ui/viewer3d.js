@@ -28,6 +28,14 @@ const SCAN = new THREE.MeshPhysicalMaterial({
 const ATTACHMENT = new THREE.MeshStandardMaterial({ color: 0xb45309 });
 const ATTACHMENT_BOX = new THREE.BoxGeometry(0.9, 0.55, 0.45);
 const LINE_MAT = new THREE.LineBasicMaterial({ color: 0x2563eb });
+// Honest movement indicators for an un-segmented whole-arch scan: a small marker
+// dot per tooth (the pickable, selection-aware target) plus an arrow showing
+// where that tooth is planned to move. No fake crowns - the scan stays the teeth.
+const MARKER = new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.5, metalness: 0.0 });
+const MARKER_GEO = new THREE.SphereGeometry(0.7, 16, 12);
+const ARROW_MAT = new THREE.MeshBasicMaterial({ color: 0x2563eb });
+const ARROW_HEAD = new THREE.ConeGeometry(0.5, 1.4, 12);
+const ARROW_MIN_MM = 0.3; // below this displacement, show only the marker
 const meshGeometryCache = new Map();
 const meshUrlCache = new Map();
 const syntheticToothCache = new Map();
@@ -332,6 +340,12 @@ export function createViewer(container) {
     // current/overlay, hidden in planned by the visibility rule above).
     const fragmentMode = fragmentCache.size > 0 && uploadedScans.children.length > 0;
     const scanBase = uploadedScans.position;
+    // Arrow mode: a scan is loaded but NOT segmented, so there are no real crowns
+    // to move. Rather than float synthetic peg crowns (which read as "the anchors
+    // move, not the teeth"), mark each tooth on the scan and draw an arrow showing
+    // its planned movement. Segmented scans use real crowns (fragmentMode); a
+    // scan-less demo keeps the schematic proxies below.
+    const arrowMode = !fragmentMode && scanAnchors.size > 0 && uploadedScans.children.length > 0;
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
       .map((item) => item.tooth?.value));
@@ -371,6 +385,31 @@ export function createViewer(container) {
             proxies.add(new THREE.Line(geom, LINE_MAT));
           }
         }
+        continue;
+      }
+
+      // Un-segmented scan: a marker dot at the tooth + an arrow for its movement.
+      if (arrowMode) {
+        const spot = scanAnchors.get(String(pose.tooth));
+        if (!spot) continue;
+        const held = excludedSet.has(String(pose.tooth));
+        const markerMat = held ? HELD : (selectedTooth === pose.tooth ? SELECTED : MARKER);
+        const marker = new THREE.Mesh(MARKER_GEO, markerMat);
+        marker.position.copy(spot.pos);
+        marker.scale.set(spot.scale, spot.scale * 0.5, spot.scale);
+        marker.userData.tooth = pose.tooth;
+        proxies.add(marker);
+        const delta = showPlanned && !held ? worldDeltaOriented(pose, exaggeration) : new THREE.Vector3();
+        if (showToothLabels) {
+          let label = toothLabelSprites.get(pose.tooth);
+          if (!label) {
+            label = makeToothNumberSprite(String(pose.tooth));
+            toothLabelSprites.set(pose.tooth, label);
+          }
+          label.position.copy(spot.pos).add(delta).add(new THREE.Vector3(0, 2.4, 0));
+          proxies.add(label);
+        }
+        if (delta.length() > ARROW_MIN_MM) addMovementArrow(spot.pos, delta);
         continue;
       }
 
@@ -469,6 +508,21 @@ export function createViewer(container) {
   function positionArchLabels() {
     upperLabel.position.copy(archLabelPos.upper || UPPER_LABEL_POS);
     lowerLabel.position.copy(archLabelPos.lower || LOWER_LABEL_POS);
+  }
+
+  // A blue shaft + cone arrowhead from `origin` along `delta` (movement vector).
+  // The shaft geometry is per-update (tracked for disposal); the cone reuses a
+  // shared geometry. Used by arrow mode to show planned movement on a scan.
+  function addMovementArrow(origin, delta) {
+    const tip = origin.clone().add(delta);
+    const geom = new THREE.BufferGeometry().setFromPoints([origin, tip]);
+    lineGeometries.push(geom);
+    proxies.add(new THREE.Line(geom, LINE_MAT));
+    const cone = new THREE.Mesh(ARROW_HEAD, ARROW_MAT);
+    cone.position.copy(tip);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.clone().normalize());
+    cone.scale.setScalar(Math.min(Math.max(delta.length() * 0.18, 0.5), 2.0));
+    proxies.add(cone);
   }
 
   // Sample one anchor point per tooth on the uploaded scan's occlusal surface so
