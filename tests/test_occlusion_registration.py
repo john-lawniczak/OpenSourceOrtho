@@ -12,7 +12,12 @@ from pathlib import Path
 
 import pytest
 
-from orthoplan.occlusion import apply_registration, build_occlusal_grid, register_bite
+from orthoplan.occlusion import (
+    apply_registration,
+    build_occlusal_grid,
+    register_bite,
+    registration_to_dict,
+)
 from orthoplan.validation.occlusion_truth import build_occluding_arches
 
 
@@ -72,6 +77,18 @@ def test_occlusal_grid_clearance_signs() -> None:
     # Every shared cell sees the upper plane 1.0 above the lower plane (a clean gap).
     assert all(abs(c - 1.0) <= 1e-6 for c in clearances)
     assert grid.coverage() >= 0.85
+
+
+def test_registration_to_dict_is_json_shaped() -> None:
+    upper, lower, _truth = build_occluding_arches(gap_mm=0.4)
+    payload = registration_to_dict(register_bite(upper, lower))
+    assert set(payload) >= {
+        "mode", "approximate", "lower_offset", "occlusal_gap_mm", "interpenetration_mm",
+        "contact_fraction", "midline_offset_mm", "coverage", "extent_mm", "confidence", "notes",
+    }
+    # Lists, not tuples, so it serializes cleanly to JSON.
+    assert payload["lower_offset"] == [0.0, 0.0, 0.0]
+    assert isinstance(payload["extent_mm"], list) and len(payload["extent_mm"]) == 3
 
 
 def test_real_bundled_scans_register_as_scanned() -> None:

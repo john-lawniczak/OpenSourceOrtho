@@ -26,6 +26,7 @@ confirmed.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from orthoplan.model.geometry import Vec3
 from orthoplan.occlusion.grid import _CONTACT_BAND, build_occlusal_grid
@@ -171,3 +172,23 @@ def apply_registration(lower: list[Vec3], registration: BiteRegistration) -> lis
 
     ox, oy, oz = registration.lower_offset
     return [(p[0] + ox, p[1] + oy, p[2] + oz) for p in lower]
+
+
+def registration_to_dict(registration: BiteRegistration) -> dict[str, Any]:
+    """Serialize a BiteRegistration for an API response (shared by occlusion/segment)."""
+
+    return {
+        "mode": registration.mode,
+        "approximate": registration.approximate,
+        # Translation to apply to the LOWER arch to reach the shared frame; (0,0,0)
+        # for as-scanned. The viewer applies it for the registered-bite view.
+        "lower_offset": list(registration.lower_offset),
+        "occlusal_gap_mm": registration.occlusal_gap_mm,
+        "interpenetration_mm": registration.interpenetration_mm,
+        "contact_fraction": registration.contact_fraction,
+        "midline_offset_mm": registration.midline_offset_mm,
+        "coverage": registration.coverage,
+        "extent_mm": list(registration.extent_mm),
+        "confidence": registration.confidence,
+        "notes": registration.notes,
+    }

@@ -108,22 +108,18 @@ detail (see next steps).
       further step. There is no bundled separate-frame fixture, so this path is
       exercised by `register_bite` unit tests + the pure offset-mapping helper tests,
       not end-to-end in the viewer.
-- [x] **API seam** (closed — no separate work needed): **`/api/occlusion` IS the
-      seam.** It already returns the full registration metrics (`mode`,
-      `occlusal_gap_mm`, `interpenetration_mm`, `contact_fraction`, `coverage`,
-      `midline_offset_mm`, `extent_mm`, `lower_offset`) for the only consumer today
-      (the viewer). It is deliberately NOT folded into `evaluate`/`segment`:
-      `evaluate_plan` takes a `TreatmentPlan` (no raw upper+lower arch pair) and
-      `segment_payload` takes one arch at a time, so neither has the inputs
-      registration needs; and embedding occlusion in the plan-evaluation response
-      would blur the non-device boundary (it would read as "the plan includes an
-      occlusal analysis"). Revisit only when a concrete server-side consumer appears
-      — e.g. a report/print-package that embeds bite metrics, or a CLI/headless
-      caller wrapping `register_bite`. **A local-AI chat explanation is a valid such
-      consumer, but it would CONSUME this endpoint's output** (passed into the chat
-      context the browser already holds), not require a new `evaluate`/`segment`
-      field — and it must EXPLAIN the geometric numbers educationally, never
-      *evaluate/diagnose the patient's bite* (see Risks).
+- [x] **API seam** (shipped — on `/api/segment`): when a `/api/segment` request
+      includes BOTH an upper and a lower scan (the UI already sends the loaded pair),
+      the response carries an `occlusion` block with the full bite-registration
+      metrics (`registration_to_dict`: mode, `lower_offset`, gaps, contact fraction,
+      coverage, extent, confidence) plus a geometric/not-a-diagnosis caveat; it is
+      `null` for a single-arch request. Computed from the vertices already read for
+      segmentation (no second STL read) and isolated so a registration failure never
+      sinks the segmentation result. `registration_to_dict` is shared with
+      `/api/occlusion`. NOT added to `/api/evaluate`: a `TreatmentPlan` has no raw
+      arch pair, and embedding occlusion in plan evaluation would blur the non-device
+      boundary. A local-AI chat explanation remains a possible future consumer of
+      this same data (educational explanation only, never a bite diagnosis).
 
 ## Constraints honoured
 

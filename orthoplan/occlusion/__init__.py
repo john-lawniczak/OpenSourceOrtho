@@ -14,6 +14,7 @@ from orthoplan.occlusion.registration import (
     BiteRegistration,
     apply_registration,
     register_bite,
+    registration_to_dict,
 )
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "BiteRegistration",
     "register_bite",
     "apply_registration",
+    "registration_to_dict",
     "ProximityMap",
     "classify_proximity",
     "proximity_map_to_dict",

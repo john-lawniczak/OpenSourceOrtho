@@ -134,6 +134,49 @@ def test_segment_payload_fragment_merges_into_a_valid_plan(tmp_path: Path) -> No
     assert {m.id for m in plan.mesh_assets} >= {link.mesh_asset_id for link in plan.tooth_meshes}
 
 
+def test_segment_payload_includes_occlusion_for_both_arches(tmp_path: Path) -> None:
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    _write_arch_stl(ui_dir / "upper.stl")
+    _write_arch_stl(ui_dir / "lower.stl")
+
+    result = segment_payload(
+        {
+            "scans": [
+                {"reference": "upper.stl", "arch": "maxillary"},
+                {"reference": "lower.stl", "arch": "mandibular"},
+            ]
+        },
+        ui_dir=ui_dir,
+        workspace=tmp_path / "ws",
+    )
+
+    assert result["ok"] is True
+    occ = result["occlusion"]
+    assert occ is not None  # both arches present -> bite registration computed
+    assert occ["mode"] in {"as-scanned", "estimated"}
+    assert isinstance(occ["lower_offset"], list) and len(occ["lower_offset"]) == 3
+    assert "extent_mm" in occ and "contact_fraction" in occ
+    # The geometric / not-a-diagnosis framing travels with the metrics.
+    assert "not a" in occ["caveat"].lower() or "not " in occ["caveat"].lower()
+
+
+def test_segment_payload_omits_occlusion_for_single_arch(tmp_path: Path) -> None:
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    _write_arch_stl(ui_dir / "scan.stl")
+
+    result = segment_payload(
+        {"scans": [{"reference": "scan.stl", "arch": "maxillary"}]},
+        ui_dir=ui_dir,
+        workspace=tmp_path / "ws",
+    )
+
+    assert result["ok"] is True
+    # Occlusion is a relationship between two arches; one arch -> no block.
+    assert result["occlusion"] is None
+
+
 def test_segment_payload_rejects_unresolvable_scan(tmp_path: Path) -> None:
     result = segment_payload(
         {"scans": [{"reference": "../../etc/passwd", "arch": "maxillary"}]},
