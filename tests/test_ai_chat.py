@@ -68,6 +68,10 @@ def test_local_chat_returns_auditable_session() -> None:
             "provider": "local",
             "model": "local-test-model",
             "context_scope": "summary",
+            "ui_context": {
+                "label": "Guided step 4: Review",
+                "purpose": "summarize the tray count and projected duration",
+            },
         }
     )
 
@@ -77,6 +81,8 @@ def test_local_chat_returns_auditable_session() -> None:
     assert result["session"]["context_scope"]["name"] == "summary"
     assert result["session"]["messages"][0]["role"] == "user"
     assert result["session"]["messages"][1]["role"] == "assistant"
+    assert "Guided step 4: Review" in result["session"]["messages"][1]["content"]
+    assert result["context"]["ui_context"]["label"] == "Guided step 4: Review"
     assert result["context"]["plan_hash"] == result["session"]["plan_hash"]
 
 

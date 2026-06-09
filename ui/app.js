@@ -44,6 +44,66 @@ function setUserMode(mode) {
 // (teeth, details, preview all now embed it) - request a one-shot re-frame that
 // runs after the next evaluation populates the scene at its real size.
 const VIEWER_GUIDED_STEPS = new Set(["plan", "details", "preview"]);
+const GUIDED_STAGE_CONTEXT = {
+  upload: {
+    label: "Guided step 1: Upload",
+    purpose: "Collect STL scan files and confirm the educational-use acknowledgement.",
+  },
+  plan: {
+    label: "Guided step 2: Teeth and time",
+    purpose: "Generate a starter staged plan, choose which teeth move, and set tray wear interval.",
+  },
+  details: {
+    label: "Guided step 3: Details",
+    purpose: "Adjust preview-only movement exaggeration and inspect how movement appears.",
+  },
+  review: {
+    label: "Guided step 4: Review",
+    purpose: "Summarize tray count, projected duration, and moved teeth in plain language.",
+  },
+  preview: {
+    label: "Guided step 5: 3D preview",
+    purpose: "Scrub through the staged movement timeline in the 3D viewer.",
+  },
+  print: {
+    label: "Guided step 6: Print / send",
+    purpose: "Prepare downloadable print handoff artifacts after review.",
+  },
+};
+const TECH_STAGE_CONTEXT = {
+  upload: {
+    label: "Technician step: Upload STL",
+    purpose: "Add upper/lower STL scans and set scan units and arch metadata.",
+  },
+  availability: {
+    label: "Technician step: Data availability",
+    purpose: "Declare available records so data gaps and acquisition guidance are accurate.",
+  },
+  settings: {
+    label: "Technician step: Movement settings",
+    purpose: "Set movement caps, print metadata, and clinical controls such as fixed teeth, attachments, exclusions, and IPR.",
+  },
+  stages: {
+    label: "Technician step: Stage builder",
+    purpose: "Author per-tooth staged movement rows using FDI tooth IDs, millimeters, and degrees.",
+  },
+  review: {
+    label: "Technician step: Review",
+    purpose: "Inspect the visual timeline, findings, generate-plan output, segmentation, versions, downloads, and plan JSON.",
+  },
+  toothmap: {
+    label: "Reference: Tooth map",
+    purpose: "Explain FDI and Universal numbering for identifying teeth.",
+  },
+  glossary: {
+    label: "Reference: Glossary",
+    purpose: "Define dental and planning terms in plain language.",
+  },
+  photos: {
+    label: "Reference: Imaging and photos guide",
+    purpose: "Explain what records help the engine and what each record adds.",
+  },
+};
 
 function maybeRecenterPreview() {
   if (state.userMode === "simple" && VIEWER_GUIDED_STEPS.has(state.guided.step)) {
@@ -321,6 +381,10 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "sendChat") {
     sendChatMessage();
   }
+  if (button?.id === "toggleChatPanel") {
+    state.chat.collapsed = !state.chat.collapsed;
+    renderChat();
+  }
   if (button?.id === "generatePlan") {
     generatePlan();
   }
@@ -508,6 +572,7 @@ async function sendChatMessage() {
       provider: state.chat.provider,
       model: state.chat.model,
       context_scope: state.chat.contextScope,
+      ui_context: buildChatUiContext(),
       api_key: apiKey || undefined,
       endpoint: state.chat.agentEndpoint.trim() || undefined,
       share_acknowledged: state.chat.agentAccessEnabled,
@@ -533,6 +598,53 @@ async function sendChatMessage() {
     state.chat.busy = false;
     renderChat();
   }
+}
+
+function buildChatUiContext() {
+  const active = state.userMode === "simple"
+    ? state.guided.step
+    : state.activeStep;
+  const stage = state.userMode === "simple"
+    ? GUIDED_STAGE_CONTEXT[active] || GUIDED_STAGE_CONTEXT.upload
+    : TECH_STAGE_CONTEXT[active] || TECH_STAGE_CONTEXT.upload;
+  const evaluation = state.lastEval || {};
+  return {
+    mode: state.userMode === "simple" ? "Guided" : "Technician",
+    active_step: active,
+    label: stage.label,
+    purpose: stage.purpose,
+    plan_title: el("planTitle").value,
+    plan_id: el("planId").value,
+    scan_files: state.files.map((file) => file.name),
+    scan_units: state.scanUnits,
+    scan_arch: state.scanArch || "unknown",
+    row_count: state.rows.length,
+    stage_rows: state.rows,
+    guided: {
+      step: state.guided.step,
+      excluded_teeth: state.guided.excludedTeeth,
+      goal: state.simpleGoal,
+      acknowledged: state.simpleAcknowledged,
+      print_status: state.guided.print.status,
+    },
+    generation: {
+      status: state.generation.status,
+      source: state.generation.result?.source || null,
+      has_landmarks: Boolean(state.generation.landmarks),
+    },
+    segmentation: {
+      status: state.segmentation.status,
+      proposed_count: state.segmentation.proposal?.teeth?.length || 0,
+      applied_count: state.segmentation.applied?.tooth_meshes?.length || 0,
+      missing_teeth: state.segmentation.missingTeeth,
+    },
+    current_evaluation: {
+      finding_count: evaluation.findings?.length || 0,
+      data_gaps: evaluation.data_gaps || [],
+      acquisition_next: evaluation.acquisition?.items || [],
+      timeline: evaluation.timeline || null,
+    },
+  };
 }
 
 function rowsFromPlan(plan) {
