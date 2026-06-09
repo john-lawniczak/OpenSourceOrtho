@@ -108,8 +108,22 @@ detail (see next steps).
       further step. There is no bundled separate-frame fixture, so this path is
       exercised by `register_bite` unit tests + the pure offset-mapping helper tests,
       not end-to-end in the viewer.
-- [ ] **API seam**: expose registration metrics on the evaluate/segment response if
-      a consumer needs them server-side.
+- [x] **API seam** (closed — no separate work needed): **`/api/occlusion` IS the
+      seam.** It already returns the full registration metrics (`mode`,
+      `occlusal_gap_mm`, `interpenetration_mm`, `contact_fraction`, `coverage`,
+      `midline_offset_mm`, `extent_mm`, `lower_offset`) for the only consumer today
+      (the viewer). It is deliberately NOT folded into `evaluate`/`segment`:
+      `evaluate_plan` takes a `TreatmentPlan` (no raw upper+lower arch pair) and
+      `segment_payload` takes one arch at a time, so neither has the inputs
+      registration needs; and embedding occlusion in the plan-evaluation response
+      would blur the non-device boundary (it would read as "the plan includes an
+      occlusal analysis"). Revisit only when a concrete server-side consumer appears
+      — e.g. a report/print-package that embeds bite metrics, or a CLI/headless
+      caller wrapping `register_bite`. **A local-AI chat explanation is a valid such
+      consumer, but it would CONSUME this endpoint's output** (passed into the chat
+      context the browser already holds), not require a new `evaluate`/`segment`
+      field — and it must EXPLAIN the geometric numbers educationally, never
+      *evaluate/diagnose the patient's bite* (see Risks).
 
 ## Constraints honoured
 
