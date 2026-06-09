@@ -152,6 +152,16 @@ function worldOffset(offset = {}, exaggeration) {
   );
 }
 
+// Movement for meshes that live in SCAN-ORIENTED space (the segmented per-tooth
+// fragments). orientScanGeometry rotates the scan by rotateX(-90), mapping a
+// scan-local point (x, y, z) -> world (x, z, -y); applying the same map to a
+// pose displacement keeps a fragment's motion consistent with the scan it was
+// cut from (front-back is negated vs the schematic-proxy worldDelta).
+function worldDeltaOriented(pose, exaggeration) {
+  const d = displacement(pose, exaggeration);
+  return new THREE.Vector3(d.x, d.z, -d.y);
+}
+
 function plannedQuaternion(pose, frame) {
   const quat = new THREE.Quaternion();
   for (const { axis, angleRad } of rotationApplications(pose, frame)) {
@@ -257,6 +267,11 @@ export function createViewer(container) {
   let scanAnchors = new Map();
   // Where to float each arch's text label (over the scan when one is loaded).
   let archLabelPos = {};
+  // Segmented per-tooth crown geometries, keyed by FDI value, in scan-oriented
+  // space (NOT centered) so they assemble into the arch at their true positions.
+  // Populated by loadToothFragments after the user applies segmentation; when
+  // present the planned layer draws these real crowns moving instead of proxies.
+  const fragmentCache = new Map();
   // Per-update line geometries are freshly allocated each rebuild (unlike the
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
@@ -311,11 +326,54 @@ export function createViewer(container) {
     const showCurrent = (view === "current" || view === "overlay") && !hasExactScan;
     const showPlanned = view === "planned" || view === "overlay";
     const excludedSet = new Set((excluded || []).map((tooth) => String(tooth)));
+    // Fragment mode: the user applied segmentation, so real per-tooth crowns are
+    // loaded. Draw THOSE moving at their true scan positions instead of schematic
+    // proxies. The whole-arch shell stays as the static baseline (shown in
+    // current/overlay, hidden in planned by the visibility rule above).
+    const fragmentMode = fragmentCache.size > 0 && uploadedScans.children.length > 0;
+    const scanBase = uploadedScans.position;
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
       .map((item) => item.tooth?.value));
 
     for (const pose of frame.poses) {
+      // Real segmented crown moving at its true scan position (translation only;
+      // per-tooth rotation needs a trusted oriented frame and is left to a later
+      // pass). The fragment geometry already encodes the within-scan location, so
+      // its base is just the scan's placement offset.
+      if (fragmentMode) {
+        const fragment = fragmentCache.get(String(pose.tooth));
+        if (!fragment) continue; // no real crown for this tooth; shell covers it
+        const fragBase = scanBase.clone();
+        const fragMoved = showPlanned
+          ? fragBase.clone().add(worldDeltaOriented(pose, exaggeration))
+          : fragBase;
+        if (showToothLabels) {
+          let label = toothLabelSprites.get(pose.tooth);
+          if (!label) {
+            label = makeToothNumberSprite(String(pose.tooth));
+            toothLabelSprites.set(pose.tooth, label);
+          }
+          label.position.copy(fragMoved).add(new THREE.Vector3(0, 2.4, 0));
+          proxies.add(label);
+        }
+        if (showPlanned) {
+          const material = excludedSet.has(String(pose.tooth))
+            ? HELD
+            : (selectedTooth === pose.tooth ? SELECTED : PLANNED);
+          const crown = new THREE.Mesh(fragment, material);
+          crown.position.copy(fragMoved);
+          crown.userData.tooth = pose.tooth;
+          proxies.add(crown);
+          if (fragMoved.distanceTo(fragBase) > 0.2) {
+            const geom = new THREE.BufferGeometry().setFromPoints([fragBase, fragMoved]);
+            lineGeometries.push(geom);
+            proxies.add(new THREE.Line(geom, LINE_MAT));
+          }
+        }
+        continue;
+      }
+
       const anchor = scanAnchors.get(String(pose.tooth));
       const ideal = anchor ? anchor.pos.clone() : basePosition(pose.tooth);
       if (!ideal) continue;
@@ -497,11 +555,33 @@ export function createViewer(container) {
     return loaded;
   }
 
+  // Load segmented per-tooth crown fragments (from applied segmentation). Each
+  // fragment STL carries the ORIGINAL scan-space triangles, so it is oriented
+  // exactly like the scan (loadScanSources) and deliberately NOT centered - the
+  // fragments then sit on the real crowns and, together, reconstruct the arch.
+  async function loadToothFragments(fragments = []) {
+    let loaded = false;
+    await Promise.all(fragments.map(async (item) => {
+      const tooth = item?.tooth != null ? String(item.tooth) : null;
+      if (!tooth || !item.url || fragmentCache.has(tooth)) return;
+      const response = await fetch(item.url);
+      if (!response.ok) return;
+      const geometry = parseStlGeometry(await response.arrayBuffer());
+      orientScanGeometry(geometry);
+      fragmentCache.set(tooth, geometry);
+      loaded = true;
+    }));
+    return loaded;
+  }
+
   async function loadScanSources(sources = []) {
     const scanSources = sources.filter((source) => source?.name?.toLowerCase().endsWith(".stl"));
     const key = scanSources.map(sourceKey).join("|");
     if (uploadedScans.userData.key === key) return { loaded: false, count: uploadedScans.children.length };
     uploadedScans.userData.key = key;
+    // Per-tooth fragments belong to the previous scan/segmentation; drop them so
+    // a new scan never renders stale crowns.
+    fragmentCache.clear();
     uploadedScans.traverse((child) => {
       if (child.isMesh) child.geometry.dispose();
     });
@@ -571,8 +651,8 @@ export function createViewer(container) {
 
   window.addEventListener("resize", resize);
   return {
-    update, resize, dispose, loadMeshes, loadScanSources, loadUploadedScans, zoomBy, recenter,
-    setSelectionHandler, setSelectionEnabled, setSelectedTooth,
+    update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
+    zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
 }
 

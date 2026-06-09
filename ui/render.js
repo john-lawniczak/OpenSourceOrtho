@@ -118,14 +118,29 @@ function updateViewer(result) {
       : "No scan loaded yet; the preview uses simple placeholder teeth.";
     renderScanStatus();
   }
-  const renderMeshes = result.render_meshes?.length
-    ? result.render_meshes
-    : (state.useDemoMeshes ? demoRenderMeshes() : []);
-  const filteredRenderMeshes = renderMeshes.filter((item) => toothMatchesArch(item.tooth));
-  if (filteredRenderMeshes.length) {
-    v.loadMeshes(filteredRenderMeshes).then((loaded) => {
+  // Applied segmentation yields real per-tooth crown fragments (scan-space,
+  // source "model_generated"). With a scan loaded, render those moving at their
+  // true positions; otherwise fall back to centered class/demo meshes positioned
+  // on the schematic arch.
+  const scanLoaded = scanSources.length > 0;
+  // Segmentation links carry MeshProvenance.MODEL_GENERATED, whose serialized
+  // value is "model-generated" (hyphen). Match that exact string.
+  const segFragments = (result.render_meshes || [])
+    .filter((item) => item.source === "model-generated" && toothMatchesArch(item.tooth));
+  if (scanLoaded && segFragments.length) {
+    v.loadToothFragments(segFragments).then((loaded) => {
       if (loaded && state.lastEval === result) updateViewer(result);
     });
+  } else {
+    const renderMeshes = result.render_meshes?.length
+      ? result.render_meshes
+      : (state.useDemoMeshes ? demoRenderMeshes() : []);
+    const filteredRenderMeshes = renderMeshes.filter((item) => toothMatchesArch(item.tooth));
+    if (filteredRenderMeshes.length) {
+      v.loadMeshes(filteredRenderMeshes).then((loaded) => {
+        if (loaded && state.lastEval === result) updateViewer(result);
+      });
+    }
   }
   const visibleResult = filterResultForArch(result);
   const guidedSelect = guidedSelectionStep();
