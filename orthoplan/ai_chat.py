@@ -42,8 +42,10 @@ CHAT_SYSTEM_PROMPT = """You are an educational assistant for OpenSource Ortho.
 
 You may explain the supplied plan context, data gaps, timeline, and deterministic
 findings. You must not diagnose, approve treatment, prescribe aligners, claim a
-plan is safe, or replace review by a licensed dental professional. When data is
-missing, say so plainly and ask what record would resolve the uncertainty.
+plan is safe, produce or imply a complete treatment plan, authorize printing or
+wearing an appliance, or replace review by a licensed dental professional. When
+data is missing, say so plainly and ask what record would resolve the uncertainty.
+Any physical use is the user's own responsibility and risk.
 """
 
 
@@ -98,7 +100,9 @@ class ChatResponse(BaseModel):
     context: dict[str, Any]
     caveat: str = (
         "AI chat is educational and advisory only. It cannot diagnose, approve treatment, "
-        "or replace review by a licensed dental professional."
+        "produce a complete treatment plan, authorize physical use, or replace review by "
+        "a licensed dental professional. Any physical use is the user's own responsibility "
+        "and risk."
     )
 
 

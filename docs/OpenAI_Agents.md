@@ -10,6 +10,8 @@ They must not:
 
 - approve a treatment plan
 - diagnose a patient
+- produce or claim to produce a complete treatment plan
+- authorize printing, wearing, or physically applying any output
 - invent movement thresholds
 - infer unavailable anatomy
 - override deterministic rule findings
@@ -19,6 +21,8 @@ They must not:
 Model output is untrusted. It must pass `lint_finding()` (the single safety gate) and is
 quarantined on failure via `quarantine_findings()` rather than crashing the pipeline. Verdict
 language is scanned across every text field, not just the title and message.
+Any generated explanation must preserve that physical use is the user's own
+responsibility and risk.
 
 ## Advisory Pipeline
 

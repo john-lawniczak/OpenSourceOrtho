@@ -59,7 +59,9 @@ _SYNTHETIC_WARNING = (
 _CAVEAT = (
     "Generated staging splits a target into configured cap-sized increments. It is not "
     "a biological outcome model, does not decide whether treatment is safe, suitable, or "
-    "complete, and does not replace a licensed dental professional."
+    "complete, is not a complete treatment plan, does not authorize physical use, and "
+    "does not replace a licensed dental professional. Any physical use is the user's "
+    "own responsibility and risk."
 )
 
 

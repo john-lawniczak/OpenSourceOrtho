@@ -65,5 +65,7 @@ engine.
 ## Safety
 
 The non-dismissible banner (`R.string.safety_disclaimer`) and `CONSISTENT`/`ISSUES`
-verdict labels are mandatory. Never present a plan as safe, approved, cleared, or
-ready for treatment. See [`../../docs/SAFETY.md`](../../docs/SAFETY.md).
+verdict labels are mandatory. Never present a plan, generated package, printed
+model, aligner, or other appliance as safe, approved, cleared, complete, suitable,
+or ready for treatment or physical use. Any physical use is the user's own
+responsibility and risk. See [`../../docs/SAFETY.md`](../../docs/SAFETY.md).

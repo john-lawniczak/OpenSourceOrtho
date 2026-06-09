@@ -190,7 +190,7 @@ def test_acquisition_print_export_and_visual_screenshots(
             assert "Treatment notes" in acquisition or "CBCT" in acquisition
 
             print_status = page.locator("#printExportStatus").inner_text()
-            assert "Ready" in print_status
+            assert "Inputs complete" in print_status
             assert "user's own responsibility" in print_status
 
             viewer_path = tmp_path / "viewer3d.png"

@@ -1,8 +1,9 @@
 # Contributing to OpenSource Ortho
 
-Thanks for helping. This is a **safety-boundary-first research toolkit**, not a
-medical device. Before contributing, read [docs/SAFETY.md](docs/SAFETY.md) and
-[docs/MAINTAINABILITY.md](docs/MAINTAINABILITY.md).
+Thanks for helping. This is a **safety-boundary-first clear-aligner planning
+playground and research toolkit**, not a medical device and not complete
+treatment-planning software. Before contributing, read [docs/SAFETY.md](docs/SAFETY.md)
+and [docs/MAINTAINABILITY.md](docs/MAINTAINABILITY.md).
 
 ## Setup
 
@@ -52,10 +53,15 @@ These are enforced by code and review, not just convention:
 4. **Geometry, not biomechanics.** The toolkit models crown-surface geometry
    only. Do not infer roots, bone, periodontal status, or treatment feasibility.
    The per-tooth PCA frame is an approximate visualization aid, not anatomy.
-5. **The UI never reimplements the engine.** It sends plan JSON to
+5. **Own-risk physical use only.** Do not state or imply that generated files,
+   printed models, thermoformed aligners, materials, post-processing, or any
+   physical use is safe, validated, legal, effective, or suitable. Outputs are
+   informational geometry artifacts; users are responsible for their own use,
+   manufacturing, professional supervision, and regulatory obligations.
+6. **The UI never reimplements the engine.** It sends plan JSON to
    `POST /api/evaluate` and renders what `orthoplan.api.evaluate_plan` returns.
    Add evaluation logic to the Python engine, not to JavaScript.
-6. **Units and coordinate frames are explicit.** No implicit mm/degrees, no
+7. **Units and coordinate frames are explicit.** No implicit mm/degrees, no
    free-form coordinate-frame strings.
 
 ## Module ownership

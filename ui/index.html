@@ -110,8 +110,8 @@
         <section id="guided" aria-label="Guided plan wizard">
           <div class="guided-head">
             <div>
-              <h2 id="guidedHeading">Plan your aligners, step by step</h2>
-              <p class="guided-sub">Educational only — this does not diagnose, prescribe, or say whether treatment is safe or complete.</p>
+              <h2 id="guidedHeading">Review aligner geometry, step by step</h2>
+              <p class="guided-sub">Safety playground only &mdash; this does not diagnose, prescribe, create a complete treatment plan, authorize physical use, or say whether treatment is safe.</p>
             </div>
           </div>
 
@@ -143,7 +143,7 @@
               </div>
             </div>
             <label class="toggle">
-              <span>I understand this is educational only and does not say whether treatment is needed, possible, safe, or complete.</span>
+              <span>I understand this is a safety-review playground only and does not say whether treatment is needed, possible, safe, complete, or ready for physical use.</span>
               <input id="simpleAcknowledged" type="checkbox" />
             </label>
           </section>
@@ -471,7 +471,7 @@
               <section class="generate-panel" aria-label="Generate plan">
                 <div class="ai-chat-heading">
                   <h2>Generate Plan</h2>
-                  <span id="generationStatus">Ready</span>
+                  <span id="generationStatus">Idle</span>
                 </div>
                 <div class="detail-switch" aria-label="Generate Plan detail level">
                   <button class="is-active" data-detail-mode="generation" data-detail-value="basic" type="button">Basic</button>
@@ -491,7 +491,7 @@
                   <p id="landmarksStatus" class="viewer-caveat">No landmarks imported. Template: <code>orthoplan landmarks-template</code>.</p>
                 </div>
                 <label class="toggle">
-                  <span>I understand a generated plan is educational/heuristic and is not a diagnosis, treatment plan, or approval.</span>
+                  <span>I understand generated staging is educational/heuristic and is not a diagnosis, complete treatment plan, approval, or authorization for physical use.</span>
                   <input id="generationAck" type="checkbox" />
                 </label>
                 <button class="primary-action" id="generatePlan" type="button">Generate Plan</button>

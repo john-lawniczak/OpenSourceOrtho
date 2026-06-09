@@ -2,7 +2,8 @@
 
 A plain-language reference for people new to dentistry, so the app and docs make
 sense. This is **educational only** - it does not diagnose, recommend treatment,
-or define clinical thresholds. See [SAFETY.md](SAFETY.md).
+define clinical thresholds, produce a complete treatment plan, or authorize any
+physical use. See [SAFETY.md](SAFETY.md).
 
 ## FDI tooth numbering
 
