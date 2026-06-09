@@ -523,6 +523,24 @@ body[data-theme="dark"] .sample-banner {
   margin: 8px 0 20px;
 }
 
+/* The single 3D viewer is relocated into these hosts for the guided "teeth" and
+   "details" steps. There it is a focused selection / movement-scale aid, so the
+   full technician toolbar, manual-target panel, and caveats are hidden - leaving
+   the canvas and its zoom controls. */
+.guided-viewer-host {
+  margin: 8px 0 12px;
+}
+
+.guided-viewer-host:empty {
+  display: none;
+}
+
+.guided-viewer-host .viewer-toolbar,
+.guided-viewer-host .manual-edit,
+.guided-viewer-host .viewer-caveat {
+  display: none;
+}
+
 .guided-tooth {
   display: flex;
   align-items: center;
@@ -1616,6 +1634,25 @@ td input {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.toothmap-systems,
+.starter-steps {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.toothmap-systems li,
+.starter-steps li {
+  line-height: 1.45;
+}
+
+.toothmap-why {
+  margin-top: 10px;
 }
 
 .tooth-map {

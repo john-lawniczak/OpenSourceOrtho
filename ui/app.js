@@ -40,11 +40,13 @@ function setUserMode(mode) {
 }
 
 // The 3D viewer may be sized while its host is hidden (1x1) or framed for a
-// previous scene. When it becomes visible (guided 3D step, sample screen),
-// request a one-shot re-frame that runs after the next evaluation populates the
-// scene at its real size.
+// previous scene. When it becomes visible - or moves between guided step hosts
+// (teeth, details, preview all now embed it) - request a one-shot re-frame that
+// runs after the next evaluation populates the scene at its real size.
+const VIEWER_GUIDED_STEPS = new Set(["plan", "details", "preview"]);
+
 function maybeRecenterPreview() {
-  if (state.userMode === "simple" && state.guided.step === "preview") {
+  if (state.userMode === "simple" && VIEWER_GUIDED_STEPS.has(state.guided.step)) {
     requestViewerRefit();
   }
 }

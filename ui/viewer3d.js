@@ -14,6 +14,9 @@ const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: tru
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
 // Highlight for the tooth currently selected for manual target authoring.
 const SELECTED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.5, emissive: 0x0f766e, emissiveIntensity: 0.55 });
+// "Held still" teeth (the guided user unchecked them, so the engine fixes them):
+// a muted blue-grey so it is obvious at a glance which teeth will not move.
+const HELD = new THREE.MeshStandardMaterial({ color: 0x9fb2bd, roughness: 0.7, emissive: 0x1f3a45, emissiveIntensity: 0.2 });
 const SCAN = new THREE.MeshPhysicalMaterial({
   color: 0xf6ead6,
   roughness: 0.38,
@@ -68,6 +71,21 @@ function archQuaternion(tooth) {
   return archOf(tooth) === "upper"
     ? new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI)
     : new THREE.Quaternion();
+}
+
+// When the per-tooth proxies are anchored onto an uploaded scan, they are scaled
+// up from their schematic size to read as crowns sitting on that scan (rather
+// than tiny markers floating below it). This multiplies the per-arch fit scale;
+// tune it if the anchored crowns look too large or too small on a real scan.
+const ANCHOR_TOOTH_SCALE = 1.35;
+
+function normalizeArch(arch = "") {
+  const a = String(arch).toLowerCase();
+  if (a === "upper" || a.includes("maxill")) return "upper";
+  if (a === "lower" || a.includes("mandib")) return "lower";
+  if (a.includes("top")) return "upper";
+  if (a.includes("bottom")) return "lower";
+  return null;
 }
 
 // A small billboarded text label rendered from a 2D canvas texture.
@@ -219,17 +237,26 @@ export function createViewer(container) {
 
   // Persistent arch labels so the stacked maxillary/mandibular arches are
   // unambiguous (depthTest off keeps them readable through the teeth).
+  const UPPER_LABEL_POS = new THREE.Vector3(0, ARCH.gapY + 5, 7);
+  const LOWER_LABEL_POS = new THREE.Vector3(0, -ARCH.gapY - 5, 7);
   const upperLabel = makeTextSprite("Upper arch");
-  upperLabel.position.set(0, ARCH.gapY + 5, 7);
+  upperLabel.position.copy(UPPER_LABEL_POS);
   scene.add(upperLabel);
   const lowerLabel = makeTextSprite("Lower arch");
-  lowerLabel.position.set(0, -ARCH.gapY - 5, 7);
+  lowerLabel.position.copy(LOWER_LABEL_POS);
   scene.add(lowerLabel);
 
   const proxies = new THREE.Group();
   scene.add(proxies);
   const uploadedScans = new THREE.Group();
   scene.add(uploadedScans);
+  // Per-tooth anchor points sampled from the uploaded scan surface, so the
+  // moving proxies sit ON the scan's crowns instead of floating in the schematic
+  // arch space below it. Recomputed whenever the scan changes; empty when no scan
+  // is loaded (then proxies fall back to the schematic arch layout).
+  let scanAnchors = new Map();
+  // Where to float each arch's text label (over the scan when one is loaded).
+  let archLabelPos = {};
   // Per-update line geometries are freshly allocated each rebuild (unlike the
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
@@ -267,30 +294,43 @@ export function createViewer(container) {
     requestAnimationFrame(loop);
   })();
 
-  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels }) {
+  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, excluded }) {
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
     uploadedScans.visible = view === "current" || view === "overlay";
     for (const geom of lineGeometries) geom.dispose();
     lineGeometries = [];
     proxies.clear();
+    positionArchLabels();
     const frame = frames && frames[stageIndex];
     if (!frame) return;
     const hasExactScan = uploadedScans.visible && uploadedScans.children.length > 0;
+    // The scan itself is the baseline, so the translucent "current" ghost layer
+    // is only the schematic fallback shown when there is no exact scan. The
+    // planned proxies are anchored onto the scan (see computeScanAnchors), so
+    // they read as the scan's own teeth being moved.
     const showCurrent = (view === "current" || view === "overlay") && !hasExactScan;
     const showPlanned = view === "planned" || view === "overlay";
+    const excludedSet = new Set((excluded || []).map((tooth) => String(tooth)));
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
       .map((item) => item.tooth?.value));
 
     for (const pose of frame.poses) {
-      const ideal = basePosition(pose.tooth);
+      const anchor = scanAnchors.get(String(pose.tooth));
+      const ideal = anchor ? anchor.pos.clone() : basePosition(pose.tooth);
       if (!ideal) continue;
+      const proxyScale = anchor ? anchor.scale : 1;
+      // The anchor (or schematic position) is the tooth's aligned/ideal spot; a
+      // demo crowding offset shifts the start away from it, and the per-stage
+      // movement (worldDelta) carries it back. Anchoring just moves that whole
+      // start->end path onto the scan surface.
       const base = ideal.clone().add(worldOffset(initialOffsets?.[pose.tooth], exaggeration));
 
       if (showCurrent) {
         const ghostGeometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
         const ghost = new THREE.Mesh(ghostGeometry, GHOST);
         ghost.position.copy(base);
+        ghost.scale.setScalar(proxyScale);
         ghost.quaternion.copy(archQuaternion(pose.tooth));
         ghost.userData.tooth = pose.tooth;
         proxies.add(ghost);
@@ -311,8 +351,12 @@ export function createViewer(container) {
       if (showPlanned) {
         const moved = base.clone().add(worldDelta(pose, exaggeration));
         const geometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
-        const mesh = new THREE.Mesh(geometry, selectedTooth === pose.tooth ? SELECTED : PLANNED);
+        const material = excludedSet.has(String(pose.tooth))
+          ? HELD
+          : (selectedTooth === pose.tooth ? SELECTED : PLANNED);
+        const mesh = new THREE.Mesh(geometry, material);
         mesh.position.copy(moved);
+        mesh.scale.setScalar(proxyScale);
         mesh.quaternion.copy(archQuaternion(pose.tooth).multiply(plannedQuaternion(pose, toothFrames?.[pose.tooth])));
         mesh.userData.tooth = pose.tooth;
         proxies.add(mesh);
@@ -364,6 +408,58 @@ export function createViewer(container) {
     controls.update();
   }
 
+  function positionArchLabels() {
+    upperLabel.position.copy(archLabelPos.upper || UPPER_LABEL_POS);
+    lowerLabel.position.copy(archLabelPos.lower || LOWER_LABEL_POS);
+  }
+
+  // Sample one anchor point per tooth on the uploaded scan's occlusal surface so
+  // the moving proxies sit on the real crowns. The schematic arch layout (which
+  // has the correct RELATIVE tooth order/spread) is fitted into each scan arch's
+  // world bounding box in x/z, then a vertical ray finds the scan surface height.
+  // Result: proxies are attached to the scan teeth, not floating beneath them.
+  function computeScanAnchors() {
+    const anchors = new Map();
+    archLabelPos = {};
+    if (!uploadedScans.children.length) return anchors;
+    uploadedScans.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster();
+    for (const arch of ["upper", "lower"]) {
+      const mesh = uploadedScans.children.find(
+        (m) => (m.userData.arch || normalizeArch(m.name)) === arch,
+      );
+      if (!mesh) continue;
+      anchorArchTeeth(arch, mesh, ray, anchors);
+    }
+    return anchors;
+  }
+
+  function anchorArchTeeth(arch, mesh, ray, anchors) {
+    const teeth = Object.keys(toothPositions).filter((tooth) => archOf(tooth) === arch);
+    const schematic = teeth.map((tooth) => ({ tooth, p: basePosition(tooth) })).filter((t) => t.p);
+    if (!schematic.length) return;
+    const sx = extent(schematic.map((t) => t.p.x));
+    const sz = extent(schematic.map((t) => t.p.z));
+    const box = new THREE.Box3().setFromObject(mesh);
+    const center = box.getCenter(new THREE.Vector3());
+    const scanHx = Math.max((box.max.x - box.min.x) / 2, 0.001);
+    const scanHz = Math.max((box.max.z - box.min.z) / 2, 0.001);
+    const up = arch === "upper";
+    const scale = THREE.MathUtils.clamp((scanHx / sx.half) * ANCHOR_TOOTH_SCALE, 1, 4);
+    for (const { tooth, p } of schematic) {
+      const wx = center.x + ((p.x - sx.mid) / sx.half) * scanHx;
+      const wz = center.z + ((p.z - sz.mid) / sz.half) * scanHz;
+      ray.set(new THREE.Vector3(wx, box.max.y + 12, wz), new THREE.Vector3(0, -1, 0));
+      const hits = ray.intersectObject(mesh, false);
+      // Occlusal surface faces the opposing arch: lowest hit for the upper arch,
+      // highest hit for the lower. Fall back to the box face if the ray misses.
+      let y = hits.length ? (up ? hits[hits.length - 1].point.y : hits[0].point.y) : (up ? box.min.y : box.max.y);
+      y += up ? -0.3 : 0.3; // sit slightly proud toward the bite
+      anchors.set(String(tooth), { pos: new THREE.Vector3(wx, y, wz), scale });
+    }
+    archLabelPos[arch] = new THREE.Vector3(center.x, up ? box.min.y - 4 : box.max.y + 4, box.max.z + 5);
+  }
+
   // Dolly the camera toward (factor < 1) or away from (factor > 1) the target,
   // clamped so the user cannot zoom through the teeth or out to infinity.
   function zoomBy(factor) {
@@ -407,13 +503,18 @@ export function createViewer(container) {
       if (child.isMesh) child.geometry.dispose();
     });
     uploadedScans.clear();
-    if (!scanSources.length) return { loaded: false, count: 0 };
+    if (!scanSources.length) {
+      scanAnchors = new Map();
+      archLabelPos = {};
+      return { loaded: false, count: 0 };
+    }
 
     for (const source of scanSources) {
       const geometry = parseStlGeometry(await sourceBuffer(source));
       orientScanGeometry(geometry);
       const mesh = new THREE.Mesh(geometry, SCAN);
       mesh.name = source.name;
+      mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
       uploadedScans.add(mesh);
     }
 
@@ -423,6 +524,9 @@ export function createViewer(container) {
       box.getCenter(center);
       uploadedScans.position.set(-center.x, -box.min.y + 0.6, -center.z);
     }
+    // Anchor the per-tooth proxies onto the freshly placed scan surface so the
+    // moving teeth ride the real crowns (see computeScanAnchors).
+    scanAnchors = computeScanAnchors();
     fitted = false;
     return { loaded: true, count: uploadedScans.children.length };
   }
@@ -606,6 +710,14 @@ function mergeGroupGeometry(group) {
   merged.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   merged.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
   return merged;
+}
+
+// Min/max/mid and half-span of a list of numbers (half clamped away from zero so
+// it is safe to divide by when mapping schematic coords into a scan bounding box).
+function extent(values) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  return { min, max, mid: (min + max) / 2, half: Math.max((max - min) / 2, 0.001) };
 }
 
 function centerGeometry(geometry) {

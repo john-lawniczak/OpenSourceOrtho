@@ -10,7 +10,7 @@ import {
 import { confidenceTier, countNoteMarkup, createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
-import { renderGuided } from "./guided.js";
+import { renderGuided, toggleExcludedTooth } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 import { parseMissingTeeth } from "./segment.js";
 
@@ -27,14 +27,28 @@ export function requestViewerRefit() {
   pendingRefit = true;
 }
 
+// The guided steps that show the 3D viewer for picking teeth (click a tooth to
+// hold it still). Returns the step id, or null when not in that context.
+function guidedSelectionStep() {
+  if (state.userMode !== "simple") return null;
+  const step = state.guided.step;
+  return step === "plan" || step === "details" ? step : null;
+}
+
 function ensureViewer() {
   if (viewer || viewerFailed) return viewer;
   try {
     viewer = createViewer(el("viewer3d"));
-    // Clicking a tooth selects it for manual target authoring. Selection is only
-    // honored when scan units are confirmed (set in updateViewer).
+    // Clicking a tooth means different things by context. In the guided "teeth"
+    // and "details" steps it toggles whether that tooth is held still (the visual
+    // equivalent of the checkbox list). Everywhere else it selects the tooth for
+    // manual target authoring (only honored when scan units are confirmed).
     viewer.setSelectionHandler((tooth) => {
-      state.manualEdit.selectedTooth = tooth;
+      if (guidedSelectionStep()) {
+        toggleExcludedTooth(tooth);
+      } else {
+        state.manualEdit.selectedTooth = tooth;
+      }
       renderAll();
     });
   } catch (error) {
@@ -114,17 +128,26 @@ function updateViewer(result) {
     });
   }
   const visibleResult = filterResultForArch(result);
-  v.setSelectionEnabled(scaleConfirmed(state.scanUnits));
+  const guidedSelect = guidedSelectionStep();
+  // Tooth picking is enabled for manual authoring once units are confirmed, and
+  // unconditionally in the guided teeth/details steps (there a click just toggles
+  // "hold still", which needs no millimetre scale).
+  v.setSelectionEnabled(Boolean(guidedSelect) || scaleConfirmed(state.scanUnits));
   v.setSelectedTooth(state.manualEdit.selectedTooth);
+  // In the guided teeth/details steps the viewer is a selection/`preview-scale`
+  // aid, so show the planned movement at the last stage in overlay (the slider
+  // and view toolbar are hidden there); elsewhere honor the live controls.
+  const lastStage = Math.max(0, (visibleResult.frames?.length || 1) - 1);
   v.update({
     frames: visibleResult.frames,
     toothFrames: visibleResult.tooth_frames,
     attachments: visibleResult.clinical_controls?.attachments || [],
     initialOffsets: state.demoInitialOffsets,
-    stageIndex: Number(el("stageSlider").value || 0),
-    view: state.view,
+    stageIndex: guidedSelect ? lastStage : Number(el("stageSlider").value || 0),
+    view: guidedSelect ? "overlay" : state.view,
     exaggeration: numberValue("exaggeration") || 1,
-    showToothLabels: state.showToothLabels,
+    showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
+    excluded: state.guided.excludedTeeth,
   });
 }
 
