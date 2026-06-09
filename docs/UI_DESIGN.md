@@ -76,12 +76,13 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   a **Back** button returns to the prior step, so the sidebar links are never dead
   ends in guided mode.
 - **Plan AI review** for both workflows: scoped chat over the current plan,
-  findings, data gaps, and timeline. The provider selector and a session-only
-  API-key field are surfaced directly (with provider-specific, plain-language
-  help; the key field is hidden for the no-key local helper) so enabling a real
-	  model is discoverable. It must label the connector and context scope, keep raw
-	  API keys out of persisted plan data, and never present AI text as diagnosis or
-	  approval, a complete treatment plan, or authorization for physical use.
+  findings, data gaps, and timeline. A single model dropdown (each option carries
+  its provider) and a session-only API-key field are surfaced directly (with
+  provider-specific, plain-language help; the key field is hidden for the no-key
+  local helper) so enabling a real model is discoverable. The assistant always uses
+  the full plan context (no scope selector). It must label the connector, keep raw
+  API keys out of persisted plan data, and never present AI text as diagnosis or
+  approval, a complete treatment plan, or authorization for physical use.
 
 The first production-grade clinician UI should include:
 

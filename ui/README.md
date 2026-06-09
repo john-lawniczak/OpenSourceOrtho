@@ -76,17 +76,18 @@ local server. External models (OpenAI GPT, Claude, and open-source / self-hosted
 endpoints) perform live completions once a model is selected, a key/endpoint is
 supplied, and per-session egress consent (`share_acknowledged`) is given.
 
-The **provider selector and a session-only API-key field are shown directly in
-the AI box** with provider-specific, plain-language help (the key field is hidden
-for the no-key local helper); the agent/MCP endpoint and egress consent live under
-**Advanced connector settings**. API keys are read only at send time and are not
-written into plan JSON, case snapshots, `localStorage`, or exported reports.
+The **single model dropdown** (each option carries its provider) and a
+**session-only API-key field** are shown directly in the AI box with
+provider-specific, plain-language help (the key field is hidden for the no-key
+local helper); the model endpoint (for an open-source / self-hosted model) and the
+egress consent live under **Connector settings**. API keys are read only at send
+time and are not written into plan JSON, case snapshots, `localStorage`, or
+exported reports.
 
-Context scopes:
-
-- **Summary**: findings, data gaps, timeline, and clinical controls.
-- **Clinical metadata**: summary plus mesh/tooth-mesh metadata.
-- **Full plan snapshot**: the complete plan payload.
+The assistant always works from the **full plan context** (findings, data gaps,
+timeline, clinical controls, mesh metadata, and the plan snapshot); there is no
+context-scope selector. For an external model the egress-consent checkbox is the
+sole control over what leaves the machine.
 
 ## Engine is the single source of truth
 
@@ -145,6 +146,18 @@ constraints, surfaced in the on-screen caveat:
 - A **Tooth #** toolbar toggle overlays FDI tooth-number badges on each tooth so a
   user can see which teeth they are focusing on. It is off by default and follows
   the displayed (current or planned) tooth position.
+- A **Bite proximity** toggle paints a red/amber/green overlay of how close the
+  upper and lower crown surfaces are (contact / near / clearance). It is GEOMETRIC
+  proximity of the registered surfaces, NOT bite force or a diagnosis, and is shown
+  only when the scans register as already-occluding. Backed by `POST /api/occlusion`
+  (server-resolvable scans only). See [docs/occlusion-registration.md](../docs/occlusion-registration.md).
+- A **Scale** toggle draws a true-scale 10 mm reference bar beside the loaded scan
+  and reports its measured W×H×D extent. The scan geometry is at true scale (only
+  movement is exaggerated), so the bar is honest; it needs a loaded scan with
+  confirmed mm units.
+- A **Registered bite** toggle moves the lower arch into the registered occlusal
+  frame. It only changes separate-frame scans; arches scanned already in occlusion
+  show the true bite unchanged.
 
 Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
