@@ -5,11 +5,12 @@ import Foundation
 /// plan as safe, approved, cleared, or ready for treatment.
 public enum SafetyText {
     public static let disclaimer = """
-    OpenSource Ortho is an educational and research toolkit. It is not a medical \
-    device and does not diagnose, treat, or approve treatment. A CONSISTENT \
-    verdict means the staging is internally consistent with the configured caps \
-    and controls - not that it is safe, approved, or clinically appropriate. \
-    Always consult a licensed dental professional.
+    OpenSource Ortho is a treatment-planning research toolkit. The current build \
+    is not distributed as a medical device and does not diagnose, treat, or \
+    approve treatment. A CONSISTENT verdict means the staging is internally \
+    consistent with the configured caps and controls - not that it is safe, \
+    approved, or clinically appropriate. Always consult a licensed dental \
+    professional.
     """
 
     /// Human-facing label for an engine verdict. Verdicts are only ever

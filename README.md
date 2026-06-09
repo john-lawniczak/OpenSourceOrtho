@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml/badge.svg)](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml)
 
-OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows.
+OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows. The near-term product supports surface-based STL planning; the long-term product direction includes CBCT/DICOM-enhanced root/bone-aware planning and accurate manufacturing handoff.
 
 [![OpenSource Ortho review workspace](docs/images/review-demo.png)](docs/media/sample-demo.mp4)
 
@@ -18,9 +18,10 @@ Orthodontic planning is dominated by closed, expensive, proprietary systems that
 lock patients out of their own scans and treatment data. OpenSource Ortho exists
 to change that: a transparent, inspectable, community-owned toolkit where the
 math is auditable, the data stays with the person it belongs to, and the safety
-boundaries are explicit rather than hidden. It is not a medical device and does
-not replace a licensed professional - it lowers the barrier to understanding and
-participating in your own care.
+boundaries are explicit rather than hidden. The goal is treatment-planning
+software for clear-aligner workflows, including reproducible staged geometry and
+manufacturing handoff. The current build is not distributed as a medical device
+and does not replace a licensed professional.
 
 Most project documentation lives in [docs/](docs/README.md).
 
@@ -71,6 +72,11 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   checks and a verdict (`CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
   optional model review is consent-gated and linted. It is a proposal, not a
   diagnosis or treatment approval.
+- **Planning tiers**: STL-only users get a first-class **Surface Plan** based on
+  visible crown geometry. CBCT/DICOM is not required for every user; it is the
+  higher-fidelity path toward **Root/Bone-Aware Plans** when the record is
+  locally ingested, registered to the STL, segmented/reviewed, and validated. See
+  [docs/cbct-evaluation.md](docs/cbct-evaluation.md).
 - **Plan versions**: save named snapshots of a plan and restore any version back
   into the editor. Backed by a local case store (`.orthoplan-cases.json`,
   override with `ORTHOPLAN_CASE_STORE`); available in the UI Versions panel, the
@@ -86,7 +92,7 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   explicit per-session consent that data leaves the machine. The key is read only
   when you press **Ask AI** and is never persisted.
 
-It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
+It is not an Invisalign clone, autonomous diagnostic system, or clinical approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations. The roadmap intentionally separates STL-only surface planning from CBCT/DICOM-enhanced root/bone-aware planning.
 
 Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
 
@@ -96,6 +102,7 @@ The software may:
 
 - represent proposed tooth movements and staged aligner-style plans
 - import, export, and visualize dental mesh data
+- attach and visualize CBCT/DICOM records when that roadmap phase ships
 - check internal consistency against user-configured movement caps
 - surface observational findings, data gaps, and handoff questions
 - rank missing data by deterministic acquisition impact
@@ -107,7 +114,7 @@ The software may not:
 
 - diagnose disease or malocclusion
 - decide whether treatment is safe, suitable, approved, or complete
-- infer unseen anatomy such as roots, bone, periodontal status, or CBCT findings
+- infer unseen anatomy such as roots, bone, periodontal status, or CBCT findings when those records or reviewed derived anatomy are unavailable
 - invent unsupported thresholds
 - replace user judgment, consent, responsibility, or regulatory obligations
 
@@ -123,6 +130,11 @@ The first workflow is simple:
 4. Check each stage against user-configured movement caps.
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
+
+CBCT/DICOM support is planned as a tiered roadmap: local record ingestion,
+on-device viewing, STL-to-CBCT registration, reviewable anatomy segmentation,
+root/bone-aware planning constraints, and manufacturing manifests that label the
+planning tier and unresolved data gaps.
 
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
