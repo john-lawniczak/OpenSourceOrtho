@@ -151,6 +151,15 @@
           <section class="gstep" data-gstep="plan">
             <h3>2 · Which teeth move, and how long</h3>
             <p class="guided-define"><strong>What is a stage?</strong> A stage is one aligner tray — a single step in the sequence. Each tray nudges your teeth a little, and you wear it for the number of days you choose before swapping to the next one. More movement needed means more stages, which means more trays and more total time.</p>
+            <div class="viewer-legend-card">
+              <h4>Reading the 3D view</h4>
+              <p><strong>Click a tooth to hold it still</strong> — it turns blue-grey and the plan leaves it where it is. Click it again to let it move. (You can also untick it in the list below.)</p>
+              <ul class="viewer-legend" aria-label="What the 3D markers mean">
+                <li><span class="legend-swatch dot-move" aria-hidden="true"></span> A tooth you can click to hold still</li>
+                <li><span class="legend-swatch dot-hold" aria-hidden="true"></span> <strong>Held still</strong> (blue-grey) — the plan will not move it</li>
+                <li><span class="legend-swatch arrow" aria-hidden="true"></span> Which way a tooth is planned to move (simulated; the Details slider scales it)</li>
+              </ul>
+            </div>
             <div class="guided-build">
               <label>What are you exploring?
                 <select id="simpleGoal">
@@ -165,14 +174,9 @@
             </div>
             <p class="guided-hint">"Build my plan" turns your scan into a step-by-step sequence of small tooth movements (the aligner stages). You can then review it, preview it in 3D, and export the print files.</p>
             <p id="guidedBuildStatus" class="guided-status" hidden></p>
-            <p class="guided-hint">These are the teeth the plan moves. To <strong>hold a tooth still</strong> (so the plan leaves it where it is), either untick it below or click its dot in the 3D view. Click again to let it move.</p>
+            <p class="guided-hint">These are the teeth the plan moves. Untick any you'd like to hold still (or click it in the 3D view below).</p>
             <div id="guidedTeeth" class="guided-teeth"></div>
             <div id="guidedPlanViewerHost" class="guided-viewer-host"></div>
-            <ul class="viewer-legend" aria-label="What the 3D markers mean">
-              <li><span class="legend-swatch dot-move" aria-hidden="true"></span> A tooth you can <strong>click to hold still</strong> (click again to release)</li>
-              <li><span class="legend-swatch dot-hold" aria-hidden="true"></span> <strong>Held still</strong> — the plan will not move this tooth</li>
-              <li><span class="legend-swatch arrow" aria-hidden="true"></span> Which way that tooth is planned to move (simulated; the Details slider scales it)</li>
-            </ul>
             <p class="guided-hint">The 3D view appears once you've loaded a scan and built your plan.</p>
             <h4>How long should each tray be worn?</h4>
             <div id="guidedDuration" class="guided-duration">

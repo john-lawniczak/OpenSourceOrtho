@@ -103,6 +103,10 @@ export function applySegmentation() {
   const skipped = `${skippedInvalid}${skippedDuplicate}`;
   if (seg.applied) {
     seg.status = `Applied ${toothMeshes.length} per-tooth mesh(es) to the plan. Still a draft — not a diagnosis.${skipped}`;
+    // The real crowns now move; default to Overlay so the static scan stays
+    // behind them and the rough inter-tooth cuts read as movement against the
+    // baseline rather than shattered gaps (Planned hides the shell).
+    state.view = "overlay";
   } else {
     seg.status = invalid ? `No valid teeth to apply.${skipped}` : "No teeth selected to apply.";
   }
