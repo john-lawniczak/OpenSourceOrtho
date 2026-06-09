@@ -53,6 +53,7 @@ def test_findings_carry_safety_fields() -> None:
     finding = result["findings"][0]
     # The engine output carries the mandated safety context the bare-string UI lacked.
     assert finding["severity"] == "warning"
+    assert finding["code"] == "movement-cap-exceeded"
     assert finding["data_gap"]
     assert finding["clinician_question"]
 
@@ -187,8 +188,30 @@ def test_render_mesh_links_are_included_for_tooth_meshes() -> None:
     ]
 
 
-def test_print_package_payload_returns_downloadable_zip() -> None:
-    result = print_package_payload(_base_payload())
+def _ready_print_payload() -> dict:
+    payload = _base_payload(
+        scans=[
+            {
+                "asset": {
+                    "id": "scan",
+                    "format": "stl",
+                    "units": "mm",
+                    "vertex_count": 0,
+                    "face_count": 0,
+                }
+            }
+        ],
+        data={"segmented_teeth": True},
+        settings={
+            "timeline": {"wear_interval_days": 14},
+            "print_export": {"enabled": True, "safety_acknowledged": True},
+        },
+    )
+    return payload
+
+
+def test_print_package_payload_returns_downloadable_zip_when_ready() -> None:
+    result = print_package_payload(_ready_print_payload())
 
     assert result["ok"] is True
     assert result["stage_count"] == 1
@@ -198,6 +221,15 @@ def test_print_package_payload_returns_downloadable_zip() -> None:
     assert b"OpenSource Ortho print package" in eml_bytes
     assert result["email_filename"].endswith(".eml")
     assert result["filename"].endswith(".zip")
+
+
+def test_print_package_payload_returns_blockers_when_not_ready() -> None:
+    result = print_package_payload(_base_payload())
+
+    assert result["ok"] is False
+    assert "print export is disabled" in result["errors"]
+    assert result["print_export"]["ready"] is False
+    assert "zip_base64" not in result
 
 
 def test_print_package_payload_rejects_invalid_plan() -> None:

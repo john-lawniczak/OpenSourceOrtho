@@ -5,6 +5,7 @@ import json
 from orthoplan.evaluation.providers.base import ModelResponse
 from orthoplan.generation import generate_plan_payload
 from orthoplan.model.assets import MeshAsset, MeshUnits, UploadedScan
+from orthoplan.model.clinical import FixedTooth, MovementExclusion
 from orthoplan.model.plan import Stage, ToothDelta, TreatmentPlan
 
 
@@ -141,6 +142,39 @@ def test_pipeline_emits_named_gate_checks() -> None:
     # Every gate check passes for a clean authored plan -> CONSISTENT.
     assert all(c["passed"] for c in result["checks"] if c["severity"] == "gate")
     assert result["correctness"]["verdict"] == "CONSISTENT"
+
+
+def test_correctness_review_respects_stage_windowed_controls() -> None:
+    plan = TreatmentPlan(
+        id="windowed-controls",
+        scans=[_confirmed_scan()],
+        fixed_teeth=[FixedTooth(tooth={"system": "FDI", "value": "11"}, stage_start=0, stage_end=0)],
+        movement_exclusions=[
+            MovementExclusion(
+                tooth={"system": "FDI", "value": "21"},
+                axes={"translate_x"},
+                stage_start=0,
+                stage_end=0,
+            )
+        ],
+        stages=[
+            Stage(
+                index=0,
+                deltas=[
+                    ToothDelta(tooth={"system": "FDI", "value": "11"}, translate_x_mm=0.2),
+                    ToothDelta(tooth={"system": "FDI", "value": "21"}, translate_x_mm=0.2),
+                ],
+            )
+        ],
+    )
+
+    result = generate_plan_payload({"plan": plan.model_dump(mode="json")})
+
+    assert result["correctness"]["verdict"] == "CONSISTENT"
+    assert result["correctness"]["fixed_teeth_moved"] == []
+    assert result["correctness"]["excluded_teeth_moved"] == []
+    assert result["plan"]["stages"][0]["deltas"] == []
+    assert {d["tooth"]["value"] for d in result["plan"]["stages"][1]["deltas"]} == {"11", "21"}
 
 
 def test_unconfirmed_units_warns_without_failing_verdict() -> None:

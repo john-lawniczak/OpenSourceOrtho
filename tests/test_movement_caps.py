@@ -26,6 +26,7 @@ def test_flags_excess_single_axis_movement() -> None:
     findings = evaluate_movement_caps(plan)
     assert len(findings) == 1
     assert findings[0].severity == "warning"
+    assert findings[0].code == "movement-cap-exceeded"
     assert findings[0].data_gap
     assert findings[0].clinician_question
 
@@ -57,6 +58,7 @@ def test_cap_evaluation_is_gated_on_confirmed_scale() -> None:
     plan = _plan(ToothDelta(tooth=ToothId(value="11"), translate_x_mm=5.0), scans=[unverified])
     findings = evaluate_movement_caps(plan)
     assert len(findings) == 1
+    assert findings[0].code == "movement-cap-scale-unconfirmed"
     assert "units unverified" in findings[0].title
 
     confirmed = UploadedScan(

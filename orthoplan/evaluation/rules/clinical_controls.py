@@ -165,6 +165,7 @@ def _notice(category: FindingCategory, title: str, message: str) -> Finding:
             provenance=FindingProvenance.RULE,
             title=title,
             message=message,
+            code="clinical-control-notice",
         )
     )
 
@@ -183,6 +184,7 @@ def _warning(
             provenance=FindingProvenance.RULE,
             title=title,
             message=message,
+            code="clinical-control-violation",
             data_gap=_CLINICAL_CONTROL_GAP,
             clinician_question=_QUESTION,
             reference=reference or _REFERENCE,

@@ -115,6 +115,12 @@ def print_package_payload(payload: dict[str, Any]) -> dict[str, Any]:
         return {"ok": False, "errors": _format_errors(exc)}
 
     status = build_print_export_status(plan)
+    if not status.ready:
+        return {
+            "ok": False,
+            "errors": status.blockers,
+            "print_export": status.model_dump(mode="json"),
+        }
     with tempfile.TemporaryDirectory() as tmp:
         result = export_print_package(plan, tmp, make_zip=True, make_email_draft=True)
         zip_path = Path(result.zip_path) if result.zip_path else None
