@@ -545,6 +545,61 @@ body[data-theme="dark"] .sample-banner {
   display: none;
 }
 
+/* Key for the 3D markers (matches the viewer colours: teal dot = a tooth,
+   blue-grey = held still, blue arrow = planned movement). */
+.viewer-legend {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-alt);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.viewer-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.legend-swatch {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.legend-swatch.dot-move {
+  border-radius: 50%;
+  background: #0f766e;
+}
+
+.legend-swatch.dot-hold {
+  border-radius: 50%;
+  background: #9fb2bd;
+}
+
+.legend-swatch.arrow {
+  position: relative;
+  height: 2px;
+  background: #2563eb;
+}
+
+.legend-swatch.arrow::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 7px solid #2563eb;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
 .guided-tooth {
   display: flex;
   align-items: center;

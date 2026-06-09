@@ -165,10 +165,15 @@
             </div>
             <p class="guided-hint">"Build my plan" turns your scan into a step-by-step sequence of small tooth movements (the aligner stages). You can then review it, preview it in 3D, and export the print files.</p>
             <p id="guidedBuildStatus" class="guided-status" hidden></p>
-            <p class="guided-hint">These are the teeth the plan moves. Uncheck any you'd like to keep still — or click it directly in the 3D view below.</p>
+            <p class="guided-hint">These are the teeth the plan moves. To <strong>hold a tooth still</strong> (so the plan leaves it where it is), either untick it below or click its dot in the 3D view. Click again to let it move.</p>
             <div id="guidedTeeth" class="guided-teeth"></div>
             <div id="guidedPlanViewerHost" class="guided-viewer-host"></div>
-            <p class="guided-hint">Held-still teeth show in blue-grey. The 3D view appears once you've loaded a scan and built your plan.</p>
+            <ul class="viewer-legend" aria-label="What the 3D markers mean">
+              <li><span class="legend-swatch dot-move" aria-hidden="true"></span> A tooth you can <strong>click to hold still</strong> (click again to release)</li>
+              <li><span class="legend-swatch dot-hold" aria-hidden="true"></span> <strong>Held still</strong> — the plan will not move this tooth</li>
+              <li><span class="legend-swatch arrow" aria-hidden="true"></span> Which way that tooth is planned to move (simulated; the Details slider scales it)</li>
+            </ul>
+            <p class="guided-hint">The 3D view appears once you've loaded a scan and built your plan.</p>
             <h4>How long should each tray be worn?</h4>
             <div id="guidedDuration" class="guided-duration">
               <button data-wear="10" type="button">Balanced · 10-day trays</button>
@@ -190,7 +195,7 @@
             </label>
             <p class="guided-hint">Real aligners move teeth a fraction of a millimeter per stage — too small to see on screen. This slider multiplies the movement in the 3D preview only, so you can actually watch it (×12 means shown twelve times larger than reality). Your saved plan and print files always use the true, un-exaggerated values.</p>
             <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
-            <p class="guided-hint">Drag the scale slider above and watch the teeth in the 3D view move more or less. Movement shown is simulated.</p>
+            <p class="guided-hint">Drag the scale slider above and watch the blue arrows in the 3D view grow or shrink — each arrow shows which way a tooth is planned to move. You can still click a tooth's dot here to hold it still. Movement shown is simulated.</p>
             <p class="viewer-caveat">Want fine control — per-tooth movement caps, attachments, IPR, and the raw plan JSON? Switch to the Technician view with the toggle in the sidebar.</p>
           </section>
 
