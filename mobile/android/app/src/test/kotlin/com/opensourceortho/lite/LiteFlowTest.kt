@@ -22,6 +22,20 @@ class LiteFlowTest {
     }
 
     @Test
+    fun minimalPlanKeepsDuplicateFilenamesDistinct() {
+        val plan = LitePlanBuilder.minimalPlan(
+            listOf(
+                SelectedScan("scan.stl", "upper"),
+                SelectedScan("scan.stl", "lower"),
+            ),
+        )
+        val text = json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), plan)
+
+        assertTrue(text.contains("lite-0-scan-stl"))
+        assertTrue(text.contains("lite-1-scan-stl"))
+    }
+
+    @Test
     fun requestDefaultsKeepDataLocal() {
         val request = LitePlanBuilder.request(emptyList())
         assertEquals("local", request.provider)

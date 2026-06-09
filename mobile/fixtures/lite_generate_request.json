@@ -9,7 +9,7 @@
     "scans": [
       {
         "asset": {
-          "id": "lite-upper-stl",
+          "id": "lite-0-upper-stl",
           "format": "stl",
           "provenance": "patient-derived",
           "units": "unverified",
@@ -22,7 +22,7 @@
       },
       {
         "asset": {
-          "id": "lite-lower-stl",
+          "id": "lite-1-lower-stl",
           "format": "stl",
           "provenance": "patient-derived",
           "units": "unverified",

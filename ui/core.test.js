@@ -77,6 +77,17 @@ test("toothKind classifies FDI teeth by last digit", () => {
   assert.equal(toothKind("48"), "molar");
 });
 
+test("arch helpers reject invalid and ambiguous arch signals", () => {
+  assert.equal(normalizeArchLabel("upper"), "maxillary");
+  assert.equal(inferArchFromName("upper.stl"), "maxillary");
+  assert.equal(inferArchFromName("scan_l.stl"), "mandibular");
+  assert.equal(inferArchFromName("upper-lower.stl"), null);
+  assert.equal(archFromTooth("11"), "maxillary");
+  assert.equal(archFromTooth("38"), "mandibular");
+  assert.equal(archFromTooth("99"), null);
+  assert.equal(archFromTooth("1"), null);
+});
+
 test("escapeHtml neutralizes HTML metacharacters", () => {
   assert.equal(
     escapeHtml('<img src=x onerror="alert(1)">'),

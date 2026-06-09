@@ -21,29 +21,32 @@ export function normalizeArchLabel(value) {
 
 export function inferArchFromName(name = "") {
   const text = String(name).toLowerCase();
-  if (
+  const maxillaryMatch =
     text.includes("upper") ||
     text.includes("top") ||
     text.includes("maxilla") ||
     text.includes("maxillary") ||
-    /(^|[-_\s])u(\.stl|[-_\s])/.test(text)
-  ) {
-    return "maxillary";
-  }
-  if (
+    /(^|[-_\s])u(\.stl|[-_\s])/.test(text);
+  const mandibularMatch =
     text.includes("lower") ||
     text.includes("bottom") ||
     text.includes("mandible") ||
     text.includes("mandibular") ||
-    /(^|[-_\s])l(\.stl|[-_\s])/.test(text)
-  ) {
+    /(^|[-_\s])l(\.stl|[-_\s])/.test(text);
+  if (maxillaryMatch && mandibularMatch) return null;
+  if (maxillaryMatch) {
+    return "maxillary";
+  }
+  if (mandibularMatch) {
     return "mandibular";
   }
   return null;
 }
 
 export function archFromTooth(tooth) {
-  const quadrant = String(tooth || "")[0];
+  const text = String(tooth || "");
+  if (!/^[1-8][1-8]$/.test(text)) return null;
+  const quadrant = text[0];
   if (quadrant === "1" || quadrant === "2" || quadrant === "5" || quadrant === "6") {
     return "maxillary";
   }

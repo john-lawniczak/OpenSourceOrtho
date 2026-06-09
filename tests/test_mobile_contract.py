@@ -31,6 +31,7 @@ def test_arch_contract_normalizes_shared_labels_and_filenames() -> None:
     assert normalize_arch_label("unknown") is None
     assert infer_arch_from_name("sample-test-case-upper.stl") == "maxillary"
     assert infer_arch_from_name("scan_l.stl") == "mandibular"
+    assert infer_arch_from_name("upper-lower.stl") is None
     assert infer_arch_from_name("scan.stl") is None
     assert arch_from_tooth_value("11") == "maxillary"
     assert arch_from_tooth_value("38") == "mandibular"
@@ -45,6 +46,8 @@ def test_fdi_contract_accepts_two_digit_1_to_8_values(value: str) -> None:
 def test_fdi_contract_rejects_values_outside_two_digit_1_to_8(value: str) -> None:
     with pytest.raises(ValueError):
         ToothId(value=value)
+    with pytest.raises(ValueError):
+        arch_from_tooth_value(value)
 
 
 def test_movement_cap_override_contract_uses_same_fdi_key_rules() -> None:

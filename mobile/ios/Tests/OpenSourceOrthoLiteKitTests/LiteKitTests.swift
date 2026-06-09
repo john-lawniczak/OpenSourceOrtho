@@ -15,6 +15,19 @@ final class LiteKitTests: XCTestCase {
         XCTAssertFalse(json.contains("file_name"))
     }
 
+    func testMinimalPlanKeepsDuplicateFilenamesDistinct() throws {
+        let scans = [
+            SelectedScan(fileName: "scan.stl", arch: "upper", byteCount: 1234),
+            SelectedScan(fileName: "scan.stl", arch: "lower", byteCount: 5678),
+        ]
+        let plan = LitePlanBuilder.minimalPlan(for: scans)
+        let data = try JSONEncoder().encode(plan)
+        let json = String(decoding: data, as: UTF8.self)
+
+        XCTAssertTrue(json.contains("lite-0-scan-stl"))
+        XCTAssertTrue(json.contains("lite-1-scan-stl"))
+    }
+
     func testRequestDefaultsKeepDataLocal() {
         let request = LitePlanBuilder.request(for: [])
         XCTAssertEqual(request.provider, "local")
