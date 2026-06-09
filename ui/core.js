@@ -12,6 +12,47 @@ export function escapeHtml(value) {
 // tooth looks absent - the cue to mark the gap and re-anchor the labels.
 export const FULL_ARCH_TEETH = 14;
 
+export function normalizeArchLabel(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (text === "upper" || text === "maxillary") return "maxillary";
+  if (text === "lower" || text === "mandibular") return "mandibular";
+  return null;
+}
+
+export function inferArchFromName(name = "") {
+  const text = String(name).toLowerCase();
+  if (
+    text.includes("upper") ||
+    text.includes("top") ||
+    text.includes("maxilla") ||
+    text.includes("maxillary") ||
+    /(^|[-_\s])u(\.stl|[-_\s])/.test(text)
+  ) {
+    return "maxillary";
+  }
+  if (
+    text.includes("lower") ||
+    text.includes("bottom") ||
+    text.includes("mandible") ||
+    text.includes("mandibular") ||
+    /(^|[-_\s])l(\.stl|[-_\s])/.test(text)
+  ) {
+    return "mandibular";
+  }
+  return null;
+}
+
+export function archFromTooth(tooth) {
+  const quadrant = String(tooth || "")[0];
+  if (quadrant === "1" || quadrant === "2" || quadrant === "5" || quadrant === "6") {
+    return "maxillary";
+  }
+  if (quadrant === "3" || quadrant === "4" || quadrant === "7" || quadrant === "8") {
+    return "mandibular";
+  }
+  return null;
+}
+
 // Confidence tier from a 0-100 percentage. Low confidence (often a count
 // mismatch) should stand out so the reviewer checks those tooth numbers first.
 export function confidenceTier(pct) {
@@ -55,6 +96,25 @@ export function stageBuckets(rows) {
     index,
     rows: rows.filter((row) => row.stage === stage),
   }));
+}
+
+export function rowsFromPlan(plan) {
+  const rows = [];
+  for (const stage of plan.stages || []) {
+    for (const delta of stage.deltas || []) {
+      rows.push({
+        stage: stage.index,
+        tooth: delta.tooth.value,
+        x: delta.translate_x_mm,
+        y: delta.translate_y_mm,
+        z: delta.translate_z_mm,
+        tip: delta.rotate_tip_deg,
+        torque: delta.rotate_torque_deg,
+        rotation: delta.rotate_rotation_deg,
+      });
+    }
+  }
+  return rows;
 }
 
 // Cumulative translation per tooth from an engine frame (never recomputed here).

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from orthoplan.arch_contract import arch_from_tooth_value
 from orthoplan.evaluation.finding import (
     Finding,
     FindingCategory,
@@ -79,8 +80,7 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
 
 
 def _arch_of(tooth_value: str) -> str:
-    # FDI maxillary quadrants are 1,2 (permanent) and 5,6 (primary).
-    return "maxillary" if tooth_value[0] in {"1", "2", "5", "6"} else "mandibular"
+    return arch_from_tooth_value(tooth_value)
 
 
 def _assets_by_id(plan: TreatmentPlan) -> dict[str, MeshAsset]:

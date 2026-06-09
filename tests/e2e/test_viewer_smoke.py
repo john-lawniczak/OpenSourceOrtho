@@ -117,6 +117,54 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
     assert not errors, f"uncaught page errors: {errors}"
 
 
+def test_guided_build_review_and_print_status_happy_path(server_url: str) -> None:
+    with sync_playwright() as pw:
+        try:
+            browser = pw.chromium.launch(headless=True)
+        except Exception as exc:  # noqa: BLE001 - browser binary may be missing
+            pytest.skip(f"playwright chromium unavailable: {exc}")
+
+        page = browser.new_page(viewport={"width": 1280, "height": 900})
+        errors: list[str] = []
+        page.on("pageerror", lambda exc: errors.append(str(exc)))
+        try:
+            page.goto(server_url, wait_until="networkidle")
+            page.click(".sample-launch")
+            page.wait_for_selector('#guided .gstep[data-gstep="upload"].is-active', timeout=15000)
+
+            page.click('[data-gstep-nav="plan"]')
+            page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
+            page.click("#guidedBuild")
+            page.wait_for_function(
+                """() => document.querySelector('#guidedBuildStatus')?.innerText.includes('CONSISTENT')"""
+            )
+            assert "source:" in page.locator("#guidedBuildStatus").inner_text()
+
+            page.click('[data-gstep-nav="review"]')
+            page.wait_for_selector('#guided .gstep[data-gstep="review"].is-active', timeout=15000)
+            review_text = page.locator("#guidedSummary").inner_text()
+            assert "aligner stage" in review_text
+            assert "Projected" in page.locator("#guidedDurationSummary").inner_text()
+
+            page.click('[data-gstep-nav="print"]')
+            page.wait_for_selector('#guided .gstep[data-gstep="print"].is-active', timeout=15000)
+            page.click("#guidedPrint")
+            page.wait_for_function(
+                """() => {
+                  const text = document.querySelector('#guidedPrintStatus')?.innerText || '';
+                  return text.includes('print export is disabled') ||
+                    text.includes('per-tooth segmentation') ||
+                    text.includes('Files built');
+                }"""
+            )
+            print_status = page.locator("#guidedPrintStatus").inner_text()
+            assert "Could not build files" not in print_status
+        finally:
+            browser.close()
+
+    assert not errors, f"uncaught page errors: {errors}"
+
+
 def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> None:
     with sync_playwright() as pw:
         try:

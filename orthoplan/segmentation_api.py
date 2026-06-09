@@ -13,6 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from orthoplan.arch_contract import infer_arch_from_name, normalize_arch_label
 from orthoplan.io.stl_import import read_stl_geometry
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.assets import ArchName, MeshAsset, MeshProvenance
@@ -51,15 +52,7 @@ def _resolve_scan_path(
 
 
 def _scan_arch(scan: dict[str, Any], path: Path) -> ArchName | None:
-    arch = scan.get("arch")
-    if arch in ("maxillary", "mandibular"):
-        return arch  # type: ignore[return-value]
-    name = path.name.lower()
-    if any(token in name for token in ("upper", "maxill", "-u.", "_u.")):
-        return "maxillary"
-    if any(token in name for token in ("lower", "mandib", "-l.", "_l.")):
-        return "mandibular"
-    return None
+    return normalize_arch_label(scan.get("arch")) or infer_arch_from_name(path)
 
 
 def _scan_list(payload: dict[str, Any]) -> list[dict[str, Any]]:
