@@ -429,6 +429,10 @@ async function setUploadedFiles(files) {
   state.scanSources = [];
   state.useDemoMeshes = false;
   state.scanArchFilter = "both";
+  // A new scan invalidates any prior segmentation: its per-tooth meshes live in
+  // the OLD scan's coordinates, so leaving them applied would render stale crowns
+  // misaligned over the new scan. Drop the proposal/applied fragment.
+  state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null, missingTeeth: state.segmentation.missingTeeth };
   state.sampleStatus = stlFiles.length
     ? "Uploaded STL scan layer · movement preview is schematic until segmented per-tooth meshes are available."
     : "";
