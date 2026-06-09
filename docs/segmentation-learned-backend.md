@@ -3,6 +3,9 @@
 > Status: **proposal / not yet built.** Educational tooling only — segmentation
 > proposes per-tooth regions for review; it is never a diagnosis, a treatment
 > decision, or a statement that care is needed, possible, safe, or complete.
+>
+> To start building in a fresh chat, use the paste-ready prompt in
+> [segmentation-learned-backend-handoff.md](segmentation-learned-backend-handoff.md).
 
 ## Why
 
