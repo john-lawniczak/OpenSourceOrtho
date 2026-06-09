@@ -1,6 +1,6 @@
 # Architecture
 
-OpenSource Ortho is a Python-first planning and visualization toolkit. The first milestone is not a polished production product; it is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI.
+OpenSource Ortho is a Python-first planning and visualization toolkit for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI. The product direction is treatment-planning software with two planning tiers: STL-only surface planning today, and CBCT/DICOM-enhanced root/bone-aware planning as a deliberate roadmap.
 
 ## Simple Flow
 
@@ -13,6 +13,11 @@ OpenSource Ortho is a Python-first planning and visualization toolkit. The first
 7. The UI renders current, staged, and planned positions from those cumulative frames.
 8. Deterministic rules run first. Model providers such as OpenAI or Claude Code may add advisory findings, but all findings pass through `lint_finding()`.
 9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
+
+CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
+root/bone-aware planning once the app can ingest a local DICOM volume, register
+it to the STL, represent reviewed anatomy, and expose deterministic
+root/bone-aware findings. See [cbct-evaluation.md](cbct-evaluation.md).
 
 ## Language and Stack
 
@@ -29,7 +34,7 @@ The likely future split:
 
 - Python: data model, IO, planning, evaluation, CLI, test fixtures
 - Three.js or VTK/PyVista: interactive 3D visualization
-- Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
+- Optional 3D Slicer extension or VTK-style tooling: heavyweight dental/CBCT workflow integration
 
 The browser UI never reimplements the engine. `orthoplan/api.py` exposes pure entry points, and `orthoplan/server.py` serves them: `POST /api/evaluate` for findings/frames, `POST /api/print-package` (`print_package_payload`, reusing `export_print_package`) which returns a base64 zip of stage proxy STLs + manifest and an `.eml` draft for the guided Print / send step, and `POST /api/segment` (`segment_payload`) which runs the on-device segmenter on a server-local scan and returns a reviewable per-tooth proposal (confidence, linted advisory findings, and a ready-to-merge `mesh_assets`/`tooth_meshes` fragment). The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
 
@@ -100,11 +105,18 @@ mesh is missing.
 - data gaps attached for the UI
 - designed so the UI does not recalculate treatment movement differently from the engine; transform composition lives in `planning/transforms.py`, and `viz` only consumes it
 
-## STL Upload
+## Planning Tiers
 
-The initial user upload should be an STL of an intraoral scan. STL contains surface geometry only. It does not contain roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT anatomy.
+### Surface Plan: STL Upload
 
-That means the UI must show these data gaps. A surface scan can support crown-surface visualization and staged crown movement, but it cannot prove root position, bone safety, or periodontal suitability.
+The initial user upload can be an STL of an intraoral scan. STL contains surface
+geometry only. It does not contain roots, bone, periodontal status, occlusion
+dynamics, diagnosis, or CBCT anatomy.
+
+That means the UI must show these data gaps. A surface scan can support
+crown-surface visualization, staged crown movement, arch-form proposals,
+crown-collision checks, and manufacturing handoff. It cannot prove root
+position, bone safety, or periodontal suitability.
 
 STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 
@@ -112,6 +124,23 @@ STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 - absolute paths and directory structure (which often carry patient names) are stripped
 - STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
 - a bounding-box sanity check can warn about implausible scale, but never infers units
+
+### Root/Bone-Aware Plan: CBCT/DICOM
+
+CBCT/DICOM is planned as an optional higher-fidelity tier rather than a universal
+requirement. It should unlock root/bone-aware planning only after these contracts
+exist:
+
+- local DICOM/CBCT record ingestion with PHI-aware metadata handling
+- on-device volume viewing or trusted local viewer integration
+- explicit STL-to-CBCT registration with quality metrics
+- reviewable derived anatomy such as roots, alveolar bone, and tooth axes
+- deterministic root/bone-aware findings that fail closed when registration or
+  segmentation quality is missing
+
+CBCT-derived data must enter planning through typed model contracts with
+provenance and review status. The planner must never silently assume that STL and
+CBCT coordinate spaces are aligned.
 
 ## How The Plan Moves Teeth
 

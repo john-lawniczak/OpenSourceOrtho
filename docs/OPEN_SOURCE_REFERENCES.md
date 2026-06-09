@@ -38,7 +38,7 @@ PyVista / VTK
 pydicom
 
 - MIT-licensed Python DICOM library
-- useful only if CBCT/DICOM support is added
+- candidate optional dependency for the planned CBCT/DICOM ingestion milestone
 
 Three.js
 

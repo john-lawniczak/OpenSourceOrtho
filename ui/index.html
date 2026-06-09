@@ -615,12 +615,12 @@
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Imaging &amp; Photos Guide</h2>
-            <p>A quick guide to the records you can bring and how much each one helps. Educational only, this is not a diagnosis and it does not tell you what care you need.</p>
+            <p>A quick guide to the records you can bring and how much each one helps. This is planning context, not a diagnosis, and it does not tell you what care you need.</p>
           </div>
 
           <div class="workflow-card">
             <h2>What the engine actually uses</h2>
-            <p>The planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>Stereolithography file format (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement. It never sees roots, bone, nerves, or the airway, so extra imaging mostly <em>closes data gaps</em> (see <strong>Data Gaps</strong> and <strong>Acquire Next</strong> in the sidebar) rather than changing the core plan. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>Stereolithography file format (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement. That is the <strong>Surface Plan</strong> tier. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware planning after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
           </div>
 
           <div class="workflow-card">
@@ -638,7 +638,7 @@
               <tr>
                 <th scope="row">CBCT (DICOM)</th>
                 <td><span class="records-score" data-tier="high">10/10</span></td>
-                <td>A full 3D scan of crowns, <strong>roots, and bone</strong> (and airway). The only input that reveals what is under the gum, so it removes the most data gaps.</td>
+                <td>A full 3D scan of crowns, <strong>roots, and bone</strong> (and airway). The path to root/bone-aware planning once registered and reviewed.</td>
                 <td>~$100&ndash;$400 (often bundled with a consult). Higher radiation; clinician-ordered.</td>
               </tr>
               <tr>

@@ -31,7 +31,7 @@ matching the repo's no-heavy-framework, auditable, offline-leaning posture.
 
 ## The lite flow
 
-Both apps implement the same four-step flow. The full clinician workspace
+Both apps implement the same four-step STL surface-planning flow. The full clinician workspace
 (records, caps editor, staged-movement table, plan versions, print export) is
 intentionally **out of scope** for lite.
 
@@ -56,6 +56,10 @@ carry the same disclaimers and must never present a plan as safe, approved,
 cleared, or ready for treatment. The engine's verdict is `CONSISTENT` or
 `ISSUES` only. Model-generated text is untrusted and is lint-gated by the engine
 before it ever reaches the device. See [`docs/SAFETY.md`](../docs/SAFETY.md).
+
+CBCT/DICOM support is part of the full product roadmap, not the lite scaffold.
+The lite flow remains STL-only until the engine exposes local DICOM ingestion,
+registration, and reviewed root/bone-aware planning contracts.
 
 Each app ships a standing, non-dismissible disclaimer string sourced from
 [`API_CONTRACT.md`](API_CONTRACT.md) so the wording stays consistent with the
