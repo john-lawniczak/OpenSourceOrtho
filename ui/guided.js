@@ -88,13 +88,23 @@ function relocate(blockId, hostId) {
   if (block && host && block.parentElement !== host) host.appendChild(block);
 }
 
+// The single 3D viewer follows the active guided step: the user picks teeth in
+// "plan", watches the movement-scale slider in "details", and scrubs stages in
+// "preview". Only one step is visible at a time, so relocating the one WebGL
+// instance into the active step's host is safe.
+const VIEWER_STEP_HOSTS = {
+  plan: "guidedPlanViewerHost",
+  details: "guidedDetailsViewerHost",
+  preview: "guidedPreviewHost",
+};
+
 // Relocate shared singletons into the host for the active mode/step. In guided
 // mode the viewer/AI/upload live inside their wizard steps; in technician mode
 // they return to the review workspace.
 export function placeSharedBlocks() {
   if (state.userMode === "simple") {
     relocate("simpleUpload", "guidedUploadHost");
-    relocate("viewerBlock", "guidedPreviewHost");
+    relocate("viewerBlock", VIEWER_STEP_HOSTS[currentGuidedStep()] || "guidedPreviewHost");
     relocate("aiChatBlock", "guidedAiHost");
   } else {
     relocate("simpleUpload", "techUploadHost");

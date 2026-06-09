@@ -165,8 +165,10 @@
             </div>
             <p class="guided-hint">"Build my plan" turns your scan into a step-by-step sequence of small tooth movements (the aligner stages). You can then review it, preview it in 3D, and export the print files.</p>
             <p id="guidedBuildStatus" class="guided-status" hidden></p>
-            <p class="guided-hint">These are the teeth the plan moves. Uncheck any you'd like to keep still.</p>
+            <p class="guided-hint">These are the teeth the plan moves. Uncheck any you'd like to keep still — or click it directly in the 3D view below.</p>
             <div id="guidedTeeth" class="guided-teeth"></div>
+            <div id="guidedPlanViewerHost" class="guided-viewer-host"></div>
+            <p class="guided-hint">Held-still teeth show in blue-grey. The 3D view appears once you've loaded a scan and built your plan.</p>
             <h4>How long should each tray be worn?</h4>
             <div id="guidedDuration" class="guided-duration">
               <button data-wear="10" type="button">Balanced · 10-day trays</button>
@@ -187,6 +189,8 @@
               <span id="guidedExaggerationValue">×12</span>
             </label>
             <p class="guided-hint">Real aligners move teeth a fraction of a millimeter per stage — too small to see on screen. This slider multiplies the movement in the 3D preview only, so you can actually watch it (×12 means shown twelve times larger than reality). Your saved plan and print files always use the true, un-exaggerated values.</p>
+            <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
+            <p class="guided-hint">Drag the scale slider above and watch the teeth in the 3D view move more or less. Movement shown is simulated.</p>
             <p class="viewer-caveat">Want fine control — per-tooth movement caps, attachments, IPR, and the raw plan JSON? Switch to the Technician view with the toggle in the sidebar.</p>
           </section>
 
@@ -597,10 +601,15 @@
             <p>How teeth are numbered here. Educational only; not a diagnosis.</p>
           </div>
           <div class="workflow-card">
-            <h2>FDI Tooth Numbering</h2>
-            <p>Teeth are named by two digits: the first is the <strong>quadrant</strong>, the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar. The engine uses FDI internally.</p>
+            <h2>Two ways to number teeth</h2>
+            <p>Adults have 32 teeth, and dentists give each one a number so everyone is talking about the same tooth. There are two common numbering systems, so the chart below shows both:</p>
+            <ul class="toothmap-systems">
+              <li><strong>FDI (two-digit)</strong> &mdash; used by most of the world and <strong>by this app internally</strong>. The first digit is the <strong>quadrant</strong> (1 upper-right, 2 upper-left, 3 lower-left, 4 lower-right); the second is the <strong>position</strong> counting out from the front midline (1 central incisor &rarr; 8 third molar). Example: <strong>11</strong> = upper-right central incisor, <strong>46</strong> = lower-right first molar.</li>
+              <li><strong>Universal (1&ndash;32)</strong> &mdash; the chart most common in the US. It simply counts every tooth in order, starting at the upper-right wisdom tooth (<strong>1</strong>), across the top to the upper-left wisdom tooth (<strong>16</strong>), then down and back across the bottom (<strong>17</strong>&ndash;<strong>32</strong>).</li>
+            </ul>
+            <p class="toothmap-why"><strong>Why two?</strong> They grew up in different places &mdash; FDI is the international standard, Universal is the long-standing US habit &mdash; and both are still in everyday use. They describe the exact same teeth; only the labels differ. This app speaks FDI and shows Universal alongside it so the chart is readable either way.</p>
           </div>
-          <img class="tooth-chart" src="./tooth-chart.svg" alt="Mouth diagram showing FDI tooth numbers on the upper and lower arches" />
+          <img class="tooth-chart" src="./tooth-chart.svg" alt="Mouth diagram of the upper and lower arches. Each tooth shows its Universal number (large, 1-32) and its FDI number (small)." />
           <div class="tooth-map" aria-label="FDI quadrant map">
             <div class="quadrant">
               <h3>Q1 &middot; Upper right</h3>
@@ -625,7 +634,7 @@
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Glossary &mdash; Key Terms</h2>
-            <p>Plain-language definitions for people new to dentistry. Educational only; not a diagnosis.</p>
+            <p>Plain-language definitions for people new to dentistry.</p>
           </div>
           <div class="glossary">
             <h2>Key Terms (A&ndash;Z)</h2>
@@ -661,12 +670,18 @@
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Imaging &amp; Photos Guide</h2>
-            <p>A quick, plain-language guide to the records you can bring and how much each one helps. Educational only &mdash; this is not a diagnosis, and it does not tell you what care you need.</p>
+            <p>A quick guide to the records you can bring and how much each one helps. Educational only, this is not a diagnosis and it does not tell you what care you need.</p>
           </div>
 
           <div class="workflow-card">
             <h2>What the engine actually uses</h2>
-            <p>The planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>STL scan</strong>: it segments the arch into per-tooth meshes and proposes movement. It never sees roots, bone, nerves, or the airway, so extra imaging mostly <em>closes data gaps</em> (see <strong>Data Gaps</strong> and <strong>Acquire Next</strong> in the sidebar) rather than changing the core plan. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+            <p>The planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>Stereolithography file format (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement. It never sees roots, bone, nerves, or the airway, so extra imaging mostly <em>closes data gaps</em> (see <strong>Data Gaps</strong> and <strong>Acquire Next</strong> in the sidebar) rather than changing the core plan. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+          </div>
+
+          <div class="workflow-card">
+            <h2>What is the &ldquo;Rx&rdquo; file?</h2>
+            <p>A scanner export (for example an iTero <strong>OrthoCAD</strong> zip) usually bundles an <strong>Rx</strong> alongside the meshes &mdash; an HTML, PDF, or XML document. The Rx is the scan&rsquo;s <strong>prescription / order form</strong>: it records the procedure type, the ordering dentist, the scan date, and any clinical notes or requested treatment. It is <strong>not part of the STL</strong> and carries <em>no 3D geometry</em>, so the engine does not plan from it.</p>
+            <p>It is still useful <strong>context</strong>: it tells you what was ordered, by whom, and when, which is worth reading before you trust a plan or compare it against a provider&rsquo;s recommendation. Treat it as paperwork that travels <em>with</em> the scan, not as a measurement input. The intraoral gallery photos in the same export behave like <strong>STL + Photos</strong> above &mdash; bite and soft-tissue context, no new measurements.</p>
           </div>
 
           <table class="records-table">
@@ -683,7 +698,7 @@
               </tr>
               <tr>
                 <th scope="row">STL + Periapical X-rays</th>
-                <td><span class="records-score" data-tier="high">7&ndash;8/10</span></td>
+                <td><span class="records-score" data-tier="high">8/10</span></td>
                 <td>Crown surface plus close-up 2D views of <strong>specific roots and surrounding bone</strong> &mdash; targeted root context where it matters.</td>
                 <td>STL ~$0&ndash;$150 + ~$25&ndash;$50 per film (full-mouth series ~$100&ndash;$200).</td>
               </tr>
@@ -722,7 +737,11 @@
 
           <div class="workflow-card">
             <h2>If you are starting from scratch</h2>
-            <p>An <strong>intraoral STL scan</strong> is the one record that unlocks the planner &mdash; start there. Add <strong>smartphone photos</strong> for free to capture your bite and a baseline. Bring an <strong>X-ray or CBCT</strong> only when a licensed professional recommends one; those reveal roots and bone the surface scan cannot, and they involve radiation.</p>
+            <p>An <strong>intraoral STL scan</strong> is the one record that unlocks the planner &mdash; start there. After that:</p>
+            <ul class="starter-steps">
+              <li><strong>Add smartphone photos</strong> for free to capture your bite and a baseline.</li>
+              <li><strong>Bring an X-ray or CBCT</strong> only when a licensed professional recommends one; those reveal roots and bone the surface scan cannot, and they involve radiation.</li>
+            </ul>
           </div>
 
           <p class="viewer-caveat">Costs are rough US estimates and vary widely by region, provider, and whether imaging is bundled with a visit. The relative-value scores describe how much each input helps <em>this engine</em> close data gaps &mdash; they are not medical advice and do not rank treatments.</p>
