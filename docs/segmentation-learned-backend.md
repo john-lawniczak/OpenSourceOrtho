@@ -38,20 +38,53 @@ Everything already routes through one small contract, so the model is a drop-in:
 **Implication:** no API, payload, plan-model, or UI changes are required to swap
 the algorithm. This doc is about the model + its packaging, not the wiring.
 
+## Model availability (checked June 2026)
+
+There is **no turnkey, license-clear ONNX tooth-segmenter** to drop in. What
+exists:
+
+- **MeshSegNet** (`Tai-Hsien/MeshSegNet`): **MIT-licensed code**, and the repo
+  **ships pretrained PyTorch weights** (an upper and a lower model under
+  `./models`). Caveats:
+  - **No ONNX export is provided** — it is PyTorch only. Export is feasible
+    (the model is PointNet++/MLP with graph-constrained "GLM" layers that take
+    mesh adjacency matrices as extra inputs — exportable but fiddly), but it is a
+    dev-time step, not a download.
+  - **The weights' license is undocumented.** MIT covers the *code*; the bundled
+    models were trained on a **private clinical IOS dataset** (Lian et al.), and
+    the repo says nothing about redistribution/commercial terms for the *weights*.
+    Clear this before shipping or redistributing them.
+  - **Non-trivial preprocessing:** decimate the mesh to **<= 10k cells**, build
+    **15-dim per-cell features** (9 vertex coords + 3 normal + 3 relative
+    position), **per arch**, **15 classes** (14 teeth + gingiva) -> map to FDI ->
+    back to `ToothSegment` triangles.
+- **Teeth3DS+ / 3DTeethSeg'22** dataset (1800 scans / 900 patients, public on
+  OSF): **CC BY-NC-ND 4.0 — non-commercial, no derivatives.** Training our own
+  model on it inherits NC/ND terms, which is **incompatible with an openly /
+  commercially reusable build.** Do not bake it in.
+- **DilatedToothSegNet** (2024) is a newer mesh model worth evaluating as an
+  alternative if MeshSegNet export is painful; license/ONNX status unconfirmed.
+
+Sources: github.com/Tai-Hsien/MeshSegNet (+ its MIT LICENSE), arXiv:2109.11941,
+crns-smartvision.github.io/teeth3ds, 3dteethseg.grand-challenge.org,
+arXiv:2305.18277, DilatedToothSegNet (Springer 10.1007/s10278-024-01061-6).
+
 ## Candidate approaches (in rough order of effort)
 
-1. **MeshSegNet / iMeshSegNet (Teeth3DS-trained), ONNX-exported.**
-   Point/face-based network for intraoral scans; mature, public datasets
-   (Teeth3DS, 3DTeethSeg22 MICCAI challenge). Export to ONNX and run via
-   `onnxruntime` (CPU) so there is **no torch runtime dependency** for users.
-2. **A lighter PointNet++-style face classifier** trained on the same data —
-   smaller weights, lower accuracy, simpler to ship.
+1. **Export the MIT MeshSegNet PyTorch weights to ONNX** (dev-time, torch only
+   at export, not at runtime), run via `onnxruntime` (CPU). Fastest path to a
+   real model, BUT gated on (a) clearing the weights' license and (b) the
+   adjacency-matrix export + per-cell preprocessing work.
+2. **A lighter PointNet++/DGCNN-style face classifier** trained on a
+   license-clear dataset — smaller, simpler to export, but needs training.
 3. **Geometry upgrade, no ML:** curvature/normal-based watershed on the mesh
    graph (needs the half-edge adjacency we do not currently build). Cleaner cuts
    than the 1-D heuristic without weights, but well short of a trained model.
 
-Recommendation: **(1) ONNX MeshSegNet**, with the heuristic retained as the
-always-available fallback.
+Recommendation: **(1) export MeshSegNet to ONNX** as the model spike (after
+Phase 1), with the heuristic retained as the always-available fallback and the
+weights supplied by the user (never committed), which sidesteps both the
+file-size and the redistribution-license problems.
 
 ## Dependency & packaging strategy (hard requirement)
 
@@ -70,9 +103,13 @@ rules). So:
 
 ## Data & licensing
 
-- Teeth3DS / 3DTeethSeg22 are research datasets with their own licenses — verify
-  redistribution terms before bundling anything. Default: ship **no data**, and
-  document how a user supplies their own weights.
+- **MeshSegNet weights** (if used): MIT code, but the bundled models were trained
+  on a private clinical dataset with **no stated weights license**. Confirm
+  redistribution/commercial terms before shipping; default to **user-supplied
+  weights** (a path/env var) so the project never redistributes them.
+- **Teeth3DS+ / 3DTeethSeg'22** is **CC BY-NC-ND 4.0** (non-commercial, no
+  derivatives). A model trained on it cannot be used in a commercially reusable
+  build — do not train on it for the shipped backend. Default: ship **no data**.
 - FDI labeling: the model must emit (or map to) the FDI values the rest of the
   app uses; reuse `tooth_values_for_arch` for the canonical order and the
   missing-teeth anchoring already in place.
@@ -118,6 +155,11 @@ The realistic synthetic harness added in this branch is the gate:
 
 ## Estimate
 
-Backend skeleton + ONNX wiring + fallback + tests: ~2–3 focused days assuming a
-pre-trained exportable model exists. Training/curating a model from scratch is a
-separate, larger effort and is **out of scope** for this integration.
+- **Phase 1** (contract + loader/fallback + `ml-seg` extra + compactness metric +
+  tests; *no model*): ~1–2 focused days, no external dependency.
+- **Model spike** (export MeshSegNet -> ONNX, per-cell preprocessing, FDI mapping,
+  beat the harness floors): ~2–4 days, **gated on clearing the weights' license**.
+  Note: MeshSegNet's GLM layers take mesh adjacency matrices as inputs, so the
+  ONNX export and the decimate-to-<=10k-cells preprocessing are the real work.
+- **Training a model from scratch** (e.g. on a license-clear dataset): a separate,
+  larger effort, **out of scope** here.

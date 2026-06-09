@@ -110,8 +110,24 @@ tests without committing any model or dataset.
    integration checklist items you complete.
 
 Do NOT attempt to train or bundle a model in this phase. Build the contract,
-the fallback, the packaging, and the measurement. Confirm scope with me if a
-pre-trained ONNX MeshSegNet export is not readily available.
+the fallback, the packaging, and the measurement.
+
+## Model availability (checked June 2026 — do not re-litigate)
+There is NO turnkey ONNX tooth-segmenter to drop in. MeshSegNet
+(github.com/Tai-Hsien/MeshSegNet) has MIT-licensed CODE and ships pretrained
+PyTorch weights (upper + lower), but: (a) no ONNX export is provided — it is
+PyTorch only, and export is fiddly because its GLM layers take mesh adjacency
+matrices as inputs; (b) the WEIGHTS' license is undocumented (trained on a
+private clinical dataset — clear terms before redistributing); (c) it needs real
+per-cell preprocessing (decimate to <=10k cells, 15-dim features, per arch, 15
+classes -> FDI). Teeth3DS+/3DTeethSeg'22 data is CC BY-NC-ND 4.0 (non-commercial,
+no derivatives) — do NOT train the shipped backend on it.
+
+So Phase 1 assumes NO weights and NO torch at runtime, and is fully testable
+without a model. Exporting MeshSegNet -> ONNX and clearing its weights' license
+is a SEPARATE later spike (see docs/segmentation-learned-backend.md "Model
+availability" + "Candidate approaches"). Resolve weights from a user-supplied
+path so the project never commits or redistributes them.
 
 A real OrthoCAD export for manual spot-checks lives locally at
 ~/Desktop/OrthoCAD_Export_John K/ (whole-arch shells; PHI — never commit it).
