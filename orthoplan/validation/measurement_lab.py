@@ -11,6 +11,7 @@ from collections.abc import Callable
 
 from orthoplan.validation import measurement_cases as cases
 from orthoplan.validation import segmentation_cases as seg_cases
+from orthoplan.validation import segmentation_compactness_case as seg_compactness
 from orthoplan.validation.measurement_models import MeasurementTruthResult
 
 CaseFn = Callable[[], MeasurementTruthResult]
@@ -31,6 +32,7 @@ def measurement_truth_cases() -> dict[str, CaseFn]:
         "segmentation-missing-tooth": seg_cases.segmentation_missing_tooth,
         "segmentation-open-gap": seg_cases.segmentation_open_gap,
         "segmentation-missing-tooth-marked": seg_cases.segmentation_missing_tooth_marked,
+        "segmentation-crown-compactness": seg_compactness.segmentation_crown_compactness,
         "report-reproducibility": cases.report_reproducibility,
     }
 

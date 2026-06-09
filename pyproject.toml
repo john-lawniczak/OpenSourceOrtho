@@ -37,6 +37,13 @@ mesh = [
 mesh-processing = [
   "open3d>=0.18"
 ]
+# Optional on-device learned tooth-segmentation backend. Inference only: NEVER
+# torch at runtime. Weights are user-supplied and never committed (see
+# docs/segmentation-learned-backend.md). The core install stays light without this.
+ml-seg = [
+  "onnxruntime>=1.17",
+  "numpy>=1.24"
+]
 e2e = [
   "playwright>=1.40"
 ]

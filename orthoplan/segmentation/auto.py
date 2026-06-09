@@ -118,16 +118,42 @@ def tooth_values_for_arch(
     return tuple(tooth for tooth in order if tooth not in marked)
 
 
+def _maybe_learned_segmenter() -> SegmentationModel | None:
+    """Return the optional learned ONNX segmenter, or ``None`` to use the fallback.
+
+    The learned backend is an optional extra with user-supplied, never-committed
+    weights. Any "unavailable" signal (extra not installed, no weights) is swallowed
+    here so the heuristic stays the always-on default and the core never depends on
+    the extra. A broken optional backend must likewise never take down segmentation.
+    """
+
+    try:
+        from orthoplan.segmentation.learned import (
+            SegmenterUnavailable,
+            load_learned_segmenter,
+        )
+    except ImportError:
+        return None
+    try:
+        return load_learned_segmenter()
+    except SegmenterUnavailable:
+        return None
+    except Exception:  # noqa: BLE001 - the optional backend must never break the core
+        return None
+
+
 def load_local_segmenter() -> SegmentationModel:
     """Return the active on-device segmenter.
 
-    Swap point for a real learned model: return e.g. a ``Teeth3DSSegmenter`` here
-    once one is trained and bundled. It must keep running locally (PHI), expose
-    ``name``/``version``, and return :class:`ToothSegment` objects so the API,
-    mesh export, and UI are unaffected.
+    Prefers the optional learned ONNX backend when the ``ml-seg`` extra is installed
+    AND user-supplied weights resolve; otherwise falls back to the dependency-free
+    hybrid heuristic. Either backend runs locally (scans are PHI), exposes
+    ``name``/``version``, and returns :class:`ToothSegment` objects, so the API, mesh
+    export, and UI are unaffected. The active backend's name surfaces in
+    ``_segmenter_metadata`` / ``segment_payload``.
     """
 
-    return HybridArchSegmenter()
+    return _maybe_learned_segmenter() or HybridArchSegmenter()
 
 
 class ProposedTooth(BaseModel):
