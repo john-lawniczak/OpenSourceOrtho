@@ -123,6 +123,43 @@ def test_optimizer_respects_fixed_teeth_and_exclusions() -> None:
     assert {issue.tooth for issue in result.issues} == {"11", "21"}
 
 
+def test_optimizer_respects_stage_windowed_fixed_teeth() -> None:
+    plan = TreatmentPlan(
+        id="optimize-windowed-controls",
+        fixed_teeth=[FixedTooth(tooth=ToothId(value="11"), stage_start=0, stage_end=0)],
+        stages=[
+            Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), translate_x_mm=0.2)])
+        ],
+    )
+
+    result = optimize_staging(plan)
+
+    assert result.issues == []
+    assert [stage.index for stage in result.plan.stages] == [0, 1]
+    assert result.plan.stages[0].deltas == []
+    assert result.plan.stages[1].deltas[0].tooth.value == "11"
+    assert result.plan.stages[1].deltas[0].translate_x_mm == pytest.approx(0.2)
+
+
+def test_optimizer_respects_stage_windowed_movement_exclusions() -> None:
+    plan = TreatmentPlan(
+        id="optimize-windowed-exclusions",
+        movement_exclusions=[
+            MovementExclusion(tooth=ToothId(value="21"), axes={"translate_x"}, stage_start=0, stage_end=0),
+        ],
+        stages=[
+            Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=0.2)])
+        ],
+    )
+
+    result = optimize_staging(plan)
+
+    assert result.issues == []
+    assert [stage.index for stage in result.plan.stages] == [0, 1]
+    assert result.plan.stages[0].deltas == []
+    assert result.plan.stages[1].deltas[0].tooth.value == "21"
+
+
 def test_case_store_versions_are_immutable_snapshots() -> None:
     store = CaseStore()
     plan = TreatmentPlan(

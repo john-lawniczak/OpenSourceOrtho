@@ -4,8 +4,8 @@ from math import ceil, hypot
 
 from pydantic import BaseModel, Field
 
+from orthoplan.clinical_control_checks import delta_violates_controls, max_control_stage_end
 from orthoplan.model import Stage, ToothDelta, ToothId, TreatmentPlan
-from orthoplan.model.clinical import MovementAxis
 
 
 class OptimizerIssue(BaseModel):
@@ -32,10 +32,9 @@ def optimize_staging(plan: TreatmentPlan) -> OptimizedStagingResult:
     allowed_totals: dict[str, ToothDelta] = {}
 
     for tooth_value, delta in totals.items():
-        blocked_axes = _blocked_axes(plan, tooth_value)
-        moved_blocked = [axis for axis in delta.moved_axes() if axis in blocked_axes or "all" in blocked_axes]
-        fixed = any(control.tooth.value == tooth_value for control in plan.fixed_teeth)
-        if fixed or moved_blocked:
+        steps = _steps_for_delta(plan, delta)
+        available = _allowed_stage_indexes(plan, delta, steps)
+        if len(available) < steps:
             issues.append(
                 OptimizerIssue(
                     tooth=tooth_value,
@@ -44,20 +43,46 @@ def optimize_staging(plan: TreatmentPlan) -> OptimizedStagingResult:
             )
             continue
         allowed_totals[tooth_value] = delta
-        per_tooth_steps[tooth_value] = _steps_for_delta(plan, delta)
+        per_tooth_steps[tooth_value] = steps
 
-    stage_count = max(per_tooth_steps.values(), default=0)
+    if not per_tooth_steps:
+        return OptimizedStagingResult(plan=plan.model_copy(update={"stages": []}), issues=issues)
+
+    emitted_counts = {tooth: 0 for tooth in allowed_totals}
+    stage_count = _stage_search_limit(plan, per_tooth_steps)
     stages: list[Stage] = []
     for stage_index in range(stage_count):
         deltas = []
         for tooth_value, total in sorted(allowed_totals.items()):
             steps = per_tooth_steps[tooth_value]
-            if stage_index >= steps:
+            if emitted_counts[tooth_value] >= steps:
                 continue
-            deltas.append(_split_delta(total, steps))
-        stages.append(Stage(index=stage_index, deltas=deltas))
+            step_delta = _split_delta(total, steps)
+            if delta_violates_controls(plan, step_delta, stage_index):
+                continue
+            deltas.append(step_delta)
+            emitted_counts[tooth_value] += 1
+        if deltas or any(emitted_counts[tooth] < per_tooth_steps[tooth] for tooth in allowed_totals):
+            stages.append(Stage(index=stage_index, deltas=deltas))
+        if all(emitted_counts[tooth] >= per_tooth_steps[tooth] for tooth in allowed_totals):
+            break
 
     return OptimizedStagingResult(plan=plan.model_copy(update={"stages": stages}), issues=issues)
+
+
+def _allowed_stage_indexes(plan: TreatmentPlan, delta: ToothDelta, steps: int) -> list[int]:
+    limit = _stage_search_limit(plan, {delta.tooth.value: steps})
+    return [
+        index
+        for index in range(limit)
+        if not delta_violates_controls(plan, _split_delta(delta, steps), index)
+    ]
+
+
+def _stage_search_limit(plan: TreatmentPlan, per_tooth_steps: dict[str, int]) -> int:
+    steps = max(per_tooth_steps.values(), default=0)
+    finite_control_end = max_control_stage_end(plan)
+    return max(steps, finite_control_end + 1) + steps
 
 
 def _target_totals(plan: TreatmentPlan) -> dict[str, ToothDelta]:
@@ -108,11 +133,3 @@ def _split_delta(delta: ToothDelta, steps: int) -> ToothDelta:
         source="manual",
         mesh_asset_id=delta.mesh_asset_id,
     )
-
-
-def _blocked_axes(plan: TreatmentPlan, tooth_value: str) -> set[MovementAxis]:
-    axes: set[MovementAxis] = set()
-    for exclusion in plan.movement_exclusions:
-        if exclusion.tooth.value == tooth_value:
-            axes.update(exclusion.axes)
-    return axes

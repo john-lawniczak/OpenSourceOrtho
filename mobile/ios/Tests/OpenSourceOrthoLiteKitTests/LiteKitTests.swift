@@ -7,8 +7,12 @@ final class LiteKitTests: XCTestCase {
         let plan = LitePlanBuilder.minimalPlan(for: scans)
         let data = try JSONEncoder().encode(plan)
         let json = String(decoding: data, as: UTF8.self)
+        XCTAssertTrue(json.contains("\"id\""))
+        XCTAssertTrue(json.contains("\"asset\""))
         XCTAssertTrue(json.contains("upper.stl"))
-        XCTAssertTrue(json.contains("\"arch\""))
+        XCTAssertTrue(json.contains("maxillary"))
+        XCTAssertTrue(json.contains("vertex_count"))
+        XCTAssertFalse(json.contains("file_name"))
     }
 
     func testRequestDefaultsKeepDataLocal() {

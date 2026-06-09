@@ -28,11 +28,26 @@ data class SelectedScan(
  *  truth for the full TreatmentPlan shape; lite only seeds scan metadata. */
 object LitePlanBuilder {
     fun minimalPlan(scans: List<SelectedScan>): JsonObject = buildJsonObject {
+        put("id", "lite-plan")
+        put("title", "Lite plan")
+        put("numbering_system", "FDI")
+        put("coordinate_frame", buildJsonObject {
+            put("name", "scan-local")
+        })
         put("scans", buildJsonArray {
             scans.forEach { scan ->
                 add(buildJsonObject {
-                    put("file_name", scan.fileName)
-                    scan.arch?.let { put("arch", it) }
+                    put("asset", buildJsonObject {
+                        put("id", assetId(scan.fileName))
+                        put("format", "stl")
+                        put("provenance", "patient-derived")
+                        put("units", "unverified")
+                        put("vertex_count", 0)
+                        put("face_count", 0)
+                        put("reference", scan.fileName)
+                    })
+                    put("source", "intraoral-scan")
+                    engineArch(scan.arch)?.let { put("arch", it) }
                 })
             }
         })
@@ -40,4 +55,18 @@ object LitePlanBuilder {
 
     fun request(scans: List<SelectedScan>): GeneratePlanRequest =
         GeneratePlanRequest(plan = minimalPlan(scans) as JsonElement)
+
+    private fun engineArch(value: String?): String? = when (value?.lowercase()) {
+        "upper", "maxillary" -> "maxillary"
+        "lower", "mandibular" -> "mandibular"
+        else -> null
+    }
+
+    private fun assetId(fileName: String): String {
+        val cleaned = fileName.lowercase()
+            .map { if (it.isLetterOrDigit()) it else '-' }
+            .joinToString("")
+            .trim('-')
+        return "lite-${cleaned.ifEmpty { "scan" }}"
+    }
 }

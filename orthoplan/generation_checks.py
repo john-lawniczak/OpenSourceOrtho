@@ -11,6 +11,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from orthoplan.clinical_control_checks import delta_violates_controls
 from orthoplan.model.plan import TreatmentPlan
 
 CorrectnessVerdict = Literal["CONSISTENT", "ISSUES", "NOT_APPLICABLE"]
@@ -65,14 +66,38 @@ def _targets_reached_check(plan: TreatmentPlan, generated) -> Check:
     return Check(name="targets-reached", passed=not mismatches, detail=detail)
 
 
+def _control_violations(plan: TreatmentPlan) -> tuple[list[str], list[str]]:
+    fixed_moved = sorted({
+        delta.tooth.value
+        for stage in plan.stages
+        for delta in stage.deltas
+        if any(
+            control.tooth.value == delta.tooth.value and control.applies_to(stage.index)
+            for control in plan.fixed_teeth
+        )
+        and delta.moved_axes()
+    })
+    excluded_moved = sorted({
+        delta.tooth.value
+        for stage in plan.stages
+        for delta in stage.deltas
+        if delta_violates_controls(plan, delta, stage.index)
+        and not any(
+            control.tooth.value == delta.tooth.value and control.applies_to(stage.index)
+            for control in plan.fixed_teeth
+        )
+    })
+    return fixed_moved, excluded_moved
+
+
 def correctness_review(
     plan: TreatmentPlan, findings: list, generated
 ) -> tuple[CorrectnessVerdict, PipelineStep, list[Check], dict]:
-    cap_violations = [f.title for f in findings if "exceeds configured" in f.title]
-    collision_count = sum(1 for f in findings if "bounds overlap" in f.title)
-    moved = {delta.tooth.value for stage in plan.stages for delta in stage.deltas}
-    fixed_moved = sorted(moved & {control.tooth.value for control in plan.fixed_teeth})
-    excluded_moved = sorted(moved & {e.tooth.value for e in plan.movement_exclusions})
+    cap_violations = [f.title for f in findings if getattr(f, "code", None) == "movement-cap-exceeded"]
+    collision_count = sum(
+        1 for f in findings if getattr(f, "code", None) == "segmented-crown-bounds-overlap"
+    )
+    fixed_moved, excluded_moved = _control_violations(plan)
     contiguous = [s.index for s in plan.stages] == list(range(len(plan.stages)))
 
     metrics = {

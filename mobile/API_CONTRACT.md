@@ -55,7 +55,7 @@ Success response (subset of fields the lite UI renders):
 ```jsonc
 {
   "ok": true,
-  "source": "landmarks | crowns | authored | template | none",
+  "source": "authored | landmark-derived | geometry-derived | educational-synthetic | none",
   "requires_acknowledgement": false,
   "warnings": ["..."],
   "steps":   [ { "name": "...", "status": "ok|warning|skipped", "detail": "..." } ],

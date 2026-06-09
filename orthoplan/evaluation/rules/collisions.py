@@ -68,6 +68,7 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
                         f"axis-aligned crown bounds, deepest at stage {stage_index} by "
                         f"approximately {overlap:.3f} mm on the shallowest overlapping axis."
                     ),
+                    code="segmented-crown-bounds-overlap",
                     data_gap=_GAP,
                     clinician_question=_QUESTION,
                     reference=_REFERENCE,

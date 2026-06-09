@@ -13,8 +13,12 @@ class LiteFlowTest {
     fun minimalPlanCarriesScanMetadata() {
         val plan = LitePlanBuilder.minimalPlan(listOf(SelectedScan("upper.stl", "upper")))
         val text = json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), plan)
+        assertTrue(text.contains("\"id\""))
+        assertTrue(text.contains("\"asset\""))
         assertTrue(text.contains("upper.stl"))
-        assertTrue(text.contains("arch"))
+        assertTrue(text.contains("maxillary"))
+        assertTrue(text.contains("vertex_count"))
+        assertFalse(text.contains("file_name"))
     }
 
     @Test

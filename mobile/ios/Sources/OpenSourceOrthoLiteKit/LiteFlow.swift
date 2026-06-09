@@ -38,18 +38,52 @@ public struct SelectedScan: Sendable, Equatable {
 public enum LitePlanBuilder {
     public static func minimalPlan(for scans: [SelectedScan]) -> [String: AnyCodable] {
         let scanObjects: [AnyCodable] = scans.map { scan in
-            var fields: [String: AnyCodable] = [
-                "file_name": AnyCodable(.string(scan.fileName)),
+            let asset: [String: AnyCodable] = [
+                "id": AnyCodable(.string(assetId(for: scan.fileName))),
+                "format": AnyCodable(.string("stl")),
+                "provenance": AnyCodable(.string("patient-derived")),
+                "units": AnyCodable(.string("unverified")),
+                "vertex_count": AnyCodable(.int(0)),
+                "face_count": AnyCodable(.int(0)),
+                "reference": AnyCodable(.string(scan.fileName)),
             ]
-            if let arch = scan.arch {
+            var fields: [String: AnyCodable] = [
+                "asset": AnyCodable(.object(asset)),
+                "source": AnyCodable(.string("intraoral-scan")),
+            ]
+            if let arch = engineArch(scan.arch) {
                 fields["arch"] = AnyCodable(.string(arch))
             }
             return AnyCodable(.object(fields))
         }
-        return ["scans": AnyCodable(.array(scanObjects))]
+        return [
+            "id": AnyCodable(.string("lite-plan")),
+            "title": AnyCodable(.string("Lite plan")),
+            "numbering_system": AnyCodable(.string("FDI")),
+            "coordinate_frame": AnyCodable(.object(["name": AnyCodable(.string("scan-local"))])),
+            "scans": AnyCodable(.array(scanObjects)),
+        ]
     }
 
     public static func request(for scans: [SelectedScan]) -> GeneratePlanRequest {
         GeneratePlanRequest(plan: minimalPlan(for: scans))
+    }
+
+    private static func engineArch(_ value: String?) -> String? {
+        switch value?.lowercased() {
+        case "upper", "maxillary": return "maxillary"
+        case "lower", "mandibular": return "mandibular"
+        default: return nil
+        }
+    }
+
+    private static func assetId(for fileName: String) -> String {
+        let lowered = fileName.lowercased()
+        let mapped = lowered.map { char -> Character in
+            if char.isLetter || char.isNumber { return char }
+            return "-"
+        }
+        let cleaned = String(mapped).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+        return "lite-\(cleaned.isEmpty ? "scan" : cleaned)"
     }
 }
