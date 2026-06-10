@@ -5,6 +5,7 @@ import OpenSourceOrthoLiteKit
 /// Screens are intentionally thin - they render engine output, never compute it.
 struct RootView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
+    @State private var isShowingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -15,16 +16,27 @@ struct RootView: View {
             }
             .navigationTitle("OpenSource Ortho")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                Button {
+                    isShowingSettings = true
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel("Settings")
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView()
+            }
         }
     }
 
     @ViewBuilder
     private var stepContent: some View {
         switch model.step {
-        case .upload:      UploadView()
-        case .generate:    GenerateView()
-        case .review:      ReviewView()
-        case .progression: ProgressionView()
+        case .upload:       UploadView()
+        case .teethAndTime: TeethAndTimeView()
+        case .review:       ReviewView()
+        case .printAndSend: PrintAndSendView()
         }
     }
 }

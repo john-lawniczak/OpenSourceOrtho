@@ -3,32 +3,34 @@ import Foundation
 /// The four-step lite flow shared with Android (../../README.md). Pure value
 /// type so it can be driven from a SwiftUI view model and unit-tested.
 public enum LiteStep: Int, CaseIterable, Sendable {
-    case upload      // pick an STL scan from the device
-    case generate    // one tap -> POST /api/generate-plan
-    case review      // verdict + findings from the engine
-    case progression // staged movement + 3D over time
+    case upload       // pick CBCT, STL, or photo records from the device
+    case teethAndTime // inspect teeth, stages, and timing before generation
+    case review       // verdict + findings from the engine
+    case printAndSend // export package for print / lab handoff
 
     public var title: String {
         switch self {
-        case .upload:      return "Upload scan"
-        case .generate:    return "Generate plan"
-        case .review:      return "Review"
-        case .progression: return "Progression"
+        case .upload:       return "Upload files"
+        case .teethAndTime: return "Teeth + time"
+        case .review:       return "Review"
+        case .printAndSend: return "Print + send"
         }
     }
 }
 
 /// A locally-selected scan file. Lite uploads metadata + registers bytes with
 /// the engine's mesh workspace; plan JSON never carries mesh bytes.
-public struct SelectedScan: Sendable, Equatable {
+public struct SelectedScan: Codable, Sendable, Equatable {
     public var fileName: String
     public var arch: String?       // "upper" | "lower" | nil (unspecified)
     public var byteCount: Int
+    public var modality: String    // "cbct" | "stl" | "photo"
 
-    public init(fileName: String, arch: String? = nil, byteCount: Int) {
+    public init(fileName: String, arch: String? = nil, byteCount: Int, modality: String = "stl") {
         self.fileName = fileName
         self.arch = arch
         self.byteCount = byteCount
+        self.modality = modality
     }
 }
 
@@ -40,7 +42,7 @@ public enum LitePlanBuilder {
         let scanObjects: [AnyCodable] = scans.enumerated().map { index, scan in
             let asset: [String: AnyCodable] = [
                 "id": AnyCodable(.string(assetId(for: scan.fileName, index: index))),
-                "format": AnyCodable(.string("stl")),
+                "format": AnyCodable(.string(engineFormat(scan.modality))),
                 "provenance": AnyCodable(.string("patient-derived")),
                 "units": AnyCodable(.string("unverified")),
                 "vertex_count": AnyCodable(.int(0)),
@@ -49,7 +51,7 @@ public enum LitePlanBuilder {
             ]
             var fields: [String: AnyCodable] = [
                 "asset": AnyCodable(.object(asset)),
-                "source": AnyCodable(.string("intraoral-scan")),
+                "source": AnyCodable(.string(engineSource(scan.modality))),
             ]
             if let arch = engineArch(scan.arch) {
                 fields["arch"] = AnyCodable(.string(arch))
@@ -74,6 +76,22 @@ public enum LitePlanBuilder {
         case "upper", "maxillary": return "maxillary"
         case "lower", "mandibular": return "mandibular"
         default: return nil
+        }
+    }
+
+    private static func engineFormat(_ value: String) -> String {
+        switch value.lowercased() {
+        case "cbct": return "dicom"
+        case "photo": return "image"
+        default: return "stl"
+        }
+    }
+
+    private static func engineSource(_ value: String) -> String {
+        switch value.lowercased() {
+        case "cbct": return "cbct"
+        case "photo": return "photo"
+        default: return "intraoral-scan"
         }
     }
 

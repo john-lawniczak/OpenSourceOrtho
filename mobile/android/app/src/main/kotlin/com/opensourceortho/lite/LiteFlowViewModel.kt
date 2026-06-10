@@ -2,11 +2,14 @@ package com.opensourceortho.lite
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 /** Immutable UI state for the lite flow. */
 data class LiteUiState(
@@ -32,10 +35,10 @@ class LiteFlowViewModel(
     val state: StateFlow<LiteUiState> = _state.asStateFlow()
 
     fun addScan(scan: SelectedScan) {
-        _state.update { it.copy(scans = it.scans + scan, step = LiteStep.GENERATE) }
+        _state.update { it.copy(scans = it.scans + scan, step = LiteStep.TEETH_AND_TIME) }
     }
 
-    /** One-tap "Generate Plan": posts to the engine and advances to Review. */
+    /** Posts selected records to the engine and advances to Review. */
     fun generate() {
         val scans = _state.value.scans
         if (scans.isEmpty()) return
@@ -52,7 +55,29 @@ class LiteFlowViewModel(
         }
     }
 
-    fun showProgression() = _state.update { it.copy(step = LiteStep.PROGRESSION) }
+    fun showPrintAndSend() = _state.update { it.copy(step = LiteStep.PRINT_AND_SEND) }
 
     fun reset() = _state.update { LiteUiState() }
+
+    fun exportPackageJson(): String {
+        val payload = MobileExportPackage(
+            generatedAtEpochMillis = System.currentTimeMillis(),
+            scans = _state.value.scans,
+            result = _state.value.result,
+            disclaimer = "See the in-app safety disclaimer. Engine verdicts are not clinical approval.",
+        )
+        return exportJson.encodeToString(payload)
+    }
+
+    private companion object {
+        val exportJson: Json = Json { prettyPrint = true; encodeDefaults = true }
+    }
 }
+
+@Serializable
+private data class MobileExportPackage(
+    val generatedAtEpochMillis: Long,
+    val scans: List<SelectedScan>,
+    val result: GeneratePlanResponse?,
+    val disclaimer: String,
+)

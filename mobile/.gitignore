@@ -3,6 +3,7 @@
 # --- iOS / Xcode ---
 ios/build/
 ios/.build/
+ios/.swiftpm/
 ios/DerivedData/
 ios/**/*.xcuserstate
 ios/**/xcuserdata/

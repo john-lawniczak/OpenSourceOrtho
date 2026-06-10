@@ -28,6 +28,21 @@ final class LiteKitTests: XCTestCase {
         XCTAssertTrue(json.contains("lite-1-scan-stl"))
     }
 
+    func testMinimalPlanCarriesNonStlModalities() throws {
+        let scans = [
+            SelectedScan(fileName: "cbct.zip", byteCount: 1234, modality: "cbct"),
+            SelectedScan(fileName: "smile.jpg", byteCount: 5678, modality: "photo"),
+        ]
+        let plan = LitePlanBuilder.minimalPlan(for: scans)
+        let data = try JSONEncoder().encode(plan)
+        let json = String(decoding: data, as: UTF8.self)
+
+        XCTAssertTrue(json.contains("\"format\":\"dicom\""))
+        XCTAssertTrue(json.contains("\"source\":\"cbct\""))
+        XCTAssertTrue(json.contains("\"format\":\"image\""))
+        XCTAssertTrue(json.contains("\"source\":\"photo\""))
+    }
+
     func testRequestDefaultsKeepDataLocal() {
         let request = LitePlanBuilder.request(for: [])
         XCTAssertEqual(request.provider, "local")
