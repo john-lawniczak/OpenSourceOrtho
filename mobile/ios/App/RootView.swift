@@ -12,21 +12,26 @@ struct RootView: View {
             VStack(spacing: 0) {
                 SafetyBanner()
                 Divider()
-                stepContent
+                if isShowingSettings {
+                    SettingsView()
+                } else {
+                    stepContent
+                }
+                Divider()
+                BottomNavigationBar(
+                    selectedStep: model.step,
+                    isShowingSettings: isShowingSettings,
+                    onSelectStep: { step in
+                        isShowingSettings = false
+                        model.navigate(to: step)
+                    },
+                    onSelectSettings: {
+                        isShowingSettings = true
+                    }
+                )
             }
             .navigationTitle("OpenSource Ortho")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                Button {
-                    isShowingSettings = true
-                } label: {
-                    Image(systemName: "gearshape")
-                }
-                .accessibilityLabel("Settings")
-            }
-            .sheet(isPresented: $isShowingSettings) {
-                SettingsView()
-            }
         }
     }
 
@@ -38,6 +43,72 @@ struct RootView: View {
         case .review:       ReviewView()
         case .printAndSend: PrintAndSendView()
         }
+    }
+}
+
+private struct BottomNavigationBar: View {
+    var selectedStep: LiteStep
+    var isShowingSettings: Bool
+    var onSelectStep: (LiteStep) -> Void
+    var onSelectSettings: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            BottomNavigationButton(
+                title: "Upload",
+                systemImage: "square.and.arrow.up",
+                isSelected: !isShowingSettings && selectedStep == .upload
+            ) { onSelectStep(.upload) }
+            BottomNavigationButton(
+                title: "Teeth",
+                systemImage: "cube.transparent",
+                isSelected: !isShowingSettings && selectedStep == .teethAndTime
+            ) { onSelectStep(.teethAndTime) }
+            BottomNavigationButton(
+                title: "Review",
+                systemImage: "checklist",
+                isSelected: !isShowingSettings && selectedStep == .review
+            ) { onSelectStep(.review) }
+            BottomNavigationButton(
+                title: "Print",
+                systemImage: "printer",
+                isSelected: !isShowingSettings && selectedStep == .printAndSend
+            ) { onSelectStep(.printAndSend) }
+            BottomNavigationButton(
+                title: "Settings",
+                systemImage: "gearshape",
+                isSelected: isShowingSettings,
+                action: onSelectSettings
+            )
+        }
+        .padding(.horizontal, 8)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+        .background(.bar)
+    }
+}
+
+private struct BottomNavigationButton: View {
+    var title: String
+    var systemImage: String
+    var isSelected: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
+                Text(title)
+                    .font(.caption2)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 }
 

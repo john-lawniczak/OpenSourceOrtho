@@ -22,6 +22,10 @@ final class LiteFlowViewModel: ObservableObject {
         step = .teethAndTime
     }
 
+    func navigate(to step: LiteStep) {
+        self.step = step
+    }
+
     func addFile(url: URL, modality: String) {
         let shouldStopAccessing = url.startAccessingSecurityScopedResource()
         defer {

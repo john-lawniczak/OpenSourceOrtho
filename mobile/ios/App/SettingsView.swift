@@ -2,24 +2,22 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        NavigationStack {
-            List {
-                Section("About") {
-                    HStack {
-                        Text("OpenSource Ortho Lite")
-                        Spacer()
-                        Text(AppIdentity.installedVersionDisplay)
-                            .foregroundStyle(.secondary)
-                    }
-                    .accessibilityElement(children: .combine)
+        List {
+            Section("About") {
+                HStack {
+                    Text("OpenSource Ortho Lite")
+                    Spacer()
+                    Text(AppIdentity.installedVersionDisplay)
+                        .foregroundStyle(.secondary)
                 }
-                Section("Reference") {
-                    NavigationLink("Glossary", destination: GlossaryView())
-                    NavigationLink("Teeth map", destination: TeethMapView())
-                }
+                .accessibilityElement(children: .combine)
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
+            Section("Reference") {
+                NavigationLink("Glossary", destination: GlossaryView())
+                NavigationLink("Teeth map", destination: TeethMapView())
+            }
         }
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
