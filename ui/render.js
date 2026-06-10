@@ -46,6 +46,28 @@ function guidedSelectionStep() {
   return step === "plan" || step === "details" ? step : null;
 }
 
+function formatWeek(value) {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function updateStagePhase(result = state.lastEval) {
+  const slider = el("stageSlider");
+  const stageIndex = Number(slider.value || 0);
+  el("stageValue").textContent = String(stageIndex);
+  if (!result?.timeline) {
+    el("stagePhase").textContent = "Aligner timeline unavailable";
+    return;
+  }
+  const totalAligners = Math.max(1, Number(result.timeline.stage_count || result.frames?.length || 1));
+  const alignerNumber = Math.min(totalAligners, stageIndex + 1);
+  const wearDays = Math.max(0, Number(result.timeline.wear_interval_days || 0));
+  const weekStart = (stageIndex * wearDays) / 7;
+  const weekEnd = ((stageIndex + 1) * wearDays) / 7;
+  el("stagePhase").textContent =
+    `Aligner ${alignerNumber} of ${totalAligners} · Weeks ${formatWeek(weekStart)}-${formatWeek(weekEnd)}`;
+}
+
 function ensureViewer() {
   if (viewer || viewerFailed) return viewer;
   try {
@@ -270,7 +292,7 @@ export function renderAll() {
   renderManualEdit();
   renderDownloadActions();
   el("planJson").value = JSON.stringify(planJson(), null, 2);
-  el("stageValue").textContent = el("stageSlider").value;
+  updateStagePhase();
   scheduleEvaluate();
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
@@ -612,7 +634,7 @@ function renderEvaluation(result) {
   const lastStage = Math.max(0, result.frames.length - 1);
   slider.max = String(lastStage);
   if (Number(slider.value) > lastStage) slider.value = String(lastStage);
-  el("stageValue").textContent = slider.value;
+  updateStagePhase(result);
   drawCanvas();
   updateViewer(result);
   if (pendingRefit) {
@@ -684,6 +706,7 @@ function renderEngineErrors(errors) {
     .map((message) => `<li class="warning"><strong>Plan rejected</strong><p>${escapeHtml(message)}</p></li>`)
     .join("");
   el("timelineText").textContent = "Plan invalid - fix the errors above to re-evaluate.";
+  updateStagePhase(null);
   el("printExportStatus").innerHTML = "";
   renderDownloadActions();
 }
@@ -699,6 +722,7 @@ function renderEngineOffline() {
   el("printExportStatus").innerHTML = "";
   el("optimizedStaging").innerHTML = "";
   el("timelineText").textContent = "Engine offline - no projection available.";
+  updateStagePhase(null);
   renderDownloadActions();
 }
 

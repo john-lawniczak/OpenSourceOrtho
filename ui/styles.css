@@ -1588,8 +1588,17 @@ td input {
 }
 
 .stage-slider {
+  display: grid;
+  gap: 4px;
   margin-left: auto;
   min-width: 220px;
+}
+
+.stage-phase {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 #archCanvas {
