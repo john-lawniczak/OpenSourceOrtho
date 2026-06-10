@@ -53,6 +53,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.io.FileOutputStream
+import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -137,16 +138,46 @@ fun ReviewScreen(state: LiteUiState, model: LiteFlowViewModel) {
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        state.result?.correctness?.verdict?.let {
-            Text("Engine verdict", style = MaterialTheme.typography.labelMedium)
-            Text(SafetyText.verdictLabel(it), style = MaterialTheme.typography.titleMedium)
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Engine verdict", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    state.result?.correctness?.verdict?.let(SafetyText::verdictLabel)
+                        ?: "Generate a review to see engine findings.",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
         }
-        state.result?.steps?.forEach { step ->
-            Text(step.name, style = MaterialTheme.typography.bodyMedium)
-            Text("${step.status}: ${step.detail}", style = MaterialTheme.typography.bodySmall)
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Pipeline", style = MaterialTheme.typography.labelMedium)
+                val steps = state.result?.steps.orEmpty()
+                if (steps.isEmpty()) {
+                    Text("No engine steps yet.", style = MaterialTheme.typography.bodySmall)
+                } else {
+                    steps.forEach { step ->
+                        Column {
+                            Text(step.name, style = MaterialTheme.typography.bodyMedium)
+                            Text("${step.status}: ${step.detail}", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
         }
         state.result?.caveat?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall)
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
         }
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -160,7 +191,11 @@ fun ReviewScreen(state: LiteUiState, model: LiteFlowViewModel) {
                 Text("Initial trays: $trayCount", style = MaterialTheme.typography.bodyMedium)
                 state.result?.timeline?.let { timeline ->
                     Text("Wear interval: ${timeline.wearIntervalDays} days")
-                    Text("Projected duration: ${timeline.projectedDurationWeeks} weeks")
+                    Text(
+                        "Projected duration: ${
+                            String.format(Locale.US, "%.1f", timeline.projectedDurationWeeks)
+                        } weeks",
+                    )
                 } ?: Text(
                     "Generate a review to estimate trays from the engine timeline.",
                     style = MaterialTheme.typography.bodySmall,
