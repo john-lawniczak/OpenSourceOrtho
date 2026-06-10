@@ -63,6 +63,9 @@ struct UploadView: View {
                 Button("Add photos") {
                     importer = .photo
                 }
+                Button("Use dev sample STL") {
+                    model.addDevSampleSTL()
+                }
             }
             .buttonStyle(.borderedProminent)
         }
@@ -146,9 +149,46 @@ struct ReviewView: View {
             if let caveat = model.result?.caveat {
                 Section { Text(caveat).font(.footnote).foregroundStyle(.secondary) }
             }
+            Section("Tray estimate") {
+                let trayCount = estimatedTrayCount
+                LabeledContent("Initial trays", value: "\(trayCount)")
+                if let timeline = model.result?.timeline {
+                    LabeledContent("Wear interval", value: "\(timeline.wearIntervalDays) days")
+                    LabeledContent(
+                        "Projected duration",
+                        value: String(format: "%.1f weeks", timeline.projectedDurationWeeks)
+                    )
+                } else {
+                    Text("Generate a review to estimate trays from the engine timeline.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Section("Refinement options") {
+                RefinementRow(title: "No refinement", detail: "Proceed with the initial generated sequence for review.")
+                RefinementRow(title: "Mid-course scan", detail: "Add a new STL/CBCT record if tracking drifts from plan.")
+                RefinementRow(title: "Attachment/IPR review", detail: "Flag the plan for clinician review of auxiliaries and spacing.")
+                RefinementRow(title: "Additional trays", detail: "Plan a second pass after reviewing the final-stage fit.")
+            }
             Section {
                 Button("Print and send") { model.showPrintAndSend() }
             }
+        }
+    }
+
+    private var estimatedTrayCount: Int {
+        model.result?.timeline?.stageCount ?? model.result?.stageCount ?? max(1, model.scans.count * 6)
+    }
+}
+
+private struct RefinementRow: View {
+    var title: String
+    var detail: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(.subheadline.bold())
+            Text(detail).font(.caption).foregroundStyle(.secondary)
         }
     }
 }

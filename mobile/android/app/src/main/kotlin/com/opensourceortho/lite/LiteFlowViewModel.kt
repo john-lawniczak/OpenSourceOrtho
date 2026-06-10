@@ -42,6 +42,17 @@ class LiteFlowViewModel(
         _state.update { it.copy(step = step) }
     }
 
+    fun addDevSample(byteCount: Int) {
+        addScan(
+            SelectedScan(
+                fileName = "dev-sample-incisor.stl",
+                arch = "upper",
+                byteCount = byteCount,
+                modality = "stl",
+            ),
+        )
+    }
+
     /** Posts selected records to the engine and advances to Review. */
     fun generate() {
         val scans = _state.value.scans

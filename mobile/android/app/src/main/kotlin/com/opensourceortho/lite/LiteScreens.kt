@@ -96,6 +96,9 @@ fun UploadScreen(model: LiteFlowViewModel) {
             pendingModality = "photo"
             picker.launch(arrayOf("image/*"))
         }) { Text("Add photos") }
+        Button(onClick = {
+            model.addDevSample(context.devSampleByteCount())
+        }) { Text("Use dev sample STL") }
     }
 }
 
@@ -145,7 +148,46 @@ fun ReviewScreen(state: LiteUiState, model: LiteFlowViewModel) {
         state.result?.caveat?.let {
             Text(it, style = MaterialTheme.typography.bodySmall)
         }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Tray estimate", style = MaterialTheme.typography.labelMedium)
+                val trayCount = state.result?.timeline?.stageCount
+                    ?: state.result?.stageCount
+                    ?: maxOf(1, state.scans.size * 6)
+                Text("Initial trays: $trayCount", style = MaterialTheme.typography.bodyMedium)
+                state.result?.timeline?.let { timeline ->
+                    Text("Wear interval: ${timeline.wearIntervalDays} days")
+                    Text("Projected duration: ${timeline.projectedDurationWeeks} weeks")
+                } ?: Text(
+                    "Generate a review to estimate trays from the engine timeline.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Refinement options", style = MaterialTheme.typography.labelMedium)
+                RefinementRow("No refinement", "Proceed with the initial generated sequence for review.")
+                RefinementRow("Mid-course scan", "Add a new STL/CBCT record if tracking drifts from plan.")
+                RefinementRow("Attachment/IPR review", "Flag the plan for clinician review of auxiliaries and spacing.")
+                RefinementRow("Additional trays", "Plan a second pass after reviewing the final-stage fit.")
+            }
+        }
         Button(onClick = model::showPrintAndSend) { Text("Print and send") }
+    }
+}
+
+@Composable
+private fun RefinementRow(title: String, detail: String) {
+    Column {
+        Text(title, style = MaterialTheme.typography.bodyMedium)
+        Text(detail, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -272,6 +314,11 @@ private fun Context.selectedScan(uri: Uri, modality: String): SelectedScan {
         modality = modality,
     )
 }
+
+private fun Context.devSampleByteCount(): Int =
+    resources.openRawResourceFd(R.raw.dev_sample_incisor)?.use { descriptor ->
+        descriptor.length.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    } ?: 0
 
 private fun android.content.ContentResolver.displayName(uri: Uri): String? =
     query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
