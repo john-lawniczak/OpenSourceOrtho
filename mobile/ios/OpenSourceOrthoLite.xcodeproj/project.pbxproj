@@ -8,7 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */; };
+		16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */ = {isa = PBXBuildFile; fileRef = 4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */; };
 		37A52C95416DB193C1647EB4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3EC22871DE3570233EAFD /* RootView.swift */; };
+		4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FEC8D213B7576DB4208180A /* Assets.xcassets */; };
 		74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8589067755F44462FE798BC8 /* SettingsView.swift */; };
 		7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */; };
 		BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A1C676D724465EA395DAFA /* AppIdentity.swift */; };
@@ -18,7 +20,9 @@
 
 /* Begin PBXFileReference section */
 		038A93E4FA3E99A155B4AD33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0FEC8D213B7576DB4208180A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceOrthoLiteApp.swift; sourceTree = "<group>"; };
+		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
 		8589067755F44462FE798BC8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		888F68B82367F953AA8FC715 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = .; sourceTree = SOURCE_ROOT; };
 		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,16 +69,26 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		A012910D6970A6D2D2581C6B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		BE0697D1F65F6EE1B627E84F /* App */ = {
 			isa = PBXGroup;
 			children = (
 				94A1C676D724465EA395DAFA /* AppIdentity.swift */,
+				0FEC8D213B7576DB4208180A /* Assets.xcassets */,
 				038A93E4FA3E99A155B4AD33 /* Info.plist */,
 				8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */,
 				32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */,
 				9BB3EC22871DE3570233EAFD /* RootView.swift */,
 				919681E695F14AC323DB1F57 /* Screens.swift */,
 				8589067755F44462FE798BC8 /* SettingsView.swift */,
+				A012910D6970A6D2D2581C6B /* Resources */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -87,6 +101,7 @@
 			buildConfigurationList = AB36442CFD3813268CF15988 /* Build configuration list for PBXNativeTarget "OpenSourceOrthoLite" */;
 			buildPhases = (
 				4E1CADECCFE197AE6EBE4765 /* Sources */,
+				501B069BB3D41898277F1CCD /* Resources */,
 				5522AA9F3778601F5F68CC41 /* Frameworks */,
 			);
 			buildRules = (
@@ -137,6 +152,18 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		501B069BB3D41898277F1CCD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */,
+				16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4E1CADECCFE197AE6EBE4765 /* Sources */ = {
@@ -277,7 +304,7 @@
 		533C31AB86D4D45BC2FA731A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -300,7 +327,7 @@
 		D51AACC01C1C5F1C8D1CB21B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
