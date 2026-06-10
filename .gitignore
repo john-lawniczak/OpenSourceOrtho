@@ -13,7 +13,9 @@ build/
 TODO.md
 docs/Dev_history.md
 CLAUDE.local.md
-.githooks/
+.githooks/*
+!.githooks/
+!.githooks/pre-commit
 tools/record_commit_status.sh
 tools/update_dev_status.py
 tools/bump_version.py

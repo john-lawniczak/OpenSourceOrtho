@@ -36,6 +36,22 @@ class LiteFlowTest {
     }
 
     @Test
+    fun minimalPlanCarriesNonStlModalities() {
+        val plan = LitePlanBuilder.minimalPlan(
+            listOf(
+                SelectedScan(fileName = "cbct.zip", modality = "cbct"),
+                SelectedScan(fileName = "smile.jpg", modality = "photo"),
+            ),
+        )
+        val text = json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), plan)
+
+        assertTrue(text.contains("\"format\":\"dicom\""))
+        assertTrue(text.contains("\"source\":\"cbct\""))
+        assertTrue(text.contains("\"format\":\"image\""))
+        assertTrue(text.contains("\"source\":\"photo\""))
+    }
+
+    @Test
     fun requestDefaultsKeepDataLocal() {
         val request = LitePlanBuilder.request(emptyList())
         assertEquals("local", request.provider)

@@ -9,6 +9,8 @@ what the engine returns and never synthesizes a plan on-device. See the shared
 
 ```
 ios/
+  OpenSourceOrthoLite.xcodeproj      generated app project for Simulator/device
+  project.yml                        XcodeGen source for the app project
   Package.swift                       SwiftPM library + tests for the core
   Sources/OpenSourceOrthoLiteKit/     engine logic (no UI) - compiles & tests headless
     EngineConfig.swift                engine base URL (one place to change)
@@ -20,9 +22,12 @@ ios/
   Tests/OpenSourceOrthoLiteKitTests/  XCTest for the core
   App/                                SwiftUI app target sources (added in Xcode)
     OpenSourceOrthoLiteApp.swift      @main entry
+    Info.plist                        app metadata + version placeholders
+    AppIdentity.swift                 bundle version/build reader for About
     LiteFlowViewModel.swift           view state, delegates to the kit
     RootView.swift                    nav + non-dismissible safety banner
-    Screens.swift                     Upload / Generate / Review / Progression
+    Screens.swift                     Upload / Teeth + Time / Review / Print + Send
+    SettingsView.swift                Settings / About / Glossary / Teeth map
 ```
 
 ## Build the core (no Xcode)
@@ -37,29 +42,33 @@ swift test
 
 ## Run the app
 
-The SwiftUI `App/` sources need an Xcode app target (a SwiftUI `@main` entry
-cannot be built by SwiftPM). One-time setup:
+Open `OpenSourceOrthoLite.xcodeproj`, select the `OpenSourceOrthoLite` scheme,
+choose an iPhone Simulator, and press Run. If the project needs to be regenerated:
 
-1. Open Xcode -> **New Project -> iOS App** (SwiftUI), name `OpenSourceOrthoLite`.
-2. Remove the generated `ContentView.swift`/`App.swift`; add the files under
-   `App/` to the app target.
-3. Add this package as a **local Swift Package** dependency and link
-   `OpenSourceOrthoLiteKit` to the app target.
-4. Start the engine: `python3 -m orthoplan.server` (host loopback `127.0.0.1:8000`,
-   which the Simulator reaches directly - see `EngineConfig.simulator`).
-5. Run on the iOS Simulator.
+```bash
+cd mobile/ios
+xcodegen generate
+```
 
-> The generated `.xcodeproj` is intentionally **not** committed - it is
-> machine/Xcode-version specific and noisy to review. The committed Swift sources
-> are the durable scaffolding.
+The app target keeps `CFBundleShortVersionString` as `$(MARKETING_VERSION)` and
+`CFBundleVersion` as `$(CURRENT_PROJECT_VERSION)`. `SettingsView` displays those
+bundle values as `Version 1.5 (5)`.
+
+Start the engine before generating a plan: `python3 -m orthoplan.server` (host
+loopback `127.0.0.1:8000`, which the Simulator reaches directly - see
+`EngineConfig.simulator`).
 
 ## What still has to be built (lite v1 -> shippable)
 
-- **STL file picker**: replace the stub in `UploadView` with `.fileImporter`
-  for `.stl`, and register bytes with the engine mesh workspace.
-- **3D progression renderer**: a SceneKit/Metal view in `ProgressionView` that
-  animates `plan.stages` over time, mirroring `ui/viewer3d.js`. Mesh bytes come
-  from `GET /api/mesh/<id>`; fall back to schematic proxy teeth when absent.
+- **Mesh registration**: `UploadView` uses `.fileImporter` for DICOM/ZIP, `.stl`,
+  and images; the next step is uploading/registering bytes with the engine mesh
+  workspace instead of sending metadata only.
+- **Mesh-backed 3D renderer**: `TeethAndTimeView` has an interactive SceneKit
+  preview; replace the schematic teeth with `plan.stages` and mesh bytes from
+  `GET /api/mesh/<id>`.
+- **Destination-specific print/send handoff**: `PrintAndSendView` writes a JSON
+  package and exposes the system share sheet; add lab/printer profiles as those
+  destinations are chosen.
 - **Production engine URL** over `https://`, plus App Transport Security set so
   cleartext is allowed only for the local dev hosts.
 - **Optional model review consent** UI before setting `share_acknowledged`.

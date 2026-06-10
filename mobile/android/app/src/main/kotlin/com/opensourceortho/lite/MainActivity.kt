@@ -12,10 +12,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -40,18 +44,31 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LiteApp(model: LiteFlowViewModel = viewModel()) {
     val state by model.state.collectAsState()
+    var isShowingSettings by remember { mutableStateOf(false) }
     Scaffold(
-        topBar = { TopAppBar(title = { Text("OpenSource Ortho") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("OpenSource Ortho") },
+                actions = {
+                    TextButton(onClick = { isShowingSettings = true }) {
+                        Text("Settings")
+                    }
+                },
+            )
+        },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             SafetyBanner()
             HorizontalDivider()
             when (state.step) {
                 LiteStep.UPLOAD -> UploadScreen(model)
-                LiteStep.GENERATE -> GenerateScreen(state, model)
+                LiteStep.TEETH_AND_TIME -> TeethAndTimeScreen(state, model)
                 LiteStep.REVIEW -> ReviewScreen(state, model)
-                LiteStep.PROGRESSION -> ProgressionScreen(state, model)
+                LiteStep.PRINT_AND_SEND -> PrintAndSendScreen(model)
             }
+        }
+        if (isShowingSettings) {
+            SettingsScreen(onDismiss = { isShowingSettings = false })
         }
     }
 }

@@ -24,7 +24,7 @@ android/
       SafetyText.kt              verdict labels (disclaimer text in strings.xml)
       LiteFlowViewModel.kt       StateFlow UI state, delegates to the client
       MainActivity.kt            Compose entry + safety banner
-      LiteScreens.kt             Upload / Generate / Review / Progression
+      LiteScreens.kt             Upload / Teeth + Time / Review / Print + Send / Settings
     src/test/kotlin/...          JVM unit tests for the core
 ```
 
@@ -41,6 +41,8 @@ gradle wrapper --gradle-version 8.9   # one-time: creates ./gradlew + wrapper ja
 ```
 
 Open the `mobile/android/` folder in Android Studio to run on an emulator.
+The Settings About card reads `BuildConfig.VERSION_NAME` and
+`BuildConfig.VERSION_CODE`; keep version metadata in `app/build.gradle.kts`.
 
 ## Run against the engine
 
@@ -53,12 +55,16 @@ engine.
 
 ## What still has to be built (lite v1 -> shippable)
 
-- **STL file picker**: replace the stub in `UploadScreen` with the Storage Access
-  Framework (`ACTION_OPEN_DOCUMENT`), and register bytes with the engine mesh
-  workspace.
-- **3D progression renderer**: an OpenGL ES / Filament view in `ProgressionScreen`
-  that animates `plan.stages` over time, mirroring `ui/viewer3d.js`. Mesh bytes
-  come from `GET /api/mesh/<id>`; fall back to schematic proxy teeth when absent.
+- **Mesh registration**: `UploadScreen` uses the Storage Access Framework for
+  DICOM/ZIP, `.stl`, and images; the next step is uploading/registering bytes
+  with the engine mesh workspace instead of sending metadata only.
+- **Mesh-backed 3D renderer**: `TeethAndTimeScreen` has an interactive native
+  preview; replace it with a Filament/OpenGL renderer backed by `plan.stages`
+  and mesh bytes from `GET /api/mesh/<id>`.
+- **Destination-specific print/send handoff**: `PrintAndSendScreen` writes a JSON
+  package, supports Android document export, opens Sharesheet targets, and opens
+  the platform print dialog; add lab/printer profiles as those destinations are
+  chosen.
 - **Production engine URL** over `https://`.
 - **Optional model review consent** UI before setting `share_acknowledged`.
 

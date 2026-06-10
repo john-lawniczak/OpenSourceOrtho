@@ -31,21 +31,23 @@ matching the repo's no-heavy-framework, auditable, offline-leaning posture.
 
 ## The lite flow
 
-Both apps implement the same four-step STL surface-planning flow. The full clinician workspace
-(records, caps editor, staged-movement table, plan versions, print export) is
-intentionally **out of scope** for lite.
+Both apps implement the same four-step phone flow. The full clinician workspace
+(records, caps editor, staged-movement table, plan versions) is intentionally
+**out of scope** for lite, but the phone scaffold now mirrors the expected user
+path.
 
-1. **Upload** an STL scan (upper and/or lower arch) from the device.
-2. **Generate Plan** - one tap. The app posts a plan-shaped payload to the
-   engine's `POST /api/generate-plan`.
+1. **Upload files** - CBCT/DICOM when available, STL scans when available, and
+   general photos for review context.
+2. **Teeth + time** - show a 3D preview surface, stage scrubber, and the action
+   that posts a plan-shaped payload to the engine's `POST /api/generate-plan`.
 3. **Review** - the engine runs deterministic generation + named correctness
    checks and returns a `CONSISTENT` / `ISSUES` verdict (never "safe"/"approved").
    An optional model review is consent-gated and lint-filtered server-side.
-4. **Progression** - render the staged progression and a 3D preview of tooth
-   movement over time from the engine's timeline + stage frames.
+4. **Print + send** - prepare the generated package for clinician review, lab
+   handoff, or 3D-printer export.
 
 ```
-[Upload STL] -> [Generate Plan] -> [Engine review + verdict] -> [Progression + 3D over time]
+[Upload files] -> [Teeth + time] -> [Review] -> [Print + send]
 ```
 
 ## Safety boundary (applies to mobile exactly as to the rest of the repo)
@@ -58,9 +60,9 @@ ready for treatment or physical use. The engine's verdict is `CONSISTENT` or
 `ISSUES` only. Model-generated text is untrusted and is lint-gated by the engine
 before it ever reaches the device. See [`docs/SAFETY.md`](../docs/SAFETY.md).
 
-CBCT/DICOM support is part of the full safety-review roadmap, not the lite scaffold.
-The lite flow remains STL-only until the engine exposes local DICOM ingestion,
-registration, and reviewed root/bone-aware check contracts.
+CBCT/DICOM intake is represented in the phone scaffold because it is clinically
+important, but real root/bone-aware checks still require local DICOM ingestion,
+registration, and reviewed engine contracts.
 
 Each app ships a standing, non-dismissible disclaimer string sourced from
 [`API_CONTRACT.md`](API_CONTRACT.md) so the wording stays consistent with the

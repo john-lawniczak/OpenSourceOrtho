@@ -19,10 +19,29 @@ final class LiteFlowViewModel: ObservableObject {
 
     func addScan(_ scan: SelectedScan) {
         scans.append(scan)
-        step = .generate
+        step = .teethAndTime
     }
 
-    /// One-tap "Generate Plan": posts to the engine and advances to Review.
+    func addFile(url: URL, modality: String) {
+        let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if shouldStopAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let byteCount = ((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+        addScan(
+            SelectedScan(
+                fileName: url.lastPathComponent,
+                arch: inferredArch(from: url.lastPathComponent),
+                byteCount: byteCount,
+                modality: modality
+            )
+        )
+    }
+
+    /// Posts selected records to the engine and advances to Review.
     func generate() async {
         guard !scans.isEmpty else { return }
         isGenerating = true
@@ -41,7 +60,25 @@ final class LiteFlowViewModel: ObservableObject {
         }
     }
 
-    func showProgression() { step = .progression }
+    func showPrintAndSend() { step = .printAndSend }
+
+    func exportPackageURL() throws -> URL {
+        let payload = MobileExportPackage(
+            generatedAt: Date(),
+            scans: scans,
+            result: result,
+            disclaimer: SafetyText.disclaimer
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("opensource-ortho-print-package")
+            .appendingPathExtension("json")
+        try encoder.encode(payload).write(to: url, options: .atomic)
+        return url
+    }
 
     func reset() {
         scans = []
@@ -49,4 +86,22 @@ final class LiteFlowViewModel: ObservableObject {
         errorMessage = nil
         step = .upload
     }
+
+    private func inferredArch(from fileName: String) -> String? {
+        let lowercased = fileName.lowercased()
+        if lowercased.contains("upper") || lowercased.contains("maxillary") {
+            return "upper"
+        }
+        if lowercased.contains("lower") || lowercased.contains("mandibular") {
+            return "lower"
+        }
+        return nil
+    }
+}
+
+private struct MobileExportPackage: Codable {
+    var generatedAt: Date
+    var scans: [SelectedScan]
+    var result: GeneratePlanResponse?
+    var disclaimer: String
 }
