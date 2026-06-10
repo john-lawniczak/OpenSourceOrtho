@@ -286,22 +286,132 @@ struct GlossaryView: View {
 }
 
 struct TeethMapView: View {
-    private let upper = ["18", "17", "16", "15", "14", "13", "12", "11", "21", "22", "23", "24", "25", "26", "27", "28"]
-    private let lower = ["48", "47", "46", "45", "44", "43", "42", "41", "31", "32", "33", "34", "35", "36", "37", "38"]
-
     var body: some View {
         List {
-            Section("Upper arch") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
-                    ForEach(upper, id: \.self) { Text($0).padding(8) }
-                }
+            Section("FDI mouth map") {
+                ToothMapDiagram()
+                    .frame(height: 360)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
             }
-            Section("Lower arch") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
-                    ForEach(lower, id: \.self) { Text($0).padding(8) }
-                }
+            Section("Quadrants") {
+                LabeledContent("Upper right") { Text("18 17 16 15 14 13 12 11") }
+                LabeledContent("Upper left") { Text("21 22 23 24 25 26 27 28") }
+                LabeledContent("Lower left") { Text("31 32 33 34 35 36 37 38") }
+                LabeledContent("Lower right") { Text("48 47 46 45 44 43 42 41") }
             }
         }
         .navigationTitle("Teeth Map")
+    }
+}
+
+private struct ToothMapDiagram: View {
+    private let upperRight = ["18", "17", "16", "15", "14", "13", "12", "11"]
+    private let upperLeft = ["21", "22", "23", "24", "25", "26", "27", "28"]
+    private let lowerLeft = ["31", "32", "33", "34", "35", "36", "37", "38"]
+    private let lowerRight = ["48", "47", "46", "45", "44", "43", "42", "41"]
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let centerX = size.width / 2
+            let centerY = size.height / 2
+            let radiusX = min(size.width * 0.42, 170)
+            let upperY = centerY - 54
+            let lowerY = centerY + 54
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                Canvas { context, _ in
+                    var divider = Path()
+                    divider.move(to: CGPoint(x: centerX, y: 36))
+                    divider.addLine(to: CGPoint(x: centerX, y: size.height - 36))
+                    context.stroke(divider, with: .color(.secondary.opacity(0.35)), lineWidth: 1)
+
+                    var upperArch = Path()
+                    upperArch.addArc(
+                        center: CGPoint(x: centerX, y: upperY + 72),
+                        radius: radiusX,
+                        startAngle: .degrees(205),
+                        endAngle: .degrees(335),
+                        clockwise: false
+                    )
+                    context.stroke(upperArch, with: .color(.pink.opacity(0.35)), lineWidth: 28)
+
+                    var lowerArch = Path()
+                    lowerArch.addArc(
+                        center: CGPoint(x: centerX, y: lowerY - 72),
+                        radius: radiusX,
+                        startAngle: .degrees(25),
+                        endAngle: .degrees(155),
+                        clockwise: false
+                    )
+                    context.stroke(lowerArch, with: .color(.pink.opacity(0.35)), lineWidth: 28)
+                }
+                Text("Upper")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                    .position(x: centerX, y: 28)
+                Text("Lower")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                    .position(x: centerX, y: size.height - 28)
+                Text("Patient right")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .position(x: 62, y: centerY)
+                Text("Patient left")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .position(x: size.width - 62, y: centerY)
+
+                ForEach(Array(upperRight.enumerated()), id: \.element) { offset, label in
+                    ToothBadge(label: label, point: upperPoint(index: offset, side: -1, centerX: centerX, y: upperY, radiusX: radiusX))
+                }
+                ForEach(Array(upperLeft.enumerated()), id: \.element) { offset, label in
+                    ToothBadge(label: label, point: upperPoint(index: offset, side: 1, centerX: centerX, y: upperY, radiusX: radiusX))
+                }
+                ForEach(Array(lowerLeft.enumerated()), id: \.element) { offset, label in
+                    ToothBadge(label: label, point: lowerPoint(index: offset, side: 1, centerX: centerX, y: lowerY, radiusX: radiusX))
+                }
+                ForEach(Array(lowerRight.enumerated()), id: \.element) { offset, label in
+                    ToothBadge(label: label, point: lowerPoint(index: offset, side: -1, centerX: centerX, y: lowerY, radiusX: radiusX))
+                }
+            }
+            .accessibilityLabel("FDI teeth map with upper and lower arches arranged like a mouth")
+        }
+    }
+
+    private func upperPoint(index: Int, side: CGFloat, centerX: CGFloat, y: CGFloat, radiusX: CGFloat) -> CGPoint {
+        let t = CGFloat(index) / 7
+        let distance = 18 + t * (radiusX - 28)
+        let archLift = sin(t * .pi) * 56
+        return CGPoint(x: centerX + side * distance, y: y + archLift)
+    }
+
+    private func lowerPoint(index: Int, side: CGFloat, centerX: CGFloat, y: CGFloat, radiusX: CGFloat) -> CGPoint {
+        let t = CGFloat(index) / 7
+        let distance = 18 + t * (radiusX - 28)
+        let archDrop = sin(t * .pi) * 56
+        return CGPoint(x: centerX + side * distance, y: y - archDrop)
+    }
+}
+
+private struct ToothBadge: View {
+    var label: String
+    var point: CGPoint
+
+    var body: some View {
+        Text(label)
+            .font(.caption.bold())
+            .monospacedDigit()
+            .foregroundStyle(.primary)
+            .frame(width: 34, height: 28)
+            .background(
+                Capsule()
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+            )
+            .position(point)
     }
 }

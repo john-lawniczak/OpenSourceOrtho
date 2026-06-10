@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -192,61 +190,59 @@ fun PrintAndSendScreen(model: LiteFlowViewModel) {
 }
 
 @Composable
-fun SettingsScreen(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Done") }
-        },
-        title = { Text("Settings") },
-        text = {
+fun SettingsScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text("Settings", style = MaterialTheme.typography.titleLarge)
+        Card(modifier = Modifier.fillMaxWidth()) {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text("About", style = MaterialTheme.typography.labelMedium)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("OpenSource Ortho Lite", style = MaterialTheme.typography.bodyMedium)
-                            Spacer(modifier = Modifier.width(16.dp).weight(1f))
-                            Text(
-                                "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.End,
-                            )
-                        }
-                    }
-                }
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text("Glossary", style = MaterialTheme.typography.labelMedium)
-                        GlossaryRow("CBCT", "Cone-beam CT. Best source when roots, bone, or impacted teeth matter.")
-                        GlossaryRow("STL", "Surface mesh from an intraoral scan or model scan.")
-                        GlossaryRow("Stage", "One planned tooth-position step in the timeline.")
-                        GlossaryRow("IPR", "Interproximal reduction, measured space created between teeth.")
-                    }
-                }
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text("Teeth map", style = MaterialTheme.typography.labelMedium)
-                        Text("Upper: 18 17 16 15 14 13 12 11 | 21 22 23 24 25 26 27 28")
-                        Text("Lower: 48 47 46 45 44 43 42 41 | 31 32 33 34 35 36 37 38")
-                    }
+                Text("About", style = MaterialTheme.typography.labelMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("OpenSource Ortho Lite", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.width(16.dp).weight(1f))
+                    Text(
+                        "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.End,
+                    )
                 }
             }
-        },
-    )
+        }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Glossary", style = MaterialTheme.typography.labelMedium)
+                GlossaryRow("CBCT", "Cone-beam CT. Best source when roots, bone, or impacted teeth matter.")
+                GlossaryRow("STL", "Surface mesh from an intraoral scan or model scan.")
+                GlossaryRow("Stage", "One planned tooth-position step in the timeline.")
+                GlossaryRow("IPR", "Interproximal reduction, measured space created between teeth.")
+            }
+        }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Teeth map", style = MaterialTheme.typography.labelMedium)
+                AndroidView(
+                    factory = { TeethMapView(it) },
+                    modifier = Modifier.fillMaxWidth().height(360.dp),
+                )
+                Text("Upper right: 18 17 16 15 14 13 12 11")
+                Text("Upper left: 21 22 23 24 25 26 27 28")
+                Text("Lower left: 31 32 33 34 35 36 37 38")
+                Text("Lower right: 48 47 46 45 44 43 42 41")
+            }
+        }
+    }
 }
 
 @Composable
@@ -409,5 +405,103 @@ private class DentalPreview3dView(context: Context) : View(context) {
             val y = centerY + curve * if (isUpper) 1f else -1f
             canvas.drawOval(RectF(x - 18f, y - 26f, x + 18f, y + 26f), paint)
         }
+    }
+}
+
+private class TeethMapView(context: Context) : View(context) {
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val upperRight = listOf("18", "17", "16", "15", "14", "13", "12", "11")
+    private val upperLeft = listOf("21", "22", "23", "24", "25", "26", "27", "28")
+    private val lowerLeft = listOf("31", "32", "33", "34", "35", "36", "37", "38")
+    private val lowerRight = listOf("48", "47", "46", "45", "44", "43", "42", "41")
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val centerX = width / 2f
+        val centerY = height / 2f
+        val radiusX = minOf(width * 0.42f, 170f)
+        val upperY = centerY - 54f
+        val lowerY = centerY + 54f
+
+        paint.style = Paint.Style.FILL
+        paint.color = AndroidColor.rgb(248, 250, 252)
+        canvas.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), 28f, 28f, paint)
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1.5f
+        paint.color = AndroidColor.rgb(203, 213, 225)
+        canvas.drawLine(centerX, 36f, centerX, height - 36f, paint)
+
+        paint.strokeWidth = 28f
+        paint.color = AndroidColor.argb(90, 244, 114, 182)
+        canvas.drawArc(
+            RectF(centerX - radiusX, upperY + 72f - radiusX, centerX + radiusX, upperY + 72f + radiusX),
+            205f,
+            130f,
+            false,
+            paint,
+        )
+        canvas.drawArc(
+            RectF(centerX - radiusX, lowerY - 72f - radiusX, centerX + radiusX, lowerY - 72f + radiusX),
+            25f,
+            130f,
+            false,
+            paint,
+        )
+
+        paint.style = Paint.Style.FILL
+        paint.textAlign = Paint.Align.CENTER
+        paint.textSize = 28f
+        paint.color = AndroidColor.rgb(71, 85, 105)
+        paint.isFakeBoldText = true
+        canvas.drawText("Upper", centerX, 30f, paint)
+        canvas.drawText("Lower", centerX, height - 18f, paint)
+
+        paint.textSize = 22f
+        paint.isFakeBoldText = false
+        canvas.drawText("Patient right", 74f, centerY, paint)
+        canvas.drawText("Patient left", width - 74f, centerY, paint)
+
+        drawQuadrant(canvas, upperRight, -1f, upperY, radiusX, upper = true)
+        drawQuadrant(canvas, upperLeft, 1f, upperY, radiusX, upper = true)
+        drawQuadrant(canvas, lowerLeft, 1f, lowerY, radiusX, upper = false)
+        drawQuadrant(canvas, lowerRight, -1f, lowerY, radiusX, upper = false)
+    }
+
+    private fun drawQuadrant(
+        canvas: Canvas,
+        labels: List<String>,
+        side: Float,
+        archY: Float,
+        radiusX: Float,
+        upper: Boolean,
+    ) {
+        labels.forEachIndexed { index, label ->
+            val t = index / 7f
+            val distance = 18f + t * (radiusX - 28f)
+            val curve = sin(t * Math.PI).toFloat() * 56f
+            val x = width / 2f + side * distance
+            val y = if (upper) archY + curve else archY - curve
+            drawTooth(canvas, label, x, y)
+        }
+    }
+
+    private fun drawTooth(canvas: Canvas, label: String, x: Float, y: Float) {
+        paint.style = Paint.Style.FILL
+        paint.color = AndroidColor.WHITE
+        canvas.drawRoundRect(x - 28f, y - 22f, x + 28f, y + 22f, 24f, 24f, paint)
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1.5f
+        paint.color = AndroidColor.rgb(203, 213, 225)
+        canvas.drawRoundRect(x - 28f, y - 22f, x + 28f, y + 22f, 24f, 24f, paint)
+
+        paint.style = Paint.Style.FILL
+        paint.textAlign = Paint.Align.CENTER
+        paint.textSize = 24f
+        paint.isFakeBoldText = true
+        paint.color = AndroidColor.rgb(15, 23, 42)
+        canvas.drawText(label, x, y + 8f, paint)
+        paint.isFakeBoldText = false
     }
 }

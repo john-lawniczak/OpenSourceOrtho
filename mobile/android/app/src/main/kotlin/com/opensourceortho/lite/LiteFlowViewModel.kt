@@ -38,6 +38,10 @@ class LiteFlowViewModel(
         _state.update { it.copy(scans = it.scans + scan, step = LiteStep.TEETH_AND_TIME) }
     }
 
+    fun navigate(step: LiteStep) {
+        _state.update { it.copy(step = step) }
+    }
+
     /** Posts selected records to the engine and advances to Review. */
     fun generate() {
         val scans = _state.value.scans
