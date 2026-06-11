@@ -20,6 +20,7 @@ from pydantic import ValidationError
 
 from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.evaluation.rules.root_bone import root_bone_review
 from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.model.review_tier import (
@@ -60,6 +61,7 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
             "transforms": [reg.model_dump(mode="json") for reg in plan.registrations],
         },
         "derived_anatomy": _derived_anatomy_block(plan),
+        "root_bone_review": {"verdict": root_bone_review(plan).verdict.value},
         "data_gaps": data_gaps(plan),
         "data_gap_actions": [action.model_dump() for action in data_gap_actions(plan)],
         "acquisition_advice": acquisition_advice(plan).model_dump(),
