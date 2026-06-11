@@ -4,10 +4,12 @@ import hashlib
 import shutil
 from pathlib import Path
 
+from orthoplan.dicom_intake import parse_dicom_metadata_safe
 from orthoplan.mesh_workspace import default_mesh_workspace
 from orthoplan.model.assets import CaseRecord, CaseRecordKind, redact_reference
 
 MAX_RECORD_BYTES = 250 * 1024 * 1024
+_DICOM_KINDS = {"cbct", "dicom"}
 
 
 def register_case_record(
@@ -37,13 +39,20 @@ def register_case_record(
     filename = f"{record_id}{suffix}" if suffix else record_id
     shutil.copy2(source, record_dir / filename)
 
+    # Parse redacted DICOM study metadata for CBCT/DICOM records when the optional
+    # extra is present. Volume bytes stay on disk; only structural metadata is kept.
+    dicom = None
+    if kind in _DICOM_KINDS:
+        dicom, _error = parse_dicom_metadata_safe(source)
+
     return CaseRecord(
         id=record_id,
         kind=kind,
-        modality=modality,
+        modality=modality or (dicom.modality if dicom else None),
         filename=safe_name,
         content_type=content_type,
         size_bytes=size,
         sha256=sha256,
         local_reference=f"records/{filename}",
+        dicom=dicom,
     )

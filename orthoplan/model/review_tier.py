@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from orthoplan.model.plan import TreatmentPlan
 
@@ -162,4 +162,66 @@ def review_tier_info(plan: TreatmentPlan) -> ReviewTierInfo:
         label=_TIER_LABEL[tier],
         summary=_TIER_SUMMARY[tier],
         root_bone_aware=tier is ReviewTier.ROOT_BONE_AWARE,
+    )
+
+
+class CbctStatus(StrEnum):
+    """Lifecycle of a CBCT attachment, surfaced in the case UI."""
+
+    UNAVAILABLE = "unavailable"
+    ATTACHED = "attached"
+    VIEWED = "viewed"
+    REGISTERED = "registered"
+    ANATOMY_REVIEWED = "anatomy-reviewed"
+
+
+def cbct_status(plan: TreatmentPlan) -> CbctStatus:
+    """Server-derivable CBCT lifecycle state (the UI may overlay ``viewed``).
+
+    Fail-closed: a CBCT attachment is ``ATTACHED`` until accepted registration
+    (``REGISTERED``) and then reviewed anatomy (``ANATOMY_REVIEWED``) exist.
+    """
+
+    if not _has_cbct(plan):
+        return CbctStatus.UNAVAILABLE
+    if root_bone_aware_ready(plan):
+        return CbctStatus.ANATOMY_REVIEWED
+    registration = getattr(plan, "registrations", None) or []
+    if any(getattr(r, "accepted", False) for r in registration):
+        return CbctStatus.REGISTERED
+    return CbctStatus.ATTACHED
+
+
+class CbctHandoff(BaseModel):
+    """A clean handoff to a trusted local DICOM viewer (e.g. 3D Slicer)."""
+
+    status: CbctStatus
+    available: bool
+    viewer_suggestion: str
+    instructions: str
+    local_references: list[str] = Field(default_factory=list)
+
+
+_SLICER_INSTRUCTIONS = (
+    "Open the local CBCT/DICOM file(s) listed below in a trusted local viewer "
+    "such as 3D Slicer (slicer.org) or your PACS workstation. OpenSource Ortho "
+    "does not render CBCT volumes in the browser and never uploads them. Slice "
+    "review (axial/coronal/sagittal) is performed in that viewer."
+)
+
+
+def cbct_handoff(plan: TreatmentPlan) -> CbctHandoff:
+    status = cbct_status(plan)
+    references = [
+        record.local_reference
+        for record in plan.case_records
+        if record.kind in CBCT_RECORD_KINDS and record.local_reference
+    ]
+    available = status is not CbctStatus.UNAVAILABLE
+    return CbctHandoff(
+        status=status,
+        available=available,
+        viewer_suggestion="3D Slicer (https://www.slicer.org)",
+        instructions=_SLICER_INSTRUCTIONS if available else "No CBCT/DICOM record is attached.",
+        local_references=references,
     )

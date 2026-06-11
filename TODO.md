@@ -52,17 +52,17 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 4: CBCT/DICOM ingestion and viewer
 
-- [ ] Add optional `dicom` extra using `pydicom` or a similarly reviewed local
+- [x] Add optional `dicom` extra using `pydicom` or a similarly reviewed local
   dependency.
-- [ ] Parse DICOM metadata locally: study date, modality, voxel spacing,
+- [x] Parse DICOM metadata locally: study date, modality, voxel spacing,
   dimensions, orientation, and redacted provenance.
-- [ ] Add local volume registration/storage contract; never serialize volume
+- [x] Add local volume registration/storage contract; never serialize volume
   bytes into plan JSON.
-- [ ] Add axial/coronal/sagittal slice viewer in the browser, or a clean handoff
+- [x] Add axial/coronal/sagittal slice viewer in the browser, or a clean handoff
   path to a trusted local viewer such as 3D Slicer.
-- [ ] Show CBCT status in the case UI: attached, viewed, registered,
+- [x] Show CBCT status in the case UI: attached, viewed, registered,
   anatomy-reviewed, or unavailable.
-- [ ] Keep CBCT attachment from changing movement generation until registration
+- [x] Keep CBCT attachment from changing movement generation until registration
   and reviewed anatomy contracts exist.
 
 ### Phase 5: STL-to-CBCT registration

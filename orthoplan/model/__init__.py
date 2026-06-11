@@ -33,12 +33,18 @@ from orthoplan.model.plan import (
     ToothDelta,
     TreatmentPlan,
 )
+from orthoplan.model.dicom import DicomMetadata, extract_dicom_metadata
 from orthoplan.model.review_tier import (
+    CbctHandoff,
+    CbctStatus,
     ReviewTier,
     ReviewTierInfo,
+    cbct_handoff,
+    cbct_status,
     review_tier,
     review_tier_info,
     root_bone_aware_ready,
+    unresolved_surface_gaps,
 )
 from orthoplan.model.settings import (
     AxisCaps,
@@ -57,7 +63,10 @@ __all__ = [
     "AxisSemantics",
     "BoundingBox",
     "CaseRecord",
+    "CbctHandoff",
+    "CbctStatus",
     "CoordinateFrame",
+    "DicomMetadata",
     "DataAvailability",
     "DataGapAction",
     "FixedTooth",
@@ -83,10 +92,14 @@ __all__ = [
     "TreatmentSettings",
     "UploadedScan",
     "bounding_box_sanity",
+    "cbct_handoff",
+    "cbct_status",
     "data_gap_actions",
     "data_gaps",
+    "extract_dicom_metadata",
     "redact_reference",
     "review_tier",
     "review_tier_info",
     "root_bone_aware_ready",
+    "unresolved_surface_gaps",
 ]

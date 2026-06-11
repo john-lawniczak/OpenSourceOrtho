@@ -19,6 +19,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from orthoplan.model.dicom import DicomMetadata
+
 ArchName = Literal["maxillary", "mandibular"]
 CaseRecordKind = Literal["cbct", "dicom", "photo", "radiograph", "note", "document"]
 
@@ -136,6 +138,9 @@ class CaseRecord(BaseModel):
     local_reference: str | None = None
     note_text: str | None = Field(default=None, max_length=2000)
     provenance: str = "patient-derived"
+    # Structural CBCT/DICOM metadata (no PHI, no pixel bytes). Populated only for
+    # cbct/dicom records when the optional ``dicom`` extra parses the study.
+    dicom: DicomMetadata | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @field_validator("filename")
