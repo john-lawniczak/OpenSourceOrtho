@@ -58,6 +58,10 @@ Honest self-assessment of the current build:
 - [x] Tests: shell is watertight (every edge shared by 2 faces), measured
   thickness is within tolerance of the request, trim removes sub-gingival
   geometry, and export falls closed without reviewed geometry.
+- [x] Manufacturing-readiness QA for the pure-Python shell path: weld/drop
+  degenerate input triangles, report watertightness, connected components,
+  thickness distribution, shell hashes, and fail-closed model-only reasons in
+  the package manifest/API.
 
 ### Phase 10: Real mesh collision + interproximal contact (track 2)
 

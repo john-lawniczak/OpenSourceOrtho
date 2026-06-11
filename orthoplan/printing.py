@@ -36,6 +36,7 @@ class PrintExportStatus(BaseModel):
     model_material: str
     thermoforming_material: str
     post_processing_notes: str
+    manufacturing_readiness: dict[str, str]
     artifacts: list[PrintableArtifact] = Field(default_factory=list)
     caveat: str = PRINT_EXPORT_CAVEAT
 
@@ -75,8 +76,32 @@ def build_print_export_status(plan: TreatmentPlan) -> PrintExportStatus:
         model_material=settings.model_material,
         thermoforming_material=settings.thermoforming_material,
         post_processing_notes=settings.post_processing_notes,
+        manufacturing_readiness=_manufacturing_readiness(plan, blockers),
         artifacts=artifacts,
     )
+
+
+def _manufacturing_readiness(plan: TreatmentPlan, blockers: list[str]) -> dict[str, str]:
+    settings = plan.settings.print_export
+    if not settings.aligner_shell_enabled:
+        return {
+            "verdict": "NOT_APPLICABLE",
+            "reason": "Aligner-shell export is disabled.",
+        }
+    if blockers:
+        return {
+            "verdict": "ISSUES",
+            "reason": "Print export prerequisites are incomplete.",
+        }
+    if not any(link.reviewed for link in plan.tooth_meshes):
+        return {
+            "verdict": "NOT_APPLICABLE",
+            "reason": "Reviewed real tooth geometry is unavailable; model-only export remains available.",
+        }
+    return {
+        "verdict": "CONSISTENT",
+        "reason": "Reviewed tooth geometry is present; package export will run deterministic shell QA.",
+    }
 
 
 from orthoplan.print_package import PrintPackageResult, export_print_package  # noqa: E402

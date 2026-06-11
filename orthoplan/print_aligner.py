@@ -26,22 +26,25 @@ def write_aligner_shells(
     frames: list,
     stem: str,
     tooth_geometry: dict,
-) -> tuple[list[str], list[dict]]:
-    """Write a shell STL per stage that has real geometry. Returns (paths, records)."""
+) -> tuple[list[str], list[dict], list[dict]]:
+    """Write shell STLs and return (paths, artifact records, stage QA reports)."""
 
     settings = plan.settings.print_export
     paths: list[str] = []
     records: list[dict] = []
+    reports: list[dict] = []
     trim = _gingival_trim(plan, settings.gingival_trim_margin_mm)
     for frame in frames:
         triangles = stage_real_triangles(frame.poses, tooth_geometry)
         if not triangles:
+            reports.append(_skipped_report(frame.stage_index, "real reviewed geometry unavailable"))
             continue  # fail closed: no real geometry -> no shell for this stage
         try:
             shell = build_aligner_shell(
                 triangles, thickness_mm=settings.sheet_thickness_mm, trim=trim
             )
-        except ValueError:
+        except ValueError as exc:
+            reports.append(_skipped_report(frame.stage_index, str(exc), verdict="ISSUES"))
             continue
         path = output / f"{stem}-stage-{frame.stage_index:02d}-aligner-shell.stl"
         path.write_text(
@@ -49,19 +52,66 @@ def write_aligner_shells(
             encoding="utf-8",
         )
         paths.append(str(path))
-        records.append({
-            "filename": path.name,
-            "stage_index": frame.stage_index,
-            "kind": "aligner-shell",
-            "format": "stl-ascii",
-            "sha256": sha256_bytes(path.read_bytes()),
-            "byte_size": path.stat().st_size,
-            "requested_thickness_mm": shell.stats.requested_thickness_mm,
-            "measured_thickness_mm": round(shell.stats.measured_thickness_mm, 4),
-            "watertight": shell.stats.watertight,
-            "gingival_trim_applied": shell.stats.trimmed,
-        })
-    return paths, records
+        record = _shell_record(path, frame.stage_index, shell.stats)
+        records.append(record)
+        reports.append(_completed_report(frame.stage_index, record))
+    return paths, records, reports
+
+
+def _shell_record(path: Path, stage_index: int, stats) -> dict:
+    return {
+        "filename": path.name,
+        "stage_index": stage_index,
+        "kind": "aligner-shell",
+        "format": "stl-ascii",
+        "sha256": sha256_bytes(path.read_bytes()),
+        "byte_size": path.stat().st_size,
+        "quality": _quality_block(stats),
+        "requested_thickness_mm": stats.requested_thickness_mm,
+        "measured_thickness_mm": round(stats.measured_thickness_mm, 4),
+        "watertight": stats.watertight,
+        "gingival_trim_applied": stats.trimmed,
+    }
+
+
+def _quality_block(stats) -> dict:
+    return {
+        "verdict": _quality_verdict(stats),
+        "watertight": stats.watertight,
+        "connected_components": stats.connected_components,
+        "triangle_count": stats.triangle_count,
+        "dropped_degenerate_input_triangles": stats.dropped_degenerate_input_triangles,
+        "thickness_mm": {
+            "requested": round(stats.requested_thickness_mm, 4),
+            "mean": round(stats.measured_thickness_mm, 4),
+            "min": round(stats.min_thickness_mm, 4),
+            "max": round(stats.max_thickness_mm, 4),
+            "p05": round(stats.p05_thickness_mm, 4),
+            "p50": round(stats.p50_thickness_mm, 4),
+            "p95": round(stats.p95_thickness_mm, 4),
+        },
+    }
+
+
+def _quality_verdict(stats) -> str:
+    return "CONSISTENT" if stats.watertight and stats.connected_components == 1 else "ISSUES"
+
+
+def _completed_report(stage_index: int, record: dict) -> dict:
+    return {
+        "stage_index": stage_index,
+        "verdict": record["quality"]["verdict"],
+        "filename": record["filename"],
+        "quality": record["quality"],
+    }
+
+
+def _skipped_report(stage_index: int, reason: str, *, verdict: str = "NOT_APPLICABLE") -> dict:
+    return {
+        "stage_index": stage_index,
+        "verdict": verdict,
+        "reason": f"Aligner shell not generated: {reason}; model-only export remains available.",
+    }
 
 
 def _gingival_trim(plan: TreatmentPlan, margin_mm: float) -> TrimPlane | None:
