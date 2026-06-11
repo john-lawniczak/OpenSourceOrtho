@@ -78,6 +78,24 @@ test("renderPrintQa lists the named failed checks for an ISSUES stage", () => {
   assert.match(host.innerHTML, /nonmanifold edges: 2/);
 });
 
+test("renderPrintQa shows the shell backend and any fail-closed downgrade", () => {
+  const host = fakeHost();
+  renderPrintQa(host, {
+    ok: true,
+    manufacturing_readiness: { verdict: "CONSISTENT" },
+    aligner_shell_backend: {
+      requested: "robust",
+      used: "pure-python",
+      available: false,
+      fallback_reason: "robust backend requested but the 'mesh-processing' extra (Open3D) is not installed",
+    },
+    aligner_shell_reports: [],
+  });
+
+  assert.match(host.innerHTML, /Shell backend: pure-python/);
+  assert.match(host.innerHTML, /Open3D/);
+});
+
 test("renderPrintQa shows the skip reason for a NOT_APPLICABLE stage", () => {
   const host = fakeHost();
   renderPrintQa(host, {

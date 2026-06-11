@@ -32,8 +32,8 @@
   },
   "kind": "stored-review",
   "plan_id": "golden-case-001",
-  "plan_sha256": "6d333dcbecc5a779206d550171a033ec825a225def89fdcf4ccee0cae7bf7c3d",
-  "review_sha256": "c3e845955f1af569d0f1d98ac9df66af90fa7740382ae4bd552c7bc73cb950b5",
+  "plan_sha256": "ce48e8e8305f0d91ea180fa1d09a70ec139432f01bd7f9ab92466c640fea42ba",
+  "review_sha256": "1fd5d143bd3a6dfa3acb6f879753a2b8690d7c846a7466979e697bef9ae0617b",
   "review_tier": {
     "label": "STL surface only",
     "rank": 0,

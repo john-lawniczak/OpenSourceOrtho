@@ -17,8 +17,6 @@ and risk.
 
 from __future__ import annotations
 
-from math import sqrt
-
 from pydantic import BaseModel, Field
 
 from orthoplan.aligner_shell_quality import (
@@ -28,6 +26,15 @@ from orthoplan.aligner_shell_quality import (
 )
 from orthoplan.aligner_shell_mesh import clean_triangles
 from orthoplan.aligner_shell_stats import connected_components, mean, percentile
+from orthoplan.aligner_shell_topology import (
+    boundary_edges,
+    dot,
+    index_mesh,
+    is_watertight,
+    norm,
+    sub,
+    vertex_normals,
+)
 
 Vec3 = tuple[float, float, float]
 Triangle = tuple[Vec3, Vec3, Vec3]
@@ -40,7 +47,7 @@ class TrimPlane(BaseModel):
     normal: Vec3
 
     def keeps(self, vertex: Vec3) -> bool:
-        return _dot(_sub(vertex, self.point), self.normal) >= 0.0
+        return dot(sub(vertex, self.point), self.normal) >= 0.0
 
 
 class ShellStats(BaseModel):
@@ -73,91 +80,6 @@ class ShellResult(BaseModel):
     stats: ShellStats
 
 
-def _sub(a: Vec3, b: Vec3) -> Vec3:
-    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
-
-
-def _dot(a: Vec3, b: Vec3) -> float:
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-
-def _cross(a: Vec3, b: Vec3) -> Vec3:
-    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
-
-
-def _norm(a: Vec3) -> float:
-    return sqrt(_dot(a, a))
-
-
-def _key(v: Vec3) -> tuple[int, int, int]:
-    # Quantize to 1e-6 mm so shared vertices across triangles dedup reliably.
-    return (round(v[0] * 1_000_000), round(v[1] * 1_000_000), round(v[2] * 1_000_000))
-
-
-def _index_mesh(triangles: list[Triangle]) -> tuple[list[Vec3], list[tuple[int, int, int]]]:
-    verts: list[Vec3] = []
-    lookup: dict[tuple[int, int, int], int] = {}
-    faces: list[tuple[int, int, int]] = []
-    for tri in triangles:
-        idx = []
-        for v in tri:
-            k = _key(v)
-            i = lookup.get(k)
-            if i is None:
-                i = len(verts)
-                lookup[k] = i
-                verts.append(v)
-            idx.append(i)
-        if idx[0] != idx[1] and idx[1] != idx[2] and idx[0] != idx[2]:
-            faces.append((idx[0], idx[1], idx[2]))
-    return verts, faces
-
-
-def _vertex_normals(verts: list[Vec3], faces: list[tuple[int, int, int]]) -> list[Vec3]:
-    acc: list[list[float]] = [[0.0, 0.0, 0.0] for _ in verts]
-    for a, b, c in faces:
-        # Area-weighted: cross product magnitude is proportional to triangle area.
-        n = _cross(_sub(verts[b], verts[a]), _sub(verts[c], verts[a]))
-        for i in (a, b, c):
-            acc[i][0] += n[0]
-            acc[i][1] += n[1]
-            acc[i][2] += n[2]
-    normals: list[Vec3] = []
-    for raw in acc:
-        length = _norm((raw[0], raw[1], raw[2]))
-        if length == 0:
-            normals.append((0.0, 0.0, 0.0))
-        else:
-            normals.append((raw[0] / length, raw[1] / length, raw[2] / length))
-    return normals
-
-
-def _boundary_edges(faces: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
-    """Directed edges that appear in exactly one triangle - the open boundary."""
-
-    counts: dict[tuple[int, int], int] = {}
-    for a, b, c in faces:
-        for e in ((a, b), (b, c), (c, a)):
-            undirected = (min(e), max(e))
-            counts[undirected] = counts.get(undirected, 0) + 1
-    boundary: list[tuple[int, int]] = []
-    for a, b, c in faces:
-        for e in ((a, b), (b, c), (c, a)):
-            if counts[(min(e), max(e))] == 1:
-                boundary.append(e)
-    return boundary
-
-
-def _is_watertight(triangles: list[Triangle]) -> bool:
-    verts, faces = _index_mesh(triangles)
-    counts: dict[tuple[int, int], int] = {}
-    for a, b, c in faces:
-        for e in ((a, b), (b, c), (c, a)):
-            undirected = (min(e), max(e))
-            counts[undirected] = counts.get(undirected, 0) + 1
-    return bool(counts) and all(count == 2 for count in counts.values())
-
-
 def build_aligner_shell(
     triangles: list[Triangle],
     *,
@@ -177,17 +99,47 @@ def build_aligner_shell(
     if thickness_mm <= 0:
         raise ValueError("aligner sheet thickness must be positive")
     cleaned, dropped, skinny = clean_triangles(triangles)
-    verts, faces = _index_mesh(cleaned)
+    verts, faces = index_mesh(cleaned)
     if not faces:
         raise ValueError("aligner shell requires a non-empty surface mesh")
+    return assemble_shell(
+        verts, faces,
+        thickness_mm=thickness_mm,
+        minimum_printable_feature_mm=minimum_printable_feature_mm,
+        trim=trim,
+        xy_compensation_mm=xy_compensation_mm,
+        z_compensation_mm=z_compensation_mm,
+        dropped=dropped,
+        skinny=skinny,
+    )
+
+
+def assemble_shell(
+    verts: list[Vec3],
+    faces: list[tuple[int, int, int]],
+    *,
+    thickness_mm: float,
+    minimum_printable_feature_mm: float,
+    trim: TrimPlane | None,
+    xy_compensation_mm: float,
+    z_compensation_mm: float,
+    dropped: int,
+    skinny: int,
+) -> ShellResult:
+    """Offset already-indexed geometry and close it into a solid.
+
+    Shared by every backend (pure-Python ``clean_triangles`` and the optional
+    robust repair path) so offset, rim stitching, compensation, and QA have a
+    single source of truth regardless of how the input mesh was prepared.
+    """
 
     if trim is not None:
         faces = [f for f in faces if all(trim.keeps(verts[i]) for i in f)]
         if not faces:
             raise ValueError("trim removed the entire surface; check the trim plane")
 
-    input_boundary_edges = _boundary_edges(faces)
-    normals = _vertex_normals(verts, faces)
+    input_boundary_edges = boundary_edges(faces)
+    normals = vertex_normals(verts, faces)
     inner, outer = _shell_surfaces(
         verts, normals, thickness_mm, xy_compensation_mm, z_compensation_mm
     )
@@ -257,8 +209,8 @@ def _shell_stats(
     z_compensation_mm: float,
 ) -> ShellStats:
     thicknesses = _thickness_values(inner, outer, faces)
-    _, shell_faces = _index_mesh(shell_triangles)
-    watertight = _is_watertight(shell_triangles)
+    _, shell_faces = index_mesh(shell_triangles)
+    watertight = is_watertight(shell_triangles)
     rim_triangles = len(input_boundary_edges) * 2
     return ShellStats(
         requested_thickness_mm=thickness_mm,
@@ -294,4 +246,4 @@ def _thickness_values(
     used = {i for f in faces for i in f}
     if not used:
         return [0.0]
-    return [_norm(_sub(outer[i], inner[i])) for i in sorted(used)]
+    return [norm(sub(outer[i], inner[i])) for i in sorted(used)]

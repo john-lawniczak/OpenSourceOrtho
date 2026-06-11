@@ -85,6 +85,11 @@ class PrintExportSettings(BaseModel):
     # the package also emits a printable shell (offset by the sheet thickness,
     # trimmed at the gingival margin) alongside the stage model.
     aligner_shell_enabled: bool = False
+    # Shell construction backend. "pure-python" always runs (no extra). "robust"
+    # uses the optional mesh-processing extra (Open3D) for mesh repair; when that
+    # extra is missing the export falls back to pure-python and records the
+    # downgrade (it never silently changes geometry).
+    shell_backend: Literal["pure-python", "robust"] = "pure-python"
     sheet_thickness_mm: float = Field(default=0.6, gt=0, le=2.0)
     gingival_trim_margin_mm: float = Field(default=2.0, ge=0)
     xy_compensation_mm: float = Field(default=0.0, ge=-1.0, le=1.0)
