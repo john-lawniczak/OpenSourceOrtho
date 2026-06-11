@@ -124,6 +124,36 @@ class ReviewTierInfo(BaseModel):
     root_bone_aware: bool
 
 
+# Anatomy domains an STL-surface review can never resolve from crown geometry.
+# Each stays unresolved until the plan reaches ROOT_BONE_AWARE (registration +
+# reviewed CBCT anatomy). Listed explicitly so an exported report always names
+# them rather than silently omitting what it cannot see.
+_SURFACE_BLIND_DOMAINS = (
+    ("roots", "Root geometry and root position are not visible in surface scans."),
+    ("alveolar_bone", "Alveolar bone boundaries require registered, reviewed CBCT."),
+    (
+        "periodontal_status",
+        "Periodontal support and risk are not derivable from crown surfaces.",
+    ),
+    ("occlusion", "Dynamic occlusion and contacts require occlusal records."),
+    (
+        "cbct_anatomy",
+        "CBCT-derived anatomy requires registration and human review before use.",
+    ),
+)
+
+
+def unresolved_surface_gaps(plan: TreatmentPlan) -> list[dict[str, str]]:
+    """Anatomy domains an STL-surface plan cannot resolve at its current tier.
+
+    Fail-closed: every blind domain is listed unless the plan is root/bone-aware.
+    """
+
+    if root_bone_aware_ready(plan):
+        return []
+    return [{"domain": domain, "reason": reason} for domain, reason in _SURFACE_BLIND_DOMAINS]
+
+
 def review_tier_info(plan: TreatmentPlan) -> ReviewTierInfo:
     tier = review_tier(plan)
     return ReviewTierInfo(

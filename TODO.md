@@ -23,19 +23,19 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 2: Excellent STL surface planning
 
-- [ ] Make scale/unit confirmation a required gate before millimeter movement
+- [x] Make scale/unit confirmation a required gate before millimeter movement
   checks run.
-- [ ] Run auto-segmentation from uploaded whole-arch STL files through
+- [x] Run auto-segmentation from uploaded whole-arch STL files through
   `/api/segment`.
-- [ ] Build a segmentation review UI for tooth labels, missing teeth, rejected
+- [x] Build a segmentation review UI for tooth labels, missing teeth, rejected
   fragments, and reviewer corrections.
-- [ ] Persist segmentation proposals, edits, and applied per-tooth mesh links per
+- [x] Persist segmentation proposals, edits, and applied per-tooth mesh links per
   case/version.
-- [ ] Render real segmented per-tooth STL fragments in the browser viewer.
-- [ ] Generate movement from segmented crown geometry where available.
-- [ ] Run crown collision, spacing, IPR, attachment, and movement-cap checks from
+- [x] Render real segmented per-tooth STL fragments in the browser viewer.
+- [x] Generate movement from segmented crown geometry where available.
+- [x] Run crown collision, spacing, IPR, attachment, and movement-cap checks from
   the same engine data used by the viewer.
-- [ ] Export STL-surface reports that clearly list unresolved data gaps for roots,
+- [x] Export STL-surface reports that clearly list unresolved data gaps for roots,
   bone, periodontal status, occlusion, and CBCT anatomy.
 
 ### Phase 3: Real per-tooth print/export

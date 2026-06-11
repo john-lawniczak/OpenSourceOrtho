@@ -87,6 +87,39 @@ def test_segmented_mesh_collision_rule_reports_one_finding_per_pair() -> None:
     assert "deepest at stage 2" in findings[0].message
 
 
+def test_collision_check_skipped_when_scan_units_unverified() -> None:
+    # A scan with unverified units makes the plan's scale unconfirmed, so the
+    # millimeter overlap check must defer rather than report mm depths it cannot trust.
+    from orthoplan.model import MeshUnits, UploadedScan
+
+    mesh_11 = MeshAsset(
+        id="mesh-11", format="stl-ascii", vertex_count=8, face_count=12,
+        bounds=BoundingBox(min_xyz=(0, 0, 0), max_xyz=(1, 1, 1)),
+    )
+    mesh_21 = MeshAsset(
+        id="mesh-21", format="stl-ascii", vertex_count=8, face_count=12,
+        bounds=BoundingBox(min_xyz=(2, 0, 0), max_xyz=(3, 1, 1)),
+    )
+    raw_scan = UploadedScan(
+        asset=MeshAsset(id="raw", format="stl", units=MeshUnits.UNVERIFIED, vertex_count=1, face_count=1),
+    )
+    plan = TreatmentPlan(
+        id="unverified-collision",
+        scans=[raw_scan],
+        mesh_assets=[mesh_11, mesh_21],
+        tooth_meshes=[
+            SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="mesh-11"),
+            SegmentedToothMesh(tooth=ToothId(value="21"), mesh_asset_id="mesh-21"),
+        ],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=-1.5)])],
+    )
+
+    findings = evaluate_segmented_mesh_collisions(plan)
+
+    assert len(findings) == 1
+    assert findings[0].code == "segmented-crown-collision-scale-unconfirmed"
+
+
 def test_optimizer_splits_large_movement_by_configured_caps() -> None:
     plan = TreatmentPlan(
         id="optimize",

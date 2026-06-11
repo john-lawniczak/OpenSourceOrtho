@@ -29,31 +29,12 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
             bounds_by_tooth[link.tooth.value] = asset.bounds
     if len(bounds_by_tooth) < 2:
         return []
+    # Overlap depths are reported in millimeters, so this is a millimeter check:
+    # it must not run until scan scale is confirmed, mirroring movement-cap gating.
+    if not plan.scale_confirmed:
+        return [_scale_unconfirmed_notice()]
 
-    # Collect the worst (deepest) overlap per tooth pair across all stages so a
-    # contact that persists through many stages is reported once - keyed by the
-    # stage where it is most severe - instead of flooding the findings list with
-    # one near-identical entry per stage.
-    worst_by_pair: dict[tuple[str, str], tuple[int, float]] = {}
-    for frame in build_stage_progress_frames(plan):
-        moved = dict(bounds_by_tooth)
-        for pose in frame.poses:
-            if pose.tooth.value in bounds_by_tooth:
-                moved[pose.tooth.value] = _translate_bounds(bounds_by_tooth[pose.tooth.value], pose)
-        teeth = sorted(moved)
-        for index, tooth_a in enumerate(teeth):
-            for tooth_b in teeth[index + 1 :]:
-                # Opposing arches share the occlusal x/y plane and are not
-                # collision partners; only compare teeth within the same arch.
-                if _arch_of(tooth_a) != _arch_of(tooth_b):
-                    continue
-                overlap = _overlap_depth(moved[tooth_a], moved[tooth_b])
-                if overlap <= 0:
-                    continue
-                pair = (tooth_a, tooth_b)
-                current = worst_by_pair.get(pair)
-                if current is None or overlap > current[1]:
-                    worst_by_pair[pair] = (frame.stage_index, overlap)
+    worst_by_pair = _worst_overlaps_by_pair(plan, bounds_by_tooth)
 
     findings: list[Finding] = []
     for (tooth_a, tooth_b), (stage_index, overlap) in sorted(worst_by_pair.items()):
@@ -77,6 +58,57 @@ def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
             )
         )
     return findings
+
+
+def _worst_overlaps_by_pair(
+    plan: TreatmentPlan, bounds_by_tooth: dict[str, BoundingBox]
+) -> dict[tuple[str, str], tuple[int, float]]:
+    """Deepest same-arch overlap per tooth pair across all stages.
+
+    A contact that persists through many stages is reported once - keyed by the
+    stage where it is most severe - instead of one near-identical entry per stage.
+    """
+
+    worst_by_pair: dict[tuple[str, str], tuple[int, float]] = {}
+    for frame in build_stage_progress_frames(plan):
+        moved = dict(bounds_by_tooth)
+        for pose in frame.poses:
+            if pose.tooth.value in bounds_by_tooth:
+                moved[pose.tooth.value] = _translate_bounds(bounds_by_tooth[pose.tooth.value], pose)
+        teeth = sorted(moved)
+        for index, tooth_a in enumerate(teeth):
+            for tooth_b in teeth[index + 1 :]:
+                # Opposing arches share the occlusal x/y plane and are not
+                # collision partners; only compare teeth within the same arch.
+                if _arch_of(tooth_a) != _arch_of(tooth_b):
+                    continue
+                overlap = _overlap_depth(moved[tooth_a], moved[tooth_b])
+                if overlap <= 0:
+                    continue
+                pair = (tooth_a, tooth_b)
+                current = worst_by_pair.get(pair)
+                if current is None or overlap > current[1]:
+                    worst_by_pair[pair] = (frame.stage_index, overlap)
+    return worst_by_pair
+
+
+def _scale_unconfirmed_notice() -> Finding:
+    return lint_finding(
+        Finding(
+            severity=FindingSeverity.NOTICE,
+            category=FindingCategory.DATA_GAP,
+            provenance=FindingProvenance.RULE,
+            title="Crown collision check skipped: scan units unverified",
+            message=(
+                "Segmented crown bounds are present but scan units are unverified, so "
+                "overlap depths cannot be compared in millimeters. Confirm scan units "
+                "to enable the crown collision check."
+            ),
+            code="segmented-crown-collision-scale-unconfirmed",
+            data_gap="Scan units are unverified; declared geometry scale cannot be trusted.",
+            clinician_question="Have the scan units and scale been confirmed?",
+        )
+    )
 
 
 def _arch_of(tooth_value: str) -> str:
