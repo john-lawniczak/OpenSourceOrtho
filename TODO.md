@@ -46,12 +46,17 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   only), real per-facet STL normals, and shell QA (readiness verdict, applied
   compensation, per-stage watertight/thickness/self-intersection, skip reasons)
   surfaced in the guided and technician print UIs.
+- Real triangle-triangle self-intersection engine (Möller narrow phase behind an
+  AABB broad phase) and nonmanifold-edge detection replacing the box-overlap
+  approximation, per-artifact `failed_checks` explanations, and an independent
+  analytic known-good oracle (closed-form slab volume) plus synthetic messy
+  fixtures.
 
 ## Honest effectiveness snapshot
 
 | Track | Current | Remaining gap |
 |-------|---------|---------------|
-| End-to-end "upload -> printable aligners" | ~7/10 for reviewed real geometry | Robust offset/booleans, harder mesh repair, messy fixture corpus, and material/fit modeling are still out of scope. |
+| End-to-end "upload -> printable aligners" | ~8/10 for reviewed real geometry | Robust offset/booleans and harder mesh repair, a full-arch known-good/messy real-scan corpus, and material/fit modeling are still out of scope. |
 | Surface-scan staging + honest review aid | ~7/10 | More real-scan labels and learned/stronger segmentation would reduce review burden. |
 | CBCT root/bone-aware planning from a raw volume | ~1-2/10 | Raw-volume root/bone segmentation and auto-registration are still not implemented. |
 

@@ -8,13 +8,13 @@ clinical clearance, treatment approval, or a statement that physical use is safe
 
 | Surface | Current | What the score means |
 |---------|---------|----------------------|
-| Track 1: upload -> printable aligner artifacts | ~7/10 | Reviewed real geometry can export reproducible model/shell packages with deterministic QA and fail-closed behavior, but robust mesh processing and material/fit modeling are not complete. |
+| Track 1: upload -> printable aligner artifacts | ~8/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with a real triangle-triangle self-intersection + nonmanifold engine, per-artifact pass/fail explanations, and an analytic known-good oracle; a robust boolean/offset mesh backend and material/fit modeling are still out of scope. |
 | Track 2: surface-scan staging + honest review aid | ~7/10 | Surface planning, movement caps, collision/IPR review, segmentation review, and benchmarks are useful and bounded, but more labelled real-scan validation and stronger segmentation are needed. |
 | Track 3: CBCT root/bone-aware planning from raw volume | ~1-2/10 | Reviewed anatomy can be represented and used once supplied, but raw CBCT root/bone segmentation and default auto-registration are still future work. |
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
-Current rating: ~7/10.
+Current rating: ~8/10.
 
 What exists:
 
@@ -29,22 +29,29 @@ What exists:
   back through the shell QA block.
 - Exported STL files carry real per-facet unit normals computed from triangle
   winding, not placeholder zero normals.
-- Shell QA reports watertightness, connected components, rim closure, approximate
-  self-intersection signals, inner/outer clearance, thickness distribution,
-  degenerate/sliver input counts, hashes, and manufacturing-readiness verdicts.
+- Shell QA reports watertightness, connected components, rim closure, a real
+  triangle-triangle self-intersection count (Möller narrow phase behind an AABB
+  broad phase), nonmanifold-edge detection, inner/outer clearance, thickness
+  distribution, degenerate/sliver input counts, hashes, and
+  manufacturing-readiness verdicts.
+- Every shell artifact carries a named ``failed_checks`` list explaining exactly
+  which deterministic check downgraded it to ISSUES (or that it passed).
+- An independent analytic oracle (closed-form slab volume) plus synthetic messy
+  fixtures (self-intersection, nonmanifold edges, disconnected islands, inverted
+  winding, degenerate input) verify the QA against ground truth that does not
+  come from the builder itself.
 - API and print-package payloads surface manufacturing readiness and printer
-  tolerance metadata, and the UI now shows the readiness verdict, applied
-  compensation, and per-stage shell QA (including skip reasons) in both the
-  guided print step and the technician print panel.
+  tolerance metadata, and the UI shows the readiness verdict, applied
+  compensation, and per-stage shell QA (named failed checks and skip reasons) in
+  both the guided print step and the technician print panel.
 
 Why it is not higher:
 
 - Shell construction is still a vertex-normal approximation.
 - There is no robust optional boolean/signed-distance/Minkowski shell backend.
-- Self-intersection detection is an approximate deterministic signal, not a full
-  triangle-triangle intersection engine.
-- There is no full-arch messy fixture corpus or independent known-good shell
-  comparison set.
+- The known-good comparison is analytic/primitive-level and the messy corpus is
+  synthetic; there is no full-arch known-good set from an independent mesh
+  pipeline and no messy real-scan corpus.
 - Material deformation, thermoforming fit, printer calibration, support strategy,
   and physical validation remain outside the software.
 
@@ -52,13 +59,11 @@ What 10/10 would require:
 
 - Robust mesh repair and offset backend behind optional extras, with pure-Python
   fallback preserved.
-- Full triangle-level self-intersection and nonmanifold detection.
 - Known-good full-arch shell fixtures from an independent mesh pipeline.
-- Messy non-PHI fixtures covering holes, islands, thin slivers, inverted winding,
-  nonmanifold edges, and trimline edge cases.
+- Messy non-PHI full-arch fixtures covering holes, islands, thin slivers,
+  inverted winding, nonmanifold edges, and trimline edge cases beyond the current
+  synthetic unit fixtures.
 - Printer/material tolerance profiles and benchmarked output deltas.
-- Clear package-level explanations for every generated, skipped, or downgraded
-  artifact.
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
