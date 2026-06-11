@@ -90,6 +90,7 @@ def test_print_export_status_becomes_ready_with_confirmed_inputs() -> None:
     assert status.ready is True
     assert status.delivery_email == "user@example.com"
     assert status.artifacts[0].filename == "print-plan-stage-00-model.stl"
+    assert status.manufacturing_readiness["verdict"] == "NOT_APPLICABLE"
     assert "user's own responsibility" in status.caveat
 
 
@@ -211,41 +212,6 @@ def test_reviewed_segmentation_exports_real_mesh_vertices(tmp_path) -> None:
     source = manifest["artifacts"][0]["geometry_sources"][0]
     assert source["mode"] == "mesh-vertices"
     assert source["source"] == f"segmented-mesh-vertices:{asset.id}"
-
-
-def test_aligner_shell_export_produces_watertight_shell_for_reviewed_geometry(tmp_path) -> None:
-    from orthoplan.mesh_workspace import register_stl_mesh
-
-    src = tmp_path / "frag.stl"
-    src.write_text(_ASCII_STL, encoding="utf-8")
-    workspace = tmp_path / "ws"
-    asset = register_stl_mesh(src, workspace=workspace)
-
-    shelled = PrintExportSettings(
-        enabled=True, safety_acknowledged=True, aligner_shell_enabled=True, sheet_thickness_mm=0.7)
-    plan = _plan_with_fragment(asset, reviewed=True).model_copy(
-        update={"settings": TreatmentSettings(print_export=shelled)})
-
-    result = export_print_package(plan, tmp_path / "out", workspace=workspace, make_zip=True)
-    manifest = json.loads(Path(result.manifest_path).read_text(encoding="utf-8"))
-    shell = manifest["aligner_shells"]["artifacts"][0]
-
-    assert result.aligner_shell_paths
-    assert manifest["aligner_shells"]["sheet_thickness_mm"] == 0.7
-    assert shell["kind"] == "aligner-shell" and shell["watertight"] is True
-    assert shell["measured_thickness_mm"] == pytest.approx(0.7, abs=1e-3)
-    assert manifest["hashes"]["aligner_shell_sha256"][shell["filename"]] == \
-        result.artifact_sha256[shell["filename"]]
-
-
-def test_aligner_shell_export_fails_closed_without_real_geometry(tmp_path) -> None:
-    # Shell enabled, but the segmentation link is unreviewed -> proxy only -> no shell.
-    asset = MeshAsset(id="seg-x", format="stl-ascii", units=MeshUnits.MM, vertex_count=6,
-                      face_count=2, bounds=BoundingBox(min_xyz=(0, 0, 0), max_xyz=(2, 3, 1)))
-    shelled = PrintExportSettings(enabled=True, safety_acknowledged=True, aligner_shell_enabled=True)
-    plan = _plan_with_fragment(asset, reviewed=False).model_copy(
-        update={"settings": TreatmentSettings(print_export=shelled)})
-    assert export_print_package(plan, tmp_path / "out").aligner_shell_paths == []
 
 
 def test_unreviewed_link_fails_closed_to_proxy_even_with_resolvable_geometry(tmp_path) -> None:

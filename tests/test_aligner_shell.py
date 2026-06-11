@@ -16,6 +16,10 @@ def test_shell_is_watertight_and_has_requested_thickness() -> None:
     result = build_aligner_shell(_QUAD, thickness_mm=0.6)
     assert result.stats.watertight is True
     assert result.stats.measured_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    assert result.stats.min_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    assert result.stats.p50_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    assert result.stats.max_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    assert result.stats.connected_components == 1
     # 2 outer + 2 inner + 4 boundary edges x 2 rim triangles = 12.
     assert result.stats.triangle_count == 12
 
@@ -28,6 +32,22 @@ def test_zero_or_negative_thickness_is_rejected() -> None:
 def test_empty_surface_is_rejected() -> None:
     with pytest.raises(ValueError, match="non-empty"):
         build_aligner_shell([], thickness_mm=0.5)
+
+
+def test_degenerate_input_triangles_are_dropped_before_shelling() -> None:
+    degenerate = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (1.0, 0.0, 0.0))
+
+    result = build_aligner_shell([degenerate, *_QUAD], thickness_mm=0.5)
+
+    assert result.stats.dropped_degenerate_input_triangles == 1
+    assert result.stats.watertight is True
+
+
+def test_all_degenerate_input_fails_closed() -> None:
+    degenerate = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (1.0, 0.0, 0.0))
+
+    with pytest.raises(ValueError, match="non-empty"):
+        build_aligner_shell([degenerate], thickness_mm=0.5)
 
 
 def _strip() -> list:

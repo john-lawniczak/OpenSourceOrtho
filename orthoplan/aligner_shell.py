@@ -21,6 +21,8 @@ from math import sqrt
 
 from pydantic import BaseModel, Field
 
+from orthoplan.aligner_shell_stats import connected_components, mean, percentile
+
 Vec3 = tuple[float, float, float]
 Triangle = tuple[Vec3, Vec3, Vec3]
 
@@ -38,7 +40,14 @@ class TrimPlane(BaseModel):
 class ShellStats(BaseModel):
     requested_thickness_mm: float
     measured_thickness_mm: float
+    min_thickness_mm: float
+    max_thickness_mm: float
+    p05_thickness_mm: float
+    p50_thickness_mm: float
+    p95_thickness_mm: float
     watertight: bool
+    connected_components: int = Field(ge=0)
+    dropped_degenerate_input_triangles: int = Field(ge=0)
     triangle_count: int = Field(ge=0)
     trimmed: bool = False
 
@@ -86,6 +95,56 @@ def _index_mesh(triangles: list[Triangle]) -> tuple[list[Vec3], list[tuple[int, 
         if idx[0] != idx[1] and idx[1] != idx[2] and idx[0] != idx[2]:
             faces.append((idx[0], idx[1], idx[2]))
     return verts, faces
+
+
+def _clean_triangles(triangles: list[Triangle]) -> tuple[list[Triangle], int]:
+    """Weld near-duplicate vertices, drop degenerates, orient one-sided surfaces."""
+
+    clean: list[Triangle] = []
+    dropped = 0
+    for tri in triangles:
+        welded = tuple(_unkey(_key(vertex)) for vertex in tri)
+        if _triangle_area(welded) <= 1e-12:
+            dropped += 1
+            continue
+        clean.append(welded)  # type: ignore[arg-type]
+    return _orient_consistently(clean), dropped
+
+
+def _unkey(key: tuple[int, int, int]) -> Vec3:
+    return (key[0] / 1_000_000, key[1] / 1_000_000, key[2] / 1_000_000)
+
+
+def _triangle_area(tri: Triangle) -> float:
+    return _norm(_cross(_sub(tri[1], tri[0]), _sub(tri[2], tri[0]))) / 2.0
+
+
+def _orient_consistently(triangles: list[Triangle]) -> list[Triangle]:
+    normal = _normalize(_mean_normal(triangles))
+    if normal is None:
+        return triangles
+    oriented: list[Triangle] = []
+    for tri in triangles:
+        face_normal = _cross(_sub(tri[1], tri[0]), _sub(tri[2], tri[0]))
+        oriented.append((tri[0], tri[2], tri[1]) if _dot(face_normal, normal) < 0 else tri)
+    return oriented
+
+
+def _mean_normal(triangles: list[Triangle]) -> Vec3:
+    total = [0.0, 0.0, 0.0]
+    for tri in triangles:
+        normal = _cross(_sub(tri[1], tri[0]), _sub(tri[2], tri[0]))
+        total[0] += normal[0]
+        total[1] += normal[1]
+        total[2] += normal[2]
+    return (total[0], total[1], total[2])
+
+
+def _normalize(vector: Vec3) -> Vec3 | None:
+    length = _norm(vector)
+    if length == 0:
+        return None
+    return (vector[0] / length, vector[1] / length, vector[2] / length)
 
 
 def _vertex_normals(verts: list[Vec3], faces: list[tuple[int, int, int]]) -> list[Vec3]:
@@ -143,7 +202,8 @@ def build_aligner_shell(
 
     if thickness_mm <= 0:
         raise ValueError("aligner sheet thickness must be positive")
-    verts, faces = _index_mesh(triangles)
+    cleaned, dropped = _clean_triangles(triangles)
+    verts, faces = _index_mesh(cleaned)
     if not faces:
         raise ValueError("aligner shell requires a non-empty surface mesh")
 
@@ -171,23 +231,34 @@ def build_aligner_shell(
         out.append((verts[a], verts[b], outer[b]))
         out.append((verts[a], outer[b], outer[a]))
 
+    thicknesses = _thickness_values(verts, outer, faces)
+    _, shell_faces = _index_mesh(out)
     return ShellResult(
         triangles=out,
         stats=ShellStats(
             requested_thickness_mm=thickness_mm,
-            measured_thickness_mm=_measure_thickness(verts, outer, faces),
+            measured_thickness_mm=mean(thicknesses),
+            min_thickness_mm=min(thicknesses),
+            max_thickness_mm=max(thicknesses),
+            p05_thickness_mm=percentile(thicknesses, 0.05),
+            p50_thickness_mm=percentile(thicknesses, 0.50),
+            p95_thickness_mm=percentile(thicknesses, 0.95),
             watertight=_is_watertight(out),
+            connected_components=connected_components(shell_faces),
+            dropped_degenerate_input_triangles=dropped,
             triangle_count=len(out),
             trimmed=trim is not None,
         ),
     )
 
 
-def _measure_thickness(verts: list[Vec3], outer: list[Vec3], faces: list[tuple[int, int, int]]) -> float:
-    """Mean inner→outer displacement over vertices actually used by kept faces."""
+def _thickness_values(
+    verts: list[Vec3], outer: list[Vec3], faces: list[tuple[int, int, int]]
+) -> list[float]:
+    """Inner-to-outer displacement samples over vertices used by kept faces."""
 
     used = {i for f in faces for i in f}
     if not used:
-        return 0.0
-    total = sum(_norm(_sub(outer[i], verts[i])) for i in used)
-    return total / len(used)
+        return [0.0]
+    return [_norm(_sub(outer[i], verts[i])) for i in sorted(used)]
+
