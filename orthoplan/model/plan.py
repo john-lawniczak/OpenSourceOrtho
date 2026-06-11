@@ -14,7 +14,7 @@ from orthoplan.model.clinical import (
     PlannedSpacing,
 )
 from orthoplan.model.anatomy import DerivedAnatomy
-from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame
+from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame, Vec3
 from orthoplan.model.identity import Arch, NumberingSystem, ToothId
 from orthoplan.model.registration import RegistrationTransform
 from orthoplan.model.settings import TreatmentSettings
@@ -111,11 +111,19 @@ class SegmentedToothMesh(BaseModel):
     mesh_asset_id: str
     source: MeshProvenance = MeshProvenance.MANUAL
     local_frame: ToothLocalFrame | None = None
+    surface_sample_points: list[Vec3] = Field(default_factory=list, max_length=64)
     # A link is ``reviewed`` once a human has accepted/corrected the proposed
     # segmentation. Real per-tooth vertices are exported ONLY for reviewed links;
     # auto-draft links (reviewed=False) fall back to a labeled schematic proxy.
     reviewed: bool = False
     notes: str | None = None
+
+    @field_validator("surface_sample_points")
+    @classmethod
+    def cap_surface_samples(cls, points: list[Vec3]) -> list[Vec3]:
+        if len(points) > 64:
+            raise ValueError("surface_sample_points is capped at 64 points per tooth")
+        return points
 
 
 class TreatmentPlan(BaseModel):

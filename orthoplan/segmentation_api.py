@@ -29,7 +29,7 @@ from orthoplan.segmentation.auto import (
     load_local_segmenter,
     tooth_values_for_arch,
 )
-from orthoplan.segmentation.mesh_export import write_segment_meshes
+from orthoplan.segmentation.mesh_export import surface_sample_points, write_segment_meshes
 
 
 def _resolve_scan_path(
@@ -116,6 +116,7 @@ def _segment_one_scan(
                 mesh_asset_id=mesh_asset.id,
                 source=MeshProvenance.MODEL_GENERATED,
                 local_frame=compute_local_frame(flat),
+                surface_sample_points=surface_sample_points(segment.triangles),
                 notes=f"auto-segment draft (confidence {segment.confidence:.2f})",
             )
         )

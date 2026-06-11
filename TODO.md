@@ -61,15 +61,15 @@ Honest self-assessment of the current build:
 
 ### Phase 10: Real mesh collision + interproximal contact (track 2)
 
-- [ ] Replace axis-aligned bounding-box overlap with triangle-level proximity /
-  signed-distance between adjacent crown meshes.
-- [ ] Detect true interproximal contact and quantify the IPR (mm of enamel)
+- [x] Replace axis-aligned bounding-box-only overlap with capped representative
+  surface-sample proximity between adjacent crown meshes.
+- [x] Detect true interproximal contact and quantify the IPR (mm of enamel)
   needed to resolve it.
-- [ ] Keep the BBox test as a fast pre-filter; escalate to mesh distance only on
-  candidate overlap.
-- [ ] Gate mesh distance behind the mesh extra; fail closed to the BBox check
-  with a labeled note when unavailable.
-- [ ] Fixture tests with known-overlapping and known-clear crown pairs.
+- [x] Keep the BBox test as a fast pre-filter; escalate to sample distance only
+  on candidate overlap.
+- [x] Fail closed to the BBox check with a labeled note when representative
+  samples are unavailable.
+- [x] Fixture tests with known-overlapping and known-clear crown pairs.
 
 ### Phase 11: Root-aware / biomechanical movement (tracks 2 & 3)
 
