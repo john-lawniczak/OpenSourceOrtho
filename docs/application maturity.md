@@ -5,8 +5,8 @@ Scores are engineering maturity ratings for this research toolkit, not clinical
 clearance, treatment approval, or a statement that physical use is safe.
 
 **All four surfaces below are active focus areas with a committed target of
-≥9/10.** The ordered work to reach each target lives in `TODO.md` (per-surface
-"Path to ~9/10" blocks). A 10/10 is intentionally NOT a target for the geometry
+≥9/10.** The ordered work to reach each target lives in `TODO.md` (the
+"Order of operations to ≥9/10" section). A 10/10 is intentionally NOT a target for the geometry
 tracks: it would require material deformation, thermoforming fit, printer
 calibration, and physical validation, which this safety-boundary-first toolkit
 deliberately does not model.
@@ -22,8 +22,8 @@ deliberately does not model.
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
-Current rating: ~8/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 1
-~9/10").
+Current rating: ~8/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Wave 0 + Wave 2).
 
 What exists:
 
@@ -83,8 +83,8 @@ What reaching the ≥9/10 target requires:
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
-Current rating: ~7/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 2
-~9/10").
+Current rating: ~7/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Phases 13 -> 16 -> 14).
 
 What exists:
 
@@ -115,9 +115,9 @@ What reaching the ≥9/10 target requires:
 
 ## Track 3: CBCT Root/Bone-Aware Planning From Raw Volume
 
-Current rating: ~1-2/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 3
-~9/10"). This is the longest road by far - raw-volume segmentation plus
-auto-registration plus validation.
+Current rating: ~1-2/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Wave 4 / Phase 12a -> 12b -> 12c). The longest road by far -
+raw-volume segmentation plus auto-registration plus validation.
 
 What exists:
 
@@ -146,8 +146,8 @@ What reaching the ≥9/10 target requires:
 
 ## Track 4: In-App AI Assistant (Chat)
 
-Current rating: ~4/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 4
-~9/10", Phase 15).
+Current rating: ~4/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Wave 1 / Phase 15).
 
 What exists:
 
