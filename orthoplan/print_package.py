@@ -13,6 +13,7 @@ from orthoplan.hashing import canonical_json, sha256_bytes, sha256_text
 from orthoplan.io.serialization import plan_to_json
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.model.review_tier import review_tier_info
+from orthoplan.print_aligner import write_aligner_shells
 from orthoplan.print_stl import build_tooth_geometry, frame_to_stl
 from orthoplan.printing import PRINT_EXPORT_CAVEAT, build_print_export_status
 from orthoplan.viz.progress import build_stage_progress_frames
@@ -23,6 +24,7 @@ class PrintPackageResult(BaseModel):
     manifest_path: str
     artifact_paths: list[str] = Field(default_factory=list)
     artifact_sha256: dict[str, str] = Field(default_factory=dict)
+    aligner_shell_paths: list[str] = Field(default_factory=list)
     manifest_sha256: str
     review_tier: str = "stl-only"
     uses_real_mesh_geometry: bool = False
@@ -54,9 +56,20 @@ def export_print_package(
     frames = build_stage_progress_frames(plan)
     tooth_geometry = build_tooth_geometry(plan, workspace)
     artifacts, records = _write_stage_artifacts(output, frames, stem, tooth_geometry)
-    manifest_path = _write_manifest(plan, output, status, records, frames, stem, tooth_geometry)
+    shell_paths: list[str] = []
+    shell_records: list[dict] = []
+    if plan.settings.print_export.aligner_shell_enabled:
+        shell_paths, shell_records = write_aligner_shells(
+            plan, output, frames, stem, tooth_geometry
+        )
+    manifest_path = _write_manifest(
+        plan, output, status, records, frames, stem, tooth_geometry, shell_records
+    )
     zip_path = (
-        _write_zip(stem, output, [manifest_path, *[Path(path) for path in artifacts]])
+        _write_zip(
+            stem, output,
+            [manifest_path, *[Path(p) for p in artifacts], *[Path(p) for p in shell_paths]],
+        )
         if make_zip
         else None
     )
@@ -69,7 +82,10 @@ def export_print_package(
         output_dir=str(output),
         manifest_path=str(manifest_path),
         artifact_paths=artifacts,
-        artifact_sha256={record["filename"]: record["sha256"] for record in records},
+        artifact_sha256={
+            record["filename"]: record["sha256"] for record in (*records, *shell_records)
+        },
+        aligner_shell_paths=shell_paths,
         manifest_sha256=sha256_bytes(manifest_path.read_bytes()),
         review_tier=review_tier_info(plan).tier.value,
         uses_real_mesh_geometry=any(g["mode"] == "mesh-vertices" for g in tooth_geometry.values()),
@@ -120,9 +136,11 @@ def _write_manifest(
     frames: list,
     stem: str,
     tooth_geometry: dict,
+    shell_records: list[dict],
 ) -> Path:
     plan_payload = json.loads(plan_to_json(plan, indent=None))
     findings = run_rules(plan)
+    settings = plan.settings.print_export
     manifest = {
         "schema": "orthoplan-print-package-v2",
         "engine": {"name": "orthoplan", "version": __version__},
@@ -132,6 +150,12 @@ def _write_manifest(
         "uses_real_mesh_geometry": any(
             g["mode"] == "mesh-vertices" for g in tooth_geometry.values()
         ),
+        "aligner_shells": {
+            "enabled": settings.aligner_shell_enabled,
+            "sheet_thickness_mm": settings.sheet_thickness_mm,
+            "gingival_trim_margin_mm": settings.gingival_trim_margin_mm,
+            "artifacts": shell_records,
+        },
         "hashes": {
             "plan_sha256": sha256_text(canonical_json(plan_payload)),
             "stage_frames_sha256": sha256_text(canonical_json([f.model_dump() for f in frames])),
@@ -147,6 +171,9 @@ def _write_manifest(
                 geom["asset_id"]: geom["sha256"]
                 for geom in tooth_geometry.values()
                 if geom["mode"] == "mesh-vertices" and geom["sha256"]
+            },
+            "aligner_shell_sha256": {
+                record["filename"]: record["sha256"] for record in shell_records
             },
         },
         "ready": status.ready,

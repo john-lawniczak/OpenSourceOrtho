@@ -132,6 +132,9 @@ export const state = {
     model_material: "validated dental model resin",
     thermoforming_material: "user-selected aligner sheet material",
     safety_acknowledged: false,
+    aligner_shell_enabled: false,
+    sheet_thickness_mm: 0.6,
+    gingival_trim_margin_mm: 2,
   },
   clinicalControls: {
     fixedTeeth: "",

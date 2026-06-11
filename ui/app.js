@@ -244,6 +244,9 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "modelMaterial") state.printExport.model_material = target.value;
   if (target.id === "thermoformingMaterial") state.printExport.thermoforming_material = target.value;
   if (target.id === "printSafety") state.printExport.safety_acknowledged = target.checked;
+  if (target.id === "alignerShellEnabled") state.printExport.aligner_shell_enabled = target.checked;
+  if (target.id === "sheetThickness") state.printExport.sheet_thickness_mm = Number(target.value) || 0.6;
+  if (target.id === "trimMargin") state.printExport.gingival_trim_margin_mm = Number(target.value);
   renderAll();
 });
 

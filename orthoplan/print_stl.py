@@ -119,6 +119,23 @@ def frame_to_stl(
     return _stl_text(plan_id, stage_index, triangles), geometry_sources
 
 
+def stage_real_triangles(poses: list, tooth_geometry: dict) -> list[tuple[Vec3, Vec3, Vec3]]:
+    """Translated triangles for ONLY the real-mesh (reviewed) teeth in a stage.
+
+    Aligner shells are built from real geometry only; proxy teeth are excluded so
+    a shell is never generated around a schematic box.
+    """
+
+    triangles: list[tuple[Vec3, Vec3, Vec3]] = []
+    for pose in poses:
+        geom = tooth_geometry.get(pose.tooth.value)
+        if not geom or geom["mode"] != "mesh-vertices":
+            continue
+        delta = (pose.translate_x_mm, pose.translate_y_mm, pose.translate_z_mm)
+        triangles.extend(_translate_triangles(geom["triangles"], delta))
+    return triangles
+
+
 def _translate_triangles(
     triangles: list[tuple[Vec3, Vec3, Vec3]], delta: tuple[float, float, float]
 ) -> list[tuple[Vec3, Vec3, Vec3]]:
@@ -130,7 +147,13 @@ def _translate_triangles(
 
 
 def _stl_text(plan_id: str, stage_index: int, triangles: list) -> str:
-    lines = [f"solid {plan_id}_stage_{stage_index:02d}"]
+    return solid_stl(f"{plan_id}_stage_{stage_index:02d}", triangles)
+
+
+def solid_stl(name: str, triangles: list) -> str:
+    """ASCII STL for a named solid from a triangle list."""
+
+    lines = [f"solid {name}"]
     for tri in triangles:
         lines.extend(
             [
@@ -143,7 +166,7 @@ def _stl_text(plan_id: str, stage_index: int, triangles: list) -> str:
                 "  endfacet",
             ]
         )
-    lines.append(f"endsolid {plan_id}_stage_{stage_index:02d}")
+    lines.append(f"endsolid {name}")
     return "\n".join(lines) + "\n"
 
 
