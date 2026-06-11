@@ -278,6 +278,7 @@ export function renderAll() {
   renderReviewHeading();
   renderMetadata();
   renderUploadFileList();
+  renderCaseRecordList();
   renderRows();
   renderIprContactMap();
   renderChat();
@@ -553,7 +554,7 @@ function renderUploadFileList() {
         ${state.files.map((file, index) => `
           <li>
             <span>${escapeHtml(file.name)}</span>
-            <small>${Math.round(file.size / 1024)} KB</small>
+            <small>${escapeHtml(uploadFileDetail(file))}</small>
             <button data-remove-upload="${index}" type="button" aria-label="Remove ${escapeHtml(file.name)}">x</button>
           </li>
         `).join("")}
@@ -582,6 +583,14 @@ function renderUploadFileList() {
   el("simpleUploadFileList").innerHTML = markup;
 }
 
+function uploadFileDetail(file) {
+  const registered = state.scanSources.find((source) => source.name === file.name);
+  const size = `${Math.round(file.size / 1024)} KB`;
+  if (!registered?.asset) return size;
+  const arch = registered.arch || "arch unknown";
+  return `${size} · engine asset ${registered.asset.id} · ${arch}`;
+}
+
 function renderRows() {
   el("stageRows").innerHTML = state.rows.map((row, index) => `
     <tr>
@@ -606,15 +615,52 @@ function renderMetadata() {
     ["Size", `${Math.round(totalSize / 1024)} KB`],
     ["Units", state.scanUnits],
     ["Arch", state.scanArch || "unknown"],
+    ["Context records", String(state.caseRecords.length)],
   ] : sources.length ? [
     ["Files", sources.map((source) => source.name).join(", ")],
     ["Size", "repo example"],
     ["Units", state.scanUnits],
     ["Arch", "upper + lower"],
-  ] : [["Files", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"]];
+    ["Context records", String(state.caseRecords.length)],
+  ] : [["Files", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"], ["Context records", String(state.caseRecords.length)]];
   el("scanMetadata").innerHTML = items
     .map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`)
     .join("");
+}
+
+function renderCaseRecordList() {
+  const container = el("caseRecordList");
+  if (!container) return;
+  const records = state.caseRecords;
+  if (!records.length) {
+    container.innerHTML = state.recordUploadStatus
+      ? `<p>${escapeHtml(state.recordUploadStatus)}</p>`
+      : "<p>No enhanced-review records attached.</p>";
+    return;
+  }
+  container.innerHTML = `
+    <div class="upload-file-heading">
+      <strong>${records.length === 1 ? "Attached record" : "Attached records"}</strong>
+    </div>
+    ${state.recordUploadStatus ? `<p>${escapeHtml(state.recordUploadStatus)}</p>` : ""}
+    <ul>
+      ${records.map((record) => `
+        <li>
+          <span>${escapeHtml(record.filename || record.id)}</span>
+          <small>${escapeHtml(caseRecordDetail(record))}</small>
+          <button data-remove-record="${escapeHtml(record.id)}" type="button" aria-label="Remove ${escapeHtml(record.filename || record.id)}">x</button>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+function caseRecordDetail(record) {
+  const bits = [record.kind];
+  if (record.modality) bits.push(record.modality);
+  if (record.size_bytes != null) bits.push(`${Math.round(record.size_bytes / 1024)} KB`);
+  if (record.local_reference) bits.push("local reference");
+  return bits.join(" · ");
 }
 
 function renderEvaluation(result) {

@@ -7,12 +7,12 @@
 import { requestOcclusion, state } from "./state.js";
 import { scaleConfirmed } from "./manual_edit.js";
 
-// Build the /api/occlusion scan list from the loaded sources. Mirrors segment.js:
-// only server-resolvable references work (uploaded files stay in the browser).
+// Build the /api/occlusion scan list from the loaded sources. Registered uploads
+// prefer their mesh asset id; bundled examples use their static URL.
 export function buildProximityScans(scanSources) {
   return scanSources.map((source) => ({
-    reference: source.url || source.name,
-    arch: source.arch,
+    reference: source.asset?.id || source.url || source.name,
+    arch: state.scanArch || source.arch,
   }));
 }
 
@@ -64,8 +64,7 @@ export async function requestProximity() {
     prox.map = null;
     prox.registration = null;
     prox.status =
-      "Load both an upper and a lower example scan first. Uploaded files stay in your " +
-      "browser, so the local server cannot read them for occlusion.";
+      "Load both an upper and a lower scan first. Uploaded STLs must be registered with the local engine.";
     return;
   }
   prox.busy = true;

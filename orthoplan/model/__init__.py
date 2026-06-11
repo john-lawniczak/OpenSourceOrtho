@@ -1,5 +1,6 @@
 from orthoplan.model.assets import (
     BoundingBox,
+    CaseRecord,
     MeshAsset,
     MeshProvenance,
     MeshQualityReport,
@@ -48,6 +49,7 @@ __all__ = [
     "AxisCaps",
     "AxisSemantics",
     "BoundingBox",
+    "CaseRecord",
     "CoordinateFrame",
     "DataAvailability",
     "DataGapAction",

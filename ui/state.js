@@ -28,6 +28,8 @@ export const state = {
   scanRenderStatus: "No uploaded scan is loaded.",
   sampleStatus: "",
   uploadStorageStatus: "",
+  recordUploadStatus: "",
+  caseRecords: [],
   scanUnits: "unverified",
   scanArch: "",
   // Latest response from the Python engine (POST /api/evaluate). The UI never
@@ -277,6 +279,43 @@ export async function requestSegmentation(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["segmentation request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function uploadStlFile(file, { arch } = {}) {
+  const headers = {
+    "Content-Type": "model/stl",
+    "X-Filename": file.name || "uploaded.stl",
+  };
+  if (arch) headers["X-Arch"] = arch;
+  const response = await fetch("/api/upload/stl", {
+    method: "POST",
+    headers,
+    body: file,
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["upload failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function uploadCaseRecord(file, { kind = "document", modality } = {}) {
+  const headers = {
+    "Content-Type": file.type || "application/octet-stream",
+    "X-Filename": file.name || "record",
+    "X-Record-Kind": kind,
+  };
+  if (modality) headers["X-Modality"] = modality;
+  const response = await fetch("/api/upload/record", {
+    method: "POST",
+    headers,
+    body: file,
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["record upload failed"]).join("; "));
   }
   return response.json();
 }

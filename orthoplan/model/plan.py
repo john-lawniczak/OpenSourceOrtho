@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from orthoplan.model.assets import MeshAsset, MeshProvenance, UploadedScan
+from orthoplan.model.assets import CaseRecord, MeshAsset, MeshProvenance, UploadedScan
 from orthoplan.model.clinical import (
     Attachment,
     FixedTooth,
@@ -118,6 +118,7 @@ class TreatmentPlan(BaseModel):
     data: DataAvailability = Field(default_factory=DataAvailability)
     settings: TreatmentSettings = Field(default_factory=TreatmentSettings)
     scans: list[UploadedScan] = Field(default_factory=list)
+    case_records: list[CaseRecord] = Field(default_factory=list)
     mesh_assets: list[MeshAsset] = Field(default_factory=list)
     tooth_meshes: list[SegmentedToothMesh] = Field(default_factory=list)
     fixed_teeth: list[FixedTooth] = Field(default_factory=list)
@@ -159,6 +160,10 @@ class TreatmentPlan(BaseModel):
         if len(all_asset_ids) != len(set(all_asset_ids)):
             raise ValueError("duplicate mesh asset id across scans/mesh_assets")
         asset_ids = set(all_asset_ids)
+
+        record_ids = [record.id for record in self.case_records]
+        if len(record_ids) != len(set(record_ids)):
+            raise ValueError("duplicate case record id")
 
         # Build the canonical tooth -> mesh map while rejecting duplicate links.
         tooth_to_mesh: dict[str, str] = {}

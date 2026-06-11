@@ -1,4 +1,4 @@
-import { askPlanAssistant, el, listCaseVersions, maxStage, savePlanVersion, state } from "./state.js";
+import { askPlanAssistant, el, listCaseVersions, maxStage, savePlanVersion, state, uploadCaseRecord, uploadStlFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -9,7 +9,7 @@ import {
   saveSegmentationReview,
   saveUploadedFiles,
 } from "./storage.js";
-import { closestDatasetTarget, rowsFromPlan } from "./core.js";
+import { closestDatasetTarget, inferArchFromName, rowsFromPlan } from "./core.js";
 import { generatePlan } from "./generation.js";
 import {
   downloadPrintArtifact,
@@ -162,6 +162,16 @@ el("landmarksFile").addEventListener("change", async (event) => {
   renderGeneration();
 });
 
+el("dicomFile").addEventListener("change", async (event) => {
+  await addCaseRecordFiles(Array.from(event.target.files || []), { kind: "cbct", modality: "CBCT/DICOM" });
+  event.target.value = "";
+});
+
+el("attachmentFile").addEventListener("change", async (event) => {
+  await addCaseRecordFiles(Array.from(event.target.files || []));
+  event.target.value = "";
+});
+
 document.body.addEventListener("input", (event) => {
   const target = event.target;
   // Segmentation edits update state in place and deliberately do NOT trigger a
@@ -244,6 +254,7 @@ document.body.addEventListener("click", (event) => {
   const journeyTarget = closestDatasetTarget(target, "journeyStep");
   const removeUploadTarget = closestDatasetTarget(target, "removeUpload");
   const clearUploadsTarget = closestDatasetTarget(target, "clearUploads");
+  const removeRecordTarget = closestDatasetTarget(target, "removeRecord");
   const detailModeTarget = closestDatasetTarget(target, "detailMode");
   const restoreVersionTarget = closestDatasetTarget(target, "restoreVersion");
   const removeRowTarget = closestDatasetTarget(target, "remove");
@@ -317,6 +328,10 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "guidedPrint") {
     runPrintPackage();
   }
+  if (button?.id === "addRecordNote") {
+    addNoteRecord();
+    renderAll();
+  }
   if (printArtifactTarget) {
     downloadPrintArtifact(printArtifactTarget.dataset.printArtifact);
   }
@@ -369,6 +384,11 @@ document.body.addEventListener("click", (event) => {
   }
   if (clearUploadsTarget) {
     setUploadedFiles([]);
+  }
+  if (removeRecordTarget) {
+    state.caseRecords = state.caseRecords.filter((record) => record.id !== removeRecordTarget.dataset.removeRecord);
+    updateAvailabilityFromCaseRecords();
+    renderAll();
   }
   if (detailModeTarget) {
     state.detailMode[detailModeTarget.dataset.detailMode] = detailModeTarget.dataset.detailValue;
@@ -459,10 +479,11 @@ async function setUploadedFiles(files) {
     state.uploadStorageStatus = "Saving STL files locally in this browser...";
     try {
       await saveUploadedFiles(stlFiles);
-      state.uploadStorageStatus = "Saved locally in this browser. Use Clear All or x to remove.";
+      state.uploadStorageStatus = "Saved locally in this browser. Registering STL bytes with the local engine...";
     } catch (error) {
       state.uploadStorageStatus = `Loaded for this session only; browser storage failed: ${error.message}`;
     }
+    await registerUploadedStls(stlFiles);
   } else {
     await clearUploadedFiles().catch(() => {});
     state.uploadStorageStatus = files.length ? "No STL files were selected." : "";
@@ -470,6 +491,116 @@ async function setUploadedFiles(files) {
     el("simpleStlFile").value = "";
   }
   renderAll();
+}
+
+async function addCaseRecordFiles(files, forced = {}) {
+  const usable = files.filter((file) => file?.name);
+  if (!usable.length) return;
+  state.recordUploadStatus = `Registering ${usable.length} case record(s) locally...`;
+  renderAll();
+  let added = 0;
+  const errors = [];
+  for (const file of usable) {
+    const classified = classifyCaseRecord(file, forced);
+    try {
+      const result = await uploadCaseRecord(file, classified);
+      if (result.ok === false) {
+        errors.push(`${file.name}: ${(result.errors || ["record upload failed"]).join("; ")}`);
+        continue;
+      }
+      upsertCaseRecord(result.record);
+      added += 1;
+    } catch (error) {
+      errors.push(`${file.name}: ${error.message}`);
+    }
+  }
+  updateAvailabilityFromCaseRecords();
+  state.recordUploadStatus = added
+    ? `Attached ${added} local case record(s).${errors.length ? ` ${errors.length} failed.` : ""}`
+    : `No case records attached. ${errors.join("; ")}`;
+  renderAll();
+}
+
+function classifyCaseRecord(file, forced = {}) {
+  if (forced.kind) return forced;
+  const name = String(file.name || "").toLowerCase();
+  const type = String(file.type || "").toLowerCase();
+  if (name.endsWith(".dcm") || name.endsWith(".dicom") || type.includes("dicom")) {
+    return { kind: "dicom", modality: "DICOM" };
+  }
+  if (name.includes("xray") || name.includes("x-ray") || name.includes("radiograph") || name.includes("pano") || name.includes("ceph")) {
+    return { kind: "radiograph", modality: "radiograph" };
+  }
+  if (type.startsWith("image/")) return { kind: "photo", modality: "photo" };
+  return { kind: "document", modality: "document" };
+}
+
+function addNoteRecord() {
+  const input = el("recordNote");
+  const text = input.value.trim();
+  if (!text) return;
+  upsertCaseRecord({
+    id: `note-${Date.now().toString(36)}`,
+    kind: "note",
+    modality: "note",
+    filename: "review-note.txt",
+    note_text: text,
+    provenance: "manual",
+    created_at: new Date().toISOString(),
+  });
+  input.value = "";
+  state.recordUploadStatus = "Attached review note.";
+  updateAvailabilityFromCaseRecords();
+}
+
+function upsertCaseRecord(record) {
+  if (!record?.id) return;
+  const index = state.caseRecords.findIndex((item) => item.id === record.id);
+  if (index >= 0) {
+    state.caseRecords[index] = record;
+  } else {
+    state.caseRecords.push(record);
+  }
+}
+
+function updateAvailabilityFromCaseRecords() {
+  const kinds = new Set(state.caseRecords.map((record) => record.kind));
+  state.availability.cbct = kinds.has("cbct") || kinds.has("dicom");
+  state.availability.photos = kinds.has("photo");
+  state.availability.radiographs = kinds.has("radiograph");
+  state.availability.clinician_notes = kinds.has("note");
+}
+
+async function registerUploadedStls(files) {
+  const registered = [];
+  const errors = [];
+  for (const file of files) {
+    try {
+      const arch = state.scanArch || inferArchFromName(file.name) || "";
+      const result = await uploadStlFile(file, { arch });
+      if (result.ok === false) {
+        errors.push(`${file.name}: ${(result.errors || ["upload failed"]).join("; ")}`);
+        continue;
+      }
+      registered.push({
+        name: file.name,
+        url: result.url,
+        arch: arch || inferArchFromName(file.name) || null,
+        asset: result.asset,
+      });
+    } catch (error) {
+      errors.push(`${file.name}: ${error.message}`);
+    }
+  }
+  state.scanSources = registered;
+  if (registered.length) {
+    const detail = errors.length ? ` ${errors.length} upload(s) could not be registered.` : "";
+    state.uploadStorageStatus =
+      `Registered ${registered.length} STL file(s) with the local engine for segmentation and case metadata.${detail}`;
+  } else if (errors.length) {
+    state.uploadStorageStatus =
+      `Loaded in this browser, but the local engine could not register the STL bytes: ${errors.join("; ")}`;
+  }
 }
 
 function updateUploadLabels() {
@@ -567,7 +698,8 @@ async function restoreStoredUploads() {
     state.file = files[0];
     state.scanSources = [];
     state.useDemoMeshes = false;
-    state.uploadStorageStatus = "Restored saved STL files from this browser.";
+    state.uploadStorageStatus = "Restored saved STL files from this browser. Registering with the local engine...";
+    await registerUploadedStls(files);
     updateUploadLabels();
     renderAll();
   } catch {
@@ -778,6 +910,7 @@ function restorePlan(snapshot) {
     el("capVertical").value = caps.intrusion_extrusion_mm;
   }
   if (snapshot.data) state.availability = { ...state.availability, ...snapshot.data };
+  state.caseRecords = snapshot.case_records || [];
   state.rows = rowsFromPlan(snapshot);
   // Bring back this plan's segmentation review draft (corrections, marked gaps),
   // then let the saved snapshot's applied per-tooth meshes win - they are the

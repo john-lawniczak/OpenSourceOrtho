@@ -11,11 +11,11 @@ import {
 
 test("buildProximityScans prefers server URLs and carries the arch", () => {
   const scans = buildProximityScans([
-    { name: "upper.stl", url: "/api/mesh/u", arch: "maxillary" },
+    { name: "upper.stl", url: "/api/mesh/u", arch: "maxillary", asset: { id: "asset-u" } },
     { name: "lower.stl", arch: "mandibular" },
   ]);
   assert.deepEqual(scans, [
-    { reference: "/api/mesh/u", arch: "maxillary" },
+    { reference: "asset-u", arch: "maxillary" },
     { reference: "lower.stl", arch: "mandibular" },
   ]);
 });
