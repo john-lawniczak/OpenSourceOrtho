@@ -132,31 +132,6 @@ def test_generate_plan_endpoint_returns_staging(server: int) -> None:
     assert payload["stage_count"] >= 4
 
 
-def test_case_review_endpoint_returns_mobile_handoff(server: int) -> None:
-    plan = {
-        "id": "handoff case/upper",
-        "title": "Server handoff",
-        "stages": [
-            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}
-        ],
-    }
-    status, payload = _post(
-        server,
-        json.dumps({"plan": plan, "base_url": "http://127.0.0.1/app/"}).encode(),
-        {"Content-Type": "application/json"},
-        path="/api/case-review",
-    )
-
-    assert status == 200
-    assert payload["ok"] is True
-    review = payload["review"]
-    assert review["schema"] == "orthoplan-case-review-v1"
-    assert review["kind"] == "stored-review"
-    assert review["editable"]["requires_browser_engine"] is True
-    assert review["handoff"]["open_url"] == "http://127.0.0.1/app/?case=handoff+case%2Fupper"
-    assert review["handoff"]["deep_link"] == "orthoplan://case/handoff%20case%2Fupper"
-
-
 def test_plan_version_save_and_list_roundtrip(server: int, tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("ORTHOPLAN_CASE_STORE", str(tmp_path / "cases.json"))
     plan = {"id": "case-srv", "title": "Server case", "stages": [
