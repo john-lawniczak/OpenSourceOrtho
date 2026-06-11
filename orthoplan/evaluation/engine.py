@@ -17,6 +17,7 @@ from orthoplan.evaluation.rules.plan_checks import (
     evaluate_root_sensitive_movement,
     evaluate_segmentation_presence,
 )
+from orthoplan.evaluation.rules.root_bone import evaluate_root_bone_aware
 from orthoplan.model.plan import TreatmentPlan
 
 _RULES = (
@@ -27,6 +28,7 @@ _RULES = (
     evaluate_root_sensitive_movement,
     evaluate_segmentation_presence,
     evaluate_no_movement,
+    evaluate_root_bone_aware,
 )
 
 

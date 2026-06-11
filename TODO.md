@@ -93,14 +93,14 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 7: Root/bone-aware review checks
 
-- [ ] Add deterministic root proximity and inter-root collision warnings.
-- [ ] Add cortical boundary proximity warnings.
-- [ ] Add root/bone context for tip, torque, intrusion, extrusion, and expansion.
-- [ ] Add "cannot assess" findings when registration, segmentation, or anatomy
+- [x] Add deterministic root proximity and inter-root collision warnings.
+- [x] Add cortical boundary proximity warnings.
+- [x] Add root/bone context for tip, torque, intrusion, extrusion, and expansion.
+- [x] Add "cannot assess" findings when registration, segmentation, or anatomy
   review quality is insufficient.
-- [ ] Keep verdict vocabulary limited to `CONSISTENT`, `ISSUES`, and
+- [x] Keep verdict vocabulary limited to `CONSISTENT`, `ISSUES`, and
   `NOT_APPLICABLE`.
-- [ ] Add root/bone-aware tests with known fixture geometry and expected findings.
+- [x] Add root/bone-aware tests with known fixture geometry and expected findings.
 
 ### Phase 8: Browser/mobile handoff
 
