@@ -1,8 +1,10 @@
 package com.opensourceortho.lite
 
 import kotlinx.serialization.json.Json
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -79,7 +81,37 @@ class LiteFlowTest {
         val review = StoredPlanReview.create("case-review.json", 11, "{\"ok\":true}")
         assertEquals("case-review.json", review.fileName)
         assertEquals("{\"ok\":true}", review.jsonText)
+        assertEquals(null, review.caseReview)
         assertTrue(review.id.isNotEmpty())
+    }
+
+    @Test
+    fun storedCaseReviewFixtureDecodesForMobileImport() {
+        val text = fixture("case-review-v1.json").readText()
+        val stored = StoredPlanReview.importCaseReview("case-review-v1.json", text.toByteArray().size, text)
+        val review = stored.caseReview
+        assertNotNull(review)
+
+        assertEquals("orthoplan-case-review-v1", review!!.schema)
+        assertEquals("stored-review", review.kind)
+        assertEquals("stl-only", review.reviewTier.tier)
+        assertFalse(review.reviewTier.rootBoneAware)
+        assertEquals(5, review.unresolvedDataGaps.size)
+        assertFalse(review.editable.inMobile)
+        assertTrue(review.editable.requiresBrowserEngine)
+        assertEquals("https://ortho.example/app/?case=golden-case-001", review.handoff.openUrl)
+        assertEquals("orthoplan://case/golden-case-001", review.handoff.deepLink)
+        assertEquals(review.handoff.openUrl, review.handoff.qrPayload)
+    }
+
+    @Test
+    fun storedCaseReviewImportRejectsNonStoredReviewJson() {
+        try {
+            StoredPlanReview.importCaseReview("bad.json", 11, "{\"ok\":true}")
+            throw AssertionError("Expected invalid stored-review JSON to be rejected")
+        } catch (_: Exception) {
+            // Expected: either schema decode fails or the stored-review gate rejects it.
+        }
     }
 
     @Test
@@ -115,5 +147,15 @@ class LiteFlowTest {
         }
         assertEquals("Internally consistent", SafetyText.verdictLabel("CONSISTENT"))
         assertEquals("Issues found", SafetyText.verdictLabel("ISSUES"))
+    }
+
+    private fun fixture(name: String): File {
+        val candidates = listOf(
+            File("../fixtures/$name"),
+            File("../../fixtures/$name"),
+            File("mobile/fixtures/$name"),
+        )
+        return candidates.firstOrNull { it.isFile }
+            ?: error("Missing fixture $name from ${File(".").absolutePath}")
     }
 }

@@ -76,7 +76,9 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
         uris.forEach { uri ->
             context.contentResolver.takePersistableReadPermission(uri)
             if (pendingModality == "browser-review") {
-                model.importBrowserReview(context.storedPlanReview(uri))
+                runCatching { context.storedPlanReview(uri) }
+                    .onSuccess(model::importBrowserReview)
+                    .onFailure { model.reportImportError("Could not import browser review: ${it.message}") }
             } else {
                 model.addScan(context.selectedScan(uri, pendingModality))
             }
@@ -125,10 +127,13 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                 ) {
                     Text("Stored browser reviews", style = MaterialTheme.typography.labelMedium)
                     state.storedReviews.forEach { review ->
-                        Text(
-                            "${review.fileName} - ${review.byteCount} bytes",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
+                        Column {
+                            Text(review.fileName, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                review.caseReview?.mobileSummary ?: "${review.byteCount} bytes",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                     }
                 }
             }
@@ -175,6 +180,7 @@ fun TeethAndTimeScreen(state: LiteUiState, model: LiteFlowViewModel) {
 /** Step 3: engine verdict + steps. Verdict is CONSISTENT/ISSUES only. */
 @Composable
 fun ReviewScreen(state: LiteUiState, model: LiteFlowViewModel) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -243,10 +249,29 @@ fun ReviewScreen(state: LiteUiState, model: LiteFlowViewModel) {
                     state.storedReviews.forEach { review ->
                         Column {
                             Text(review.fileName, style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                "${review.byteCount} bytes stored on this device for review/sharing. Open the browser workspace to edit the source plan.",
-                                style = MaterialTheme.typography.bodySmall,
-                            )
+                            val caseReview = review.caseReview
+                            if (caseReview == null) {
+                                Text(
+                                    "${review.byteCount} bytes stored on this device for review/sharing. Open the browser workspace to edit the source plan.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            } else {
+                                Text(caseReview.reviewTier.label, style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    "${caseReview.unresolvedDataGaps.size} unresolved data gaps. Mobile edit lock: browser engine required.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    caseReview.handoff.openUrl?.let { url ->
+                                        Button(onClick = { context.openHandoff(url) }) {
+                                            Text("Open browser case")
+                                        }
+                                    }
+                                    Button(onClick = { context.openHandoff(caseReview.handoff.deepLink) }) {
+                                        Text("Open app link")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -427,11 +452,15 @@ private fun Context.storedPlanReview(uri: Uri): StoredPlanReview {
     val text = contentResolver.openInputStream(uri)?.use { stream ->
         stream.readBytes().toString(Charsets.UTF_8)
     } ?: ""
-    return StoredPlanReview.create(
+    return StoredPlanReview.importCaseReview(
         fileName = name,
         byteCount = text.toByteArray(Charsets.UTF_8).size,
         jsonText = text,
     )
+}
+
+private fun Context.openHandoff(target: String) {
+    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
 }
 
 private fun Context.devSampleByteCount(): Int =

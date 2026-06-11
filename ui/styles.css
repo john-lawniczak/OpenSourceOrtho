@@ -520,6 +520,30 @@ body[data-theme="dark"] .sample-banner {
   font-size: 13px;
 }
 
+.case-handoff-qr {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-top: 10px;
+  max-width: 280px;
+}
+
+.case-handoff-qr:empty {
+  display: none;
+}
+
+.case-handoff-qr svg {
+  width: min(220px, 100%);
+  height: auto;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.case-handoff-qr .guided-hint {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
 .guided-teeth {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));

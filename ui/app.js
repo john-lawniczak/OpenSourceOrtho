@@ -2,6 +2,7 @@ import { askPlanAssistant, el, listCaseVersions, maxStage, requestCaseReview, sa
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
+import { qrSvg } from "./qrcode.js";
 import {
   clearUploadedFiles,
   restoreSegmentationReview,
@@ -661,6 +662,7 @@ async function exportCaseReview() {
       const tier = review.review_tier?.label || review.review_tier?.tier || "review";
       status.textContent = `Exported ${tier} (read-only on mobile). Open on a device: ${review.handoff.qr_payload}`;
     }
+    renderCaseHandoff(review);
   } catch (error) {
     if (status) status.textContent = String(error.message || error);
   }
@@ -668,6 +670,26 @@ async function exportCaseReview() {
 
 function safeDownloadToken(value) {
   return String(value || "case").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "case";
+}
+
+function renderCaseHandoff(review) {
+  const target = el("caseHandoffQr");
+  const payload = review?.handoff?.qr_payload;
+  if (!target || !payload) return;
+  try {
+    target.innerHTML = qrSvg(payload);
+  } catch (error) {
+    const fallback = review?.handoff?.deep_link;
+    if (!fallback || fallback === payload) {
+      target.textContent = String(error.message || error);
+      return;
+    }
+    target.innerHTML = qrSvg(fallback);
+  }
+  const label = document.createElement("p");
+  label.className = "guided-hint";
+  label.textContent = payload;
+  target.appendChild(label);
 }
 
 // Apply one planar nudge to the selected tooth's authored target. `direction` is

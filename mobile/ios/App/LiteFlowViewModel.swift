@@ -115,10 +115,9 @@ final class LiteFlowViewModel: ObservableObject {
         do {
             let data = try Data(contentsOf: url)
             storedReviews.append(
-                StoredPlanReview(
+                try StoredPlanReview.importCaseReview(
                     fileName: url.lastPathComponent,
-                    byteCount: data.count,
-                    jsonText: String(decoding: data, as: UTF8.self)
+                    data: data
                 )
             )
             errorMessage = nil

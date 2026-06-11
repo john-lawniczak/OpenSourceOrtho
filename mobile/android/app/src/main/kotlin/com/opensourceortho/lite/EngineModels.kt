@@ -56,3 +56,69 @@ data class GeneratePlanResponse(
     // `plan.stages` lazily when the renderer is built.
     val plan: JsonElement? = null,
 )
+
+@Serializable
+data class StoredCaseReview(
+    val schema: String,
+    val kind: String,
+    @SerialName("case_id") val caseId: String,
+    @SerialName("plan_id") val planId: String,
+    val title: String,
+    @SerialName("review_tier") val reviewTier: ReviewTierSummary,
+    @SerialName("unresolved_data_gaps") val unresolvedDataGaps: List<ReviewDataGap>,
+    @SerialName("cbct_status") val cbctStatus: String,
+    @SerialName("root_bone_review") val rootBoneReview: RootBoneReviewSummary,
+    @SerialName("findings_summary") val findingsSummary: FindingsSummary,
+    val editable: EditLockSummary,
+    val handoff: CaseHandoffSummary,
+    @SerialName("plan_sha256") val planSha256: String,
+    @SerialName("review_sha256") val reviewSha256: String,
+) {
+    val isImportableStoredReview: Boolean
+        get() = schema == "orthoplan-case-review-v1" &&
+            kind == "stored-review" &&
+            !editable.inMobile &&
+            editable.requiresBrowserEngine
+
+    val mobileSummary: String
+        get() = "${reviewTier.label} - ${unresolvedDataGaps.size} unresolved data gaps"
+}
+
+@Serializable
+data class ReviewTierSummary(
+    val tier: String,
+    val rank: Int,
+    val label: String,
+    val summary: String,
+    @SerialName("root_bone_aware") val rootBoneAware: Boolean,
+)
+
+@Serializable
+data class ReviewDataGap(
+    val domain: String,
+    val reason: String,
+)
+
+@Serializable
+data class RootBoneReviewSummary(val verdict: String)
+
+@Serializable
+data class FindingsSummary(
+    val total: Int,
+    @SerialName("by_severity") val bySeverity: Map<String, Int> = emptyMap(),
+)
+
+@Serializable
+data class EditLockSummary(
+    @SerialName("in_mobile") val inMobile: Boolean,
+    @SerialName("requires_browser_engine") val requiresBrowserEngine: Boolean,
+    val reason: String,
+)
+
+@Serializable
+data class CaseHandoffSummary(
+    @SerialName("case_id") val caseId: String,
+    @SerialName("open_url") val openUrl: String? = null,
+    @SerialName("deep_link") val deepLink: String,
+    @SerialName("qr_payload") val qrPayload: String,
+)
