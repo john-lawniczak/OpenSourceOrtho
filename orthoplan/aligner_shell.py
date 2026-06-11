@@ -21,6 +21,11 @@ from math import sqrt
 
 from pydantic import BaseModel, Field
 
+from orthoplan.aligner_shell_quality import (
+    min_inner_outer_clearance,
+    triangle_aabb_intersection_count,
+)
+from orthoplan.aligner_shell_mesh import clean_triangles
 from orthoplan.aligner_shell_stats import connected_components, mean, percentile
 
 Vec3 = tuple[float, float, float]
@@ -48,6 +53,13 @@ class ShellStats(BaseModel):
     watertight: bool
     connected_components: int = Field(ge=0)
     dropped_degenerate_input_triangles: int = Field(ge=0)
+    skinny_input_triangle_count: int = Field(ge=0)
+    input_boundary_edge_count: int = Field(ge=0)
+    stitched_rim_triangle_count: int = Field(ge=0)
+    rim_closed: bool
+    self_intersection_count: int = Field(ge=0)
+    inner_outer_min_clearance_mm: float
+    minimum_printable_feature_mm: float
     triangle_count: int = Field(ge=0)
     trimmed: bool = False
 
@@ -95,56 +107,6 @@ def _index_mesh(triangles: list[Triangle]) -> tuple[list[Vec3], list[tuple[int, 
         if idx[0] != idx[1] and idx[1] != idx[2] and idx[0] != idx[2]:
             faces.append((idx[0], idx[1], idx[2]))
     return verts, faces
-
-
-def _clean_triangles(triangles: list[Triangle]) -> tuple[list[Triangle], int]:
-    """Weld near-duplicate vertices, drop degenerates, orient one-sided surfaces."""
-
-    clean: list[Triangle] = []
-    dropped = 0
-    for tri in triangles:
-        welded = tuple(_unkey(_key(vertex)) for vertex in tri)
-        if _triangle_area(welded) <= 1e-12:
-            dropped += 1
-            continue
-        clean.append(welded)  # type: ignore[arg-type]
-    return _orient_consistently(clean), dropped
-
-
-def _unkey(key: tuple[int, int, int]) -> Vec3:
-    return (key[0] / 1_000_000, key[1] / 1_000_000, key[2] / 1_000_000)
-
-
-def _triangle_area(tri: Triangle) -> float:
-    return _norm(_cross(_sub(tri[1], tri[0]), _sub(tri[2], tri[0]))) / 2.0
-
-
-def _orient_consistently(triangles: list[Triangle]) -> list[Triangle]:
-    normal = _normalize(_mean_normal(triangles))
-    if normal is None:
-        return triangles
-    oriented: list[Triangle] = []
-    for tri in triangles:
-        face_normal = _cross(_sub(tri[1], tri[0]), _sub(tri[2], tri[0]))
-        oriented.append((tri[0], tri[2], tri[1]) if _dot(face_normal, normal) < 0 else tri)
-    return oriented
-
-
-def _mean_normal(triangles: list[Triangle]) -> Vec3:
-    total = [0.0, 0.0, 0.0]
-    for tri in triangles:
-        normal = _cross(_sub(tri[1], tri[0]), _sub(tri[2], tri[0]))
-        total[0] += normal[0]
-        total[1] += normal[1]
-        total[2] += normal[2]
-    return (total[0], total[1], total[2])
-
-
-def _normalize(vector: Vec3) -> Vec3 | None:
-    length = _norm(vector)
-    if length == 0:
-        return None
-    return (vector[0] / length, vector[1] / length, vector[2] / length)
 
 
 def _vertex_normals(verts: list[Vec3], faces: list[tuple[int, int, int]]) -> list[Vec3]:
@@ -196,13 +158,14 @@ def build_aligner_shell(
     triangles: list[Triangle],
     *,
     thickness_mm: float,
+    minimum_printable_feature_mm: float = 0.3,
     trim: TrimPlane | None = None,
 ) -> ShellResult:
     """Offset a surface outward by ``thickness_mm`` and close it into a solid."""
 
     if thickness_mm <= 0:
         raise ValueError("aligner sheet thickness must be positive")
-    cleaned, dropped = _clean_triangles(triangles)
+    cleaned, dropped, skinny = clean_triangles(triangles)
     verts, faces = _index_mesh(cleaned)
     if not faces:
         raise ValueError("aligner shell requires a non-empty surface mesh")
@@ -212,6 +175,7 @@ def build_aligner_shell(
         if not faces:
             raise ValueError("trim removed the entire surface; check the trim plane")
 
+    input_boundary_edges = _boundary_edges(faces)
     normals = _vertex_normals(verts, faces)
     outer = [
         (verts[i][0] + normals[i][0] * thickness_mm,
@@ -227,28 +191,55 @@ def build_aligner_shell(
         # Inner cavity surface is the original, reversed so it faces the teeth.
         out.append((verts[a], verts[c], verts[b]))
     # Stitch a rim across every open boundary edge (trim cut + original holes).
-    for a, b in _boundary_edges(faces):
+    for a, b in input_boundary_edges:
         out.append((verts[a], verts[b], outer[b]))
         out.append((verts[a], outer[b], outer[a]))
 
-    thicknesses = _thickness_values(verts, outer, faces)
-    _, shell_faces = _index_mesh(out)
     return ShellResult(
         triangles=out,
-        stats=ShellStats(
-            requested_thickness_mm=thickness_mm,
-            measured_thickness_mm=mean(thicknesses),
-            min_thickness_mm=min(thicknesses),
-            max_thickness_mm=max(thicknesses),
-            p05_thickness_mm=percentile(thicknesses, 0.05),
-            p50_thickness_mm=percentile(thicknesses, 0.50),
-            p95_thickness_mm=percentile(thicknesses, 0.95),
-            watertight=_is_watertight(out),
-            connected_components=connected_components(shell_faces),
-            dropped_degenerate_input_triangles=dropped,
-            triangle_count=len(out),
-            trimmed=trim is not None,
+        stats=_shell_stats(
+            verts, outer, faces, out, input_boundary_edges,
+            dropped, skinny, thickness_mm, minimum_printable_feature_mm, trim is not None,
         ),
+    )
+
+
+def _shell_stats(
+    verts: list[Vec3],
+    outer: list[Vec3],
+    faces: list[tuple[int, int, int]],
+    shell_triangles: list[Triangle],
+    input_boundary_edges: list[tuple[int, int]],
+    dropped: int,
+    skinny: int,
+    thickness_mm: float,
+    minimum_printable_feature_mm: float,
+    trimmed: bool,
+) -> ShellStats:
+    thicknesses = _thickness_values(verts, outer, faces)
+    _, shell_faces = _index_mesh(shell_triangles)
+    watertight = _is_watertight(shell_triangles)
+    rim_triangles = len(input_boundary_edges) * 2
+    return ShellStats(
+        requested_thickness_mm=thickness_mm,
+        measured_thickness_mm=mean(thicknesses),
+        min_thickness_mm=min(thicknesses),
+        max_thickness_mm=max(thicknesses),
+        p05_thickness_mm=percentile(thicknesses, 0.05),
+        p50_thickness_mm=percentile(thicknesses, 0.50),
+        p95_thickness_mm=percentile(thicknesses, 0.95),
+        watertight=watertight,
+        connected_components=connected_components(shell_faces),
+        dropped_degenerate_input_triangles=dropped,
+        skinny_input_triangle_count=skinny,
+        input_boundary_edge_count=len(input_boundary_edges),
+        stitched_rim_triangle_count=rim_triangles,
+        rim_closed=watertight and rim_triangles == len(input_boundary_edges) * 2,
+        self_intersection_count=triangle_aabb_intersection_count(shell_triangles),
+        inner_outer_min_clearance_mm=min_inner_outer_clearance(verts, outer),
+        minimum_printable_feature_mm=minimum_printable_feature_mm,
+        triangle_count=len(shell_triangles),
+        trimmed=trimmed,
     )
 
 
@@ -261,4 +252,3 @@ def _thickness_values(
     if not used:
         return [0.0]
     return [_norm(_sub(outer[i], verts[i])) for i in sorted(used)]
-

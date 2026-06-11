@@ -87,6 +87,9 @@ class PrintExportSettings(BaseModel):
     aligner_shell_enabled: bool = False
     sheet_thickness_mm: float = Field(default=0.6, gt=0, le=2.0)
     gingival_trim_margin_mm: float = Field(default=2.0, ge=0)
+    xy_compensation_mm: float = Field(default=0.0, ge=-1.0, le=1.0)
+    z_compensation_mm: float = Field(default=0.0, ge=-1.0, le=1.0)
+    minimum_printable_feature_mm: float = Field(default=0.3, gt=0, le=2.0)
     post_processing_notes: str = (
         "Cure and clean printed models per material instructions; remove supports and "
         "smooth model artifacts before thermoforming. Do not alter aligner plastic unless "

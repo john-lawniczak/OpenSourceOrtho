@@ -47,6 +47,9 @@
       "aligner_shell_enabled": false,
       "sheet_thickness_mm": 0.6,
       "gingival_trim_margin_mm": 2.0,
+      "xy_compensation_mm": 0.0,
+      "z_compensation_mm": 0.0,
+      "minimum_printable_feature_mm": 0.3,
       "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material instructions and chosen process explicitly allow it."
     }
   },

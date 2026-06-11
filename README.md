@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml/badge.svg)](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml)
 
-OpenSource Ortho is an open-source clear-aligner planning safety playground and research toolkit. It supports surface-based STL planning experiments today; CBCT/DICOM is a planned higher-fidelity record path for root/bone-aware checks, not a claim that the software produces a complete treatment plan.
+OpenSource Ortho is an open-source clear-aligner planning safety playground and research toolkit. It supports surface-based STL planning experiments today; reviewed CBCT/DICOM-derived anatomy is a higher-fidelity path for root/bone-aware checks, not a claim that the software produces a complete treatment plan.
 
 [![OpenSource Ortho review workspace](docs/images/review-demo.png)](docs/media/sample-demo.mp4)
 
@@ -25,7 +25,8 @@ use at their own responsibility and risk. The current build is not distributed a
 a medical device, is not complete treatment-planning software, and does not
 replace a licensed professional.
 
-Most project documentation lives in [docs/](docs/README.md).
+Most project documentation lives in [docs/](docs/README.md), including the
+current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
 
@@ -135,10 +136,11 @@ The first workflow is simple:
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
-CBCT/DICOM support is planned as a tiered roadmap: local record ingestion,
-on-device viewing, STL-to-CBCT registration, reviewable anatomy segmentation,
-root/bone-aware checks, and manufacturing manifests that label the review tier,
-unresolved data gaps, and user responsibility for any physical use.
+CBCT/DICOM support is tiered: local record metadata intake, on-device viewing
+handoff, STL-to-CBCT registration records, reviewed anatomy representation,
+root/bone-aware checks when trusted anatomy exists, and manufacturing manifests
+that label the review tier, unresolved data gaps, and user responsibility for any
+physical use. Automated raw-volume root/bone segmentation remains future work.
 
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled

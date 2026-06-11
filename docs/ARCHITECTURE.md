@@ -1,6 +1,6 @@
 # Architecture
 
-OpenSource Ortho is a Python-first planning and visualization safety playground for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI. It is not a complete treatment-planning system. The roadmap has two review tiers: STL-only surface review today, and CBCT/DICOM-enhanced root/bone-aware review as a deliberate future path.
+OpenSource Ortho is a Python-first planning and visualization safety playground for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, generate manufacturing-oriented exports, and feed an accurate UI. It is not a complete treatment-planning system. The roadmap has tiered review modes: STL-only surface review, enhanced-record review, CBCT-attached review, and root/bone-aware review only when registered, reviewed anatomy is trusted.
 
 ## Simple Flow
 
@@ -15,9 +15,10 @@ OpenSource Ortho is a Python-first planning and visualization safety playground 
 9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
 
 CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
-root/bone-aware checks once the app can ingest a local DICOM volume, register
-it to the STL, represent reviewed anatomy, and expose deterministic
-root/bone-aware findings. See [cbct-evaluation.md](cbct-evaluation.md).
+root/bone-aware checks once the app can ingest local DICOM metadata, record
+registration to STL, represent reviewed anatomy, and expose deterministic
+root/bone-aware findings. Automated raw-volume anatomy proposal remains a future
+optional-extra path. See [cbct-evaluation.md](cbct-evaluation.md).
 
 ## Language and Stack
 
