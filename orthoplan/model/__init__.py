@@ -1,3 +1,11 @@
+from orthoplan.model.anatomy import (
+    AlveolarBoneRecord,
+    DerivedAnatomy,
+    DerivedAnatomyProvenance,
+    ReviewStatus,
+    RootGeometry,
+    ToothAxis,
+)
 from orthoplan.model.assets import (
     BoundingBox,
     CaseRecord,
@@ -63,6 +71,7 @@ from orthoplan.model.settings import (
 
 __all__ = [
     "SCAN_FRAME",
+    "AlveolarBoneRecord",
     "AnatomicalDirection",
     "Arch",
     "Attachment",
@@ -73,9 +82,11 @@ __all__ = [
     "CbctHandoff",
     "CbctStatus",
     "CoordinateFrame",
-    "DicomMetadata",
     "DataAvailability",
     "DataGapAction",
+    "DerivedAnatomy",
+    "DerivedAnatomyProvenance",
+    "DicomMetadata",
     "FixedTooth",
     "Handedness",
     "InterproximalReduction",
@@ -90,9 +101,12 @@ __all__ = [
     "RegistrationMethod",
     "RegistrationQuality",
     "RegistrationTransform",
+    "ReviewStatus",
     "ReviewTier",
     "ReviewTierInfo",
+    "RootGeometry",
     "SegmentedToothMesh",
+    "ToothAxis",
     "Stage",
     "TimelineSettings",
     "ToothDelta",

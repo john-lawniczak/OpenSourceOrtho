@@ -879,6 +879,25 @@ body[data-theme="dark"] .sample-banner {
   opacity: 0.75;
 }
 
+.anatomy-row {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.anatomy-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.anatomy-actions button {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.anatomy-row[data-status="rejected"] {
+  opacity: 0.55;
+}
+
 .data-gap-panel h2,
 .review-tier-panel h2,
 .review-side h2 {
