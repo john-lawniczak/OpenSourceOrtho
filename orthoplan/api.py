@@ -186,5 +186,6 @@ def print_package_payload(
         "stage_count": len(result.artifact_paths),
         "review_tier": result.review_tier,
         "uses_real_mesh_geometry": result.uses_real_mesh_geometry,
+        "aligner_shell_count": len(result.aligner_shell_paths),
         "caveat": result.caveat,
     }

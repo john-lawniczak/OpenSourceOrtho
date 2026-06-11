@@ -81,6 +81,12 @@ class PrintExportSettings(BaseModel):
     model_material: str = "validated dental model resin"
     thermoforming_material: str = "user-selected aligner sheet material"
     safety_acknowledged: bool = False
+    # Aligner-shell export: when enabled AND a stage has real reviewed geometry,
+    # the package also emits a printable shell (offset by the sheet thickness,
+    # trimmed at the gingival margin) alongside the stage model.
+    aligner_shell_enabled: bool = False
+    sheet_thickness_mm: float = Field(default=0.6, gt=0, le=2.0)
+    gingival_trim_margin_mm: float = Field(default=2.0, ge=0)
     post_processing_notes: str = (
         "Cure and clean printed models per material instructions; remove supports and "
         "smooth model artifacts before thermoforming. Do not alter aligner plastic unless "

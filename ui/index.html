@@ -372,6 +372,14 @@
               <label>Aligner material<input id="thermoformingMaterial" value="user-selected aligner sheet material" /></label>
             </div>
             <label class="toggle">
+              <span>Generate printable aligner shells (offset + gingival trim) from reviewed geometry</span>
+              <input id="alignerShellEnabled" type="checkbox" />
+            </label>
+            <div class="field-grid">
+              <label>Sheet thickness (mm)<input id="sheetThickness" type="number" step="0.05" min="0.1" max="2" value="0.6" /></label>
+              <label>Gingival trim margin (mm)<input id="trimMargin" type="number" step="0.5" min="0" value="2" /></label>
+            </div>
+            <label class="toggle">
               <span>I understand print/package output is informational and any physical use is my own responsibility and risk.</span>
               <input id="printSafety" type="checkbox" />
             </label>

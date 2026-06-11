@@ -1,112 +1,109 @@
 # TODO
 
-## Browser planning roadmap
+## Product goal
 
-Goal: make the main browser workspace accept STL and CBCT/DICOM records in a
-phased, safety-bound way. A "full plan" means reproducible staged geometry plus
-clearly labeled findings and data limitations. It must never mean diagnosis,
-clinical approval, treatment clearance, or authorization for physical use.
+The browser workspace turns uploaded STL (and, when reviewed, CBCT) scans into
+reproducible **staged geometry AND 3D-printable aligner-shell models** the user
+can print locally. Safety posture is unchanged and fail-closed: generating
+printable geometry never means diagnosis, clinical approval, treatment clearance,
+or that physical use is safe. Printing, fit, materials, and any physical use
+remain the user's own responsibility and risk, and every output keeps its review
+tier and unresolved data gaps clearly labeled.
 
-### Phase 1: Durable browser intake and case storage
+## Completed (v1.2)
 
-- [x] Add real browser-to-engine upload for STL bytes instead of browser-memory
-  metadata only.
-- [x] Register uploaded STL files automatically into the local mesh workspace.
-- [x] Add CBCT/DICOM upload as local-only case records, storing volume references
-  and redacted metadata rather than volume bytes in plan JSON.
-- [x] Add photo/X-ray/notes attachment records as enhanced-review context.
-- [x] Persist cases with scan provenance, modality, units, arch, file IDs, and
-  engine version.
-- [x] Make UI copy distinguish STL-only, enhanced-records, and CBCT-attached
-  cases from root/bone-aware review.
-- [x] Add PHI/path redaction tests for all uploaded record types.
+Phases 1-8 (full history in git):
 
-### Phase 2: Excellent STL surface planning
+- Durable STL/CBCT intake, case storage, provenance, and review tiers
+  (STL-only → enhanced-records → CBCT-attached → root/bone-aware).
+- STL surface planning: scale-gated mm checks, auto-segmentation + review UI,
+  per-tooth fragment rendering, shared-engine checks, surface-gap reports.
+- Real per-tooth print/export with scan/fragment/findings/frame hashes and tier
+  labels (real vertices for reviewed segmentation, labeled proxy fallback).
+- Local DICOM metadata intake (PHI-stripped, no volume bytes) + 3D Slicer handoff.
+- STL↔CBCT registration model with fail-closed acceptance gating.
+- Reviewed CBCT-derived anatomy (roots, axes, bone) with accept/correct/reject UI.
+- Root/bone-aware review checks (proximity, cortical, context, cannot-assess).
+- Browser↔mobile case-review handoff (opaque, edit-locked, link/QR/deep-link).
 
-- [x] Make scale/unit confirmation a required gate before millimeter movement
-  checks run.
-- [x] Run auto-segmentation from uploaded whole-arch STL files through
-  `/api/segment`.
-- [x] Build a segmentation review UI for tooth labels, missing teeth, rejected
-  fragments, and reviewer corrections.
-- [x] Persist segmentation proposals, edits, and applied per-tooth mesh links per
-  case/version.
-- [x] Render real segmented per-tooth STL fragments in the browser viewer.
-- [x] Generate movement from segmented crown geometry where available.
-- [x] Run crown collision, spacing, IPR, attachment, and movement-cap checks from
-  the same engine data used by the viewer.
-- [x] Export STL-surface reports that clearly list unresolved data gaps for roots,
-  bone, periodontal status, occlusion, and CBCT anatomy.
+## Effectiveness roadmap — drive every track to ≥ 7/10
 
-### Phase 3: Real per-tooth print/export
+Honest self-assessment of the current build:
 
-- [x] Transform actual per-tooth mesh vertices for stage exports when reviewed
-  segmentation exists.
-- [x] Keep schematic/proxy export only as a labeled fallback.
-- [x] Include hashes for original scans, segmentation fragments, stage frames,
-  findings, and generated artifacts.
-- [x] Label every export with review tier: STL-only, enhanced-records, or
-  CBCT-registered/root-bone-aware when that exists.
-- [x] Add print-package tests that prove exports use real mesh geometry when
-  available and fail closed when geometry is missing.
+| Track | Now | Target |
+|-------|-----|--------|
+| End-to-end "upload → printable aligners" | ~2/10 (manufacturing half missing) | ≥ 7/10 |
+| Surface-scan staging + honest review aid | ~6-7/10 | ≥ 7/10 (hold + sharpen) |
+| CBCT root/bone-aware planning from a raw volume | ~1-2/10 | ≥ 7/10 |
 
-### Phase 4: CBCT/DICOM ingestion and viewer
+### Phase 9: Aligner-shell generation — the manufacturing step (track 1)
 
-- [x] Add optional `dicom` extra using `pydicom` or a similarly reviewed local
-  dependency.
-- [x] Parse DICOM metadata locally: study date, modality, voxel spacing,
-  dimensions, orientation, and redacted provenance.
-- [x] Add local volume registration/storage contract; never serialize volume
-  bytes into plan JSON.
-- [x] Add axial/coronal/sagittal slice viewer in the browser, or a clean handoff
-  path to a trusted local viewer such as 3D Slicer.
-- [x] Show CBCT status in the case UI: attached, viewed, registered,
-  anatomy-reviewed, or unavailable.
-- [x] Keep CBCT attachment from changing movement generation until registration
-  and reviewed anatomy contracts exist.
+> Single biggest gap between "staging tool" and "aligner generator".
 
-### Phase 5: STL-to-CBCT registration
+- [x] Build a per-stage aligner-shell mesh by offsetting the reviewed stage
+  surface outward along vertex normals by a configurable sheet thickness
+  (default ~0.5-0.75 mm).
+- [x] Close the shell into a watertight, manifold printable solid (outer offset
+  surface + inner cavity surface + stitched rim at open boundaries).
+- [x] Generate a gingival trim: cut the shell along a margin plane derived from
+  trusted tooth axes (fail-closed: no trim when the occlusal axis is unknown).
+- [x] Add aligner-shell export settings (sheet thickness, trim margin, enable
+  flag) and emit shell STLs in the print package, labeled shell-vs-model, with
+  thickness + trim parameters and the shell hash in the manifest.
+- [x] Always-available pure-Python shell path; fail closed (model only, no shell)
+  when geometry is missing or unreviewed.
+- [ ] Robust offset/booleans behind the optional `mesh-processing` extra
+  (winding repair, true Minkowski offset) — future enhancement over the
+  vertex-normal approximation.
+- [x] Tests: shell is watertight (every edge shared by 2 faces), measured
+  thickness is within tolerance of the request, trim removes sub-gingival
+  geometry, and export falls closed without reviewed geometry.
 
-- [x] Add `RegistrationTransform` model with source STL asset, target CBCT
-  record, transform matrix, method, operator/model provenance, quality score, and
-  notes.
-- [x] Support imported/manual registration transforms before automatic
-  registration.
-- [x] Add registration quality metrics and browser visualization overlays.
-- [x] Add automatic registration experiments behind optional Open3D/VTK-style
-  dependencies.
-- [x] Prevent CBCT-derived checks from running unless registration quality is
-  present and accepted.
-- [x] Add synthetic and fixture-based registration validation tests.
+### Phase 10: Real mesh collision + interproximal contact (track 2)
 
-### Phase 6: Reviewed CBCT-derived anatomy
+- [ ] Replace axis-aligned bounding-box overlap with triangle-level proximity /
+  signed-distance between adjacent crown meshes.
+- [ ] Detect true interproximal contact and quantify the IPR (mm of enamel)
+  needed to resolve it.
+- [ ] Keep the BBox test as a fast pre-filter; escalate to mesh distance only on
+  candidate overlap.
+- [ ] Gate mesh distance behind the mesh extra; fail closed to the BBox check
+  with a labeled note when unavailable.
+- [ ] Fixture tests with known-overlapping and known-clear crown pairs.
 
-- [x] Add models for root meshes or root centerlines per tooth.
-- [x] Add models for trusted tooth axes derived from reviewed crown/root anatomy.
-- [x] Add alveolar bone surface or boundary-volume records.
-- [x] Track source record, registration transform, model/operator provenance,
-  confidence, and review/correction status for every derived object.
-- [x] Build browser review UI for accepting, correcting, or rejecting derived
-  anatomy.
-- [x] Fail closed when anatomy is missing, uncertain, out of field, or
-  unreviewed.
+### Phase 11: Root-aware / biomechanical movement (tracks 2 & 3)
 
-### Phase 7: Root/bone-aware review checks
+- [ ] When trusted root anatomy exists, move teeth about the root-derived center
+  of resistance instead of the crown centroid.
+- [ ] Render tip/torque as true rotations about the root-based long axis.
+- [ ] Fail closed to the current crown-centroid visualization (kept labeled
+  "visualization assumption, not biomechanics") when roots are unavailable.
+- [ ] Tests: with roots, the apex moves opposite the crown under tipping; without
+  roots, movement output is unchanged.
 
-- [x] Add deterministic root proximity and inter-root collision warnings.
-- [x] Add cortical boundary proximity warnings.
-- [x] Add root/bone context for tip, torque, intrusion, extrusion, and expansion.
-- [x] Add "cannot assess" findings when registration, segmentation, or anatomy
-  review quality is insufficient.
-- [x] Keep verdict vocabulary limited to `CONSISTENT`, `ISSUES`, and
-  `NOT_APPLICABLE`.
-- [x] Add root/bone-aware tests with known fixture geometry and expected findings.
+### Phase 12: Automated CBCT root/bone segmentation + auto-registration (track 3)
 
-### Phase 8: Browser/mobile handoff
+- [ ] Add an optional volume-processing path (behind the dicom/mesh extras) that
+  proposes root surfaces/centerlines and an alveolar bone boundary from the CBCT.
+- [ ] Feed proposals into the existing reviewed-anatomy pipeline as PROPOSED
+  only — never auto-trusted; human review still required.
+- [ ] Promote the Open3D ICP registration experiment to a default auto-
+  registration step with a quality gate (still requires human acceptance).
+- [ ] Tests on synthetic/fixture volumes: proposals carry provenance + confidence,
+  stay untrusted until accepted, and fail closed without the extras.
 
-- [x] Export browser-generated case review JSON that mobile can import as an
-  opaque stored review.
-- [x] Add case handoff link/QR/deep-link for opening the same local/hosted case
-  on a device.
-- [x] Make mobile imports show review tier, unresolved data gaps, and whether the
-  source plan can only be edited in the browser/full engine.
+### Phase 13: Measured accuracy / validation benchmarks (quantifies all tracks)
+
+- [ ] Add ground-truth fixture cases (synthetic + any reviewed open datasets) for
+  segmentation, movement, collision, and shell thickness.
+- [ ] Add a benchmark harness reporting per-component metrics (Dice/IoU for
+  segmentation, mm error for movement/shell, precision/recall for collision).
+- [ ] Surface the metrics as tracked numbers (reported, not pass/fail gates at
+  first) so "accuracy" stops being unmeasured.
+
+### Phase 14: Segmentation maturity — learned model (track 2)
+
+- [ ] Mature the optional learned ONNX segmentation backend to cut the manual-
+  review burden on crowded/contacting arches.
+- [ ] Benchmark learned vs. heuristic on the Phase 13 fixtures; keep the
+  heuristic as the no-dependency fallback.

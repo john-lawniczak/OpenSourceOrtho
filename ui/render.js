@@ -262,6 +262,9 @@ export function renderAll() {
     model_material: el("modelMaterial").value,
     thermoforming_material: el("thermoformingMaterial").value,
     safety_acknowledged: el("printSafety").checked,
+    aligner_shell_enabled: el("alignerShellEnabled")?.checked || false,
+    sheet_thickness_mm: numberValue("sheetThickness") || 0.6,
+    gingival_trim_margin_mm: numberValue("trimMargin"),
   };
   state.clinicalControls = {
     fixedTeeth: el("fixedTeeth").value,

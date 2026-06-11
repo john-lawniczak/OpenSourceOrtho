@@ -1,0 +1,53 @@
+from __future__ import annotations
+
+import pytest
+
+from orthoplan.aligner_shell import TrimPlane, build_aligner_shell
+
+# A flat quad surface (two triangles, +z winding). Offsetting it and stitching the
+# rim must produce a closed slab of the requested thickness.
+_QUAD = [
+    ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (1.0, 1.0, 0.0)),
+    ((0.0, 0.0, 0.0), (1.0, 1.0, 0.0), (0.0, 1.0, 0.0)),
+]
+
+
+def test_shell_is_watertight_and_has_requested_thickness() -> None:
+    result = build_aligner_shell(_QUAD, thickness_mm=0.6)
+    assert result.stats.watertight is True
+    assert result.stats.measured_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    # 2 outer + 2 inner + 4 boundary edges x 2 rim triangles = 12.
+    assert result.stats.triangle_count == 12
+
+
+def test_zero_or_negative_thickness_is_rejected() -> None:
+    with pytest.raises(ValueError, match="thickness"):
+        build_aligner_shell(_QUAD, thickness_mm=0.0)
+
+
+def test_empty_surface_is_rejected() -> None:
+    with pytest.raises(ValueError, match="non-empty"):
+        build_aligner_shell([], thickness_mm=0.5)
+
+
+def _strip() -> list:
+    a, b = (0.0, 0.0, 0.0), (1.0, 0.0, 0.0)
+    c, d = (0.0, 5.0, 0.0), (1.0, 5.0, 0.0)
+    e, f = (0.0, 10.0, 0.0), (1.0, 10.0, 0.0)
+    return [(a, b, d), (a, d, c), (c, d, f), (c, f, e)]
+
+
+def test_gingival_trim_removes_geometry_below_the_plane() -> None:
+    # Keep only y >= 5 (the "crown" half); the lower half is trimmed off.
+    trim = TrimPlane(point=(0.0, 5.0, 0.0), normal=(0.0, 1.0, 0.0))
+    result = build_aligner_shell(_strip(), thickness_mm=0.5, trim=trim)
+    assert result.stats.trimmed is True
+    assert result.stats.watertight is True
+    lowest_y = min(v[1] for tri in result.triangles for v in tri)
+    assert lowest_y >= 5.0
+
+
+def test_trim_that_removes_everything_is_rejected() -> None:
+    trim = TrimPlane(point=(0.0, 100.0, 0.0), normal=(0.0, 1.0, 0.0))
+    with pytest.raises(ValueError, match="entire surface"):
+        build_aligner_shell(_strip(), thickness_mm=0.5, trim=trim)
