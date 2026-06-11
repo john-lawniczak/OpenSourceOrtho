@@ -29,6 +29,7 @@ from orthoplan.model.review_tier import (
     registration_ready,
     review_tier_info,
 )
+from orthoplan.planning.biomechanics import movement_mode
 from orthoplan.planning.optimizer import optimize_staging
 from orthoplan.planning.timeline import project_timeline
 from orthoplan.printing import build_print_export_status, export_print_package
@@ -62,23 +63,14 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
         },
         "derived_anatomy": _derived_anatomy_block(plan),
         "root_bone_review": {"verdict": root_bone_review(plan).verdict.value},
+        "movement_model": movement_mode(plan),
         "data_gaps": data_gaps(plan),
         "data_gap_actions": [action.model_dump() for action in data_gap_actions(plan)],
         "acquisition_advice": acquisition_advice(plan).model_dump(),
         "findings": [finding.model_dump() for finding in findings],
         "timeline": timeline.model_dump(),
         "print_export": build_print_export_status(plan).model_dump(),
-        "clinical_controls": {
-            "attachments": [attachment.model_dump(mode="json") for attachment in plan.attachments],
-            "interproximal_reductions": [
-                ipr.model_dump(mode="json") for ipr in plan.interproximal_reductions
-            ],
-            "planned_spacing": [spacing.model_dump(mode="json") for spacing in plan.planned_spacing],
-            "fixed_teeth": [fixed.model_dump(mode="json") for fixed in plan.fixed_teeth],
-            "movement_exclusions": [
-                exclusion.model_dump(mode="json") for exclusion in plan.movement_exclusions
-            ],
-        },
+        "clinical_controls": _clinical_controls_block(plan),
         "optimized_staging": {
             "stage_count": len(optimized.plan.stages),
             "issues": [issue.model_dump() for issue in optimized.issues],
@@ -102,6 +94,20 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
             for link in plan.tooth_meshes
             if link.local_frame is not None
         },
+    }
+
+
+def _clinical_controls_block(plan: TreatmentPlan) -> dict[str, Any]:
+    return {
+        "attachments": [attachment.model_dump(mode="json") for attachment in plan.attachments],
+        "interproximal_reductions": [
+            ipr.model_dump(mode="json") for ipr in plan.interproximal_reductions
+        ],
+        "planned_spacing": [spacing.model_dump(mode="json") for spacing in plan.planned_spacing],
+        "fixed_teeth": [fixed.model_dump(mode="json") for fixed in plan.fixed_teeth],
+        "movement_exclusions": [
+            exclusion.model_dump(mode="json") for exclusion in plan.movement_exclusions
+        ],
     }
 
 

@@ -73,12 +73,12 @@ Honest self-assessment of the current build:
 
 ### Phase 11: Root-aware / biomechanical movement (tracks 2 & 3)
 
-- [ ] When trusted root anatomy exists, move teeth about the root-derived center
+- [x] When trusted root anatomy exists, move teeth about the root-derived center
   of resistance instead of the crown centroid.
-- [ ] Render tip/torque as true rotations about the root-based long axis.
-- [ ] Fail closed to the current crown-centroid visualization (kept labeled
+- [x] Render tip/torque as true rotations about the root-based long axis.
+- [x] Fail closed to the current crown-centroid visualization (kept labeled
   "visualization assumption, not biomechanics") when roots are unavailable.
-- [ ] Tests: with roots, the apex moves opposite the crown under tipping; without
+- [x] Tests: with roots, the apex moves opposite the crown under tipping; without
   roots, movement output is unchanged.
 
 ### Phase 12: Automated CBCT root/bone segmentation + auto-registration (track 3)

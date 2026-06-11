@@ -3,6 +3,11 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.planning.biomechanics import (
+    ROOT_AWARE_PIVOT_LABEL,
+    apply_pose_to_vertex,
+    trusted_movement_frames,
+)
 from orthoplan.planning.transforms import ToothPose
 from orthoplan.viz.progress import build_stage_progress_frames
 
@@ -34,6 +39,7 @@ def build_transformed_mesh_frames(
     """
 
     links = {link.tooth.value: link for link in plan.tooth_meshes}
+    root_frames = trusted_movement_frames(plan)
     frames = []
     for frame in build_stage_progress_frames(plan):
         meshes: list[TransformedToothMesh] = []
@@ -46,24 +52,28 @@ def build_transformed_mesh_frames(
             if vertices is None:
                 missing.append(link.mesh_asset_id)
                 continue
+            movement_frame = root_frames.get(pose.tooth.value)
             meshes.append(
                 TransformedToothMesh(
                     tooth=pose.tooth.value,
                     mesh_asset_id=link.mesh_asset_id,
-                    vertices=[_apply_pose(vertex, pose) for vertex in vertices],
-                    transform_note=(
-                        "Applied cumulative translation in millimeters. Rotation is not applied "
-                        "unless a trusted anatomical frame is available in a later geometry path."
-                    ),
+                    vertices=[
+                        apply_pose_to_vertex(vertex, pose, movement_frame) for vertex in vertices
+                    ],
+                    transform_note=_transform_note(movement_frame is not None),
                 )
             )
         frames.append(StageMeshFrame(stage_index=frame.stage_index, meshes=meshes, missing_mesh_asset_ids=missing))
     return frames
 
 
-def _apply_pose(vertex: Vec3, pose: ToothPose) -> Vec3:
+def _transform_note(root_aware: bool) -> str:
+    if root_aware:
+        return (
+            "Applied cumulative translation and trusted root-aware rotation about "
+            f"{ROOT_AWARE_PIVOT_LABEL}."
+        )
     return (
-        vertex[0] + pose.translate_x_mm,
-        vertex[1] + pose.translate_y_mm,
-        vertex[2] + pose.translate_z_mm,
+        "Applied cumulative translation in millimeters. Rotation remains a "
+        "crown-centroid visualization assumption because trusted root anatomy is unavailable."
     )
