@@ -229,6 +229,70 @@ function renderGuidedPrint() {
   if (button) button.disabled = state.guided.print.busy;
   const links = el("guidedPrintLinks");
   if (links) links.hidden = !state.guided.print.result;
+  renderPrintQa(el("guidedPrintQa"), state.guided.print.result);
+}
+
+// Surface the manufacturing-readiness verdict and per-stage shell QA that the
+// backend already computes, so a user can see WHY a stage is consistent, flagged,
+// or skipped instead of only getting a "files built" message.
+export function renderPrintQa(host, result) {
+  if (!host) return;
+  if (!result || result.ok === false) {
+    host.hidden = true;
+    host.innerHTML = "";
+    return;
+  }
+  host.hidden = false;
+  host.innerHTML = [
+    readinessBanner(result.manufacturing_readiness),
+    toleranceLine(result.printer_tolerances),
+    shellStageTable(result.aligner_shell_reports),
+  ].filter(Boolean).join("");
+}
+
+function readinessBanner(readiness) {
+  if (!readiness || !readiness.verdict) return "";
+  const verdict = String(readiness.verdict);
+  const reason = readiness.reason ? `<span>${escapeText(readiness.reason)}</span>` : "";
+  return `<p class="print-qa-readiness ${verdictClass(verdict)}">`
+    + `<strong>Manufacturing readiness: ${escapeText(verdict)}</strong>${reason}</p>`;
+}
+
+function toleranceLine(tolerances) {
+  if (!tolerances) return "";
+  const xy = formatMm(tolerances.xy_compensation_mm);
+  const z = formatMm(tolerances.z_compensation_mm);
+  const feature = formatMm(tolerances.minimum_printable_feature_mm);
+  return `<p class="print-qa-tolerances">Printer compensation applied to geometry — `
+    + `XY ${xy} mm, Z ${z} mm · minimum printable feature ${feature} mm.</p>`;
+}
+
+function shellStageTable(reports) {
+  if (!Array.isArray(reports) || reports.length === 0) return "";
+  const rows = reports.map((report) => {
+    const quality = report.quality || {};
+    const thickness = quality.thickness_mm || {};
+    const detail = quality.verdict
+      ? `watertight ${quality.watertight ? "yes" : "no"} · `
+        + `thickness ${formatMm(thickness.min)}–${formatMm(thickness.max)} mm · `
+        + `self-intersection signals ${Number(quality.self_intersection_count ?? 0)}`
+      : escapeText(report.reason || "");
+    return `<tr><td>${Number(report.stage_index)}</td>`
+      + `<td class="${verdictClass(report.verdict)}">${escapeText(String(report.verdict || ""))}</td>`
+      + `<td>${detail}</td></tr>`;
+  }).join("");
+  return `<table class="print-qa-table"><thead><tr>`
+    + `<th>Stage</th><th>Shell QA</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function verdictClass(verdict) {
+  if (verdict === "CONSISTENT") return "qa-ok";
+  if (verdict === "ISSUES") return "qa-issue";
+  return "qa-na";
+}
+
+function formatMm(value) {
+  return Number.isFinite(Number(value)) ? Number(value).toFixed(2) : "—";
 }
 
 export async function runPrintPackage() {

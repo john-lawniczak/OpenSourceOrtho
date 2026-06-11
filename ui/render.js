@@ -1066,11 +1066,44 @@ function renderPrintExport(status) {
   el("printExportStatus").innerHTML = `
     <p><strong>${status.ready ? "Inputs complete" : "Inputs incomplete"}</strong></p>
     ${blockers}
+    ${printReadiness(status.manufacturing_readiness)}
+    ${printShellQa(status.shell_qa_findings)}
+    ${printTolerances(status.printer_tolerances)}
     ${artifacts}
     <p>${escapeHtml(status.model_material)}</p>
     <p>${escapeHtml(status.thermoforming_material)}</p>
     <p>${escapeHtml(status.caveat)}</p>
   `;
+}
+
+function printVerdictClass(verdict) {
+  if (verdict === "CONSISTENT") return "qa-ok";
+  if (verdict === "ISSUES") return "qa-issue";
+  return "qa-na";
+}
+
+function printReadiness(readiness) {
+  if (!readiness?.verdict) return "";
+  const reason = readiness.reason ? ` — ${escapeHtml(readiness.reason)}` : "";
+  return `<p class="print-qa-readiness ${printVerdictClass(readiness.verdict)}">`
+    + `<strong>Manufacturing readiness: ${escapeHtml(readiness.verdict)}</strong>${reason}</p>`;
+}
+
+function printShellQa(findings) {
+  if (!Array.isArray(findings) || findings.length === 0) return "";
+  const items = findings
+    .map((finding) => `<li class="${printVerdictClass(finding.verdict)}">`
+      + `${escapeHtml(finding.verdict)}: ${escapeHtml(finding.message)}</li>`)
+    .join("");
+  return `<ul class="print-qa-findings">${items}</ul>`;
+}
+
+function printTolerances(tolerances) {
+  if (!tolerances) return "";
+  const fmt = (value) => (Number.isFinite(Number(value)) ? Number(value).toFixed(2) : "—");
+  return `<p class="print-qa-tolerances">Printer compensation: `
+    + `XY ${fmt(tolerances.xy_compensation_mm)} mm, Z ${fmt(tolerances.z_compensation_mm)} mm · `
+    + `min feature ${fmt(tolerances.minimum_printable_feature_mm)} mm.</p>`;
 }
 
 function renderOptimizedStaging(status) {

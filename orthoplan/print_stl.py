@@ -151,13 +151,21 @@ def _stl_text(plan_id: str, stage_index: int, triangles: list) -> str:
 
 
 def solid_stl(name: str, triangles: list) -> str:
-    """ASCII STL for a named solid from a triangle list."""
+    """ASCII STL for a named solid from a triangle list.
+
+    Each facet carries its real unit outward normal computed from the triangle
+    winding (right-hand rule), not a placeholder ``0 0 0``. Many slicers recover
+    the normal from winding, but strict CAD/validation tools treat zero-length
+    facet normals as malformed, so emitting the true normal keeps the export
+    spec-correct and unambiguous.
+    """
 
     lines = [f"solid {name}"]
     for tri in triangles:
+        nx, ny, nz = _facet_normal(tri)
         lines.extend(
             [
-                "  facet normal 0 0 0",
+                f"  facet normal {nx:.6f} {ny:.6f} {nz:.6f}",
                 "    outer loop",
                 f"      vertex {tri[0][0]:.6f} {tri[0][1]:.6f} {tri[0][2]:.6f}",
                 f"      vertex {tri[1][0]:.6f} {tri[1][1]:.6f} {tri[1][2]:.6f}",
@@ -168,6 +176,21 @@ def solid_stl(name: str, triangles: list) -> str:
         )
     lines.append(f"endsolid {name}")
     return "\n".join(lines) + "\n"
+
+
+def _facet_normal(tri: tuple[Vec3, Vec3, Vec3]) -> Vec3:
+    """Unit outward normal from triangle winding; (0,0,0) if degenerate."""
+
+    ax, ay, az = tri[0]
+    bx, by, bz = tri[1]
+    cx, cy, cz = tri[2]
+    ux, uy, uz = bx - ax, by - ay, bz - az
+    vx, vy, vz = cx - ax, cy - ay, cz - az
+    nx, ny, nz = uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx
+    length = (nx * nx + ny * ny + nz * nz) ** 0.5
+    if length == 0:
+        return (0.0, 0.0, 0.0)
+    return (nx / length, ny / length, nz / length)
 
 
 def _box_triangles(cx: float, cy: float, cz: float, sx: float, sy: float, sz: float):

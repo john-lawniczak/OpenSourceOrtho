@@ -87,6 +87,25 @@ def test_shell_manifest_reports_quality_for_reviewed_geometry(tmp_path) -> None:
         result.artifact_sha256[shell["filename"]]
 
 
+def test_shell_quality_block_reports_applied_printer_compensation(tmp_path) -> None:
+    asset, workspace = _registered_asset(tmp_path)
+    plan = _plan_with_fragment(
+        asset,
+        reviewed=True,
+        settings=_settings(xy_compensation_mm=0.05, z_compensation_mm=-0.03),
+    )
+
+    result = export_print_package(plan, tmp_path / "out", workspace=workspace)
+    manifest = json.loads(Path(result.manifest_path).read_text(encoding="utf-8"))
+    shell = manifest["aligner_shells"]["artifacts"][0]
+
+    # The compensation the manifest advertises is now the compensation baked into
+    # the exported mesh, reported back through the shell QA block.
+    assert shell["quality"]["xy_compensation_mm"] == pytest.approx(0.05, abs=1e-6)
+    assert shell["quality"]["z_compensation_mm"] == pytest.approx(-0.03, abs=1e-6)
+    assert manifest["aligner_shells"]["xy_compensation_mm"] == pytest.approx(0.05, abs=1e-6)
+
+
 def test_shell_export_fails_closed_without_real_geometry(tmp_path) -> None:
     asset = MeshAsset(
         id="seg-x", format="stl-ascii", units=MeshUnits.MM, vertex_count=6,

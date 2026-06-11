@@ -2273,3 +2273,45 @@ td input {
   font-size: 12px;
   color: var(--muted);
 }
+
+/* Print/manufacturing QA surfacing for the shell export. */
+.print-qa {
+  margin: 10px 0;
+  display: grid;
+  gap: 8px;
+}
+.print-qa-readiness {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+.print-qa-tolerances {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.print-qa-findings {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+}
+.print-qa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.print-qa-table th,
+.print-qa-table td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.qa-ok { color: var(--accent); }
+.qa-issue { color: var(--warn); font-weight: 600; }
+.qa-na { color: var(--muted); }

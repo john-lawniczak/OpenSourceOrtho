@@ -42,6 +42,10 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   representative surface samples, with bbox fallback when samples are absent.
 - Synthetic validation benchmark report for segmentation Dice/IoU, movement
   error, collision/IPR precision-recall, and shell thickness error.
+- Printer XY/Z compensation baked into exported shell geometry (not metadata
+  only), real per-facet STL normals, and shell QA (readiness verdict, applied
+  compensation, per-stage watertight/thickness/self-intersection, skip reasons)
+  surfaced in the guided and technician print UIs.
 
 ## Honest effectiveness snapshot
 

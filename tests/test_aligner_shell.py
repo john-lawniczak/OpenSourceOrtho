@@ -85,6 +85,40 @@ def _strip() -> list:
     return [(a, b, d), (a, d, c), (c, d, f), (c, f, e)]
 
 
+def test_compensation_defaults_to_no_geometry_change() -> None:
+    baseline = build_aligner_shell(_QUAD, thickness_mm=0.6)
+    compensated = build_aligner_shell(
+        _QUAD, thickness_mm=0.6, xy_compensation_mm=0.0, z_compensation_mm=0.0
+    )
+    assert compensated.triangles == baseline.triangles
+    assert compensated.stats.xy_compensation_mm == 0.0
+    assert compensated.stats.z_compensation_mm == 0.0
+
+
+def test_z_compensation_shifts_geometry_along_the_build_axis() -> None:
+    # _QUAD lies in the z=0 plane with +z winding, so its vertex normals point +z.
+    # A +z compensation must lift every surface point by that amount and is
+    # recorded in the stats so a manifest can report what the mesh contains.
+    base = build_aligner_shell(_QUAD, thickness_mm=0.6)
+    shifted = build_aligner_shell(_QUAD, thickness_mm=0.6, z_compensation_mm=0.1)
+
+    base_min_z = min(v[2] for tri in base.triangles for v in tri)
+    shifted_min_z = min(v[2] for tri in shifted.triangles for v in tri)
+    assert shifted_min_z == pytest.approx(base_min_z + 0.1, abs=1e-6)
+    assert shifted.stats.z_compensation_mm == pytest.approx(0.1, abs=1e-9)
+
+
+def test_compensation_preserves_wall_thickness() -> None:
+    # Compensation biases inner and outer surfaces equally, so the measured
+    # inner-to-outer wall thickness must stay at the requested sheet thickness.
+    result = build_aligner_shell(
+        _QUAD, thickness_mm=0.6, xy_compensation_mm=0.05, z_compensation_mm=0.05
+    )
+    assert result.stats.measured_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    assert result.stats.min_thickness_mm == pytest.approx(0.6, abs=1e-6)
+    assert result.stats.watertight is True
+
+
 def test_gingival_trim_removes_geometry_below_the_plane() -> None:
     # Keep only y >= 5 (the "crown" half); the lower half is trimmed off.
     trim = TrimPlane(point=(0.0, 5.0, 0.0), normal=(0.0, 1.0, 0.0))
