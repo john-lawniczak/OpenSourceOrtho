@@ -15,9 +15,9 @@ clinical approval, treatment clearance, or authorization for physical use.
 - [x] Add CBCT/DICOM upload as local-only case records, storing volume references
   and redacted metadata rather than volume bytes in plan JSON.
 - [x] Add photo/X-ray/notes attachment records as enhanced-review context.
-- [ ] Persist cases with scan provenance, modality, units, arch, file IDs, and
+- [x] Persist cases with scan provenance, modality, units, arch, file IDs, and
   engine version.
-- [ ] Make UI copy distinguish STL-only, enhanced-records, and CBCT-attached
+- [x] Make UI copy distinguish STL-only, enhanced-records, and CBCT-attached
   cases from root/bone-aware review.
 - [x] Add PHI/path redaction tests for all uploaded record types.
 

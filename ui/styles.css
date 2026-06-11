@@ -840,7 +840,47 @@ body[data-theme="dark"] .sample-banner {
   padding-top: 18px;
 }
 
+.review-tier-panel {
+  border-top: 1px solid #344951;
+  padding-top: 18px;
+}
+
+.review-tier-banner {
+  border-left: 4px solid #5a7d8c;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(90, 125, 140, 0.12);
+}
+
+.review-tier-banner[data-tier="cbct-attached"] {
+  border-left-color: #c79a3a;
+  background: rgba(199, 154, 58, 0.12);
+}
+
+.review-tier-banner[data-tier="root-bone-aware"] {
+  border-left-color: #4f9d6f;
+  background: rgba(79, 157, 111, 0.12);
+}
+
+.review-tier-label {
+  margin: 0 0 4px;
+}
+
+.review-tier-summary {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.review-tier-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+}
+
 .data-gap-panel h2,
+.review-tier-panel h2,
 .review-side h2 {
   font-size: 14px;
   margin-bottom: 10px;

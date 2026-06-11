@@ -33,6 +33,13 @@ from orthoplan.model.plan import (
     ToothDelta,
     TreatmentPlan,
 )
+from orthoplan.model.review_tier import (
+    ReviewTier,
+    ReviewTierInfo,
+    review_tier,
+    review_tier_info,
+    root_bone_aware_ready,
+)
 from orthoplan.model.settings import (
     AxisCaps,
     MovementCaps,
@@ -64,6 +71,8 @@ __all__ = [
     "MovementExclusion",
     "PlannedSpacing",
     "PrintExportSettings",
+    "ReviewTier",
+    "ReviewTierInfo",
     "SegmentedToothMesh",
     "Stage",
     "TimelineSettings",
@@ -77,4 +86,7 @@ __all__ = [
     "data_gap_actions",
     "data_gaps",
     "redact_reference",
+    "review_tier",
+    "review_tier_info",
+    "root_bone_aware_ready",
 ]

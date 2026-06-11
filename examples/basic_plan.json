@@ -48,6 +48,7 @@
     }
   },
   "scans": [],
+  "case_records": [],
   "mesh_assets": [],
   "tooth_meshes": [],
   "fixed_teeth": [],
