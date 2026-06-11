@@ -193,5 +193,8 @@ def print_package_payload(
         "review_tier": result.review_tier,
         "uses_real_mesh_geometry": result.uses_real_mesh_geometry,
         "aligner_shell_count": len(result.aligner_shell_paths),
+        "aligner_shell_reports": result.aligner_shell_reports,
+        "manufacturing_readiness": status.manufacturing_readiness,
+        "printer_tolerances": status.printer_tolerances,
         "caveat": result.caveat,
     }

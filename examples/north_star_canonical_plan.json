@@ -47,6 +47,9 @@
       "aligner_shell_enabled": false,
       "sheet_thickness_mm": 0.6,
       "gingival_trim_margin_mm": 2.0,
+      "xy_compensation_mm": 0.0,
+      "z_compensation_mm": 0.0,
+      "minimum_printable_feature_mm": 0.3,
       "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material instructions and chosen process explicitly allow it."
     }
   },
@@ -111,7 +114,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085437Z",
+      "created_at": "2026-06-11T19:36:19.970115Z",
       "reference": null
     },
     {
@@ -135,7 +138,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085513Z",
+      "created_at": "2026-06-11T19:36:19.970193Z",
       "reference": null
     },
     {
@@ -159,7 +162,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085518Z",
+      "created_at": "2026-06-11T19:36:19.970198Z",
       "reference": null
     },
     {
@@ -183,7 +186,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085521Z",
+      "created_at": "2026-06-11T19:36:19.970202Z",
       "reference": null
     },
     {
@@ -207,7 +210,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085525Z",
+      "created_at": "2026-06-11T19:36:19.970206Z",
       "reference": null
     },
     {
@@ -231,7 +234,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085529Z",
+      "created_at": "2026-06-11T19:36:19.970209Z",
       "reference": null
     },
     {
@@ -255,7 +258,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085532Z",
+      "created_at": "2026-06-11T19:36:19.970213Z",
       "reference": null
     },
     {
@@ -279,7 +282,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085536Z",
+      "created_at": "2026-06-11T19:36:19.970216Z",
       "reference": null
     },
     {
@@ -303,7 +306,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085539Z",
+      "created_at": "2026-06-11T19:36:19.970220Z",
       "reference": null
     },
     {
@@ -327,7 +330,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085542Z",
+      "created_at": "2026-06-11T19:36:19.970223Z",
       "reference": null
     },
     {
@@ -351,7 +354,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085546Z",
+      "created_at": "2026-06-11T19:36:19.970229Z",
       "reference": null
     },
     {
@@ -375,7 +378,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085549Z",
+      "created_at": "2026-06-11T19:36:19.970234Z",
       "reference": null
     },
     {
@@ -399,7 +402,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085552Z",
+      "created_at": "2026-06-11T19:36:19.970237Z",
       "reference": null
     },
     {
@@ -423,7 +426,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085555Z",
+      "created_at": "2026-06-11T19:36:19.970242Z",
       "reference": null
     },
     {
@@ -447,7 +450,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085617Z",
+      "created_at": "2026-06-11T19:36:19.970304Z",
       "reference": null
     },
     {
@@ -471,7 +474,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085621Z",
+      "created_at": "2026-06-11T19:36:19.970308Z",
       "reference": null
     },
     {
@@ -495,7 +498,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085625Z",
+      "created_at": "2026-06-11T19:36:19.970312Z",
       "reference": null
     },
     {
@@ -519,7 +522,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085628Z",
+      "created_at": "2026-06-11T19:36:19.970318Z",
       "reference": null
     },
     {
@@ -543,7 +546,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085631Z",
+      "created_at": "2026-06-11T19:36:19.970322Z",
       "reference": null
     },
     {
@@ -567,7 +570,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085635Z",
+      "created_at": "2026-06-11T19:36:19.970326Z",
       "reference": null
     },
     {
@@ -591,7 +594,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085638Z",
+      "created_at": "2026-06-11T19:36:19.970330Z",
       "reference": null
     },
     {
@@ -615,7 +618,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085641Z",
+      "created_at": "2026-06-11T19:36:19.970334Z",
       "reference": null
     },
     {
@@ -639,7 +642,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085644Z",
+      "created_at": "2026-06-11T19:36:19.970338Z",
       "reference": null
     },
     {
@@ -663,7 +666,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085652Z",
+      "created_at": "2026-06-11T19:36:19.970341Z",
       "reference": null
     },
     {
@@ -687,7 +690,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085655Z",
+      "created_at": "2026-06-11T19:36:19.970344Z",
       "reference": null
     },
     {
@@ -711,7 +714,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085658Z",
+      "created_at": "2026-06-11T19:36:19.970347Z",
       "reference": null
     },
     {
@@ -735,7 +738,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085661Z",
+      "created_at": "2026-06-11T19:36:19.970350Z",
       "reference": null
     },
     {
@@ -759,7 +762,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-11T19:19:58.085665Z",
+      "created_at": "2026-06-11T19:36:19.970356Z",
       "reference": null
     }
   ],

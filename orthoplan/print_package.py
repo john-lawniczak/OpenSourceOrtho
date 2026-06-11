@@ -167,6 +167,7 @@ def _write_manifest(
         "model_material": status.model_material,
         "thermoforming_material": status.thermoforming_material,
         "post_processing_notes": status.post_processing_notes,
+        "printer_tolerances": status.printer_tolerances,
         "caveat": status.caveat,
     }
     path = output / f"{stem}-print-manifest.json"
@@ -179,6 +180,9 @@ def _aligner_shell_block(settings, shell_records: list[dict], shell_reports: lis
         "enabled": settings.aligner_shell_enabled,
         "sheet_thickness_mm": settings.sheet_thickness_mm,
         "gingival_trim_margin_mm": settings.gingival_trim_margin_mm,
+        "xy_compensation_mm": settings.xy_compensation_mm,
+        "z_compensation_mm": settings.z_compensation_mm,
+        "minimum_printable_feature_mm": settings.minimum_printable_feature_mm,
         "manufacturing_readiness": _manufacturing_readiness(
             settings.aligner_shell_enabled, shell_reports
         ),

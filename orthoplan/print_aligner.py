@@ -41,7 +41,10 @@ def write_aligner_shells(
             continue  # fail closed: no real geometry -> no shell for this stage
         try:
             shell = build_aligner_shell(
-                triangles, thickness_mm=settings.sheet_thickness_mm, trim=trim
+                triangles,
+                thickness_mm=settings.sheet_thickness_mm,
+                minimum_printable_feature_mm=settings.minimum_printable_feature_mm,
+                trim=trim,
             )
         except ValueError as exc:
             reports.append(_skipped_report(frame.stage_index, str(exc), verdict="ISSUES"))
@@ -81,6 +84,13 @@ def _quality_block(stats) -> dict:
         "connected_components": stats.connected_components,
         "triangle_count": stats.triangle_count,
         "dropped_degenerate_input_triangles": stats.dropped_degenerate_input_triangles,
+        "skinny_input_triangle_count": stats.skinny_input_triangle_count,
+        "input_boundary_edge_count": stats.input_boundary_edge_count,
+        "stitched_rim_triangle_count": stats.stitched_rim_triangle_count,
+        "rim_closed": stats.rim_closed,
+        "self_intersection_count": stats.self_intersection_count,
+        "inner_outer_min_clearance_mm": round(stats.inner_outer_min_clearance_mm, 4),
+        "minimum_printable_feature_mm": round(stats.minimum_printable_feature_mm, 4),
         "thickness_mm": {
             "requested": round(stats.requested_thickness_mm, 4),
             "mean": round(stats.measured_thickness_mm, 4),
@@ -94,7 +104,15 @@ def _quality_block(stats) -> dict:
 
 
 def _quality_verdict(stats) -> str:
-    return "CONSISTENT" if stats.watertight and stats.connected_components == 1 else "ISSUES"
+    consistent = (
+        stats.watertight
+        and stats.connected_components == 1
+        and stats.rim_closed
+        and stats.self_intersection_count <= 2
+        and stats.min_thickness_mm >= stats.minimum_printable_feature_mm
+        and stats.inner_outer_min_clearance_mm >= stats.minimum_printable_feature_mm
+    )
+    return "CONSISTENT" if consistent else "ISSUES"
 
 
 def _completed_report(stage_index: int, record: dict) -> dict:

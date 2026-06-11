@@ -1,6 +1,6 @@
 # Safety Boundary
 
-OpenSource Ortho is a research and development safety playground for clear-aligner planning workflows. It can represent staged geometry and produce manufacturing-oriented exports, with STL-only surface review today and CBCT/DICOM-enhanced root/bone-aware review as a future tier. The current project is not distributed as medical device software, is not complete treatment-planning software, and is not intended to provide diagnosis, treatment approval, autonomous decision-making, or clearance for physical use.
+OpenSource Ortho is a research and development safety playground for clear-aligner planning workflows. It can represent staged geometry and produce manufacturing-oriented exports, with STL-only surface review and reviewed CBCT/DICOM-derived root/bone-aware review when trusted anatomy is supplied. The current project is not distributed as medical device software, is not complete treatment-planning software, and is not intended to provide diagnosis, treatment approval, autonomous decision-making, or clearance for physical use.
 
 ## Capability Boundary
 
@@ -31,9 +31,9 @@ geometric statement, not a biomechanical one. Visualization pivots (crown
 centroid) are explicit display assumptions and never imply knowledge of root or
 bone position.
 
-CBCT/DICOM support is the planned path to root/bone-aware review. Until a CBCT
-record is locally ingested, registered to the STL, segmented or imported as
-reviewed anatomy, and accepted by the relevant feature gate, root/bone-aware
+CBCT/DICOM support is the higher-fidelity path to root/bone-aware review. Until
+a CBCT record is locally ingested, registered to the STL, segmented or imported
+as reviewed anatomy, and accepted by the relevant feature gate, root/bone-aware
 checks must remain unavailable or explicitly marked as unassessed. CBCT presence
 alone does not mean the volume was interpreted or that a plan is suitable.
 
@@ -108,8 +108,8 @@ whatever exists, in priority order:
    (`planning/arch_form.py`). This is geometric processing of data already in the scan. It is
    explicitly a scan-axis heuristic: it does **not** infer roots, bone, or biological response,
    does not resolve mesiodistal/buccolingual axes, and is not a clinical alignment goal.
-4. **Root/bone-aware review** - planned future path when registered CBCT/DICOM-derived
-   anatomy is available and reviewed. This path may add root axes, root proximity,
+4. **Root/bone-aware review** - available only when registered CBCT/DICOM-derived
+   anatomy is present, reviewed, and trusted. This path may add root axes, root proximity,
    and bone-boundary constraints, but those constraints must carry provenance and
    quality status and must fail closed when the CBCT record, registration, or
    segmentation is missing or uncertain. It is not a complete treatment plan.

@@ -11,6 +11,8 @@ _QUAD = [
     ((0.0, 0.0, 0.0), (1.0, 1.0, 0.0), (0.0, 1.0, 0.0)),
 ]
 
+_INVERTED_QUAD = [(tri[0], tri[2], tri[1]) for tri in _QUAD]
+
 
 def test_shell_is_watertight_and_has_requested_thickness() -> None:
     result = build_aligner_shell(_QUAD, thickness_mm=0.6)
@@ -41,6 +43,32 @@ def test_degenerate_input_triangles_are_dropped_before_shelling() -> None:
 
     assert result.stats.dropped_degenerate_input_triangles == 1
     assert result.stats.watertight is True
+
+
+def test_inverted_winding_is_oriented_before_shelling() -> None:
+    result = build_aligner_shell(_INVERTED_QUAD, thickness_mm=0.5)
+
+    assert result.stats.watertight is True
+    assert result.stats.connected_components == 1
+
+
+def test_disconnected_islands_are_reported() -> None:
+    shifted = [
+        tuple((v[0] + 5.0, v[1], v[2]) for v in tri)  # type: ignore[misc]
+        for tri in _QUAD
+    ]
+
+    result = build_aligner_shell([*_QUAD, *shifted], thickness_mm=0.5)
+
+    assert result.stats.connected_components == 2
+
+
+def test_skinny_input_triangles_are_reported() -> None:
+    skinny = ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (1.0, 0.000001, 0.0))
+
+    result = build_aligner_shell([skinny, *_QUAD], thickness_mm=0.5)
+
+    assert result.stats.skinny_input_triangle_count == 1
 
 
 def test_all_degenerate_input_fails_closed() -> None:

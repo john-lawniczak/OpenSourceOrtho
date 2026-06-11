@@ -19,6 +19,7 @@ from orthoplan.model import (
     TreatmentSettings,
 )
 from orthoplan.printing import export_print_package
+from orthoplan.api import print_package_payload
 
 
 _ASCII_STL = """solid frag
@@ -78,6 +79,9 @@ def test_shell_manifest_reports_quality_for_reviewed_geometry(tmp_path) -> None:
     assert manifest["aligner_shells"]["manufacturing_readiness"]["verdict"] == "CONSISTENT"
     assert shell["quality"]["verdict"] == "CONSISTENT"
     assert shell["quality"]["connected_components"] == 1
+    assert shell["quality"]["self_intersection_count"] <= 2
+    assert shell["quality"]["rim_closed"] is True
+    assert shell["quality"]["minimum_printable_feature_mm"] == 0.3
     assert shell["quality"]["thickness_mm"]["p50"] == pytest.approx(0.7, abs=1e-3)
     assert manifest["hashes"]["aligner_shell_sha256"][shell["filename"]] == \
         result.artifact_sha256[shell["filename"]]
@@ -119,3 +123,29 @@ endsolid bad
     assert result.aligner_shell_paths == []
     assert result.aligner_shell_reports[0]["verdict"] == "ISSUES"
     assert manifest["aligner_shells"]["manufacturing_readiness"]["verdict"] == "ISSUES"
+
+
+def test_print_package_payload_surfaces_manufacturing_summary() -> None:
+    payload = {
+        "id": "payload-print",
+        "data": {"segmented_teeth": True},
+        "settings": {
+            "print_export": {
+                "enabled": True,
+                "safety_acknowledged": True,
+                "aligner_shell_enabled": True,
+                "minimum_printable_feature_mm": 0.35,
+            }
+        },
+        "scans": [
+            {"asset": {"id": "scan", "format": "stl", "units": "mm", "vertex_count": 0, "face_count": 0}}
+        ],
+        "stages": [{"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}}]}],
+    }
+
+    result = print_package_payload(payload)
+
+    assert result["ok"] is True
+    assert result["manufacturing_readiness"]["verdict"] == "NOT_APPLICABLE"
+    assert result["printer_tolerances"]["minimum_printable_feature_mm"] == 0.35
+    assert result["aligner_shell_reports"][0]["verdict"] == "NOT_APPLICABLE"
