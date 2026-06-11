@@ -1,7 +1,30 @@
 # CBCT/DICOM Safety-Review Roadmap
 
-> Status: planned. No CBCT/DICOM parser, volume viewer, segmentation model, or
-> STL-to-CBCT registration pipeline is shipped yet.
+> Status: in progress. Local DICOM metadata intake (optional `dicom` extra) and a
+> 3D Slicer handoff path are shipped; the volume viewer, segmentation model, and
+> STL-to-CBCT registration pipeline are still being built.
+
+## Local DICOM metadata intake (shipped)
+
+Install the optional extra to enable metadata parsing:
+
+```
+pip install opensource-ortho[dicom]   # pulls pydicom
+```
+
+`orthoplan.dicom_intake.parse_dicom_metadata` reads ONLY structural acquisition
+fields (modality, voxel spacing, dimensions, orientation, study date) via
+`pydicom` with `stop_before_pixels=True`. Patient identifiers (name, id, birth
+date, accession, referring physician, institution) are never copied into the
+`DicomMetadata` model - see `PHI_TAGS_EXCLUDED`. Volume pixel bytes are never
+loaded into plan JSON; the file stays in the local record workspace and is opened
+in a trusted local viewer (3D Slicer) via `cbct_handoff`. When the extra is not
+installed, intake fails closed (returns an error) rather than guessing.
+
+CBCT lifecycle status (`unavailable` -> `attached` -> `registered` ->
+`anatomy-reviewed`) is fail-closed: an attachment stays `attached` until accepted
+registration and reviewed anatomy exist, and a CBCT attachment never changes
+movement generation on its own.
 
 OpenSource Ortho's product direction is a safety-boundary-first clear-aligner
 planning playground and research toolkit. It can model staged geometry and

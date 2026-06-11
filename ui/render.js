@@ -665,6 +665,7 @@ function caseRecordDetail(record) {
 
 function renderEvaluation(result) {
   renderReviewTier(result.review_tier);
+  renderCbct(result.cbct_status, result.cbct_handoff);
   el("dataGapList").innerHTML = dataGapMarkup(result);
   renderAcquisitionAdvice(result.acquisition_advice);
 
@@ -707,6 +708,37 @@ function renderReviewTier(info) {
     ${info.root_bone_aware
       ? ""
       : `<p class="review-tier-note">Root/bone-aware review is not available for this plan.</p>`}
+  `;
+}
+
+const CBCT_STATUS_COPY = {
+  unavailable: "No CBCT/DICOM volume is attached.",
+  attached: "CBCT/DICOM attached for reference only. Not registered; root/bone checks stay unavailable.",
+  viewed: "CBCT opened in a local viewer. Still not registered to the scan.",
+  registered: "CBCT registered to the surface scan. Anatomy review still pending.",
+  "anatomy-reviewed": "CBCT registered and root/bone anatomy reviewed.",
+};
+
+function renderCbct(status, handoff) {
+  const panel = el("cbctPanel");
+  const banner = el("cbctBanner");
+  if (!panel || !banner) return;
+  if (!status || status === "unavailable") {
+    panel.hidden = true;
+    banner.innerHTML = "";
+    return;
+  }
+  panel.hidden = false;
+  banner.dataset.tier = status === "anatomy-reviewed" ? "root-bone-aware" : "cbct-attached";
+  const refs = handoff?.local_references || [];
+  banner.innerHTML = `
+    <p class="review-tier-label"><strong>CBCT status: ${escapeHtml(status)}</strong></p>
+    <p class="review-tier-summary">${escapeHtml(CBCT_STATUS_COPY[status] || "")}</p>
+    ${handoff?.available ? `
+      <p class="review-tier-summary">${escapeHtml(handoff.instructions)}</p>
+      <p class="review-tier-note">Suggested viewer: ${escapeHtml(handoff.viewer_suggestion)}</p>
+      ${refs.length ? `<ul>${refs.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` : ""}
+    ` : ""}
   `;
 }
 
