@@ -666,6 +666,7 @@ function caseRecordDetail(record) {
 function renderEvaluation(result) {
   renderReviewTier(result.review_tier);
   renderCbct(result.cbct_status, result.cbct_handoff, result.registration);
+  renderAnatomyReview(result.derived_anatomy);
   el("dataGapList").innerHTML = dataGapMarkup(result);
   renderAcquisitionAdvice(result.acquisition_advice);
 
@@ -762,6 +763,51 @@ function registrationMarkup(registration) {
     <p class="review-tier-note">Registration${registration.ready ? " (accepted, quality-backed)" : " (not yet usable)"}:</p>
     <ul>${rows}</ul>
   `;
+}
+
+const ANATOMY_GROUP_LABELS = {
+  roots: "Root geometry",
+  tooth_axes: "Tooth axis",
+  alveolar_bone: "Alveolar bone",
+};
+
+function renderAnatomyReview(anatomy) {
+  const panel = el("anatomyPanel");
+  const list = el("anatomyReviewList");
+  if (!panel || !list) return;
+  const groups = ["roots", "tooth_axes", "alveolar_bone"];
+  const total = anatomy ? groups.reduce((n, g) => n + (anatomy[g]?.length || 0), 0) : 0;
+  if (!anatomy || total === 0) {
+    panel.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+  panel.hidden = false;
+  const sections = groups.map((group) => {
+    const items = anatomy[group] || [];
+    return items.map((item, index) => anatomyRowMarkup(group, index, item)).join("");
+  }).join("");
+  const trustNote = anatomy.has_trusted
+    ? "At least one object is trusted (reviewed and in field)."
+    : "No object is trusted yet - root/bone-aware checks stay unavailable (fail-closed).";
+  list.innerHTML = `<p class="review-tier-note">${escapeHtml(trustNote)}</p>${sections}`;
+}
+
+function anatomyRowMarkup(group, index, item) {
+  const label = ANATOMY_GROUP_LABELS[group] || group;
+  const tooth = item.tooth?.value ? ` ${item.tooth.value}` : "";
+  const conf = item.confidence != null ? ` · conf ${Number(item.confidence).toFixed(2)}` : "";
+  const flags = [
+    item.trusted ? "trusted" : "not trusted",
+    item.out_of_field ? "out of field" : null,
+  ].filter(Boolean).join(" · ");
+  const btn = (status, text) => `<button data-anatomy-review="${status}" data-anatomy-group="${group}" data-anatomy-index="${index}" type="button">${text}</button>`;
+  return `
+    <div class="segment-row anatomy-row" data-status="${escapeHtml(item.review_status)}">
+      <span><strong>${escapeHtml(label)}${escapeHtml(tooth)}</strong> · ${escapeHtml(item.review_status)}${escapeHtml(conf)}</span>
+      <small>${escapeHtml(flags)}</small>
+      <span class="anatomy-actions">${btn("accepted", "Accept")}${btn("corrected", "Correct")}${btn("rejected", "Reject")}</span>
+    </div>`;
 }
 
 function dataGapMarkup(result) {

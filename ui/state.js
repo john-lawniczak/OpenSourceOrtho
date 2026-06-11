@@ -30,6 +30,11 @@ export const state = {
   uploadStorageStatus: "",
   recordUploadStatus: "",
   caseRecords: [],
+  // CBCT registration transforms and reviewed CBCT-derived anatomy. Usually
+  // empty (the browser has no CBCT processing flow); populated when an imported
+  // plan carries them, and mutated by the anatomy review controls.
+  registrations: [],
+  derivedAnatomy: null,
   scanUnits: "unverified",
   scanArch: "",
   // Latest response from the Python engine (POST /api/evaluate). The UI never

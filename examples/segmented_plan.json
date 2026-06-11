@@ -123,6 +123,7 @@
     }
   ],
   "registrations": [],
+  "derived_anatomy": null,
   "fixed_teeth": [],
   "movement_exclusions": [],
   "attachments": [],

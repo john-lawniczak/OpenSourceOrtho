@@ -262,6 +262,7 @@ document.body.addEventListener("click", (event) => {
   const guidedStepTarget = closestDatasetTarget(target, "gstepNav");
   const printArtifactTarget = closestDatasetTarget(target, "printArtifact");
   const wearTarget = closestDatasetTarget(target, "wear");
+  const anatomyReviewTarget = closestDatasetTarget(target, "anatomyReview");
 
   if (wearTarget) {
     setWearInterval(Number(wearTarget.dataset.wear));
@@ -389,6 +390,13 @@ document.body.addEventListener("click", (event) => {
     state.caseRecords = state.caseRecords.filter((record) => record.id !== removeRecordTarget.dataset.removeRecord);
     updateAvailabilityFromCaseRecords();
     renderAll();
+  }
+  if (anatomyReviewTarget) {
+    applyAnatomyReview(
+      anatomyReviewTarget.dataset.anatomyGroup,
+      Number(anatomyReviewTarget.dataset.anatomyIndex),
+      anatomyReviewTarget.dataset.anatomyReview,
+    );
   }
   if (detailModeTarget) {
     state.detailMode[detailModeTarget.dataset.detailMode] = detailModeTarget.dataset.detailValue;
@@ -569,6 +577,19 @@ function updateAvailabilityFromCaseRecords() {
   state.availability.photos = kinds.has("photo");
   state.availability.radiographs = kinds.has("radiograph");
   state.availability.clinician_notes = kinds.has("note");
+}
+
+// Reviewer accepts/corrects/rejects a CBCT-derived anatomy object. Mutates the
+// review_status in place and re-evaluates; the engine recomputes the trusted
+// flag and review tier (root/bone-aware stays fail-closed unless accepted).
+const ANATOMY_GROUPS = { roots: "roots", tooth_axes: "tooth_axes", alveolar_bone: "alveolar_bone" };
+
+function applyAnatomyReview(group, index, status) {
+  const key = ANATOMY_GROUPS[group];
+  const list = key && state.derivedAnatomy ? state.derivedAnatomy[key] : null;
+  if (!Array.isArray(list) || !list[index]) return;
+  list[index] = { ...list[index], review_status: status };
+  renderAll();
 }
 
 async function registerUploadedStls(files) {
@@ -911,6 +932,8 @@ function restorePlan(snapshot) {
   }
   if (snapshot.data) state.availability = { ...state.availability, ...snapshot.data };
   state.caseRecords = snapshot.case_records || [];
+  state.registrations = snapshot.registrations || [];
+  state.derivedAnatomy = snapshot.derived_anatomy || null;
   state.rows = rowsFromPlan(snapshot);
   // Bring back this plan's segmentation review draft (corrections, marked gaps),
   // then let the saved snapshot's applied per-tooth meshes win - they are the

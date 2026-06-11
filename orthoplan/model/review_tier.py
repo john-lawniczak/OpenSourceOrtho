@@ -100,10 +100,10 @@ def root_bone_aware_ready(plan: TreatmentPlan) -> bool:
     their own promote a plan to root/bone-aware.
     """
 
-    anatomy = getattr(plan, "derived_anatomy", None) or []
-    if not registration_ready(plan) or not anatomy:
+    anatomy = getattr(plan, "derived_anatomy", None)
+    if not registration_ready(plan) or anatomy is None:
         return False
-    return any(getattr(a, "reviewed", False) for a in anatomy)
+    return bool(getattr(anatomy, "has_trusted", False))
 
 
 def _has_cbct(plan: TreatmentPlan) -> bool:

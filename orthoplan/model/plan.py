@@ -13,6 +13,7 @@ from orthoplan.model.clinical import (
     MovementExclusion,
     PlannedSpacing,
 )
+from orthoplan.model.anatomy import DerivedAnatomy
 from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame
 from orthoplan.model.identity import Arch, NumberingSystem, ToothId
 from orthoplan.model.registration import RegistrationTransform
@@ -129,6 +130,7 @@ class TreatmentPlan(BaseModel):
     mesh_assets: list[MeshAsset] = Field(default_factory=list)
     tooth_meshes: list[SegmentedToothMesh] = Field(default_factory=list)
     registrations: list[RegistrationTransform] = Field(default_factory=list)
+    derived_anatomy: DerivedAnatomy | None = None
     fixed_teeth: list[FixedTooth] = Field(default_factory=list)
     movement_exclusions: list[MovementExclusion] = Field(default_factory=list)
     attachments: list[Attachment] = Field(default_factory=list)
@@ -174,6 +176,7 @@ class TreatmentPlan(BaseModel):
             raise ValueError("duplicate case record id")
 
         self._validate_registrations(asset_ids)
+        self._validate_derived_anatomy(asset_ids)
 
         # Build the canonical tooth -> mesh map while rejecting duplicate links.
         tooth_to_mesh: dict[str, str] = {}
@@ -231,4 +234,32 @@ class TreatmentPlan(BaseModel):
                 raise ValueError(
                     "registration references unknown CBCT/DICOM record "
                     f"{reg.target_cbct_record_id!r}"
+                )
+
+    def _validate_derived_anatomy(self, asset_ids: set[str]) -> None:
+        """Every derived-anatomy object must trace to a real CBCT record and registration.
+
+        Provenance integrity is what makes 'reviewed' meaningful - a trusted root
+        or axis can never reference a volume, registration, or mesh not in the plan.
+        """
+
+        if self.derived_anatomy is None:
+            return
+        cbct_record_ids = {
+            record.id for record in self.case_records if record.kind in CBCT_RECORD_KINDS
+        }
+        registration_ids = {reg.id for reg in self.registrations}
+        for obj in self.derived_anatomy.all_objects():
+            if obj.source_cbct_record_id not in cbct_record_ids:
+                raise ValueError(
+                    f"derived anatomy references unknown CBCT record {obj.source_cbct_record_id!r}"
+                )
+            if obj.registration_id not in registration_ids:
+                raise ValueError(
+                    f"derived anatomy references unknown registration {obj.registration_id!r}"
+                )
+            mesh_id = getattr(obj, "mesh_asset_id", None)
+            if mesh_id is not None and mesh_id not in asset_ids:
+                raise ValueError(
+                    f"derived anatomy references unknown mesh asset {mesh_id!r}"
                 )

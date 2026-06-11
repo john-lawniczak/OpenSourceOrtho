@@ -59,6 +59,7 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
             "ready": registration_ready(plan),
             "transforms": [reg.model_dump(mode="json") for reg in plan.registrations],
         },
+        "derived_anatomy": _derived_anatomy_block(plan),
         "data_gaps": data_gaps(plan),
         "data_gap_actions": [action.model_dump() for action in data_gap_actions(plan)],
         "acquisition_advice": acquisition_advice(plan).model_dump(),
@@ -99,6 +100,31 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
             for link in plan.tooth_meshes
             if link.local_frame is not None
         },
+    }
+
+
+def _derived_anatomy_block(plan: TreatmentPlan) -> dict[str, Any] | None:
+    """Reviewed CBCT-derived anatomy with per-object trust flags, or None.
+
+    ``trusted`` (reviewed AND in field) is computed here so the UI never has to
+    re-derive the fail-closed rule.
+    """
+
+    anatomy = plan.derived_anatomy
+    if anatomy is None:
+        return None
+
+    def _row(obj: Any) -> dict[str, Any]:
+        data = obj.model_dump(mode="json")
+        data["trusted"] = obj.trusted
+        data["reviewed"] = obj.reviewed
+        return data
+
+    return {
+        "has_trusted": anatomy.has_trusted,
+        "roots": [_row(r) for r in anatomy.roots],
+        "tooth_axes": [_row(a) for a in anatomy.tooth_axes],
+        "alveolar_bone": [_row(b) for b in anatomy.alveolar_bone],
     }
 
 

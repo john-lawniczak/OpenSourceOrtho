@@ -23,6 +23,11 @@ export function planJson() {
     // merged automatically.
     mesh_assets: state.segmentation.applied?.mesh_assets || [],
     tooth_meshes: state.segmentation.applied?.tooth_meshes || [],
+    // CBCT registration + reviewed anatomy round-trip when present (e.g. an
+    // imported plan/case version). The browser has no CBCT processing flow yet,
+    // so these are usually empty; reviewer edits mutate them in place.
+    registrations: state.registrations || [],
+    derived_anatomy: state.derivedAnatomy || null,
     fixed_teeth: fixedTeeth(),
     movement_exclusions: parseMovementExclusions(state.clinicalControls.movementExclusions),
     attachments: parseToothList(state.clinicalControls.attachmentTeeth).map((tooth) => ({

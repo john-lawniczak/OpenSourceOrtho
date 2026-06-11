@@ -81,14 +81,14 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 6: Reviewed CBCT-derived anatomy
 
-- [ ] Add models for root meshes or root centerlines per tooth.
-- [ ] Add models for trusted tooth axes derived from reviewed crown/root anatomy.
-- [ ] Add alveolar bone surface or boundary-volume records.
-- [ ] Track source record, registration transform, model/operator provenance,
+- [x] Add models for root meshes or root centerlines per tooth.
+- [x] Add models for trusted tooth axes derived from reviewed crown/root anatomy.
+- [x] Add alveolar bone surface or boundary-volume records.
+- [x] Track source record, registration transform, model/operator provenance,
   confidence, and review/correction status for every derived object.
-- [ ] Build browser review UI for accepting, correcting, or rejecting derived
+- [x] Build browser review UI for accepting, correcting, or rejecting derived
   anatomy.
-- [ ] Fail closed when anatomy is missing, uncertain, out of field, or
+- [x] Fail closed when anatomy is missing, uncertain, out of field, or
   unreviewed.
 
 ### Phase 7: Root/bone-aware review checks
