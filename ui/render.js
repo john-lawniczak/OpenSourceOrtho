@@ -664,6 +664,7 @@ function caseRecordDetail(record) {
 }
 
 function renderEvaluation(result) {
+  renderReviewTier(result.review_tier);
   el("dataGapList").innerHTML = dataGapMarkup(result);
   renderAcquisitionAdvice(result.acquisition_advice);
 
@@ -690,6 +691,23 @@ function renderEvaluation(result) {
   renderPrintExport(result.print_export);
   renderOptimizedStaging(result.optimized_staging);
   renderDownloadActions();
+}
+
+function renderReviewTier(info) {
+  const container = el("reviewTierBanner");
+  if (!container) return;
+  if (!info) {
+    container.innerHTML = "";
+    return;
+  }
+  container.dataset.tier = info.tier;
+  container.innerHTML = `
+    <p class="review-tier-label"><strong>${escapeHtml(info.label)}</strong></p>
+    <p class="review-tier-summary">${escapeHtml(info.summary)}</p>
+    ${info.root_bone_aware
+      ? ""
+      : `<p class="review-tier-note">Root/bone-aware review is not available for this plan.</p>`}
+  `;
 }
 
 function dataGapMarkup(result) {
