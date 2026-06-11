@@ -85,6 +85,7 @@
       "notes": null
     }
   ],
+  "case_records": [],
   "mesh_assets": [
     {
       "id": "lm-11",
@@ -107,7 +108,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736260Z",
+      "created_at": "2026-06-11T17:36:22.696062Z",
       "reference": null
     },
     {
@@ -131,7 +132,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736434Z",
+      "created_at": "2026-06-11T17:36:22.696229Z",
       "reference": null
     },
     {
@@ -155,7 +156,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736442Z",
+      "created_at": "2026-06-11T17:36:22.696234Z",
       "reference": null
     },
     {
@@ -179,7 +180,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736448Z",
+      "created_at": "2026-06-11T17:36:22.696238Z",
       "reference": null
     },
     {
@@ -203,7 +204,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736589Z",
+      "created_at": "2026-06-11T17:36:22.696242Z",
       "reference": null
     },
     {
@@ -227,7 +228,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736594Z",
+      "created_at": "2026-06-11T17:36:22.696245Z",
       "reference": null
     },
     {
@@ -251,7 +252,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736599Z",
+      "created_at": "2026-06-11T17:36:22.696249Z",
       "reference": null
     },
     {
@@ -275,7 +276,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736604Z",
+      "created_at": "2026-06-11T17:36:22.696252Z",
       "reference": null
     },
     {
@@ -299,7 +300,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736607Z",
+      "created_at": "2026-06-11T17:36:22.696255Z",
       "reference": null
     },
     {
@@ -323,7 +324,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736610Z",
+      "created_at": "2026-06-11T17:36:22.696258Z",
       "reference": null
     },
     {
@@ -347,7 +348,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736613Z",
+      "created_at": "2026-06-11T17:36:22.696262Z",
       "reference": null
     },
     {
@@ -371,7 +372,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736617Z",
+      "created_at": "2026-06-11T17:36:22.696267Z",
       "reference": null
     },
     {
@@ -395,7 +396,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736620Z",
+      "created_at": "2026-06-11T17:36:22.696271Z",
       "reference": null
     },
     {
@@ -419,7 +420,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736623Z",
+      "created_at": "2026-06-11T17:36:22.696275Z",
       "reference": null
     },
     {
@@ -443,7 +444,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736702Z",
+      "created_at": "2026-06-11T17:36:22.696343Z",
       "reference": null
     },
     {
@@ -467,7 +468,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736708Z",
+      "created_at": "2026-06-11T17:36:22.696347Z",
       "reference": null
     },
     {
@@ -491,7 +492,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736711Z",
+      "created_at": "2026-06-11T17:36:22.696351Z",
       "reference": null
     },
     {
@@ -515,7 +516,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736715Z",
+      "created_at": "2026-06-11T17:36:22.696354Z",
       "reference": null
     },
     {
@@ -539,7 +540,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736718Z",
+      "created_at": "2026-06-11T17:36:22.696357Z",
       "reference": null
     },
     {
@@ -563,7 +564,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736721Z",
+      "created_at": "2026-06-11T17:36:22.696360Z",
       "reference": null
     },
     {
@@ -587,7 +588,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736724Z",
+      "created_at": "2026-06-11T17:36:22.696364Z",
       "reference": null
     },
     {
@@ -611,7 +612,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736728Z",
+      "created_at": "2026-06-11T17:36:22.696367Z",
       "reference": null
     },
     {
@@ -635,7 +636,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736732Z",
+      "created_at": "2026-06-11T17:36:22.696370Z",
       "reference": null
     },
     {
@@ -659,7 +660,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736735Z",
+      "created_at": "2026-06-11T17:36:22.696373Z",
       "reference": null
     },
     {
@@ -683,7 +684,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736738Z",
+      "created_at": "2026-06-11T17:36:22.696376Z",
       "reference": null
     },
     {
@@ -707,7 +708,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736741Z",
+      "created_at": "2026-06-11T17:36:22.696381Z",
       "reference": null
     },
     {
@@ -731,7 +732,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736744Z",
+      "created_at": "2026-06-11T17:36:22.696384Z",
       "reference": null
     },
     {
@@ -755,7 +756,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736747Z",
+      "created_at": "2026-06-11T17:36:22.696388Z",
       "reference": null
     }
   ],
@@ -768,6 +769,7 @@
       "mesh_asset_id": "lm-11",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -778,6 +780,7 @@
       "mesh_asset_id": "lm-12",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -788,6 +791,7 @@
       "mesh_asset_id": "lm-13",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -798,6 +802,7 @@
       "mesh_asset_id": "lm-14",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -808,6 +813,7 @@
       "mesh_asset_id": "lm-15",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -818,6 +824,7 @@
       "mesh_asset_id": "lm-16",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -828,6 +835,7 @@
       "mesh_asset_id": "lm-17",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -838,6 +846,7 @@
       "mesh_asset_id": "lm-21",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -848,6 +857,7 @@
       "mesh_asset_id": "lm-22",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -858,6 +868,7 @@
       "mesh_asset_id": "lm-23",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -868,6 +879,7 @@
       "mesh_asset_id": "lm-24",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -878,6 +890,7 @@
       "mesh_asset_id": "lm-25",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -888,6 +901,7 @@
       "mesh_asset_id": "lm-26",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -898,6 +912,7 @@
       "mesh_asset_id": "lm-27",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -908,6 +923,7 @@
       "mesh_asset_id": "lm-41",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -918,6 +934,7 @@
       "mesh_asset_id": "lm-42",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -928,6 +945,7 @@
       "mesh_asset_id": "lm-43",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -938,6 +956,7 @@
       "mesh_asset_id": "lm-44",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -948,6 +967,7 @@
       "mesh_asset_id": "lm-45",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -958,6 +978,7 @@
       "mesh_asset_id": "lm-46",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -968,6 +989,7 @@
       "mesh_asset_id": "lm-47",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -978,6 +1000,7 @@
       "mesh_asset_id": "lm-31",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -988,6 +1011,7 @@
       "mesh_asset_id": "lm-32",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -998,6 +1022,7 @@
       "mesh_asset_id": "lm-33",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1008,6 +1033,7 @@
       "mesh_asset_id": "lm-34",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1018,6 +1044,7 @@
       "mesh_asset_id": "lm-35",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1028,6 +1055,7 @@
       "mesh_asset_id": "lm-36",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1038,6 +1066,7 @@
       "mesh_asset_id": "lm-37",
       "source": "synthetic",
       "local_frame": null,
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     }
   ],

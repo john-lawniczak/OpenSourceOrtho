@@ -174,7 +174,9 @@ class Handler(BaseHTTPRequestHandler):
             elif path == "/api/plan/version":
                 self._send_json(200, save_plan_version_payload(payload, store_path=self._case_store()))
             elif path == "/api/print-package":
-                self._send_json(200, print_package_payload(payload))
+                self._send_json(
+                    200, print_package_payload(payload, workspace=self._mesh_workspace())
+                )
             elif path == "/api/segment":
                 self._send_json(
                     200,

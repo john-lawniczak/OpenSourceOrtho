@@ -101,7 +101,9 @@ def evaluate_plan_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return evaluate_plan(plan)
 
 
-def print_package_payload(payload: dict[str, Any]) -> dict[str, Any]:
+def print_package_payload(
+    payload: dict[str, Any], *, workspace: str | Path | None = None
+) -> dict[str, Any]:
     """Validate a plan and build a downloadable print package. Never raises.
 
     Reuses :func:`export_print_package` (stage proxy STLs + manifest + zip + an
@@ -124,7 +126,9 @@ def print_package_payload(payload: dict[str, Any]) -> dict[str, Any]:
             "print_export": status.model_dump(mode="json"),
         }
     with tempfile.TemporaryDirectory() as tmp:
-        result = export_print_package(plan, tmp, make_zip=True, make_email_draft=True)
+        result = export_print_package(
+            plan, tmp, make_zip=True, make_email_draft=True, workspace=workspace
+        )
         zip_path = Path(result.zip_path) if result.zip_path else None
         eml_path = Path(result.email_draft_path) if result.email_draft_path else None
         zip_bytes = zip_path.read_bytes() if zip_path else b""
@@ -141,5 +145,7 @@ def print_package_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "email_eml_base64": base64.b64encode(eml_bytes).decode("ascii"),
         "delivery_email": status.delivery_email,
         "stage_count": len(result.artifact_paths),
+        "review_tier": result.review_tier,
+        "uses_real_mesh_geometry": result.uses_real_mesh_geometry,
         "caveat": result.caveat,
     }
