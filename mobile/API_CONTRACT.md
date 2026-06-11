@@ -15,8 +15,9 @@ All responses are JSON objects. Every endpoint returns either:
 - `{ "ok": false, "errors": ["..."] }` - validation/usage error (HTTP 200/4xx).
 
 Clients must treat any non-`ok` body, transport error, or unreachable host as
-"engine offline / request rejected" and surface that plainly - never fall back to
-a second, divergent on-device implementation.
+"engine offline / request rejected" and surface that plainly. The only allowed
+mobile fallback is the explicitly labeled STL-only review described below; it is
+not a second full planning engine.
 
 ## Base URL
 
@@ -88,6 +89,21 @@ Lite screens map to these fields:
 > `verdict` is `CONSISTENT` or `ISSUES`. Never render it as "safe", "approved",
 > "cleared", or "ready". Always show `caveat`.
 
+### STL-only on-device fallback
+
+If `POST /api/generate-plan` is unreachable and every selected input is an STL,
+the native app may return a local `GeneratePlanResponse` with:
+
+- `source: "mobile-stl-best-effort"`
+- `correctness.verdict: "CONSISTENT"` only as an internal consistency label
+- warnings that name the browser/full engine as required for segmentation,
+  mesh-backed edits, CBCT/DICOM, and print-critical review
+- an empty/opaque staged plan suitable for mobile display and export, not for
+  clinical or manufacturing reliance
+
+The fallback must not run for CBCT/DICOM, photos, mixed modalities, or any case
+that implies root/bone-aware review.
+
 ---
 
 ## 2. `POST /api/evaluate` - re-evaluate an existing plan (optional)
@@ -119,10 +135,19 @@ documented here so the apps can add it later without re-deriving the contract.
 
 | Situation                       | App behavior                                        |
 |---------------------------------|-----------------------------------------------------|
-| Host unreachable / timeout      | "Engine offline" state; no on-device plan synthesis |
+| Host unreachable / timeout with STL-only inputs | Limited `mobile-stl-best-effort` response, clearly caveated |
+| Host unreachable / timeout with CBCT/DICOM or mixed inputs | "Engine offline" state; use browser/full engine |
 | `{ "ok": false, "errors": [] }` | Show the returned error strings verbatim            |
 | Missing `caveat`                | Still show the standing safety disclaimer           |
 | `verdict == "ISSUES"`           | Surface findings; never imply the plan is fine      |
+
+## Browser review import
+
+Mobile may import JSON files produced by the browser/Python workspace and store
+them as opaque review artifacts. These imports are for on-device viewing,
+sharing, and export only. Plan changes, CBCT/DICOM work, STL registration,
+segmentation, and mesh-backed print package generation stay in the browser/full
+engine.
 
 ## Standing disclaimer string
 

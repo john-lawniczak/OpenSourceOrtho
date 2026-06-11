@@ -1,8 +1,10 @@
 # OpenSource Ortho - Android (Lite)
 
-Native **Kotlin + Jetpack Compose** lite client. A thin client over the Python
-engine; it renders what the engine returns and never synthesizes a plan
-on-device. See the shared [`../README.md`](../README.md) and the wire contract in
+Native **Kotlin + Jetpack Compose** lite client. It uses the Python engine for
+full-fidelity work and can synthesize only a clearly labeled STL-only review when
+that engine is offline. CBCT/DICOM, segmentation, mesh-backed edits, and
+print-critical exports remain browser/full-engine workflows. See the shared
+[`../README.md`](../README.md) and the wire contract in
 [`../API_CONTRACT.md`](../API_CONTRACT.md).
 
 ## Layout
@@ -20,7 +22,7 @@ android/
       EngineConfig.kt            engine base URL (one place to change)
       EngineModels.kt            @Serializable mirrors of the contract subset
       EngineClient.kt            coroutine HTTP client for the lite endpoints
-      LiteFlow.kt                flow steps + minimal plan builder
+      LiteFlow.kt                flow steps, minimal plan builder, STL fallback
       SafetyText.kt              verdict labels (disclaimer text in strings.xml)
       LiteFlowViewModel.kt       StateFlow UI state, delegates to the client
       MainActivity.kt            Compose entry + safety banner
@@ -56,17 +58,23 @@ engine.
 ## What still has to be built (lite v1 -> shippable)
 
 - **Mesh registration**: `UploadScreen` uses the Storage Access Framework for
-  DICOM/ZIP, `.stl`, and images; the next step is uploading/registering bytes
-  with the engine mesh workspace instead of sending metadata only.
-- **Mesh-backed 3D renderer**: `TeethAndTimeScreen` has an interactive native
-  preview; replace it with a Filament/OpenGL renderer backed by `plan.stages`
-  and mesh bytes from `GET /api/mesh/<id>`.
+  `.stl` files, CBCT/DICOM attachments, photos from local/cloud providers, and
+  browser-generated JSON reviews/packages; the next step is uploading/registering
+  STL bytes with the engine mesh workspace instead of sending metadata only.
+- **Persistent review library**: browser JSON can be imported and included in
+  the exported mobile package; add durable app storage and deletion/rename UI.
+- **Per-tooth 3D renderer**: `TeethAndTimeScreen` now renders a projected native
+  preview from selected STL geometry when URI access is available. Replace it
+  with a Filament/OpenGL renderer backed by segmented per-tooth meshes from
+  `GET /api/mesh/<id>` and engine stage transforms.
 - **Destination-specific print/send handoff**: `PrintAndSendScreen` writes a JSON
   package, supports Android document export, opens Sharesheet targets, and opens
   the platform print dialog; add lab/printer profiles as those destinations are
   chosen.
 - **Production engine URL** over `https://`.
 - **Optional model review consent** UI before setting `share_acknowledged`.
+- **Browser handoff links** for opening the same case in the local/hosted
+  browser workspace when CBCT/DICOM or plan editing is needed.
 
 ## Safety
 

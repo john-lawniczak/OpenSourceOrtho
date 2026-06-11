@@ -50,6 +50,27 @@ final class LiteKitTests: XCTestCase {
         XCTAssertTrue(request.acknowledgeEducational)
     }
 
+    func testOnDeviceSynthesisIsSTLOnlyAndCaveated() throws {
+        let stlScans = [SelectedScan(fileName: "upper.stl", arch: "upper", byteCount: 100)]
+        XCTAssertTrue(OnDevicePlanSynthesizer.canSynthesize(scans: stlScans))
+
+        let cbctScans = [SelectedScan(fileName: "cbct.zip", byteCount: 100, modality: "cbct")]
+        XCTAssertFalse(OnDevicePlanSynthesizer.canSynthesize(scans: cbctScans))
+
+        let response = OnDevicePlanSynthesizer.response(for: stlScans)
+        XCTAssertEqual(response.source, "mobile-stl-best-effort")
+        XCTAssertEqual(response.correctness?.verdict, "CONSISTENT")
+        XCTAssertTrue(response.caveat?.contains("STL metadata only") == true)
+        XCTAssertTrue(response.warnings?.joined(separator: " ").contains("browser/full engine") == true)
+    }
+
+    func testStoredBrowserReviewCarriesOpaqueJson() {
+        let review = StoredPlanReview(fileName: "case-review.json", byteCount: 14, jsonText: "{\"ok\":true}")
+        XCTAssertEqual(review.fileName, "case-review.json")
+        XCTAssertEqual(review.jsonText, "{\"ok\":true}")
+        XCTAssertFalse(review.id.isEmpty)
+    }
+
     func testDecodeGeneratePlanResponseSubset() throws {
         let body = """
         {

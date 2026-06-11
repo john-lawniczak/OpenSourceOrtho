@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
 data class LiteUiState(
     val step: LiteStep = LiteStep.UPLOAD,
     val scans: List<SelectedScan> = emptyList(),
+    val storedReviews: List<StoredPlanReview> = emptyList(),
     val isGenerating: Boolean = false,
     val result: GeneratePlanResponse? = null,
     val errorMessage: String? = null,
@@ -65,8 +66,14 @@ class LiteFlowViewModel(
                     it.copy(isGenerating = false, result = response, step = LiteStep.REVIEW)
                 }
             } catch (e: EngineException) {
-                _state.update { it.copy(isGenerating = false, errorMessage = e.message) }
+                synthesizeOnDeviceOrReport(e.message ?: "Engine offline / request rejected.")
             }
+        }
+    }
+
+    fun importBrowserReview(review: StoredPlanReview) {
+        _state.update {
+            it.copy(storedReviews = it.storedReviews + review, errorMessage = null)
         }
     }
 
@@ -79,9 +86,31 @@ class LiteFlowViewModel(
             generatedAtEpochMillis = System.currentTimeMillis(),
             scans = _state.value.scans,
             result = _state.value.result,
+            storedReviews = _state.value.storedReviews,
             disclaimer = "See the in-app safety disclaimer. Engine verdicts are not clinical approval.",
         )
         return exportJson.encodeToString(payload)
+    }
+
+    private fun synthesizeOnDeviceOrReport(engineMessage: String) {
+        val scans = _state.value.scans
+        if (!OnDevicePlanSynthesizer.canSynthesize(scans)) {
+            _state.update {
+                it.copy(
+                    isGenerating = false,
+                    errorMessage = "$engineMessage\nMobile generation is STL-only. Open the browser/full engine for CBCT/DICOM, segmentation, and plan changes.",
+                )
+            }
+            return
+        }
+        _state.update {
+            it.copy(
+                isGenerating = false,
+                result = OnDevicePlanSynthesizer.response(scans),
+                errorMessage = "Using limited on-device STL synthesis because the engine was unavailable. Open the browser/full engine for mesh-backed edits, CBCT/DICOM, and print-critical review.",
+                step = LiteStep.REVIEW,
+            )
+        }
     }
 
     private companion object {
@@ -94,5 +123,6 @@ private data class MobileExportPackage(
     val generatedAtEpochMillis: Long,
     val scans: List<SelectedScan>,
     val result: GeneratePlanResponse?,
+    val storedReviews: List<StoredPlanReview>,
     val disclaimer: String,
 )
