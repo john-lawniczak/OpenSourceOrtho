@@ -24,11 +24,18 @@ What exists:
 - Proxy/model-only fallback is labeled and fail-closed.
 - Aligner-shell export for reviewed real geometry with configurable sheet
   thickness and trusted-axis trim when available.
+- Printer XY/Z dimensional compensation is baked into the exported shell
+  geometry (not just reported in the manifest) and the applied values are echoed
+  back through the shell QA block.
+- Exported STL files carry real per-facet unit normals computed from triangle
+  winding, not placeholder zero normals.
 - Shell QA reports watertightness, connected components, rim closure, approximate
   self-intersection signals, inner/outer clearance, thickness distribution,
   degenerate/sliver input counts, hashes, and manufacturing-readiness verdicts.
 - API and print-package payloads surface manufacturing readiness and printer
-  tolerance metadata.
+  tolerance metadata, and the UI now shows the readiness verdict, applied
+  compensation, and per-stage shell QA (including skip reasons) in both the
+  guided print step and the technician print panel.
 
 Why it is not higher:
 

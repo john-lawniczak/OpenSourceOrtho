@@ -45,6 +45,8 @@ def write_aligner_shells(
                 thickness_mm=settings.sheet_thickness_mm,
                 minimum_printable_feature_mm=settings.minimum_printable_feature_mm,
                 trim=trim,
+                xy_compensation_mm=settings.xy_compensation_mm,
+                z_compensation_mm=settings.z_compensation_mm,
             )
         except ValueError as exc:
             reports.append(_skipped_report(frame.stage_index, str(exc), verdict="ISSUES"))
@@ -91,6 +93,8 @@ def _quality_block(stats) -> dict:
         "self_intersection_count": stats.self_intersection_count,
         "inner_outer_min_clearance_mm": round(stats.inner_outer_min_clearance_mm, 4),
         "minimum_printable_feature_mm": round(stats.minimum_printable_feature_mm, 4),
+        "xy_compensation_mm": round(stats.xy_compensation_mm, 4),
+        "z_compensation_mm": round(stats.z_compensation_mm, 4),
         "thickness_mm": {
             "requested": round(stats.requested_thickness_mm, 4),
             "mean": round(stats.measured_thickness_mm, 4),

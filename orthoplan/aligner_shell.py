@@ -62,6 +62,8 @@ class ShellStats(BaseModel):
     minimum_printable_feature_mm: float
     triangle_count: int = Field(ge=0)
     trimmed: bool = False
+    xy_compensation_mm: float = 0.0
+    z_compensation_mm: float = 0.0
 
 
 class ShellResult(BaseModel):
@@ -160,8 +162,20 @@ def build_aligner_shell(
     thickness_mm: float,
     minimum_printable_feature_mm: float = 0.3,
     trim: TrimPlane | None = None,
+    xy_compensation_mm: float = 0.0,
+    z_compensation_mm: float = 0.0,
 ) -> ShellResult:
-    """Offset a surface outward by ``thickness_mm`` and close it into a solid."""
+    """Offset a surface outward by ``thickness_mm`` and close it into a solid.
+
+    ``xy_compensation_mm`` / ``z_compensation_mm`` apply the printer's dimensional
+    compensation directly to the exported geometry: every surface point is biased
+    along its vertex normal (XY gain in-plane, Z gain along the build axis). The
+    bias is applied equally to the inner cavity and outer surfaces, so it shifts
+    the part's outer dimensions to cancel printer over/under-cure WITHOUT changing
+    wall thickness. Reporting these values in a manifest while leaving the mesh
+    uncompensated would describe a part the STL does not contain, so the
+    compensation must live in the vertices, not only the metadata.
+    """
 
     if thickness_mm <= 0:
         raise ValueError("aligner sheet thickness must be positive")
@@ -177,35 +191,62 @@ def build_aligner_shell(
 
     input_boundary_edges = _boundary_edges(faces)
     normals = _vertex_normals(verts, faces)
-    outer = [
-        (verts[i][0] + normals[i][0] * thickness_mm,
-         verts[i][1] + normals[i][1] * thickness_mm,
-         verts[i][2] + normals[i][2] * thickness_mm)
-        for i in range(len(verts))
-    ]
+    inner, outer = _shell_surfaces(
+        verts, normals, thickness_mm, xy_compensation_mm, z_compensation_mm
+    )
 
     out: list[Triangle] = []
     for a, b, c in faces:
         # Outer offset surface keeps the original (outward) winding.
         out.append((outer[a], outer[b], outer[c]))
         # Inner cavity surface is the original, reversed so it faces the teeth.
-        out.append((verts[a], verts[c], verts[b]))
+        out.append((inner[a], inner[c], inner[b]))
     # Stitch a rim across every open boundary edge (trim cut + original holes).
     for a, b in input_boundary_edges:
-        out.append((verts[a], verts[b], outer[b]))
-        out.append((verts[a], outer[b], outer[a]))
+        out.append((inner[a], inner[b], outer[b]))
+        out.append((inner[a], outer[b], outer[a]))
 
     return ShellResult(
         triangles=out,
         stats=_shell_stats(
-            verts, outer, faces, out, input_boundary_edges,
+            inner, outer, faces, out, input_boundary_edges,
             dropped, skinny, thickness_mm, minimum_printable_feature_mm, trim is not None,
+            xy_compensation_mm, z_compensation_mm,
         ),
     )
 
 
-def _shell_stats(
+def _shell_surfaces(
     verts: list[Vec3],
+    normals: list[Vec3],
+    thickness_mm: float,
+    xy_compensation_mm: float,
+    z_compensation_mm: float,
+) -> tuple[list[Vec3], list[Vec3]]:
+    """Inner (tooth-facing) and outer (offset) surface points.
+
+    The printer compensation bias is added to BOTH surfaces (XY gain in-plane, Z
+    gain on the build axis), shifting outer dimensions without altering the
+    inner-to-outer wall thickness.
+    """
+
+    inner = [
+        (verts[i][0] + normals[i][0] * xy_compensation_mm,
+         verts[i][1] + normals[i][1] * xy_compensation_mm,
+         verts[i][2] + normals[i][2] * z_compensation_mm)
+        for i in range(len(verts))
+    ]
+    outer = [
+        (inner[i][0] + normals[i][0] * thickness_mm,
+         inner[i][1] + normals[i][1] * thickness_mm,
+         inner[i][2] + normals[i][2] * thickness_mm)
+        for i in range(len(verts))
+    ]
+    return inner, outer
+
+
+def _shell_stats(
+    inner: list[Vec3],
     outer: list[Vec3],
     faces: list[tuple[int, int, int]],
     shell_triangles: list[Triangle],
@@ -215,8 +256,10 @@ def _shell_stats(
     thickness_mm: float,
     minimum_printable_feature_mm: float,
     trimmed: bool,
+    xy_compensation_mm: float,
+    z_compensation_mm: float,
 ) -> ShellStats:
-    thicknesses = _thickness_values(verts, outer, faces)
+    thicknesses = _thickness_values(inner, outer, faces)
     _, shell_faces = _index_mesh(shell_triangles)
     watertight = _is_watertight(shell_triangles)
     rim_triangles = len(input_boundary_edges) * 2
@@ -236,19 +279,21 @@ def _shell_stats(
         stitched_rim_triangle_count=rim_triangles,
         rim_closed=watertight and rim_triangles == len(input_boundary_edges) * 2,
         self_intersection_count=triangle_aabb_intersection_count(shell_triangles),
-        inner_outer_min_clearance_mm=min_inner_outer_clearance(verts, outer),
+        inner_outer_min_clearance_mm=min_inner_outer_clearance(inner, outer),
         minimum_printable_feature_mm=minimum_printable_feature_mm,
         triangle_count=len(shell_triangles),
         trimmed=trimmed,
+        xy_compensation_mm=xy_compensation_mm,
+        z_compensation_mm=z_compensation_mm,
     )
 
 
 def _thickness_values(
-    verts: list[Vec3], outer: list[Vec3], faces: list[tuple[int, int, int]]
+    inner: list[Vec3], outer: list[Vec3], faces: list[tuple[int, int, int]]
 ) -> list[float]:
     """Inner-to-outer displacement samples over vertices used by kept faces."""
 
     used = {i for f in faces for i in f}
     if not used:
         return [0.0]
-    return [_norm(_sub(outer[i], verts[i])) for i in sorted(used)]
+    return [_norm(_sub(outer[i], inner[i])) for i in sorted(used)]

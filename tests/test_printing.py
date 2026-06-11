@@ -125,6 +125,27 @@ def test_export_print_package_writes_stl_manifest_zip_and_email(tmp_path) -> Non
     assert result.email_draft_path and Path(result.email_draft_path).is_file()
 
 
+def test_solid_stl_writes_real_unit_facet_normals() -> None:
+    from orthoplan.print_stl import solid_stl
+
+    # A single triangle in the z=0 plane wound counter-clockwise: its outward
+    # normal must be exactly +z, not the placeholder 0 0 0 the export used before.
+    triangle = ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+    text = solid_stl("one", [triangle])
+
+    assert "facet normal 0.000000 0.000000 1.000000" in text
+    assert "facet normal 0 0 0" not in text
+
+
+def test_solid_stl_emits_zero_normal_only_for_degenerate_facets() -> None:
+    from orthoplan.print_stl import solid_stl
+
+    degenerate = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (1.0, 0.0, 0.0))
+    text = solid_stl("deg", [degenerate])
+
+    assert "facet normal 0.000000 0.000000 0.000000" in text
+
+
 def test_export_print_package_manifest_binds_hashes_and_geometry_sources(tmp_path) -> None:
     settings = TreatmentSettings(
         print_export=PrintExportSettings(enabled=True, safety_acknowledged=True)
