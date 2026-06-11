@@ -64,12 +64,16 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
 
 ### Phase 9 follow-up: robust shell backend
 
-- [ ] Add optional `mesh-processing` backend for stronger repair/offset behavior
-  (winding repair, robust normal handling, true Minkowski-style offset or boolean
-  shell construction).
-- [ ] Keep the current pure-Python shell path as the no-extra fallback.
-- [ ] Add fixtures that compare the optional backend against the pure-Python
-  shell QA report on messy but non-PHI meshes.
+- [x] Backend selection (`shell_backend`), optional `mesh-processing` (Open3D)
+  repair path (`aligner_shell_robust.py`), fail-closed fallback to pure-Python
+  with the downgrade recorded in manifest/API/UI, and shared `assemble_shell` so
+  QA is identical across backends. See `docs/aligner-shell-backend.md`.
+- [x] Keep the current pure-Python shell path as the no-extra fallback.
+- [ ] Implement a true Minkowski-style offset or boolean shell construction in the
+  robust path (currently mesh repair + normal offset only).
+- [ ] Install Open3D in a test environment and add fixtures that compare the
+  robust backend against the pure-Python shell QA report on messy but non-PHI
+  meshes (this validation is what moves Track 1 from ~8 toward 9).
 - [ ] Add full-arch known-good shell fixtures from an independent mesh pipeline
   and compare hashes/metrics against OpenSource Ortho exports.
 

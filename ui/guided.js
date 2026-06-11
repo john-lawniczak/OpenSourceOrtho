@@ -245,9 +245,21 @@ export function renderPrintQa(host, result) {
   host.hidden = false;
   host.innerHTML = [
     readinessBanner(result.manufacturing_readiness),
+    backendLine(result.aligner_shell_backend),
     toleranceLine(result.printer_tolerances),
     shellStageTable(result.aligner_shell_reports),
   ].filter(Boolean).join("");
+}
+
+function backendLine(backend) {
+  if (!backend || !backend.used) return "";
+  const used = `Shell backend: ${escapeText(String(backend.used))}`;
+  // A fallback_reason means the requested (robust) backend was unavailable and
+  // the export honestly downgraded rather than silently substituting geometry.
+  if (backend.fallback_reason) {
+    return `<p class="print-qa-tolerances qa-issue">${used} — ${escapeText(backend.fallback_reason)}</p>`;
+  }
+  return `<p class="print-qa-tolerances">${used}.</p>`;
 }
 
 function readinessBanner(readiness) {

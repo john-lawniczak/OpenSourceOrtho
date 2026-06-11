@@ -26,6 +26,7 @@ class PrintPackageResult(BaseModel):
     artifact_sha256: dict[str, str] = Field(default_factory=dict)
     aligner_shell_paths: list[str] = Field(default_factory=list)
     aligner_shell_reports: list[dict] = Field(default_factory=list)
+    aligner_shell_backend: dict = Field(default_factory=dict)
     manifest_sha256: str
     review_tier: str = "stl-only"
     uses_real_mesh_geometry: bool = False
@@ -57,11 +58,12 @@ def export_print_package(
     frames = build_stage_progress_frames(plan)
     tooth_geometry = build_tooth_geometry(plan, workspace)
     artifacts, records = _write_stage_artifacts(output, frames, stem, tooth_geometry)
-    shell_paths, shell_records, shell_reports = _export_shells(
+    shell_paths, shell_records, shell_reports, shell_backend = _export_shells(
         plan, output, frames, stem, tooth_geometry
     )
     manifest_path = _write_manifest(
-        plan, output, status, records, frames, stem, tooth_geometry, shell_records, shell_reports
+        plan, output, status, records, frames, stem, tooth_geometry,
+        shell_records, shell_reports, shell_backend,
     )
     zip_path = (
         _write_zip(
@@ -85,6 +87,7 @@ def export_print_package(
         },
         aligner_shell_paths=shell_paths,
         aligner_shell_reports=shell_reports,
+        aligner_shell_backend=shell_backend,
         manifest_sha256=sha256_bytes(manifest_path.read_bytes()),
         review_tier=review_tier_info(plan).tier.value,
         uses_real_mesh_geometry=any(g["mode"] == "mesh-vertices" for g in tooth_geometry.values()),
@@ -96,9 +99,9 @@ def export_print_package(
 
 def _export_shells(
     plan: TreatmentPlan, output: Path, frames: list, stem: str, tooth_geometry: dict
-) -> tuple[list[str], list[dict], list[dict]]:
+) -> tuple[list[str], list[dict], list[dict], dict]:
     if not plan.settings.print_export.aligner_shell_enabled:
-        return [], [], []
+        return [], [], [], {}
     return write_aligner_shells(plan, output, frames, stem, tooth_geometry)
 
 
@@ -145,6 +148,7 @@ def _write_manifest(
     tooth_geometry: dict,
     shell_records: list[dict],
     shell_reports: list[dict],
+    shell_backend: dict,
 ) -> Path:
     plan_payload = json.loads(plan_to_json(plan, indent=None))
     findings = run_rules(plan)
@@ -158,7 +162,9 @@ def _write_manifest(
         "uses_real_mesh_geometry": any(
             g["mode"] == "mesh-vertices" for g in tooth_geometry.values()
         ),
-        "aligner_shells": _aligner_shell_block(settings, shell_records, shell_reports),
+        "aligner_shells": _aligner_shell_block(
+            settings, shell_records, shell_reports, shell_backend
+        ),
         "hashes": _hashes_block(plan, plan_payload, frames, findings, tooth_geometry, shell_records),
         "ready": status.ready,
         "blockers": status.blockers,
@@ -175,9 +181,12 @@ def _write_manifest(
     return path
 
 
-def _aligner_shell_block(settings, shell_records: list[dict], shell_reports: list[dict]) -> dict:
+def _aligner_shell_block(
+    settings, shell_records: list[dict], shell_reports: list[dict], shell_backend: dict
+) -> dict:
     return {
         "enabled": settings.aligner_shell_enabled,
+        "backend": shell_backend,
         "sheet_thickness_mm": settings.sheet_thickness_mm,
         "gingival_trim_margin_mm": settings.gingival_trim_margin_mm,
         "xy_compensation_mm": settings.xy_compensation_mm,

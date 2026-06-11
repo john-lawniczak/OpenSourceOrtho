@@ -194,6 +194,7 @@ def print_package_payload(
         "uses_real_mesh_geometry": result.uses_real_mesh_geometry,
         "aligner_shell_count": len(result.aligner_shell_paths),
         "aligner_shell_reports": result.aligner_shell_reports,
+        "aligner_shell_backend": result.aligner_shell_backend,
         "manufacturing_readiness": status.manufacturing_readiness,
         "printer_tolerances": status.printer_tolerances,
         "caveat": result.caveat,

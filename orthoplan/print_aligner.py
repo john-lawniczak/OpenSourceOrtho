@@ -13,11 +13,34 @@ from math import sqrt
 from pathlib import Path
 
 from orthoplan.aligner_shell import TrimPlane, build_aligner_shell
+from orthoplan.aligner_shell_robust import build_robust_shell, robust_shell_available
 from orthoplan.hashing import sha256_bytes
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.print_stl import solid_stl, stage_real_triangles
 
 Vec3 = tuple[float, float, float]
+
+
+def resolve_shell_backend(settings) -> dict:
+    """Pick the shell backend and report any fail-closed downgrade.
+
+    Returns the resolved backend identity (requested vs used + availability) so
+    the manifest can explain why geometry was built one way and not the other.
+    """
+
+    requested = settings.shell_backend
+    available = robust_shell_available()
+    if requested == "robust" and available:
+        return {"requested": requested, "used": "robust", "available": available,
+                "fallback_reason": None}
+    fallback_reason = None
+    if requested == "robust" and not available:
+        fallback_reason = (
+            "robust backend requested but the 'mesh-processing' extra (Open3D) is "
+            "not installed; used the pure-Python shell instead"
+        )
+    return {"requested": requested, "used": "pure-python", "available": available,
+            "fallback_reason": fallback_reason}
 
 
 def write_aligner_shells(
@@ -26,10 +49,12 @@ def write_aligner_shells(
     frames: list,
     stem: str,
     tooth_geometry: dict,
-) -> tuple[list[str], list[dict], list[dict]]:
-    """Write shell STLs and return (paths, artifact records, stage QA reports)."""
+) -> tuple[list[str], list[dict], list[dict], dict]:
+    """Write shell STLs; return (paths, artifact records, stage QA reports, backend)."""
 
     settings = plan.settings.print_export
+    backend = resolve_shell_backend(settings)
+    builder = build_robust_shell if backend["used"] == "robust" else build_aligner_shell
     paths: list[str] = []
     records: list[dict] = []
     reports: list[dict] = []
@@ -40,7 +65,7 @@ def write_aligner_shells(
             reports.append(_skipped_report(frame.stage_index, "real reviewed geometry unavailable"))
             continue  # fail closed: no real geometry -> no shell for this stage
         try:
-            shell = build_aligner_shell(
+            shell = builder(
                 triangles,
                 thickness_mm=settings.sheet_thickness_mm,
                 minimum_printable_feature_mm=settings.minimum_printable_feature_mm,
@@ -57,18 +82,19 @@ def write_aligner_shells(
             encoding="utf-8",
         )
         paths.append(str(path))
-        record = _shell_record(path, frame.stage_index, shell.stats)
+        record = _shell_record(path, frame.stage_index, shell.stats, backend["used"])
         records.append(record)
         reports.append(_completed_report(frame.stage_index, record))
-    return paths, records, reports
+    return paths, records, reports, backend
 
 
-def _shell_record(path: Path, stage_index: int, stats) -> dict:
+def _shell_record(path: Path, stage_index: int, stats, backend_used: str) -> dict:
     return {
         "filename": path.name,
         "stage_index": stage_index,
         "kind": "aligner-shell",
         "format": "stl-ascii",
+        "backend": backend_used,
         "sha256": sha256_bytes(path.read_bytes()),
         "byte_size": path.stat().st_size,
         "quality": _quality_block(stats),

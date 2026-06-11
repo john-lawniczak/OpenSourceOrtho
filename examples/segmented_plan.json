@@ -45,6 +45,7 @@
       "thermoforming_material": "user-selected aligner sheet material",
       "safety_acknowledged": false,
       "aligner_shell_enabled": false,
+      "shell_backend": "pure-python",
       "sheet_thickness_mm": 0.6,
       "gingival_trim_margin_mm": 2.0,
       "xy_compensation_mm": 0.0,

@@ -44,11 +44,18 @@ What exists:
   tolerance metadata, and the UI shows the readiness verdict, applied
   compensation, and per-stage shell QA (named failed checks and skip reasons) in
   both the guided print step and the technician print panel.
+- A `shell_backend` setting selects between the always-on pure-Python shell and an
+  optional `robust` path (Open3D mesh repair) behind the `mesh-processing` extra;
+  when the extra is absent the export falls back to pure-Python and records the
+  downgrade in the manifest, API, and UI rather than silently changing geometry.
+  See [aligner-shell-backend.md](aligner-shell-backend.md).
 
 Why it is not higher:
 
-- Shell construction is still a vertex-normal approximation.
-- There is no robust optional boolean/signed-distance/Minkowski shell backend.
+- Shell construction is still a vertex-normal approximation. The optional robust
+  backend currently does mesh repair only; a true boolean/signed-distance
+  (Minkowski) offset is not implemented, and the robust path is not yet validated
+  in CI (Open3D is not installed there).
 - The known-good comparison is analytic/primitive-level and the messy corpus is
   synthetic; there is no full-arch known-good set from an independent mesh
   pipeline and no messy real-scan corpus.
