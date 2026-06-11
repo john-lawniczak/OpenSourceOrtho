@@ -62,20 +62,63 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
 
 ## Remaining roadmap
 
-### Phase 9 follow-up: robust shell backend
+### Path to Track 1 ~9/10 (ordered)
 
-- [x] Backend selection (`shell_backend`), optional `mesh-processing` (Open3D)
-  repair path (`aligner_shell_robust.py`), fail-closed fallback to pure-Python
-  with the downgrade recorded in manifest/API/UI, and shared `assemble_shell` so
-  QA is identical across backends. See `docs/aligner-shell-backend.md`.
-- [x] Keep the current pure-Python shell path as the no-extra fallback.
-- [ ] Implement a true Minkowski-style offset or boolean shell construction in the
-  robust path (currently mesh repair + normal offset only).
-- [ ] Install Open3D in a test environment and add fixtures that compare the
-  robust backend against the pure-Python shell QA report on messy but non-PHI
-  meshes (this validation is what moves Track 1 from ~8 toward 9).
-- [ ] Add full-arch known-good shell fixtures from an independent mesh pipeline
-  and compare hashes/metrics against OpenSource Ortho exports.
+Track 1 is ~8/10 today. The ordered work to reach ~9/10, gated by the safety
+posture (no material/fit/physical-use claims) and the pure-Python-always-on rule:
+
+1. **Phase 9.1 (PRIORITY, do first):** make the pure-Python shell QA scale to
+   real arches (spatial-grid broad phase). Blocks real multi-tooth use today.
+2. **Phase 9.2:** implement a true boolean/signed-distance (Minkowski) offset in
+   the robust backend, replacing the repair-only normal offset.
+3. **Phase 9.3:** install Open3D in a test environment and validate the robust
+   backend vs the pure-Python QA on a synthetic messy corpus. This validation is
+   the actual ~8 -> ~9 move; without it the robust offset is unproven.
+4. **Phase 9.4:** add full-arch known-good shell fixtures from an independent mesh
+   pipeline and compare hashes/metrics against OpenSource Ortho exports.
+
+A 10/10 is intentionally NOT on this path: it would require material deformation,
+thermoforming fit, printer calibration, and physical validation, which this
+safety-boundary-first toolkit deliberately does not model.
+
+### Phase 9.1 (PRIORITY): scale the pure-Python shell QA before real arch use
+
+> **Why this is a priority and gates real multi-tooth use:** the real
+> triangle-triangle self-intersection engine and the `min_inner_outer_clearance`
+> check are both O(n^2) and run on **every** pure-Python shell build. Measured
+> cost already hits ~16.7s at ~8,460 shell triangles; a real full-arch reviewed
+> shell is far larger, so per-stage builds would take minutes and effectively
+> hang the print path. The optional robust (Open3D) backend handles intersection
+> internally, but the **pure-Python fallback is the always-on default**, so this
+> must be fixed before the shell QA is run on real multi-tooth reviewed plans.
+
+- [ ] Replace the O(n^2) self-intersection broad phase with a uniform spatial-grid
+  (hash-bucket) broad phase so only triangles in neighboring cells reach the exact
+  Möller narrow phase; target ~linear scaling on clean meshes.
+- [ ] Replace the O(V^2) `min_inner_outer_clearance` scan with a spatial-grid /
+  nearest-neighbor query over inner vs outer vertices.
+- [ ] Add a performance regression test (full-arch-scale synthetic shell, assert
+  build completes under a fixed wall-clock budget) so the O(n^2) cost cannot
+  silently return.
+- [ ] Keep results identical to the current exact engine on the existing fixtures
+  (the grid changes only which pairs are tested, not the intersection test).
+
+### Phase 9 follow-up: robust shell backend (9.2 - 9.4)
+
+- [x] Phase 9 (done): backend selection (`shell_backend`), optional
+  `mesh-processing` (Open3D) repair path (`aligner_shell_robust.py`), fail-closed
+  fallback to pure-Python with the downgrade recorded in manifest/API/UI, and
+  shared `assemble_shell` so QA is identical across backends. See
+  `docs/aligner-shell-backend.md`.
+- [x] Phase 9 (done): keep the current pure-Python shell path as the no-extra
+  fallback.
+- [ ] **Phase 9.2:** implement a true Minkowski-style offset or boolean shell
+  construction in the robust path (currently mesh repair + normal offset only).
+- [ ] **Phase 9.3:** install Open3D in a test environment and add fixtures that
+  compare the robust backend against the pure-Python shell QA report on messy but
+  non-PHI meshes (this validation is what moves Track 1 from ~8 toward 9).
+- [ ] **Phase 9.4:** add full-arch known-good shell fixtures from an independent
+  mesh pipeline and compare hashes/metrics against OpenSource Ortho exports.
 
 ### Phase 12: automated CBCT root/bone segmentation + auto-registration
 
