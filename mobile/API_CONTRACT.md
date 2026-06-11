@@ -149,6 +149,36 @@ sharing, and export only. Plan changes, CBCT/DICOM work, STL registration,
 segmentation, and mesh-backed print package generation stay in the browser/full
 engine.
 
+### `POST /api/case-review` - generate the importable case review
+
+The browser engine builds the importable document; mobile stores it verbatim.
+
+Request: `{ "plan": { /* TreatmentPlan */ }, "case_id": "optional", "base_url": "optional" }`
+
+Response `review` (schema `orthoplan-case-review-v1`, `kind: "stored-review"`):
+
+```jsonc
+{
+  "review_tier": { "tier": "stl-only", "label": "...", "root_bone_aware": false },
+  "unresolved_data_gaps": [ { "domain": "roots", "reason": "..." }, ... ],
+  "cbct_status": "unavailable|attached|registered|anatomy-reviewed",
+  "root_bone_review": { "verdict": "CONSISTENT|ISSUES|NOT_APPLICABLE" },
+  "findings_summary": { "total": 3, "by_severity": { "warning": 1, "notice": 2 } },
+  "editable": { "in_mobile": false, "requires_browser_engine": true, "reason": "..." },
+  "handoff": { "case_id": "...", "open_url": "...|null", "deep_link": "orthoplan://case/<id>", "qr_payload": "..." },
+  "plan_sha256": "...", "review_sha256": "..."
+}
+```
+
+Mobile MUST surface, at minimum: the `review_tier` (STL-only / enhanced-records /
+CBCT-attached / root-bone-aware), the `unresolved_data_gaps`, and the
+`editable.requires_browser_engine` edit-lock. The `handoff.qr_payload` is what a
+QR code / deep link should encode to reopen the same case on a device. Handoff
+URLs are emitted only for `http`/`https` `base_url` values, and case IDs are
+percent-encoded inside URLs/deep links. Verify `review_sha256` by canonicalizing
+the review object without the `review_sha256` field and hashing that JSON with
+SHA-256.
+
 ## Standing disclaimer string
 
 Both apps embed this exact wording (kept in sync with the engine `caveat`):

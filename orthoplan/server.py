@@ -25,6 +25,7 @@ from orthoplan.case_api import (
     list_cases_payload,
     save_plan_version_payload,
 )
+from orthoplan.case_review import case_review_payload
 from orthoplan.cases import default_case_store
 from orthoplan.generation import generate_plan_payload
 from orthoplan.io.stl_import import MAX_STL_BYTES
@@ -146,6 +147,7 @@ class Handler(BaseHTTPRequestHandler):
                 "/api/generate-plan",
                 "/api/plan/version",
                 "/api/print-package",
+                "/api/case-review",
                 "/api/segment",
                 "/api/occlusion",
             }:
@@ -167,30 +169,28 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(payload, dict):
                 self._send_json(400, {"ok": False, "errors": ["plan payload must be an object"]})
                 return
-            if path == "/api/chat":
-                self._send_json(200, answer_chat_payload(payload))
-            elif path == "/api/generate-plan":
-                self._send_json(200, generate_plan_payload(payload))
-            elif path == "/api/plan/version":
-                self._send_json(200, save_plan_version_payload(payload, store_path=self._case_store()))
-            elif path == "/api/print-package":
-                self._send_json(
-                    200, print_package_payload(payload, workspace=self._mesh_workspace())
-                )
-            elif path == "/api/segment":
-                self._send_json(
-                    200,
-                    segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
-                )
-            elif path == "/api/occlusion":
-                self._send_json(
-                    200,
-                    proximity_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
-                )
-            else:
-                self._send_json(200, evaluate_plan_payload(payload))
+            self._send_json(200, self._dispatch_json_post(path, payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
+
+    def _dispatch_json_post(self, path: str, payload: dict) -> dict:
+        """Route a validated JSON POST body to its payload handler."""
+
+        if path == "/api/chat":
+            return answer_chat_payload(payload)
+        if path == "/api/generate-plan":
+            return generate_plan_payload(payload)
+        if path == "/api/plan/version":
+            return save_plan_version_payload(payload, store_path=self._case_store())
+        if path == "/api/print-package":
+            return print_package_payload(payload, workspace=self._mesh_workspace())
+        if path == "/api/case-review":
+            return case_review_payload(payload)
+        if path == "/api/segment":
+            return segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
+        if path == "/api/occlusion":
+            return proximity_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
+        return evaluate_plan_payload(payload)
 
     def log_message(self, *args: object) -> None:  # silence default stderr logging
         return

@@ -104,9 +104,9 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 8: Browser/mobile handoff
 
-- [ ] Export browser-generated case review JSON that mobile can import as an
+- [x] Export browser-generated case review JSON that mobile can import as an
   opaque stored review.
-- [ ] Add case handoff link/QR/deep-link for opening the same local/hosted case
+- [x] Add case handoff link/QR/deep-link for opening the same local/hosted case
   on a device.
-- [ ] Make mobile imports show review tier, unresolved data gaps, and whether the
+- [x] Make mobile imports show review tier, unresolved data gaps, and whether the
   source plan can only be edited in the browser/full engine.
