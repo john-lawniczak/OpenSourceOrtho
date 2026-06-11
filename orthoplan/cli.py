@@ -18,8 +18,10 @@ from orthoplan.cli_mesh import add_mesh_parsers, cmd_inspect_stl, cmd_register_m
 from orthoplan.cli_packages import (
     add_measurement_lab_parser,
     add_print_package_parser,
+    add_validation_benchmark_parser,
     cmd_measurement_lab,
     cmd_print_package,
+    cmd_validation_benchmark,
 )
 from orthoplan.io.serialization import plan_to_json, read_plan, write_plan
 from orthoplan.model.gaps import data_gaps
@@ -75,6 +77,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_landmarks_parser(sub)
     add_print_package_parser(sub)
     add_measurement_lab_parser(sub)
+    add_validation_benchmark_parser(sub)
     return parser
 
 
@@ -240,6 +243,7 @@ _COMMANDS = {
     "landmarks-template": cmd_landmarks_template,
     "print-package": cmd_print_package,
     "measurement-lab": cmd_measurement_lab,
+    "validation-benchmark": cmd_validation_benchmark,
 }
 
 
