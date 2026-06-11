@@ -75,6 +75,9 @@ def test_segment_endpoint_proposes_and_serves_meshes(
     assert payload["ok"] is True
     assert payload["requires_review"] is True
     assert payload["teeth"]
+    sample_points = payload["plan_fragment"]["tooth_meshes"][0]["surface_sample_points"]
+    assert sample_points
+    assert len(sample_points) <= 64
     # A proposed per-tooth mesh is served back over the registered-mesh route.
     mesh_status, body = _get(server, payload["teeth"][0]["url"])
     assert mesh_status == 200

@@ -13,6 +13,7 @@ import struct
 import tempfile
 
 from orthoplan.model.assets import MeshAsset, MeshProvenance
+from orthoplan.model.geometry import Vec3
 from orthoplan.mesh_workspace import register_stl_mesh
 from orthoplan.segmentation.heuristic import Triangle, ToothSegment
 
@@ -69,3 +70,21 @@ def write_segment_meshes(
             os.unlink(tmp.name)
         results.append((segment, asset))
     return results
+
+
+def surface_sample_points(triangles: list[Triangle], *, limit: int = 64) -> list[Vec3]:
+    """Representative, deterministic tooth-surface samples for pure plan rules."""
+
+    unique: list[Vec3] = []
+    seen: set[Vec3] = set()
+    for tri in triangles:
+        for vertex in tri:
+            point = tuple(round(component, 6) for component in vertex)  # type: ignore[assignment]
+            if point not in seen:
+                seen.add(point)
+                unique.append(point)
+    if len(unique) <= limit:
+        return unique
+    last = len(unique) - 1
+    indexes = {round(i * last / (limit - 1)) for i in range(limit)}
+    return [unique[i] for i in sorted(indexes)]
