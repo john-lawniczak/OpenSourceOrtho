@@ -37,10 +37,12 @@ def _resolve_scan_path(
 ) -> Path | None:
     if not isinstance(reference, str) or not reference.strip():
         return None
-    asset_path = resolve_mesh_path(reference.strip(), workspace=workspace)
+    normalized = reference.strip()
+    asset_id = normalized.removeprefix("/api/mesh/")
+    asset_path = resolve_mesh_path(asset_id, workspace=workspace)
     if asset_path is not None:
         return asset_path
-    relative = reference.strip().lstrip("./").lstrip("/")
+    relative = normalized.lstrip("./").lstrip("/")
     candidate = (ui_dir / relative).resolve()
     if (
         candidate.is_relative_to(ui_dir)

@@ -281,6 +281,28 @@
             </div>
           </div>
           <dl class="metadata-grid" id="scanMetadata"></dl>
+          <div class="workflow-card">
+            <h2>Enhanced Review Records</h2>
+            <p>Attach CBCT/DICOM, photos, X-rays, documents, or notes as local case context. These records do not make the plan root/bone-aware until registration and reviewed anatomy exist.</p>
+            <div class="record-upload-grid">
+              <label class="upload-target compact-upload" for="dicomFile">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span>Attach CBCT / DICOM</span>
+                <input id="dicomFile" type="file" accept=".dcm,.dicom,application/dicom,application/octet-stream" multiple />
+              </label>
+              <label class="upload-target compact-upload" for="attachmentFile">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span>Attach photo / X-ray / document</span>
+                <input id="attachmentFile" type="file" accept="image/*,.jpg,.jpeg,.png,.heic,.dcm,.dicom,.pdf,.txt" multiple />
+              </label>
+            </div>
+            <label class="chat-input">
+              Review note
+              <textarea id="recordNote" rows="2" placeholder="Non-identifying note for this case"></textarea>
+            </label>
+            <button id="addRecordNote" type="button">Add note</button>
+            <div id="caseRecordList" class="upload-file-list"></div>
+          </div>
           <div class="workflow-actions">
             <button class="primary-action next-action" id="uploadNext" type="button">Next: Data Availability</button>
           </div>

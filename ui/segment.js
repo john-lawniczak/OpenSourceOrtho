@@ -32,13 +32,12 @@ export async function proposeSegmentation() {
   const seg = state.segmentation;
   if (seg.busy) return;
   const scans = state.scanSources.map((source) => ({
-    reference: source.url || source.name,
-    arch: source.arch,
+    reference: source.asset?.id || source.url || source.name,
+    arch: state.scanArch || source.arch,
   }));
   if (!scans.length) {
     seg.status =
-      "Load the Sample Test Case (or example scans) first. Uploaded files stay in " +
-      "your browser, so the local server cannot segment them yet.";
+      "Upload STL files through the local server or load the Sample Test Case first.";
     return;
   }
   const missingTeeth = parseMissingTeeth(seg.missingTeeth);

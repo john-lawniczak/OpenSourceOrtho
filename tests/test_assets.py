@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from orthoplan.io.stl_import import inspect_stl
-from orthoplan.model import MeshAsset, MeshUnits, bounding_box_sanity
+from orthoplan.model import CaseRecord, MeshAsset, MeshUnits, bounding_box_sanity
 
 
 def _write_binary_stl(path: Path, triangles: list[tuple[float, ...]]) -> None:
@@ -44,6 +44,22 @@ def test_absolute_reference_is_rejected() -> None:
             face_count=0,
             reference="/Users/patient_doe/scan.stl",
         )
+
+
+def test_case_record_redacts_filename_and_rejects_unsafe_reference() -> None:
+    record = CaseRecord(
+        id="rec-1",
+        kind="cbct",
+        filename="/Users/patient_doe/cbct/volume.dcm",
+        local_reference="records/rec-1.dcm",
+    )
+
+    assert record.filename == "volume.dcm"
+
+    with pytest.raises(ValueError, match="relative"):
+        CaseRecord(id="rec-2", kind="photo", local_reference="/Users/patient/photo.jpg")
+    with pytest.raises(ValueError, match="traverse"):
+        CaseRecord(id="rec-3", kind="radiograph", local_reference="../photo.jpg")
 
 
 def test_bounding_box_sanity_flags_unverified_units(tmp_path: Path) -> None:

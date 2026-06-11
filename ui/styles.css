@@ -1140,9 +1140,19 @@ textarea {
   color: var(--ink);
 }
 
+.upload-target.compact-upload {
+  min-height: 112px;
+}
+
 .upload-stack {
   display: grid;
   gap: 10px;
+}
+
+.record-upload-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
 }
 
 .upload-file-list {
@@ -1664,6 +1674,7 @@ td input {
   .topbar,
   .journey-nav,
   .upload-row,
+  .record-upload-grid,
   .simple-hero,
   .simple-grid,
   .field-grid,

@@ -18,7 +18,7 @@ import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from 
 
 // State keys the sample overwrites and therefore must save/restore.
 const SNAPSHOT_STATE_KEYS = [
-  "rows", "files", "file", "scanSources", "useDemoMeshes", "demoInitialOffsets",
+  "rows", "files", "file", "scanSources", "caseRecords", "recordUploadStatus", "useDemoMeshes", "demoInitialOffsets",
   "view", "activeStep", "userMode", "scanArchFilter", "simpleGoal",
   "simpleAcknowledged", "dim", "sampleStatus", "scanRenderStatus",
 ];
@@ -59,6 +59,8 @@ export function enterSample() {
   state.demoInitialOffsets = demoInitialOffsets;
   state.useDemoMeshes = false;
   state.scanSources = canonicalScanSources;
+  state.caseRecords = [];
+  state.recordUploadStatus = "";
   state.files = [];
   state.file = null;
   state.scanArchFilter = "both";
