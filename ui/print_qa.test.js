@@ -56,6 +56,28 @@ test("renderPrintQa surfaces readiness, compensation, and per-stage shell QA", (
   assert.match(host.innerHTML, /0\.58.*0\.62/);
 });
 
+test("renderPrintQa lists the named failed checks for an ISSUES stage", () => {
+  const host = fakeHost();
+  renderPrintQa(host, {
+    ok: true,
+    manufacturing_readiness: { verdict: "ISSUES", reason: "one stage failed QA" },
+    aligner_shell_reports: [
+      {
+        stage_index: 0,
+        verdict: "ISSUES",
+        quality: {
+          verdict: "ISSUES",
+          failed_checks: ["self-intersecting triangles: 4", "nonmanifold edges: 2"],
+        },
+      },
+    ],
+  });
+
+  assert.match(host.innerHTML, /Manufacturing readiness: ISSUES/);
+  assert.match(host.innerHTML, /self-intersecting triangles: 4/);
+  assert.match(host.innerHTML, /nonmanifold edges: 2/);
+});
+
 test("renderPrintQa shows the skip reason for a NOT_APPLICABLE stage", () => {
   const host = fakeHost();
   renderPrintQa(host, {

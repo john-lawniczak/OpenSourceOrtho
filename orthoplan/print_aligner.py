@@ -80,8 +80,10 @@ def _shell_record(path: Path, stage_index: int, stats) -> dict:
 
 
 def _quality_block(stats) -> dict:
+    failed = _failed_checks(stats)
     return {
-        "verdict": _quality_verdict(stats),
+        "verdict": "ISSUES" if failed else "CONSISTENT",
+        "failed_checks": failed,
         "watertight": stats.watertight,
         "connected_components": stats.connected_components,
         "triangle_count": stats.triangle_count,
@@ -91,6 +93,7 @@ def _quality_block(stats) -> dict:
         "stitched_rim_triangle_count": stats.stitched_rim_triangle_count,
         "rim_closed": stats.rim_closed,
         "self_intersection_count": stats.self_intersection_count,
+        "nonmanifold_edge_count": stats.nonmanifold_edge_count,
         "inner_outer_min_clearance_mm": round(stats.inner_outer_min_clearance_mm, 4),
         "minimum_printable_feature_mm": round(stats.minimum_printable_feature_mm, 4),
         "xy_compensation_mm": round(stats.xy_compensation_mm, 4),
@@ -107,16 +110,38 @@ def _quality_block(stats) -> dict:
     }
 
 
-def _quality_verdict(stats) -> str:
-    consistent = (
-        stats.watertight
-        and stats.connected_components == 1
-        and stats.rim_closed
-        and stats.self_intersection_count <= 2
-        and stats.min_thickness_mm >= stats.minimum_printable_feature_mm
-        and stats.inner_outer_min_clearance_mm >= stats.minimum_printable_feature_mm
-    )
-    return "CONSISTENT" if consistent else "ISSUES"
+def _failed_checks(stats) -> list[str]:
+    """Human-readable reasons a shell is downgraded to ISSUES (empty = CONSISTENT).
+
+    Each artifact now carries WHY it passed or failed, instead of collapsing six
+    deterministic checks into an opaque CONSISTENT/ISSUES verdict. With a real
+    triangle-triangle engine, any genuine self-intersection is a defect, so the
+    tolerance is zero rather than the box-overlap approximation's allowance.
+    """
+
+    feature = stats.minimum_printable_feature_mm
+    checks: list[str] = []
+    if not stats.watertight:
+        checks.append("mesh is not watertight (open boundary or nonmanifold edges)")
+    if stats.nonmanifold_edge_count > 0:
+        checks.append(f"nonmanifold edges: {stats.nonmanifold_edge_count}")
+    if stats.connected_components != 1:
+        checks.append(f"disconnected shell pieces: {stats.connected_components}")
+    if not stats.rim_closed:
+        checks.append("trim/boundary rim is not fully closed")
+    if stats.self_intersection_count > 0:
+        checks.append(f"self-intersecting triangles: {stats.self_intersection_count}")
+    if stats.min_thickness_mm < feature:
+        checks.append(
+            f"min wall thickness {stats.min_thickness_mm:.3f} mm below "
+            f"minimum printable feature {feature:.3f} mm"
+        )
+    if stats.inner_outer_min_clearance_mm < feature:
+        checks.append(
+            f"inner/outer clearance {stats.inner_outer_min_clearance_mm:.3f} mm below "
+            f"minimum printable feature {feature:.3f} mm"
+        )
+    return checks
 
 
 def _completed_report(stage_index: int, record: dict) -> dict:

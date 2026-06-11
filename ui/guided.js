@@ -272,11 +272,18 @@ function shellStageTable(reports) {
   const rows = reports.map((report) => {
     const quality = report.quality || {};
     const thickness = quality.thickness_mm || {};
-    const detail = quality.verdict
-      ? `watertight ${quality.watertight ? "yes" : "no"} · `
+    const failed = Array.isArray(quality.failed_checks) ? quality.failed_checks : [];
+    let detail;
+    if (!quality.verdict) {
+      detail = escapeText(report.reason || "");
+    } else if (failed.length) {
+      detail = failed.map((reason) => escapeText(reason)).join("; ");
+    } else {
+      detail = `watertight ${quality.watertight ? "yes" : "no"} · `
         + `thickness ${formatMm(thickness.min)}–${formatMm(thickness.max)} mm · `
-        + `self-intersection signals ${Number(quality.self_intersection_count ?? 0)}`
-      : escapeText(report.reason || "");
+        + `self-intersections ${Number(quality.self_intersection_count ?? 0)} · `
+        + `nonmanifold edges ${Number(quality.nonmanifold_edge_count ?? 0)}`;
+    }
     return `<tr><td>${Number(report.stage_index)}</td>`
       + `<td class="${verdictClass(report.verdict)}">${escapeText(String(report.verdict || ""))}</td>`
       + `<td>${detail}</td></tr>`;

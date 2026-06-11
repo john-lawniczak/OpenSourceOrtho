@@ -22,8 +22,9 @@ from math import sqrt
 from pydantic import BaseModel, Field
 
 from orthoplan.aligner_shell_quality import (
+    count_nonmanifold_edges,
+    count_self_intersections,
     min_inner_outer_clearance,
-    triangle_aabb_intersection_count,
 )
 from orthoplan.aligner_shell_mesh import clean_triangles
 from orthoplan.aligner_shell_stats import connected_components, mean, percentile
@@ -58,6 +59,7 @@ class ShellStats(BaseModel):
     stitched_rim_triangle_count: int = Field(ge=0)
     rim_closed: bool
     self_intersection_count: int = Field(ge=0)
+    nonmanifold_edge_count: int = Field(ge=0)
     inner_outer_min_clearance_mm: float
     minimum_printable_feature_mm: float
     triangle_count: int = Field(ge=0)
@@ -168,13 +170,8 @@ def build_aligner_shell(
     """Offset a surface outward by ``thickness_mm`` and close it into a solid.
 
     ``xy_compensation_mm`` / ``z_compensation_mm`` apply the printer's dimensional
-    compensation directly to the exported geometry: every surface point is biased
-    along its vertex normal (XY gain in-plane, Z gain along the build axis). The
-    bias is applied equally to the inner cavity and outer surfaces, so it shifts
-    the part's outer dimensions to cancel printer over/under-cure WITHOUT changing
-    wall thickness. Reporting these values in a manifest while leaving the mesh
-    uncompensated would describe a part the STL does not contain, so the
-    compensation must live in the vertices, not only the metadata.
+    compensation directly to the exported geometry (see ``_shell_surfaces``) so the
+    STL contains the part the manifest advertises, not just the metadata.
     """
 
     if thickness_mm <= 0:
@@ -278,7 +275,8 @@ def _shell_stats(
         input_boundary_edge_count=len(input_boundary_edges),
         stitched_rim_triangle_count=rim_triangles,
         rim_closed=watertight and rim_triangles == len(input_boundary_edges) * 2,
-        self_intersection_count=triangle_aabb_intersection_count(shell_triangles),
+        self_intersection_count=count_self_intersections(shell_triangles),
+        nonmanifold_edge_count=count_nonmanifold_edges(shell_triangles),
         inner_outer_min_clearance_mm=min_inner_outer_clearance(inner, outer),
         minimum_printable_feature_mm=minimum_printable_feature_mm,
         triangle_count=len(shell_triangles),
