@@ -1,4 +1,4 @@
-import { askPlanAssistant, el, listCaseVersions, maxStage, savePlanVersion, state, uploadCaseRecord, uploadStlFile } from "./state.js";
+import { askPlanAssistant, el, listCaseVersions, maxStage, requestCaseReview, savePlanVersion, state, uploadCaseRecord, uploadStlFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -411,6 +411,9 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "downloadPrintMetadata" && state.lastEval?.print_export) {
     downloadJson("orthoplan-print-metadata.json", state.lastEval.print_export);
   }
+  if (button?.id === "exportCaseReview") {
+    exportCaseReview();
+  }
   if (button?.id === "sendChat") {
     sendChatMessage();
   }
@@ -639,6 +642,32 @@ function downloadJson(filename, value) {
   const href = link.href;
   link.remove();
   URL.revokeObjectURL(href);
+}
+
+// Build the mobile-handoff case review on the engine, download it, and show the
+// deep link a device can scan/open. Mobile imports it read-only (edit-locked).
+async function exportCaseReview() {
+  const status = el("caseHandoffStatus");
+  if (status) status.textContent = "Building case review...";
+  try {
+    const result = await requestCaseReview({ plan: planJson(), base_url: window.location.origin });
+    if (result.ok === false) {
+      if (status) status.textContent = (result.errors || ["case review failed"]).join("; ");
+      return;
+    }
+    const review = result.review;
+    downloadJson(`orthoplan-case-review-${safeDownloadToken(review.case_id || review.plan_id || "case")}.json`, review);
+    if (status) {
+      const tier = review.review_tier?.label || review.review_tier?.tier || "review";
+      status.textContent = `Exported ${tier} (read-only on mobile). Open on a device: ${review.handoff.qr_payload}`;
+    }
+  } catch (error) {
+    if (status) status.textContent = String(error.message || error);
+  }
+}
+
+function safeDownloadToken(value) {
+  return String(value || "case").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "case";
 }
 
 // Apply one planar nudge to the selected tooth's authored target. `direction` is

@@ -98,21 +98,14 @@ def test_ai_connector_catalog_is_served(server: int) -> None:
 
 
 def test_local_chat_endpoint_returns_session(server: int) -> None:
-    plan = {
-        "id": "chat",
-        "stages": [
-            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}
-        ],
-    }
+    plan = {"id": "chat", "stages": [
+        {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}]}
     status, payload = _post(
         server,
         json.dumps({"plan": plan, "message": "What can this tell me?", "provider": "local"}).encode(),
-        {"Content-Type": "application/json"},
-        path="/api/chat",
-    )
+        {"Content-Type": "application/json"}, path="/api/chat")
 
-    assert status == 200
-    assert payload["ok"] is True
+    assert status == 200 and payload["ok"] is True
     assert payload["session"]["connector"]["kind"] == "local"
     assert payload["session"]["messages"][1]["role"] == "assistant"
 
@@ -137,6 +130,31 @@ def test_generate_plan_endpoint_returns_staging(server: int) -> None:
     assert payload["source"] == "authored"
     assert payload["correctness"]["verdict"] == "CONSISTENT"
     assert payload["stage_count"] >= 4
+
+
+def test_case_review_endpoint_returns_mobile_handoff(server: int) -> None:
+    plan = {
+        "id": "handoff case/upper",
+        "title": "Server handoff",
+        "stages": [
+            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}
+        ],
+    }
+    status, payload = _post(
+        server,
+        json.dumps({"plan": plan, "base_url": "http://127.0.0.1/app/"}).encode(),
+        {"Content-Type": "application/json"},
+        path="/api/case-review",
+    )
+
+    assert status == 200
+    assert payload["ok"] is True
+    review = payload["review"]
+    assert review["schema"] == "orthoplan-case-review-v1"
+    assert review["kind"] == "stored-review"
+    assert review["editable"]["requires_browser_engine"] is True
+    assert review["handoff"]["open_url"] == "http://127.0.0.1/app/?case=handoff+case%2Fupper"
+    assert review["handoff"]["deep_link"] == "orthoplan://case/handoff%20case%2Fupper"
 
 
 def test_plan_version_save_and_list_roundtrip(server: int, tmp_path, monkeypatch) -> None:

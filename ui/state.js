@@ -325,6 +325,19 @@ export async function uploadCaseRecord(file, { kind = "document", modality } = {
   return response.json();
 }
 
+export async function requestCaseReview(payload) {
+  const response = await fetch("/api/case-review", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["case review request failed"]).join("; "));
+  }
+  return response.json();
+}
+
 export async function requestPrintPackage(payload) {
   const response = await fetch("/api/print-package", {
     method: "POST",
