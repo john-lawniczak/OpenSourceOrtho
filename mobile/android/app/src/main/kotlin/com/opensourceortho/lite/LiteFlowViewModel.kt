@@ -77,6 +77,10 @@ class LiteFlowViewModel(
         }
     }
 
+    fun reportImportError(message: String) {
+        _state.update { it.copy(errorMessage = message) }
+    }
+
     fun showPrintAndSend() = _state.update { it.copy(step = LiteStep.PRINT_AND_SEND) }
 
     fun reset() = _state.update { LiteUiState() }

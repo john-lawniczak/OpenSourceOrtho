@@ -68,7 +68,30 @@ final class LiteKitTests: XCTestCase {
         let review = StoredPlanReview(fileName: "case-review.json", byteCount: 14, jsonText: "{\"ok\":true}")
         XCTAssertEqual(review.fileName, "case-review.json")
         XCTAssertEqual(review.jsonText, "{\"ok\":true}")
+        XCTAssertNil(review.caseReview)
         XCTAssertFalse(review.id.isEmpty)
+    }
+
+    func testStoredCaseReviewFixtureDecodesForMobileImport() throws {
+        let data = try Data(contentsOf: fixtureURL("case-review-v1.json"))
+        let stored = try StoredPlanReview.importCaseReview(fileName: "case-review-v1.json", data: data)
+        let review = try XCTUnwrap(stored.caseReview)
+
+        XCTAssertEqual(review.schema, "orthoplan-case-review-v1")
+        XCTAssertEqual(review.kind, "stored-review")
+        XCTAssertEqual(review.reviewTier.tier, "stl-only")
+        XCTAssertFalse(review.reviewTier.rootBoneAware)
+        XCTAssertEqual(review.unresolvedDataGaps.count, 5)
+        XCTAssertFalse(review.editable.inMobile)
+        XCTAssertTrue(review.editable.requiresBrowserEngine)
+        XCTAssertEqual(review.handoff.openURL?.absoluteString, "https://ortho.example/app/?case=golden-case-001")
+        XCTAssertEqual(review.handoff.deepLinkURL?.scheme, "orthoplan")
+        XCTAssertEqual(review.handoff.qrPayload, review.handoff.openUrl)
+    }
+
+    func testStoredCaseReviewImportRejectsNonStoredReviewJson() throws {
+        let data = #"{"ok":true}"#.data(using: .utf8)!
+        XCTAssertThrowsError(try StoredPlanReview.importCaseReview(fileName: "bad.json", data: data))
     }
 
     func testDecodeGeneratePlanResponseSubset() throws {
@@ -105,4 +128,14 @@ final class LiteKitTests: XCTestCase {
         XCTAssertEqual(SafetyText.verdictLabel("CONSISTENT"), "Internally consistent")
         XCTAssertEqual(SafetyText.verdictLabel("ISSUES"), "Issues found")
     }
+}
+
+private func fixtureURL(_ name: String) throws -> URL {
+    let testFile = URL(fileURLWithPath: #filePath)
+    let repoRoot = testFile
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+    return repoRoot.appendingPathComponent("fixtures").appendingPathComponent(name)
 }

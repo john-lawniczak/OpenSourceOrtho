@@ -47,13 +47,44 @@ public struct StoredPlanReview: Codable, Sendable, Equatable, Identifiable {
     public var byteCount: Int
     public var importedAt: Date
     public var jsonText: String
+    public var caseReview: StoredCaseReview?
 
-    public init(fileName: String, byteCount: Int, importedAt: Date = Date(), jsonText: String) {
+    public init(
+        fileName: String,
+        byteCount: Int,
+        importedAt: Date = Date(),
+        jsonText: String,
+        caseReview: StoredCaseReview? = nil
+    ) {
         self.id = Self.reviewId(fileName: fileName, importedAt: importedAt)
         self.fileName = fileName
         self.byteCount = byteCount
         self.importedAt = importedAt
         self.jsonText = jsonText
+        self.caseReview = caseReview
+    }
+
+    public static func importCaseReview(
+        fileName: String,
+        data: Data,
+        importedAt: Date = Date()
+    ) throws -> StoredPlanReview {
+        let review = try JSONDecoder().decode(StoredCaseReview.self, from: data)
+        guard review.isImportableStoredReview else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: [],
+                    debugDescription: "Not an orthoplan-case-review-v1 stored review"
+                )
+            )
+        }
+        return StoredPlanReview(
+            fileName: fileName,
+            byteCount: data.count,
+            importedAt: importedAt,
+            jsonText: String(decoding: data, as: UTF8.self),
+            caseReview: review
+        )
     }
 
     private static func reviewId(fileName: String, importedAt: Date) -> String {

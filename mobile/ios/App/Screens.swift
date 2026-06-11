@@ -85,9 +85,18 @@ struct UploadView: View {
                     Text("Stored browser reviews")
                         .font(.headline)
                     ForEach(model.storedReviews) { review in
-                        Text("\(review.fileName) - \(review.byteCount) bytes")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(review.fileName).font(.caption.bold())
+                            if let caseReview = review.caseReview {
+                                Text(caseReview.mobileSummary)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("\(review.byteCount) bytes")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -206,8 +215,25 @@ struct ReviewView: View {
                     ForEach(model.storedReviews) { review in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(review.fileName).font(.subheadline.bold())
-                            Text("\(review.byteCount) bytes stored on this device for review/sharing. Open the browser workspace to edit the source plan.")
-                                .font(.caption).foregroundStyle(.secondary)
+                            if let caseReview = review.caseReview {
+                                Text(caseReview.reviewTier.label)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text("\(caseReview.unresolvedDataGaps.count) unresolved data gaps. Mobile edit lock: \(caseReview.editable.requiresBrowserEngine ? "browser engine required" : "unknown").")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                if let openURL = caseReview.handoff.openURL {
+                                    Link("Open browser case", destination: openURL)
+                                        .font(.caption)
+                                }
+                                if let deepLink = caseReview.handoff.deepLinkURL {
+                                    Link("Open app link", destination: deepLink)
+                                        .font(.caption)
+                                }
+                            } else {
+                                Text("\(review.byteCount) bytes stored on this device for review/sharing. Open the browser workspace to edit the source plan.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }

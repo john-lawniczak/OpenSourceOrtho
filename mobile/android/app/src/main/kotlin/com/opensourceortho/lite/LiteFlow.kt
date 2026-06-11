@@ -38,10 +38,31 @@ data class StoredPlanReview(
     val byteCount: Int,
     val importedAtEpochMillis: Long,
     val jsonText: String,
+    val caseReview: StoredCaseReview? = null,
 ) {
     companion object {
+        private val reviewJson = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+
         fun create(fileName: String, byteCount: Int, jsonText: String): StoredPlanReview {
             val importedAt = System.currentTimeMillis()
+            return create(fileName, byteCount, jsonText, importedAt, null)
+        }
+
+        fun importCaseReview(fileName: String, byteCount: Int, jsonText: String): StoredPlanReview {
+            val review = reviewJson.decodeFromString(StoredCaseReview.serializer(), jsonText)
+            require(review.isImportableStoredReview) {
+                "Not an orthoplan-case-review-v1 stored review"
+            }
+            return create(fileName, byteCount, jsonText, System.currentTimeMillis(), review)
+        }
+
+        private fun create(
+            fileName: String,
+            byteCount: Int,
+            jsonText: String,
+            importedAt: Long,
+            caseReview: StoredCaseReview?,
+        ): StoredPlanReview {
             val cleaned = fileName.lowercase()
                 .map { if (it.isLetterOrDigit()) it else '-' }
                 .joinToString("")
@@ -52,6 +73,7 @@ data class StoredPlanReview(
                 byteCount = byteCount,
                 importedAtEpochMillis = importedAt,
                 jsonText = jsonText,
+                caseReview = caseReview,
             )
         }
     }
