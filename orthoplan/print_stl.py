@@ -1,0 +1,166 @@
+"""Stage STL geometry generation for the print package.
+
+Split from ``print_package`` by responsibility: this module turns plan/pose data
+into STL triangles (real per-tooth vertices for reviewed segmentation, labeled
+schematic proxies otherwise); ``print_package`` handles packaging, hashing,
+manifest, zip, and email. Keeping geometry here keeps both files reviewable.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from orthoplan.io.stl_import import Vec3, read_stl_geometry
+from orthoplan.mesh_workspace import resolve_mesh_path
+from orthoplan.model.assets import BoundingBox
+from orthoplan.model.plan import TreatmentPlan
+
+
+def build_tooth_geometry(
+    plan: TreatmentPlan, workspace: str | Path | None
+) -> dict[str, dict]:
+    """Per-tooth export geometry, real-vertex when reviewed, proxy otherwise.
+
+    Returns a dict keyed by FDI value. Each entry has ``mode`` in
+    {``mesh-vertices``, ``mesh-bounds-proxy``} plus the data needed to emit it.
+    Real vertices are used ONLY for reviewed links whose fragment STL resolves;
+    everything else is a labeled schematic proxy box (fail-closed).
+    """
+
+    assets = {asset.id: asset for asset in plan.mesh_assets}
+    assets.update({scan.asset.id: scan.asset for scan in plan.scans})
+    geometry: dict[str, dict] = {}
+    for link in plan.tooth_meshes:
+        asset = assets.get(link.mesh_asset_id)
+        if asset is None or asset.bounds is None:
+            continue
+        triangles = _reviewed_fragment_triangles(link, workspace)
+        if triangles is not None:
+            geometry[link.tooth.value] = {
+                "mode": "mesh-vertices",
+                "source": f"segmented-mesh-vertices:{asset.id}",
+                "asset_id": asset.id,
+                "sha256": asset.sha256,
+                "triangles": triangles,
+            }
+        else:
+            geometry[link.tooth.value] = {
+                "mode": "mesh-bounds-proxy",
+                "source": f"segmented-mesh-bounds:{asset.id}",
+                "asset_id": asset.id,
+                "sha256": asset.sha256,
+                "box_size": _box_size_from_bounds(asset.bounds),
+            }
+    return geometry
+
+
+def _reviewed_fragment_triangles(
+    link, workspace: str | Path | None
+) -> list[tuple[Vec3, Vec3, Vec3]] | None:
+    """Real triangles for a reviewed segmentation link, or None to use a proxy."""
+
+    if not getattr(link, "reviewed", False):
+        return None
+    path = resolve_mesh_path(link.mesh_asset_id, workspace=workspace)
+    if path is None:
+        return None
+    try:
+        _asset, vertices = read_stl_geometry(path)
+    except (OSError, ValueError):
+        return None
+    triangles: list[tuple[Vec3, Vec3, Vec3]] = []
+    for index in range(0, len(vertices) - 2, 3):
+        triangles.append((vertices[index], vertices[index + 1], vertices[index + 2]))
+    return triangles or None
+
+
+def _box_size_from_bounds(bounds: BoundingBox) -> tuple[float, float, float]:
+    sizes = [
+        max(bounds.max_xyz[index] - bounds.min_xyz[index], 0.5)
+        for index in range(3)
+    ]
+    return (sizes[0], sizes[1], sizes[2])
+
+
+def frame_to_stl(
+    plan_id: str,
+    stage_index: int,
+    poses: list,
+    tooth_geometry: dict,
+) -> tuple[str, list[dict]]:
+    triangles: list[tuple[tuple[float, float, float], ...]] = []
+    geometry_sources: list[dict] = []
+    for index, pose in enumerate(poses):
+        geom = tooth_geometry.get(pose.tooth.value)
+        delta = (pose.translate_x_mm, pose.translate_y_mm, pose.translate_z_mm)
+        if geom and geom["mode"] == "mesh-vertices":
+            triangles.extend(_translate_triangles(geom["triangles"], delta))
+            geometry_sources.append(
+                {"tooth": pose.tooth.value, "source": geom["source"], "mode": "mesh-vertices"}
+            )
+            continue
+        # Proxy fallback: lay the tooth out on a schematic grid sized by bounds
+        # (or a fixed schematic box when no segmented bounds exist).
+        cx = (index % 8) * 4.0 + delta[0]
+        cy = (index // 8) * 5.0 + delta[1]
+        cz = delta[2]
+        source = geom["source"] if geom else "schematic-stage-proxy"
+        size = geom["box_size"] if geom else (2.4, 3.2, 1.8)
+        triangles.extend(_box_triangles(cx, cy, cz, *size))
+        geometry_sources.append(
+            {
+                "tooth": pose.tooth.value,
+                "source": source,
+                "mode": "mesh-bounds-proxy" if geom else "schematic-proxy",
+                "center_xyz_mm": [cx, cy, cz],
+                "size_xyz_mm": list(size),
+            }
+        )
+    return _stl_text(plan_id, stage_index, triangles), geometry_sources
+
+
+def _translate_triangles(
+    triangles: list[tuple[Vec3, Vec3, Vec3]], delta: tuple[float, float, float]
+) -> list[tuple[Vec3, Vec3, Vec3]]:
+    dx, dy, dz = delta
+    return [
+        tuple((v[0] + dx, v[1] + dy, v[2] + dz) for v in tri)  # type: ignore[misc]
+        for tri in triangles
+    ]
+
+
+def _stl_text(plan_id: str, stage_index: int, triangles: list) -> str:
+    lines = [f"solid {plan_id}_stage_{stage_index:02d}"]
+    for tri in triangles:
+        lines.extend(
+            [
+                "  facet normal 0 0 0",
+                "    outer loop",
+                f"      vertex {tri[0][0]:.6f} {tri[0][1]:.6f} {tri[0][2]:.6f}",
+                f"      vertex {tri[1][0]:.6f} {tri[1][1]:.6f} {tri[1][2]:.6f}",
+                f"      vertex {tri[2][0]:.6f} {tri[2][1]:.6f} {tri[2][2]:.6f}",
+                "    endloop",
+                "  endfacet",
+            ]
+        )
+    lines.append(f"endsolid {plan_id}_stage_{stage_index:02d}")
+    return "\n".join(lines) + "\n"
+
+
+def _box_triangles(cx: float, cy: float, cz: float, sx: float, sy: float, sz: float):
+    x0, x1 = cx - sx / 2, cx + sx / 2
+    y0, y1 = cy - sy / 2, cy + sy / 2
+    z0, z1 = cz - sz / 2, cz + sz / 2
+    v = [
+        (x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
+        (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1),
+    ]
+    faces = [
+        (0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1),
+        (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0),
+    ]
+    tris = []
+    for a, b, c, d in faces:
+        tris.append((v[a], v[b], v[c]))
+        tris.append((v[a], v[c], v[d]))
+    return tris

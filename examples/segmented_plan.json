@@ -118,6 +118,7 @@
         "approximate": true,
         "note": "Approximate visualization frame from crown-surface PCA. Axes are ordered by geometric variance, NOT anatomy; this is not a mesiodistal/buccolingual/long-axis measurement and says nothing about root direction."
       },
+      "reviewed": false,
       "notes": null
     }
   ],

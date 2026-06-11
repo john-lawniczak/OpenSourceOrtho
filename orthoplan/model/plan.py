@@ -107,6 +107,10 @@ class SegmentedToothMesh(BaseModel):
     mesh_asset_id: str
     source: MeshProvenance = MeshProvenance.MANUAL
     local_frame: ToothLocalFrame | None = None
+    # A link is ``reviewed`` once a human has accepted/corrected the proposed
+    # segmentation. Real per-tooth vertices are exported ONLY for reviewed links;
+    # auto-draft links (reviewed=False) fall back to a labeled schematic proxy.
+    reviewed: bool = False
     notes: str | None = None
 
 

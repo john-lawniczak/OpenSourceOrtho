@@ -40,14 +40,14 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 3: Real per-tooth print/export
 
-- [ ] Transform actual per-tooth mesh vertices for stage exports when reviewed
+- [x] Transform actual per-tooth mesh vertices for stage exports when reviewed
   segmentation exists.
-- [ ] Keep schematic/proxy export only as a labeled fallback.
-- [ ] Include hashes for original scans, segmentation fragments, stage frames,
+- [x] Keep schematic/proxy export only as a labeled fallback.
+- [x] Include hashes for original scans, segmentation fragments, stage frames,
   findings, and generated artifacts.
-- [ ] Label every export with review tier: STL-only, enhanced-records, or
+- [x] Label every export with review tier: STL-only, enhanced-records, or
   CBCT-registered/root-bone-aware when that exists.
-- [ ] Add print-package tests that prove exports use real mesh geometry when
+- [x] Add print-package tests that prove exports use real mesh geometry when
   available and fail closed when geometry is missing.
 
 ### Phase 4: CBCT/DICOM ingestion and viewer
