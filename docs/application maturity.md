@@ -1,20 +1,29 @@
 # Application Maturity
 
-This document tracks the three application maturity surfaces on a 10-point
-scale. Scores are engineering maturity ratings for this research toolkit, not
-clinical clearance, treatment approval, or a statement that physical use is safe.
+This document tracks the application maturity surfaces on a 10-point scale.
+Scores are engineering maturity ratings for this research toolkit, not clinical
+clearance, treatment approval, or a statement that physical use is safe.
+
+**All four surfaces below are active focus areas with a committed target of
+≥9/10.** The ordered work to reach each target lives in `TODO.md` (per-surface
+"Path to ~9/10" blocks). A 10/10 is intentionally NOT a target for the geometry
+tracks: it would require material deformation, thermoforming fit, printer
+calibration, and physical validation, which this safety-boundary-first toolkit
+deliberately does not model.
 
 ## Summary
 
-| Surface | Current | What the score means |
-|---------|---------|----------------------|
-| Track 1: upload -> printable aligner artifacts | ~8/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with a real triangle-triangle self-intersection + nonmanifold engine, per-artifact pass/fail explanations, and an analytic known-good oracle; a robust boolean/offset mesh backend and material/fit modeling are still out of scope. |
-| Track 2: surface-scan staging + honest review aid | ~7/10 | Surface planning, movement caps, collision/IPR review, segmentation review, and benchmarks are useful and bounded, but more labelled real-scan validation and stronger segmentation are needed. |
-| Track 3: CBCT root/bone-aware planning from raw volume | ~1-2/10 | Reviewed anatomy can be represented and used once supplied, but raw CBCT root/bone segmentation and default auto-registration are still future work. |
+| Surface | Current | Target | What the score means |
+|---------|---------|--------|----------------------|
+| Track 1: upload -> printable aligner artifacts | ~8/10 | ≥9/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with a real triangle-triangle self-intersection + nonmanifold engine, per-artifact pass/fail explanations, and an analytic known-good oracle; a robust boolean/offset mesh backend and material/fit modeling are still out of scope. |
+| Track 2: surface-scan staging + honest review aid | ~7/10 | ≥9/10 | Surface planning, movement caps, collision/IPR review, segmentation review, and benchmarks are useful and bounded, but more labelled real-scan validation and stronger segmentation are needed. |
+| Track 3: CBCT root/bone-aware planning from raw volume | ~1-2/10 | ≥9/10 | Reviewed anatomy can be represented and used once supplied, but raw CBCT root/bone segmentation and default auto-registration are still future work. This is the longest road by far. |
+| Track 4: in-app AI assistant (chat) | ~4/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors with PHI-share gating exist, but the chat is single-turn (no memory), non-streaming, with a coupled/hardcoded provider+model picker and a clunky re-render UX. |
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
-Current rating: ~8/10.
+Current rating: ~8/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 1
+~9/10").
 
 What exists:
 
@@ -62,7 +71,7 @@ Why it is not higher:
 - Material deformation, thermoforming fit, printer calibration, support strategy,
   and physical validation remain outside the software.
 
-What 10/10 would require:
+What reaching the ≥9/10 target requires:
 
 - Robust mesh repair and offset backend behind optional extras, with pure-Python
   fallback preserved.
@@ -74,7 +83,8 @@ What 10/10 would require:
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
-Current rating: ~7/10.
+Current rating: ~7/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 2
+~9/10").
 
 What exists:
 
@@ -94,7 +104,7 @@ Why it is not higher:
 - Occlusion dynamics, bite force, periodontal status, and biological response are
   intentionally not inferred from STL surfaces.
 
-What 10/10 would require:
+What reaching the ≥9/10 target requires:
 
 - Reviewed open-dataset benchmarks with clear provenance and no PHI.
 - Stronger segmentation backend with measurable improvement on crowded/contacting
@@ -105,7 +115,9 @@ What 10/10 would require:
 
 ## Track 3: CBCT Root/Bone-Aware Planning From Raw Volume
 
-Current rating: ~1-2/10.
+Current rating: ~1-2/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 3
+~9/10"). This is the longest road by far - raw-volume segmentation plus
+auto-registration plus validation.
 
 What exists:
 
@@ -122,7 +134,7 @@ Why it is not higher:
 - Auto-registration is not a default accepted workflow.
 - There are no volume-processing fixtures or reviewed open CBCT benchmark cases.
 
-What 10/10 would require:
+What reaching the ≥9/10 target requires:
 
 - Optional volume-processing backend that proposes roots, axes, and bone
   boundaries from CBCT while keeping proposals untrusted until human review.
@@ -131,3 +143,40 @@ What 10/10 would require:
 - End-to-end fail-closed tests proving raw-volume absence, optional-extra
   absence, and rejected anatomy never promote a plan to trusted root/bone-aware
   behavior.
+
+## Track 4: In-App AI Assistant (Chat)
+
+Current rating: ~4/10. Target: ≥9/10 (ordered path: `TODO.md` "Path to Track 4
+~9/10", Phase 15).
+
+What exists:
+
+- Plan-scoped, auditable chat gateway that packages a bounded plan context and
+  records which scope was shared.
+- Connector catalog (local helper, OpenAI, Claude Code, MCP, open-source) with
+  per-request credentials that are never stored.
+- Safety posture: model output is kept separate from deterministic findings, and
+  any model-generated finding still passes `lint_finding()` before display/export.
+- PHI-share acknowledgement and `shares_patient_data` labeling before any
+  non-local provider receives plan context; the local helper is the default and
+  needs no key.
+
+Why it is not higher:
+
+- The chat is single-turn: each request sends only the current message and no
+  prior turns are threaded back, so the assistant has no conversational memory.
+- No token streaming - the full answer appears at once after a static status line.
+- Provider and model are coupled in one hardcoded dropdown; there is no
+  per-provider model list or Cursor-style provider -> model selection.
+- The message view rebuilds its full markup on every render (including on each
+  keystroke), causing scroll/focus churn and no incremental append.
+
+What reaching the ≥9/10 target requires:
+
+- Multi-turn conversation memory (bounded history threaded to the backend).
+- Incremental rendering with preserved scroll/auto-scroll/focus, a pending/typing
+  indicator, and Enter-to-send / Shift+Enter.
+- Token streaming where the provider supports it, with a non-streaming fallback.
+- Two-step provider -> model selection with a real per-provider model list (plus
+  free-text model ids for self-hosted/open-source endpoints).
+- All safety constraints above preserved unchanged.

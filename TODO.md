@@ -54,18 +54,27 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
 
 ## Honest effectiveness snapshot
 
-| Track | Current | Remaining gap |
-|-------|---------|---------------|
-| End-to-end "upload -> printable aligners" | ~8/10 for reviewed real geometry | Robust offset/booleans and harder mesh repair, a full-arch known-good/messy real-scan corpus, and material/fit modeling are still out of scope. |
-| Surface-scan staging + honest review aid | ~7/10 | More real-scan labels and learned/stronger segmentation would reduce review burden. |
-| CBCT root/bone-aware planning from a raw volume | ~1-2/10 | Raw-volume root/bone segmentation and auto-registration are still not implemented. |
+All four surfaces are active focus areas with a committed target of **≥9/10**.
+Ordered paths are below; see also `docs/application maturity.md`.
+
+| Track | Current | Target | Remaining gap |
+|-------|---------|--------|---------------|
+| End-to-end "upload -> printable aligners" | ~8/10 for reviewed real geometry | ≥9/10 | Robust offset/booleans and harder mesh repair, a full-arch known-good/messy real-scan corpus, and material/fit modeling are still out of scope. |
+| Surface-scan staging + honest review aid | ~7/10 | ≥9/10 | More real-scan labels and learned/stronger segmentation would reduce review burden. |
+| CBCT root/bone-aware planning from a raw volume | ~1-2/10 | ≥9/10 | Raw-volume root/bone segmentation and auto-registration are still not implemented. Longest road by far. |
+| In-app AI assistant (chat) | ~4/10 | ≥9/10 | Single-turn/no memory, non-streaming, coupled+hardcoded provider/model picker, clunky re-render UX. |
 
 ## Remaining roadmap
 
-### Path to Track 1 ~9/10 (ordered)
+### Targets: all four surfaces to ≥9/10
 
-Track 1 is ~8/10 today. The ordered work to reach ~9/10, gated by the safety
-posture (no material/fit/physical-use claims) and the pure-Python-always-on rule:
+Every surface below is a committed ≥9/10 target. A 10/10 is intentionally NOT a
+target for the geometry tracks: it would require material deformation,
+thermoforming fit, printer calibration, and physical validation, which this
+safety-boundary-first toolkit deliberately does not model. Ordered paths follow;
+each references the existing phases later in this file.
+
+#### Path to Track 1 (upload -> print) ~9/10 — from ~8/10
 
 1. **Phase 9.1 (PRIORITY, do first):** make the pure-Python shell QA scale to
    real arches (spatial-grid broad phase). Blocks real multi-tooth use today.
@@ -77,9 +86,39 @@ posture (no material/fit/physical-use claims) and the pure-Python-always-on rule
 4. **Phase 9.4:** add full-arch known-good shell fixtures from an independent mesh
    pipeline and compare hashes/metrics against OpenSource Ortho exports.
 
-A 10/10 is intentionally NOT on this path: it would require material deformation,
-thermoforming fit, printer calibration, and physical validation, which this
-safety-boundary-first toolkit deliberately does not model.
+#### Path to Track 2 (surface-scan staging + review aid) ~9/10 — from ~7/10
+
+1. **Phase 13:** add reviewed open-dataset benchmark cases (provenance, no PHI)
+   beside the synthetic fixtures, and track metric deltas across releases.
+2. **Phase 14:** mature the optional learned ONNX segmentation backend and
+   benchmark it vs the heuristic, keeping the heuristic as the no-dep fallback -
+   measurable improvement on crowded/contacting arches is the core ~7 -> ~9 move.
+3. **Phase 16:** upgrade collision/IPR from capped sample points to full
+   triangle-level proximity/distance using robust geometry when the optional mesh
+   extra is installed, with the sampled path as the no-dep fallback.
+
+#### Path to Track 3 (CBCT root/bone from raw volume) ~9/10 — from ~1-2/10
+
+> The longest road by far. Each step keeps proposals untrusted until human review
+> and fails closed without the optional extras.
+
+1. **Phase 12a:** optional volume-processing backend that proposes root
+   surfaces/centerlines and alveolar bone boundaries from CBCT as `PROPOSED` only.
+2. **Phase 12b:** promote the Open3D ICP experiment to an auto-registration
+   proposal path with quality metrics and human acceptance gating.
+3. **Phase 12c:** synthetic + reviewed open-volume benchmarks, plus end-to-end
+   fail-closed tests proving raw-volume/extra absence and rejected anatomy never
+   promote a plan to trusted root/bone-aware behavior.
+
+#### Path to Track 4 (in-app AI chat) ~9/10 — from ~4/10
+
+1. **Phase 15 Goal A:** conversational flow - bounded multi-turn memory,
+   incremental render with preserved scroll/focus, pending indicator +
+   Enter-to-send, and token streaming with a non-streaming fallback.
+2. **Phase 15 Goal B:** Cursor-style two-step provider -> model selection with a
+   real per-provider model list (plus free-text for self-hosted endpoints).
+3. **Phase 15 Safety:** preserve the `lint_finding()` gate, per-request
+   credentials never stored, and PHI-share acknowledgement unchanged.
 
 ### Phase 9.1 (PRIORITY): scale the pure-Python shell QA before real arch use
 
@@ -146,6 +185,16 @@ safety-boundary-first toolkit deliberately does not model.
   review burden on crowded/contacting arches.
 - [ ] Benchmark learned vs. heuristic segmentation on the Phase 13 fixtures while
   keeping the heuristic backend as the no-dependency fallback.
+
+### Phase 16: full triangle-level collision/IPR (Track 2)
+
+- [ ] Upgrade adjacent collision/IPR review from capped representative surface
+  samples to full triangle-level proximity/distance using robust geometry when
+  the optional mesh extra is installed.
+- [ ] Keep the current bbox-prefilter + sampled-point path as the no-dependency
+  fallback, and keep the bbox fallback when samples are absent.
+- [ ] Add fixtures comparing sampled vs full-triangle contact distances so the
+  precision/recall improvement is measurable.
 
 ### Phase 15: AI chat UX + provider/model selection
 
