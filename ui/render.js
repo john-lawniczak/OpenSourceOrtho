@@ -665,7 +665,7 @@ function caseRecordDetail(record) {
 
 function renderEvaluation(result) {
   renderReviewTier(result.review_tier);
-  renderCbct(result.cbct_status, result.cbct_handoff);
+  renderCbct(result.cbct_status, result.cbct_handoff, result.registration);
   el("dataGapList").innerHTML = dataGapMarkup(result);
   renderAcquisitionAdvice(result.acquisition_advice);
 
@@ -719,7 +719,7 @@ const CBCT_STATUS_COPY = {
   "anatomy-reviewed": "CBCT registered and root/bone anatomy reviewed.",
 };
 
-function renderCbct(status, handoff) {
+function renderCbct(status, handoff, registration) {
   const panel = el("cbctPanel");
   const banner = el("cbctBanner");
   if (!panel || !banner) return;
@@ -739,6 +739,28 @@ function renderCbct(status, handoff) {
       <p class="review-tier-note">Suggested viewer: ${escapeHtml(handoff.viewer_suggestion)}</p>
       ${refs.length ? `<ul>${refs.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` : ""}
     ` : ""}
+    ${registrationMarkup(registration)}
+  `;
+}
+
+function registrationMarkup(registration) {
+  const transforms = registration?.transforms || [];
+  if (!transforms.length) return "";
+  const rows = transforms.map((t) => {
+    const q = t.quality;
+    const metrics = q
+      ? [
+          q.rmse_mm != null ? `RMSE ${Number(q.rmse_mm).toFixed(3)} mm` : null,
+          q.fitness != null ? `fitness ${Number(q.fitness).toFixed(2)}` : null,
+          q.inlier_ratio != null ? `inliers ${Number(q.inlier_ratio).toFixed(2)}` : null,
+        ].filter(Boolean).join(" · ")
+      : "no quality metrics";
+    const state = t.accepted ? (q ? "accepted" : "accepted (no quality - not usable)") : "proposed";
+    return `<li><strong>${escapeHtml(t.method)}</strong> · ${escapeHtml(state)} · ${escapeHtml(metrics)}</li>`;
+  }).join("");
+  return `
+    <p class="review-tier-note">Registration${registration.ready ? " (accepted, quality-backed)" : " (not yet usable)"}:</p>
+    <ul>${rows}</ul>
   `;
 }
 

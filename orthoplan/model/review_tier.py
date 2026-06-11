@@ -72,22 +72,38 @@ _TIER_SUMMARY = {
 }
 
 
+def accepted_registration(plan: TreatmentPlan):
+    """The first accepted, quality-backed registration, or ``None``.
+
+    Acceptance is fail-closed: a registration must be ``accepted`` AND carry
+    quality metrics (``is_acceptable``) to gate any CBCT-derived behavior.
+    """
+
+    for reg in getattr(plan, "registrations", None) or []:
+        if getattr(reg, "is_acceptable", False):
+            return reg
+    return None
+
+
+def registration_ready(plan: TreatmentPlan) -> bool:
+    """Whether CBCT-derived checks may run: an accepted, quality-backed registration."""
+
+    return accepted_registration(plan) is not None
+
+
 def root_bone_aware_ready(plan: TreatmentPlan) -> bool:
     """Whether a plan has accepted registration AND reviewed CBCT-derived anatomy.
 
-    Fail-closed extension point. Phases 5-7 add the ``RegistrationTransform`` and
-    reviewed-anatomy records this checks. Until then it is always ``False``: a
-    CBCT attachment, ``DataAvailability.roots``/``cbct`` flags, or any surface
-    data can NEVER on their own promote a plan to root/bone-aware.
+    Fail-closed: Phase 5 adds ``RegistrationTransform`` (gated here via
+    ``registration_ready``); Phase 6 adds reviewed-anatomy records. A CBCT
+    attachment, ``DataAvailability`` flags, or any surface data can NEVER on
+    their own promote a plan to root/bone-aware.
     """
 
-    registration = getattr(plan, "registrations", None) or []
     anatomy = getattr(plan, "derived_anatomy", None) or []
-    if not registration or not anatomy:
+    if not registration_ready(plan) or not anatomy:
         return False
-    accepted_reg = any(getattr(r, "accepted", False) for r in registration)
-    reviewed_anatomy = any(getattr(a, "reviewed", False) for a in anatomy)
-    return accepted_reg and reviewed_anatomy
+    return any(getattr(a, "reviewed", False) for a in anatomy)
 
 
 def _has_cbct(plan: TreatmentPlan) -> bool:
@@ -186,8 +202,7 @@ def cbct_status(plan: TreatmentPlan) -> CbctStatus:
         return CbctStatus.UNAVAILABLE
     if root_bone_aware_ready(plan):
         return CbctStatus.ANATOMY_REVIEWED
-    registration = getattr(plan, "registrations", None) or []
-    if any(getattr(r, "accepted", False) for r in registration):
+    if registration_ready(plan):
         return CbctStatus.REGISTERED
     return CbctStatus.ATTACHED
 

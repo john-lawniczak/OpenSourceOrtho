@@ -67,17 +67,17 @@ clinical approval, treatment clearance, or authorization for physical use.
 
 ### Phase 5: STL-to-CBCT registration
 
-- [ ] Add `RegistrationTransform` model with source STL asset, target CBCT
+- [x] Add `RegistrationTransform` model with source STL asset, target CBCT
   record, transform matrix, method, operator/model provenance, quality score, and
   notes.
-- [ ] Support imported/manual registration transforms before automatic
+- [x] Support imported/manual registration transforms before automatic
   registration.
-- [ ] Add registration quality metrics and browser visualization overlays.
-- [ ] Add automatic registration experiments behind optional Open3D/VTK-style
+- [x] Add registration quality metrics and browser visualization overlays.
+- [x] Add automatic registration experiments behind optional Open3D/VTK-style
   dependencies.
-- [ ] Prevent CBCT-derived checks from running unless registration quality is
+- [x] Prevent CBCT-derived checks from running unless registration quality is
   present and accepted.
-- [ ] Add synthetic and fixture-based registration validation tests.
+- [x] Add synthetic and fixture-based registration validation tests.
 
 ### Phase 6: Reviewed CBCT-derived anatomy
 
