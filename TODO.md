@@ -146,3 +146,54 @@ safety-boundary-first toolkit deliberately does not model.
   review burden on crowded/contacting arches.
 - [ ] Benchmark learned vs. heuristic segmentation on the Phase 13 fixtures while
   keeping the heuristic backend as the no-dependency fallback.
+
+### Phase 15: AI chat UX + provider/model selection
+
+> **Current state (clunky, needs rework):** the in-app assistant
+> (`ui/app.js` send flow, `ui/render.js` `renderChat`, `orthoplan/ai_chat.py`,
+> `orthoplan/ai_connectors.py`) does not behave like a normal chat:
+> - **Single-turn, no memory.** Each "Ask AI" sends only the current message;
+>   `answer_chat_payload` builds a session of just `[user, assistant]` and no prior
+>   turns are passed back, so the assistant cannot reference earlier messages. A
+>   real back-and-forth conversation is impossible today.
+> - **No streaming.** The full answer appears at once after a static
+>   "Reviewing the scoped plan context..." status; there is no token streaming or
+>   live typing indicator.
+> - **Coupled, hardcoded model picker.** One `<select id="chatModel">` carries both
+>   provider and model via `data-provider` on a fixed option list; models are
+>   "configured externally" with no per-provider model list or selection.
+> - **Full re-render churn.** `renderChat` rebuilds `chatMessages.innerHTML` on
+>   every render (including each keystroke), so scroll position jumps, focus is
+>   fragile, and messages cannot append incrementally.
+
+#### Goal A: make the chat flow like a normal conversation
+
+- [ ] Thread conversation history: send prior turns to the backend (bounded /
+  truncated) and accept multi-turn input in `answer_chat_payload` / `ChatRequest`
+  so the assistant has memory across turns.
+- [ ] Render messages incrementally (append, do not rebuild `innerHTML` each
+  render); preserve scroll position and auto-scroll to the latest message; keep
+  input focus after sending.
+- [ ] Add a live pending/typing indicator and Enter-to-send / Shift+Enter for a
+  newline; disable the composer only while a turn is in flight, not the whole panel.
+- [ ] Stream assistant tokens when the provider supports it (Server-Sent Events or
+  chunked fetch), with a graceful non-streaming fallback for providers/local that
+  do not.
+
+#### Goal B: Cursor-style provider + model selection
+
+- [ ] Split the single dropdown into two steps: pick the provider, then pick a
+  model from that provider's model list (remember the last selection per provider).
+- [ ] Give each connector in `connector_catalog()` a real list of selectable
+  models instead of a single "configured externally" string; optionally allow a
+  free-text model id for self-hosted/open-source endpoints.
+- [ ] Show per-provider affordances inline: which need an API key, which share
+  patient data, and the local helper as the default no-key on-device option.
+
+#### Safety constraints (unchanged - must hold)
+
+- [ ] Keep model output separated from deterministic findings; any model-generated
+  finding still passes `lint_finding()` before display or export.
+- [ ] Preserve per-request credential handling (API keys read at send time, never
+  stored/persisted) and the PHI-share acknowledgement + `shares_patient_data`
+  labeling before any non-local provider receives plan context.
