@@ -94,11 +94,11 @@ Honest self-assessment of the current build:
 
 ### Phase 13: Measured accuracy / validation benchmarks (quantifies all tracks)
 
-- [ ] Add ground-truth fixture cases (synthetic + any reviewed open datasets) for
+- [x] Add ground-truth fixture cases (synthetic + any reviewed open datasets) for
   segmentation, movement, collision, and shell thickness.
-- [ ] Add a benchmark harness reporting per-component metrics (Dice/IoU for
+- [x] Add a benchmark harness reporting per-component metrics (Dice/IoU for
   segmentation, mm error for movement/shell, precision/recall for collision).
-- [ ] Surface the metrics as tracked numbers (reported, not pass/fail gates at
+- [x] Surface the metrics as tracked numbers (reported, not pass/fail gates at
   first) so "accuracy" stops being unmeasured.
 
 ### Phase 14: Segmentation maturity — learned model (track 2)
