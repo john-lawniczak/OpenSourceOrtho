@@ -22,7 +22,12 @@ from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
 from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
-from orthoplan.model.review_tier import cbct_handoff, cbct_status, review_tier_info
+from orthoplan.model.review_tier import (
+    cbct_handoff,
+    cbct_status,
+    registration_ready,
+    review_tier_info,
+)
 from orthoplan.planning.optimizer import optimize_staging
 from orthoplan.planning.timeline import project_timeline
 from orthoplan.printing import build_print_export_status, export_print_package
@@ -50,6 +55,10 @@ def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
         "review_tier": review_tier_info(plan).model_dump(mode="json"),
         "cbct_status": cbct_status(plan).value,
         "cbct_handoff": cbct_handoff(plan).model_dump(mode="json"),
+        "registration": {
+            "ready": registration_ready(plan),
+            "transforms": [reg.model_dump(mode="json") for reg in plan.registrations],
+        },
         "data_gaps": data_gaps(plan),
         "data_gap_actions": [action.model_dump() for action in data_gap_actions(plan)],
         "acquisition_advice": acquisition_advice(plan).model_dump(),

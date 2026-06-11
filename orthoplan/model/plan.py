@@ -15,7 +15,10 @@ from orthoplan.model.clinical import (
 )
 from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame
 from orthoplan.model.identity import Arch, NumberingSystem, ToothId
+from orthoplan.model.registration import RegistrationTransform
 from orthoplan.model.settings import TreatmentSettings
+
+CBCT_RECORD_KINDS = ("cbct", "dicom")
 
 
 class ToothDelta(BaseModel):
@@ -125,6 +128,7 @@ class TreatmentPlan(BaseModel):
     case_records: list[CaseRecord] = Field(default_factory=list)
     mesh_assets: list[MeshAsset] = Field(default_factory=list)
     tooth_meshes: list[SegmentedToothMesh] = Field(default_factory=list)
+    registrations: list[RegistrationTransform] = Field(default_factory=list)
     fixed_teeth: list[FixedTooth] = Field(default_factory=list)
     movement_exclusions: list[MovementExclusion] = Field(default_factory=list)
     attachments: list[Attachment] = Field(default_factory=list)
@@ -169,6 +173,8 @@ class TreatmentPlan(BaseModel):
         if len(record_ids) != len(set(record_ids)):
             raise ValueError("duplicate case record id")
 
+        self._validate_registrations(asset_ids)
+
         # Build the canonical tooth -> mesh map while rejecting duplicate links.
         tooth_to_mesh: dict[str, str] = {}
         for link in self.tooth_meshes:
@@ -201,3 +207,28 @@ class TreatmentPlan(BaseModel):
                         f"{delta.mesh_asset_id!r} for tooth {delta.tooth.value}"
                     )
         return self
+
+    def _validate_registrations(self, asset_ids: set[str]) -> None:
+        """Registration transforms must reference a real mesh asset and CBCT record.
+
+        Keeps an accepted registration from ever pointing at geometry or a volume
+        that is not in the plan.
+        """
+
+        cbct_record_ids = {
+            record.id for record in self.case_records if record.kind in CBCT_RECORD_KINDS
+        }
+        seen_reg_ids: set[str] = set()
+        for reg in self.registrations:
+            if reg.id in seen_reg_ids:
+                raise ValueError(f"duplicate registration id: {reg.id}")
+            seen_reg_ids.add(reg.id)
+            if reg.source_stl_asset_id not in asset_ids:
+                raise ValueError(
+                    f"registration references unknown source mesh asset {reg.source_stl_asset_id!r}"
+                )
+            if reg.target_cbct_record_id not in cbct_record_ids:
+                raise ValueError(
+                    "registration references unknown CBCT/DICOM record "
+                    f"{reg.target_cbct_record_id!r}"
+                )

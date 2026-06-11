@@ -34,13 +34,20 @@ from orthoplan.model.plan import (
     TreatmentPlan,
 )
 from orthoplan.model.dicom import DicomMetadata, extract_dicom_metadata
+from orthoplan.model.registration import (
+    RegistrationMethod,
+    RegistrationQuality,
+    RegistrationTransform,
+)
 from orthoplan.model.review_tier import (
     CbctHandoff,
     CbctStatus,
     ReviewTier,
     ReviewTierInfo,
+    accepted_registration,
     cbct_handoff,
     cbct_status,
+    registration_ready,
     review_tier,
     review_tier_info,
     root_bone_aware_ready,
@@ -80,6 +87,9 @@ __all__ = [
     "MovementExclusion",
     "PlannedSpacing",
     "PrintExportSettings",
+    "RegistrationMethod",
+    "RegistrationQuality",
+    "RegistrationTransform",
     "ReviewTier",
     "ReviewTierInfo",
     "SegmentedToothMesh",
@@ -91,9 +101,11 @@ __all__ = [
     "TreatmentPlan",
     "TreatmentSettings",
     "UploadedScan",
+    "accepted_registration",
     "bounding_box_sanity",
     "cbct_handoff",
     "cbct_status",
+    "registration_ready",
     "data_gap_actions",
     "data_gaps",
     "extract_dicom_metadata",
