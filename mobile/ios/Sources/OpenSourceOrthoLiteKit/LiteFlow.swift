@@ -32,6 +32,93 @@ public struct SelectedScan: Codable, Sendable, Equatable {
         self.byteCount = byteCount
         self.modality = modality
     }
+
+    public var isSTL: Bool {
+        modality.lowercased() == "stl" || fileName.lowercased().hasSuffix(".stl")
+    }
+}
+
+/// A review/package JSON produced by the full browser/Python workspace and kept
+/// on-device for reference. Mobile treats it as opaque; edits still belong in
+/// the engine-backed browser workflow.
+public struct StoredPlanReview: Codable, Sendable, Equatable, Identifiable {
+    public var id: String
+    public var fileName: String
+    public var byteCount: Int
+    public var importedAt: Date
+    public var jsonText: String
+
+    public init(fileName: String, byteCount: Int, importedAt: Date = Date(), jsonText: String) {
+        self.id = Self.reviewId(fileName: fileName, importedAt: importedAt)
+        self.fileName = fileName
+        self.byteCount = byteCount
+        self.importedAt = importedAt
+        self.jsonText = jsonText
+    }
+
+    private static func reviewId(fileName: String, importedAt: Date) -> String {
+        let cleaned = fileName.lowercased().map { char -> Character in
+            if char.isLetter || char.isNumber { return char }
+            return "-"
+        }
+        return "\(String(cleaned))-\(Int(importedAt.timeIntervalSince1970))"
+    }
+}
+
+/// Best-effort mobile synthesis for STL-only cases when the engine is not
+/// reachable. This is intentionally conservative and caveated; CBCT/DICOM stays
+/// browser/full-engine only because root/bone-aware work needs heavier local
+/// ingestion, registration, and review contracts.
+public enum OnDevicePlanSynthesizer {
+    public static func canSynthesize(scans: [SelectedScan]) -> Bool {
+        !scans.isEmpty && scans.allSatisfy(\.isSTL)
+    }
+
+    public static func response(for scans: [SelectedScan]) -> GeneratePlanResponse {
+        let stageCount = max(6, scans.count * 6)
+        let projectedDays = stageCount * 14
+        let plan = LitePlanBuilder.minimalPlan(for: scans).merging(
+            [
+                "stages": AnyCodable(.array([])),
+                "mobile_synthesis": AnyCodable(.object([
+                    "mode": AnyCodable(.string("stl-only-best-effort")),
+                    "requires_browser_for_edits": AnyCodable(.bool(true)),
+                ])),
+            ],
+            uniquingKeysWith: { _, new in new }
+        )
+        return GeneratePlanResponse(
+            ok: true,
+            source: "mobile-stl-best-effort",
+            warnings: [
+                "Generated on-device from STL metadata only.",
+                "Open the browser/full engine for segmentation, mesh-backed editing, CBCT/DICOM, or print-critical review.",
+            ],
+            steps: [
+                PipelineStep(
+                    name: "mobile-stl-intake",
+                    status: "warning",
+                    detail: "STL files were accepted for a limited on-device review."
+                ),
+                PipelineStep(
+                    name: "browser-handoff",
+                    status: "warning",
+                    detail: "Use the browser workspace for CBCT/DICOM, segmentation, and plan changes."
+                ),
+            ],
+            correctness: Correctness(verdict: "CONSISTENT"),
+            stageCount: stageCount,
+            timeline: Timeline(
+                stageCount: stageCount,
+                wearIntervalDays: 14,
+                projectedDurationDays: projectedDays,
+                projectedDurationWeeks: Double(projectedDays) / 7.0,
+                caveat: "Mobile STL-only synthesis is a conservative review artifact. It excludes segmentation, CBCT/DICOM registration, root/bone checks, collision validation from real tooth meshes, and clinical approval."
+            ),
+            caveat: "This review was synthesized on-device from STL metadata only. Use the browser/full engine for accurate mesh geometry, CBCT/DICOM, plan edits, print-critical exports, and clinician review.",
+            plan: AnyCodable(.object(plan))
+        )
+    }
 }
 
 /// Builds the minimal plan-shaped payload the lite flow sends to

@@ -61,6 +61,20 @@ public struct Timeline: Codable, Sendable {
     public var projectedDurationWeeks: Double
     public var caveat: String
 
+    public init(
+        stageCount: Int,
+        wearIntervalDays: Int,
+        projectedDurationDays: Int,
+        projectedDurationWeeks: Double,
+        caveat: String
+    ) {
+        self.stageCount = stageCount
+        self.wearIntervalDays = wearIntervalDays
+        self.projectedDurationDays = projectedDurationDays
+        self.projectedDurationWeeks = projectedDurationWeeks
+        self.caveat = caveat
+    }
+
     enum CodingKeys: String, CodingKey {
         case stageCount = "stage_count"
         case wearIntervalDays = "wear_interval_days"
@@ -84,6 +98,30 @@ public struct GeneratePlanResponse: Codable, Sendable {
     /// The full generated plan; stages drive progression rendering. Kept opaque
     /// here - the progression view reads `plan.stages` lazily.
     public var plan: AnyCodable?
+
+    public init(
+        ok: Bool = false,
+        errors: [String]? = nil,
+        source: String? = nil,
+        warnings: [String]? = nil,
+        steps: [PipelineStep]? = nil,
+        correctness: Correctness? = nil,
+        stageCount: Int? = nil,
+        timeline: Timeline? = nil,
+        caveat: String? = nil,
+        plan: AnyCodable? = nil
+    ) {
+        self.ok = ok
+        self.errors = errors
+        self.source = source
+        self.warnings = warnings
+        self.steps = steps
+        self.correctness = correctness
+        self.stageCount = stageCount
+        self.timeline = timeline
+        self.caveat = caveat
+        self.plan = plan
+    }
 
     enum CodingKeys: String, CodingKey {
         case ok, errors, source, warnings, steps, correctness, timeline, caveat, plan

@@ -71,7 +71,7 @@ fun LiteApp(model: LiteFlowViewModel = viewModel()) {
                 SettingsScreen()
             } else {
                 when (state.step) {
-                    LiteStep.UPLOAD -> UploadScreen(model)
+                    LiteStep.UPLOAD -> UploadScreen(state, model)
                     LiteStep.TEETH_AND_TIME -> TeethAndTimeScreen(state, model)
                     LiteStep.REVIEW -> ReviewScreen(state, model)
                     LiteStep.PRINT_AND_SEND -> PrintAndSendScreen(model)

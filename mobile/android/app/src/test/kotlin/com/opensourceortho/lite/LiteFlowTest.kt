@@ -60,6 +60,29 @@ class LiteFlowTest {
     }
 
     @Test
+    fun onDeviceSynthesisIsStlOnlyAndCaveated() {
+        val stlScans = listOf(SelectedScan("upper.stl", "upper", 100))
+        assertTrue(OnDevicePlanSynthesizer.canSynthesize(stlScans))
+
+        val cbctScans = listOf(SelectedScan(fileName = "cbct.zip", byteCount = 100, modality = "cbct"))
+        assertFalse(OnDevicePlanSynthesizer.canSynthesize(cbctScans))
+
+        val response = OnDevicePlanSynthesizer.response(stlScans)
+        assertEquals("mobile-stl-best-effort", response.source)
+        assertEquals("CONSISTENT", response.correctness?.verdict)
+        assertTrue(response.caveat!!.contains("STL metadata only"))
+        assertTrue(response.warnings!!.joinToString(" ").contains("browser/full engine"))
+    }
+
+    @Test
+    fun storedBrowserReviewCarriesOpaqueJson() {
+        val review = StoredPlanReview.create("case-review.json", 11, "{\"ok\":true}")
+        assertEquals("case-review.json", review.fileName)
+        assertEquals("{\"ok\":true}", review.jsonText)
+        assertTrue(review.id.isNotEmpty())
+    }
+
+    @Test
     fun decodeGeneratePlanResponseSubset() {
         val body = """
             {
