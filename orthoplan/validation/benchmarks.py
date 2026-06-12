@@ -20,6 +20,7 @@ from orthoplan.validation.benchmark_models import (
     BenchmarkReport,
 )
 from orthoplan.validation.segmentation_truth import full_arch_truth, score_segmentation
+from orthoplan.validation.shell_backend import shell_backend_comparison_metrics
 from orthoplan.validation.synthetic_arch import build_synthetic_arch, realistic_widths
 from orthoplan.viz.progress import build_stage_progress_frames
 
@@ -32,6 +33,7 @@ def run_validation_benchmarks() -> BenchmarkReport:
     metrics.extend(triangle_collision_metrics())
     metrics.extend(_shell_metrics())
     metrics.extend(_messy_shell_metrics())
+    metrics.extend(_shell_backend_metrics())
     corpus_cases = reviewed_benchmark_corpus()
     metrics.extend(_corpus_metrics(corpus_cases))
     return BenchmarkReport(metrics=_with_baseline_deltas(metrics), corpus_cases=corpus_cases)
@@ -145,6 +147,20 @@ def _corpus_metrics(cases: list[BenchmarkCorpusCase]) -> list[BenchmarkMetric]:
     ]
 
 
+def _shell_backend_metrics() -> list[BenchmarkMetric]:
+    return [
+        _metric(
+            str(raw["name"]),
+            float(raw["value"]),
+            str(raw["component"]),
+            str(raw["case_id"]),
+            unit=str(raw.get("unit", "")),
+            notes=str(raw["notes"]) if raw.get("notes") else None,
+        )
+        for raw in shell_backend_comparison_metrics()
+    ]
+
+
 def _collision_plan(overlap: bool) -> TreatmentPlan:
     bounds_21 = (0.8, 1.8) if overlap else (1.3, 2.3)
     mesh_11 = MeshAsset(
@@ -206,6 +222,8 @@ _BASELINE_VALUES = {
     "shell_thickness_error": 0.0,
     "messy_shell_connected_components": 2.0,
     "messy_shell_self_intersections": 0.0,
+    "robust_backend_available": 0.0,
+    "robust_backend_validation_cases": 0.0,
     "reviewed_non_phi_corpus_cases": 1.0,
     "reviewed_non_phi_scan_faces": 617110.0,
 }

@@ -143,6 +143,34 @@ def assemble_shell(
     inner, outer = _shell_surfaces(
         verts, normals, thickness_mm, xy_compensation_mm, z_compensation_mm
     )
+    return assemble_shell_surfaces(
+        inner, outer, faces,
+        input_boundary_edges=input_boundary_edges,
+        thickness_mm=thickness_mm,
+        minimum_printable_feature_mm=minimum_printable_feature_mm,
+        trim_applied=trim is not None,
+        xy_compensation_mm=xy_compensation_mm,
+        z_compensation_mm=z_compensation_mm,
+        dropped=dropped,
+        skinny=skinny,
+    )
+
+
+def assemble_shell_surfaces(
+    inner: list[Vec3],
+    outer: list[Vec3],
+    faces: list[tuple[int, int, int]],
+    *,
+    input_boundary_edges: list[tuple[int, int]],
+    thickness_mm: float,
+    minimum_printable_feature_mm: float,
+    trim_applied: bool,
+    xy_compensation_mm: float,
+    z_compensation_mm: float,
+    dropped: int,
+    skinny: int,
+) -> ShellResult:
+    """Close precomputed inner/outer surfaces and run the shared shell QA."""
 
     out: list[Triangle] = []
     for a, b, c in faces:
@@ -159,7 +187,7 @@ def assemble_shell(
         triangles=out,
         stats=_shell_stats(
             inner, outer, faces, out, input_boundary_edges,
-            dropped, skinny, thickness_mm, minimum_printable_feature_mm, trim is not None,
+            dropped, skinny, thickness_mm, minimum_printable_feature_mm, trim_applied,
             xy_compensation_mm, z_compensation_mm,
         ),
     )

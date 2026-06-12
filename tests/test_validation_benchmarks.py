@@ -26,6 +26,7 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
     } <= names
     assert "shell_thickness_error" in names
     assert {"messy_shell_connected_components", "messy_shell_self_intersections"} <= names
+    assert {"robust_backend_available", "robust_backend_validation_cases"} <= names
     assert "reviewed_non_phi_corpus_cases" in names
 
 
@@ -36,6 +37,25 @@ def test_validation_benchmark_tracks_metric_deltas() -> None:
     assert report.baseline_id == "validation-benchmark-v1.2-baseline"
     assert dice.baseline_value is not None
     assert dice.delta_from_baseline == round(dice.value - dice.baseline_value, 6)
+
+
+def test_validation_benchmark_records_open3d_backend_availability() -> None:
+    report = run_validation_benchmarks()
+
+    available = next(metric for metric in report.metrics if metric.name == "robust_backend_available")
+    cases = [
+        metric for metric in report.metrics
+        if metric.name == "robust_backend_validation_cases"
+    ]
+
+    assert available.component == "shell-backend"
+    assert available.value in {0.0, 1.0}
+    assert cases
+    if available.value == 0.0:
+        assert cases[0].value == 0.0
+        assert "skipped" in (cases[0].notes or "")
+    else:
+        assert sum(metric.value for metric in cases) >= 2.0
 
 
 def test_reviewed_benchmark_corpus_records_non_phi_provenance() -> None:
