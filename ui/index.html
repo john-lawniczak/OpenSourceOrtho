@@ -764,19 +764,15 @@
           </div>
           <div class="ai-chat-body">
             <span id="chatStatus" class="chat-status">Local helper ready</span>
-            <!-- One simple model dropdown picks both the provider and the model.
-                 The local helper needs no key; external models reveal the key field
-                 and (for an endpoint-based model) the connector settings below. -->
             <div class="ai-connector">
+              <label>Provider
+                <select id="chatProvider"></select>
+              </label>
               <label>Model
-                <select id="chatModel">
-                  <option value="local-educational-helper" data-provider="local">Local helper (no key needed)</option>
-                  <option value="gpt-5.5" data-provider="openai">GPT-5.5</option>
-                  <option value="gpt-5.4" data-provider="openai">GPT-5.4</option>
-                  <option value="claude-opus-4-8" data-provider="claude-code">Claude Opus 4.8</option>
-                  <option value="claude-sonnet-4-7" data-provider="claude-code">Claude Sonnet 4.7</option>
-                  <option value="open-source" data-provider="open-source">Open-source endpoint</option>
-                </select>
+                <select id="chatModel"></select>
+              </label>
+              <label id="chatCustomModelField" hidden>Custom model ID
+                <input id="chatCustomModel" autocomplete="off" placeholder="model-id" />
               </label>
               <label class="ai-key-field" id="aiKeyField">Your API key
                 <input id="chatApiKey" type="password" autocomplete="off" placeholder="Paste your API key" />

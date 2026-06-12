@@ -47,10 +47,17 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   compensation, per-stage watertight/thickness/self-intersection, skip reasons)
   surfaced in the guided and technician print UIs.
 - Real triangle-triangle self-intersection engine (Möller narrow phase behind an
-  AABB broad phase) and nonmanifold-edge detection replacing the box-overlap
-  approximation, per-artifact `failed_checks` explanations, and an independent
-  analytic known-good oracle (closed-form slab volume) plus synthetic messy
-  fixtures.
+  spatial-grid broad phase) and nonmanifold-edge detection replacing the
+  box-overlap approximation, per-artifact `failed_checks` explanations, and an
+  independent analytic known-good oracle (closed-form slab volume) plus synthetic
+  messy fixtures.
+- In-app AI assistant now has bounded conversation memory, incremental message
+  rendering, Enter-to-send, provider/model split with per-provider model memory,
+  connector model catalogs, custom self-hosted model IDs, and per-request
+  credential/PHI-share gating. True token streaming is still pending.
+- Benchmark reports now include metric deltas, reviewed non-PHI corpus metadata
+  for the bundled Sample Test Case, messy-shell metrics, and sampled-vs-triangle
+  collision/IPR distance metrics.
 
 ## Honest effectiveness snapshot
 
@@ -59,10 +66,10 @@ Ordered paths are below; see also `docs/application maturity.md`.
 
 | Track | Current | Target | Remaining gap |
 |-------|---------|--------|---------------|
-| End-to-end "upload -> printable aligners" | ~8/10 for reviewed real geometry | ≥9/10 | Robust offset/booleans and harder mesh repair, a full-arch known-good/messy real-scan corpus, and material/fit modeling are still out of scope. |
-| Surface-scan staging + honest review aid | ~7/10 | ≥9/10 | More real-scan labels and learned/stronger segmentation would reduce review burden. |
+| End-to-end "upload -> printable aligners" | ~8.5/10 for reviewed real geometry | ≥9/10 | Robust true offset/booleans, full-arch known-good fixtures from an independent pipeline, and material/fit modeling are still out of scope. |
+| Surface-scan staging + honest review aid | ~7.5/10 | ≥9/10 | Triangle-level collision/IPR now has an in-memory geometry path, but automatic full-geometry extraction and stronger learned segmentation remain. |
 | CBCT root/bone-aware planning from a raw volume | ~1-2/10 | ≥9/10 | Raw-volume root/bone segmentation and auto-registration are still not implemented. Longest road by far. |
-| In-app AI assistant (chat) | ~4/10 | ≥9/10 | Single-turn/no memory, non-streaming, coupled+hardcoded provider/model picker, clunky re-render UX. |
+| In-app AI assistant (chat) | ~8/10 | ≥9/10 | True token streaming and richer provider adapters remain; the normal conversation flow and provider/model UX are now in place. |
 
 ## Remaining roadmap
 
@@ -73,17 +80,13 @@ by dependency; within a wave, items can run in parallel. A 10/10 is intentionall
 NOT a target for the geometry tracks (no material/fit/physical-use modeling).
 Detailed task lists for each phase follow, in this same order.
 
-**Wave 0 — unblock real use (do first, no dependencies)**
+**Done waves**
 
-1. **Phase 9.1** (Track 1): spatial-grid shell QA so the pure-Python path scales
-   to real arches. Gates real multi-tooth use today.
-
-**Wave 1 — high value, independent, reachable now (parallelizable)**
-
-2. **Phase 15** (Track 4): chat conversational flow + Cursor-style provider/model
-   selection. No geometry dependencies; biggest single jump (~4 -> ~9).
-3. **Phase 13** (Track 2): reviewed open-dataset benchmark corpus + metric-delta
-   tracking. Prerequisite for measuring the Phase 14/16 gains.
+1. **Phase 9.1** (Track 1): spatial-grid shell QA for pure-Python shell builds.
+2. **Phase 15 partial** (Track 4): normal chat flow + Cursor-style provider/model
+   selection. True token streaming remains.
+3. **Phase 13** (Track 2): benchmark corpus metadata, metric deltas, and messy
+   shell/collision tracking.
 
 **Wave 2 — optional mesh extra (Open3D), enabled once then reused**
 
@@ -92,8 +95,9 @@ Detailed task lists for each phase follow, in this same order.
 5. **Phase 9.2 + 9.3** (Track 1): true boolean/SDF offset in the robust backend,
    then validate it vs the pure-Python QA on a messy corpus. The real Track 1
    ~8 -> ~9 move.
-6. **Phase 16** (Track 2): full triangle-level collision/IPR, with the sampled
-   path as the no-dep fallback.
+6. **Phase 16 remaining** (Track 2): automatic full-geometry collision/IPR from
+   reviewed mesh assets. The in-memory triangle path and sampled fallback now
+   exist.
 7. **Phase 9.4** (Track 1): full-arch known-good fixtures from an independent mesh
    pipeline. Completes Track 1.
 
@@ -122,44 +126,32 @@ Detailed task lists for each phase follow, in this same order.
 > fallback is the always-on default**, so this must land before the shell QA runs
 > on real multi-tooth reviewed plans.
 
-- [ ] Replace the O(n^2) self-intersection broad phase with a uniform spatial-grid
+- [x] Replace the O(n^2) self-intersection broad phase with a uniform spatial-grid
   (hash-bucket) broad phase so only triangles in neighboring cells reach the exact
   Möller narrow phase; target ~linear scaling on clean meshes.
-- [ ] Replace the O(V^2) `min_inner_outer_clearance` scan with a spatial-grid /
+- [x] Replace the O(V^2) `min_inner_outer_clearance` scan with a spatial-grid /
   nearest-neighbor query over inner vs outer vertices.
-- [ ] Add a performance regression test (full-arch-scale synthetic shell, assert
+- [x] Add a performance regression test (full-arch-scale synthetic shell, assert
   build completes under a fixed wall-clock budget) so the O(n^2) cost cannot
   silently return.
-- [ ] Keep results identical to the current exact engine on the existing fixtures
+- [x] Keep results identical to the current exact engine on the existing fixtures
   (the grid changes only which pairs are tested, not the intersection test).
 
 ### Phase 15 (Wave 1): AI chat UX + provider/model selection (Track 4)
 
-> **Current state (clunky, needs rework):** the in-app assistant
-> (`ui/app.js` send flow, `ui/render.js` `renderChat`, `orthoplan/ai_chat.py`,
-> `orthoplan/ai_connectors.py`) does not behave like a normal chat:
-> - **Single-turn, no memory.** Each "Ask AI" sends only the current message;
->   `answer_chat_payload` builds a session of just `[user, assistant]` and no prior
->   turns are passed back, so the assistant cannot reference earlier messages.
-> - **No streaming.** The full answer appears at once after a static
->   "Reviewing the scoped plan context..." status; no token streaming or live
->   typing indicator.
-> - **Coupled, hardcoded model picker.** One `<select id="chatModel">` carries both
->   provider and model via `data-provider` on a fixed option list; models are
->   "configured externally" with no per-provider model list or selection.
-> - **Full re-render churn.** `renderChat` rebuilds `chatMessages.innerHTML` on
->   every render (including each keystroke), so scroll position jumps, focus is
->   fragile, and messages cannot append incrementally.
+> **Current state:** the assistant now behaves like a normal bounded
+> conversation, with provider/model selection and per-request credential handling.
+> The remaining chat gap is true provider token streaming.
 
 #### Goal A: make the chat flow like a normal conversation
 
-- [ ] Thread conversation history: send prior turns to the backend (bounded /
+- [x] Thread conversation history: send prior turns to the backend (bounded /
   truncated) and accept multi-turn input in `answer_chat_payload` / `ChatRequest`
   so the assistant has memory across turns.
-- [ ] Render messages incrementally (append, do not rebuild `innerHTML` each
+- [x] Render messages incrementally (append, do not rebuild `innerHTML` each
   render); preserve scroll position and auto-scroll to the latest message; keep
   input focus after sending.
-- [ ] Add a live pending/typing indicator and Enter-to-send / Shift+Enter for a
+- [x] Add a live pending/typing indicator and Enter-to-send / Shift+Enter for a
   newline; disable the composer only while a turn is in flight, not the whole panel.
 - [ ] Stream assistant tokens when the provider supports it (Server-Sent Events or
   chunked fetch), with a graceful non-streaming fallback for providers/local that
@@ -167,29 +159,30 @@ Detailed task lists for each phase follow, in this same order.
 
 #### Goal B: Cursor-style provider + model selection
 
-- [ ] Split the single dropdown into two steps: pick the provider, then pick a
+- [x] Split the single dropdown into two steps: pick the provider, then pick a
   model from that provider's model list (remember the last selection per provider).
-- [ ] Give each connector in `connector_catalog()` a real list of selectable
+- [x] Give each connector in `connector_catalog()` a real list of selectable
   models instead of a single "configured externally" string; optionally allow a
   free-text model id for self-hosted/open-source endpoints.
-- [ ] Show per-provider affordances inline: which need an API key, which share
+- [x] Show per-provider affordances inline: which need an API key, which share
   patient data, and the local helper as the default no-key on-device option.
 
 #### Safety constraints (unchanged - must hold)
 
-- [ ] Keep model output separated from deterministic findings; any model-generated
+- [x] Keep model output separated from deterministic findings; any model-generated
   finding still passes `lint_finding()` before display or export.
-- [ ] Preserve per-request credential handling (API keys read at send time, never
+- [x] Preserve per-request credential handling (API keys read at send time, never
   stored/persisted) and the PHI-share acknowledgement + `shares_patient_data`
   labeling before any non-local provider receives plan context.
 
 ### Phase 13 (Wave 1): broader benchmark corpus (Track 2)
 
-- [ ] Add reviewed open-dataset benchmark cases beside the current synthetic
-  fixtures, with provenance and no PHI.
-- [ ] Track benchmark reports over time so segmentation, movement, collision/IPR,
+- [x] Add reviewed non-PHI benchmark corpus metadata beside the current synthetic
+  fixtures. Current implementation uses the bundled Sample Test Case manifest;
+  true third-party open-dataset cases remain a future expansion.
+- [x] Track benchmark reports over time so segmentation, movement, collision/IPR,
   and shell changes show metric deltas instead of only pass/fail status.
-- [ ] Add optional benchmark fixtures for messy shell geometry once the robust
+- [x] Add optional benchmark fixtures for messy shell geometry once the robust
   shell backend exists.
 
 ### Phase 9 follow-up (Wave 2): robust shell backend 9.2 - 9.4 (Track 1)
@@ -212,13 +205,14 @@ Detailed task lists for each phase follow, in this same order.
 
 ### Phase 16 (Wave 2): full triangle-level collision/IPR (Track 2)
 
-- [ ] Upgrade adjacent collision/IPR review from capped representative surface
-  samples to full triangle-level proximity/distance using robust geometry when
-  the optional mesh extra is installed.
-- [ ] Keep the current bbox-prefilter + sampled-point path as the no-dependency
+- [x] Add full triangle-level proximity/distance when reviewed geometry is supplied
+  in memory; automatic extraction from mesh assets remains pending.
+- [x] Keep the current bbox-prefilter + sampled-point path as the no-dependency
   fallback, and keep the bbox fallback when samples are absent.
-- [ ] Add fixtures comparing sampled vs full-triangle contact distances so the
+- [x] Add fixtures comparing sampled vs full-triangle contact distances so the
   precision/recall improvement is measurable.
+- [ ] Wire automatic full-triangle extraction from reviewed mesh assets/workspace
+  into the collision rule without serializing full scan geometry into plan JSON.
 
 ### Phase 14 (Wave 3): segmentation maturity (Track 2)
 

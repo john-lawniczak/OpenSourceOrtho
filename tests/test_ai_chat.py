@@ -41,7 +41,10 @@ def test_connector_catalog_models_external_connectors_as_disabled_by_default() -
     assert connectors["local"].enabled is True
     assert connectors["openai"].enabled is False
     assert connectors["openai"].shares_patient_data is True
+    assert connectors["openai"].requires_api_key is True
+    assert "gpt-5.5" in connectors["openai"].models
     assert connectors["mcp"].endpoint == "user supplied"
+    assert connectors["mcp"].allow_custom_model is True
 
 
 def test_summary_context_excludes_full_plan_snapshot() -> None:
@@ -84,6 +87,26 @@ def test_local_chat_returns_auditable_session() -> None:
     assert "Guided step 4: Review" in result["session"]["messages"][1]["content"]
     assert result["context"]["ui_context"]["label"] == "Guided step 4: Review"
     assert result["context"]["plan_hash"] == result["session"]["plan_hash"]
+
+
+def test_local_chat_threads_bounded_history() -> None:
+    result = answer_chat_payload(
+        {
+            "plan": _plan().model_dump(mode="json"),
+            "message": "What should I compare next?",
+            "history": [
+                {"role": "user", "content": "What is the first data gap?"},
+                {"role": "assistant", "content": "The first gap is periodontal status."},
+            ],
+            "provider": "local",
+            "context_scope": "summary",
+        }
+    )
+
+    assert result["ok"] is True
+    roles = [message["role"] for message in result["session"]["messages"]]
+    assert roles == ["user", "assistant", "user", "assistant"]
+    assert "What is the first data gap?" in result["session"]["messages"][-1]["content"]
 
 
 def test_external_connector_requires_share_acknowledgement() -> None:
@@ -137,6 +160,7 @@ def test_external_connector_calls_live_provider_and_hides_key(monkeypatch) -> No
     assert result["session"]["messages"][1]["content"] == "Educational external answer."
     # The boundary system prompt reaches the provider.
     assert "licensed dental professional" in fake.seen.system
+    assert "Prior conversation" in fake.seen.prompt
     # The API key must never appear anywhere in the serialized response.
     assert "sk-secret-test-key" not in json.dumps(result)
 

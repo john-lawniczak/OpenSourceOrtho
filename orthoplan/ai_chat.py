@@ -79,6 +79,7 @@ class ChatSession(BaseModel):
 class ChatRequest(BaseModel):
     plan: dict[str, Any]
     message: str = Field(min_length=1, max_length=2000)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=40)
     provider: ConnectorKind = "local"
     model: str | None = None
     context_scope: ContextScopeName = "summary"
@@ -157,7 +158,6 @@ def _format_validation_errors(error: ValidationError) -> list[str]:
         messages.append(f"{location}: {item.get('msg', 'invalid')}")
     return messages
 
-
 def _local_answer(message: str, context: dict[str, Any]) -> str:
     findings = context.get("findings") or []
     gaps = context.get("data_gaps") or []
@@ -169,6 +169,12 @@ def _local_answer(message: str, context: dict[str, Any]) -> str:
     first_finding = findings[0]["title"] if findings else "no deterministic finding from the current rules"
     ui_label = ui_context.get("label") or "the current workspace stage"
     ui_purpose = ui_context.get("purpose") or "review the plan context"
+    history = context.get("history") or []
+    previous_user = next(
+        (item.get("content") for item in reversed(history) if item.get("role") == "user"),
+        None,
+    )
+    thread_note = f" You previously asked: \"{previous_user}\"." if previous_user else ""
     asked = message.strip()
     return (
         f"I can review the current plan context, but only as education. You are in {ui_label}, "
@@ -178,19 +184,38 @@ def _local_answer(message: str, context: dict[str, Any]) -> str:
         + f". The first deterministic signal is: {first_finding}. The first data limitation is: "
         f"{first_gap}. For your question, \"{asked}\", the most useful next step is to compare the "
         "visual movement timeline with the findings and collect any missing records before relying on "
-        "the preview for clinical decisions."
+        f"the preview for clinical decisions.{thread_note}"
+    )
+
+
+def _bounded_history(messages: list[ChatMessage], *, max_turns: int = 8) -> list[dict[str, str]]:
+    allowed = [item for item in messages if item.role in {"user", "assistant"} and item.content.strip()]
+    return [{"role": item.role, "content": item.content[:2000]} for item in allowed[-max_turns * 2:]]
+
+def _conversation_prompt(message: str, context: dict[str, Any]) -> str:
+    history = context.get("history") or []
+    transcript = "\n".join(
+        f"{item['role'].title()}: {item['content']}"
+        for item in history
+        if item.get("role") in {"user", "assistant"}
+    )
+    history_block = transcript or "(no previous turns)"
+    return (
+        "Plan context JSON:\n"
+        f"{canonical_json(context)}\n\n"
+        "Prior conversation, oldest to newest:\n"
+        f"{history_block}\n\n"
+        f"Latest user question:\n{message}\n\n"
+        "Answer conversationally, with the safety boundary from the system message. "
+        "Use prior turns when they clarify references, but keep deterministic findings "
+        "separate from your model-generated explanation."
     )
 
 
 def _provider_answer(message: str, context: dict[str, Any], provider: ModelProvider) -> str:
     request = ModelRequest(
         system=CHAT_SYSTEM_PROMPT,
-        prompt=(
-            "Plan context JSON:\n"
-            f"{canonical_json(context)}\n\n"
-            f"User question:\n{message}\n\n"
-            "Answer conversationally, with the safety boundary from the system message."
-        ),
+        prompt=_conversation_prompt(message, context),
         metadata={"plan_id": str(context.get("plan_id", "")), "context_scope": str(context.get("scope", ""))},
     )
     return provider.complete(request).text
@@ -249,6 +274,8 @@ def answer_chat_payload(
     context = build_chat_context(plan, scope)
     context["scope"] = scope.name
     context["ui_context"] = request.ui_context
+    history = _bounded_history(request.history)
+    context["history"] = history
     connector = connector_for(request.provider if provider is None else getattr(provider, "name", "local"))
     if request.model:
         connector.model = request.model
@@ -265,6 +292,7 @@ def answer_chat_payload(
         connector=connector,
         context_scope=scope,
         messages=[
+            *[ChatMessage(role=item["role"], content=item["content"]) for item in history],
             ChatMessage(role="user", content=request.message),
             ChatMessage(role="assistant", content=answer),
         ],
