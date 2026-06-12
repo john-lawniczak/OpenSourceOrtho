@@ -1,4 +1,4 @@
-import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, savePlanVersion, state, uploadCaseRecord, uploadStlFile } from "./state.js";
+import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadStlFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -874,7 +874,7 @@ async function sendChatMessage() {
     // The API key is read straight from the DOM at send time so it is never
     // held in app state or persisted - only transmitted on an explicit "Ask AI".
     const apiKey = el("chatApiKey").value.trim();
-    const result = await askPlanAssistant({
+    const payload = {
       plan: planJson(),
       message,
       history,
@@ -887,8 +887,12 @@ async function sendChatMessage() {
       endpoint: state.chat.agentEndpoint.trim() || undefined,
       share_acknowledged: state.chat.agentAccessEnabled,
       session_id: state.chat.sessionId || undefined,
-    });
+    };
     const pending = state.chat.messages[state.chat.messages.length - 1];
+    const connector = (state.chat.connectors || []).find((item) => item.kind === state.chat.provider);
+    const result = connector?.supports_streaming
+      ? await streamChatPayload(payload, pending)
+      : await askPlanAssistant(payload);
     if (result.ok === false) {
       pending.content = (result.errors || ["AI chat is not available."]).join(" ");
       state.chat.status = "Connector unavailable";
@@ -908,6 +912,21 @@ async function sendChatMessage() {
     el("chatInput").focus();
     renderChat();
   }
+}
+
+async function streamChatPayload(payload, pending) {
+  pending.content = "";
+  let finalResult = null;
+  await streamPlanAssistant(payload, {
+    onDelta: (text) => {
+      pending.content += text;
+      renderChat();
+    },
+    onDone: (result) => {
+      finalResult = result;
+    },
+  });
+  return finalResult || { ok: false, errors: ["AI chat stream ended without a final response."] };
 }
 
 function defaultModelForProvider(provider) {

@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from orthoplan.io.stl_import import Vec3, read_stl_geometry
-from orthoplan.mesh_workspace import resolve_mesh_path
+from orthoplan.io.stl_import import Vec3
+from orthoplan.mesh_geometry import reviewed_fragment_triangles
 from orthoplan.model.assets import BoundingBox
 from orthoplan.model.plan import TreatmentPlan
 
@@ -34,7 +34,7 @@ def build_tooth_geometry(
         asset = assets.get(link.mesh_asset_id)
         if asset is None or asset.bounds is None:
             continue
-        triangles = _reviewed_fragment_triangles(link, workspace)
+        triangles = reviewed_fragment_triangles(link, workspace=workspace)
         if triangles is not None:
             geometry[link.tooth.value] = {
                 "mode": "mesh-vertices",
@@ -52,26 +52,6 @@ def build_tooth_geometry(
                 "box_size": _box_size_from_bounds(asset.bounds),
             }
     return geometry
-
-
-def _reviewed_fragment_triangles(
-    link, workspace: str | Path | None
-) -> list[tuple[Vec3, Vec3, Vec3]] | None:
-    """Real triangles for a reviewed segmentation link, or None to use a proxy."""
-
-    if not getattr(link, "reviewed", False):
-        return None
-    path = resolve_mesh_path(link.mesh_asset_id, workspace=workspace)
-    if path is None:
-        return None
-    try:
-        _asset, vertices = read_stl_geometry(path)
-    except (OSError, ValueError):
-        return None
-    triangles: list[tuple[Vec3, Vec3, Vec3]] = []
-    for index in range(0, len(vertices) - 2, 3):
-        triangles.append((vertices[index], vertices[index + 1], vertices[index + 2]))
-    return triangles or None
 
 
 def _box_size_from_bounds(bounds: BoundingBox) -> tuple[float, float, float]:

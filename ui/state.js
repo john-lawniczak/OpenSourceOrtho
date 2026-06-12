@@ -61,6 +61,7 @@ export const state = {
         models: ["gpt-5.5", "gpt-5.4", "gpt-4.1"],
         shares_patient_data: true,
         requires_api_key: true,
+        supports_streaming: true,
       },
       {
         kind: "claude-code",
@@ -77,6 +78,7 @@ export const state = {
         models: ["mcp-model"],
         shares_patient_data: true,
         requires_api_key: true,
+        supports_streaming: true,
         allow_custom_model: true,
       },
       {
@@ -316,6 +318,40 @@ export async function askPlanAssistant(payload) {
     throw new Error((detail.errors || ["chat request failed"]).join("; "));
   }
   return response.json();
+}
+
+export async function streamPlanAssistant(payload, { onDelta, onDone }) {
+  const response = await fetch("/api/chat/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok || !response.body) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["chat stream failed"]).join("; "));
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() || "";
+    for (const eventText of events) handleStreamEvent(eventText, onDelta, onDone);
+  }
+  if (buffer.trim()) handleStreamEvent(buffer, onDelta, onDone);
+}
+
+function handleStreamEvent(eventText, onDelta, onDone) {
+  const lines = eventText.split("\n");
+  const kind = lines.find((line) => line.startsWith("event: "))?.slice(7) || "message";
+  const dataLine = lines.find((line) => line.startsWith("data: "));
+  const data = dataLine ? JSON.parse(dataLine.slice(6)) : {};
+  if (kind === "delta") onDelta(data.text || "");
+  if (kind === "done") onDone(data);
+  if (kind === "error") throw new Error((data.errors || ["chat stream failed"]).join("; "));
 }
 
 export async function loadAiConnectors() {
