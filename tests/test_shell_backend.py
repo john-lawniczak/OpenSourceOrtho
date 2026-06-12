@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from orthoplan.aligner_shell_robust import RobustShellUnavailable, robust_shell_available
+from orthoplan.validation.shell_backend import shell_backend_comparison_metrics
 from orthoplan.mesh_workspace import register_stl_mesh
 from orthoplan.model import (
     PrintExportSettings,
@@ -116,3 +117,44 @@ def test_export_records_backend_downgrade_in_manifest(tmp_path) -> None:
     assert backend["fallback_reason"]
     assert manifest["aligner_shells"]["artifacts"][0]["backend"] == "pure-python"
     assert result.aligner_shell_backend["used"] == "pure-python"
+
+
+def test_shell_backend_validation_records_skip_without_open3d() -> None:
+    metrics = shell_backend_comparison_metrics()
+
+    availability = next(metric for metric in metrics if metric["name"] == "robust_backend_available")
+    cases = [
+        metric for metric in metrics
+        if metric["name"] == "robust_backend_validation_cases"
+    ]
+
+    assert availability["value"] in {0.0, 1.0}
+    assert cases
+    if availability["value"] == 0.0:
+        assert cases == [
+            {
+                "name": "robust_backend_validation_cases",
+                "value": 0.0,
+                "component": "shell-backend",
+                "case_id": "open3d-optional-extra",
+                "notes": "Robust backend comparison skipped because Open3D is unavailable.",
+            }
+        ]
+
+
+@pytest.mark.skipif(not robust_shell_available(), reason="Open3D optional extra not installed")
+def test_robust_backend_runs_messy_and_full_arch_validation_cases() -> None:
+    metrics = shell_backend_comparison_metrics()
+
+    cases = {
+        metric["case_id"] for metric in metrics
+        if metric["name"] == "robust_backend_validation_cases" and metric["value"] == 1.0
+    }
+    self_intersections = [
+        metric for metric in metrics
+        if metric["name"] == "robust_shell_self_intersections"
+    ]
+
+    assert {"messy-sliver-duplicate", "independent-full-arch"} <= cases
+    assert self_intersections
+    assert all(metric["value"] == 0.0 for metric in self_intersections)

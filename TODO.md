@@ -51,6 +51,9 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   box-overlap approximation, per-artifact `failed_checks` explanations, and an
   independent analytic known-good oracle (closed-form slab volume) plus synthetic
   messy fixtures.
+- Optional Open3D robust shell backend now runs in a dedicated CI lane, repairs
+  messy meshes, applies distance-field offset correction, and records validation
+  metrics against messy non-PHI and independent full-arch fixtures.
 - In-app AI assistant now has bounded conversation memory, incremental message
   rendering, Enter-to-send, provider/model split with per-provider model memory,
   connector model catalogs, custom self-hosted model IDs, and per-request
@@ -70,7 +73,7 @@ Ordered paths are below; see also `docs/application maturity.md`.
 
 | Track | Current | Target | Remaining gap |
 |-------|---------|--------|---------------|
-| End-to-end "upload -> printable aligners" | ~8.5/10 for reviewed real geometry | ≥9/10 | Robust true offset/booleans, full-arch known-good fixtures from an independent pipeline, and material/fit modeling are still out of scope. |
+| End-to-end "upload -> printable aligners" | ~9/10 for reviewed real geometry | ≥9/10 | Robust Open3D distance-offset validation and full-arch fixtures are in place; material/fit modeling remains out of scope. |
 | Surface-scan staging + honest review aid | ~7.8/10 | ≥9/10 | Reviewed full-geometry collision/IPR is wired from workspace assets; stronger learned segmentation and broader real-case benchmarks remain. |
 | CBCT root/bone-aware planning from a raw volume | ~1-2/10 | ≥9/10 | Raw-volume root/bone segmentation and auto-registration are still not implemented. Longest road by far. |
 | In-app AI assistant (chat) | ~8.5/10 | ≥9/10 | SSE streaming and provider/model UX are in place; richer provider-native stream adapters and tool-style plan actions remain. |
@@ -93,21 +96,16 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
 4. **Phase 16** (Track 2): full triangle-level collision/IPR, including automatic
    reviewed mesh extraction from the local workspace with sampled/bbox fallback.
 5. **Phase 15 remainder** (Track 4): SSE chat streaming path with JSON fallback.
-
-**Next Wave — optional mesh extra (Open3D), enabled once then reused**
-
-6. **Prereq:** stand up Open3D in a test/CI environment (shared by 9.2/9.3
-   and 12b).
-7. **Phase 9.2 + 9.3** (Track 1): true boolean/SDF offset in the robust backend,
-   then validate it vs the pure-Python QA on a messy corpus. The real Track 1
-   ~8 -> ~9 move.
+6. **Prereq** (Track 1/3): Open3D in a test/CI environment.
+7. **Phase 9.2 + 9.3** (Track 1): Open3D distance-field offset correction in the
+   robust backend, validated vs pure-Python QA on a messy corpus.
 8. **Phase 9.4** (Track 1): full-arch known-good fixtures from an independent mesh
-   pipeline. Completes Track 1.
+   generator with hash/metric comparison.
 
-**Then — Track 2 completion**
+**Next Wave — Track 2 completion**
 
 9. **Phase 14** (Track 2): mature + benchmark the learned ONNX segmentation vs the
-   heuristic on the Wave 1 corpus. Core Track 2 ~7 -> ~9 move.
+   heuristic on the Phase 13/16 benchmark corpus. Core Track 2 ~7.8 -> ~9 move.
 
 **Long-running Track 3**
 
@@ -116,47 +114,24 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
    Each step keeps proposals untrusted until human review and fails closed without
    the extras.
 
-### Phase 15 Remainder: AI Chat Streaming
+### Recently Completed Reference
 
-- [x] Stream assistant tokens when the provider supports it (Server-Sent Events or
-  chunked fetch), with a graceful non-streaming fallback for providers/local that
-  do not.
-
-### Phase 9 Follow-Up: Robust Shell Backend 9.2-9.4
-
-- [x] Phase 9 (done): backend selection (`shell_backend`), optional
-  `mesh-processing` (Open3D) repair path (`aligner_shell_robust.py`), fail-closed
-  fallback to pure-Python with the downgrade recorded in manifest/API/UI, and
-  shared `assemble_shell` so QA is identical across backends. See
-  `docs/aligner-shell-backend.md`.
-- [x] Phase 9 (done): keep the current pure-Python shell path as the no-extra
-  fallback.
-- [ ] **Prereq:** stand up Open3D in a test/CI environment (shared with Phase 9
-  and Phase 12b).
-- [ ] **Phase 9.2:** implement a true Minkowski-style offset or boolean shell
-  construction in the robust path (currently mesh repair + normal offset only).
-- [ ] **Phase 9.3:** validate the robust backend vs the pure-Python shell QA on
-  messy but non-PHI meshes (this validation is what moves Track 1 from ~8 toward 9).
-- [ ] **Phase 9.4:** add full-arch known-good shell fixtures from an independent
-  mesh pipeline and compare hashes/metrics against OpenSource Ortho exports.
-
-### Phase 16 Remainder: Full-Geometry Collision/IPR
-
-- [x] Add full triangle-level proximity/distance when reviewed geometry is supplied
-  in memory.
-- [x] Keep the current bbox-prefilter + sampled-point path as the no-dependency
-  fallback, and keep the bbox fallback when samples are absent.
-- [x] Add fixtures comparing sampled vs full-triangle contact distances so the
-  precision/recall improvement is measurable.
-- [x] Wire automatic full-triangle extraction from reviewed mesh assets/workspace
-  into the collision rule without serializing full scan geometry into plan JSON.
+- [x] Phase 9.1-9.4: robust shell QA, optional Open3D distance-offset backend,
+  mesh-processing CI lane, messy validation fixtures, and independent full-arch
+  shell comparison metrics.
+- [x] Phase 13 + 16: validation benchmark deltas, reviewed non-PHI corpus
+  metadata, messy-shell metrics, and full triangle-level collision/IPR with
+  workspace mesh extraction plus sampled/bbox fallback.
+- [x] Phase 15: bounded chat memory, incremental rendering, Enter-to-send,
+  provider/model split, connector model catalogs, custom model IDs, PHI-share
+  gating, SSE streaming, and non-streaming fallback.
 
 ### Phase 14: Segmentation Maturity
 
 - [ ] Mature the optional learned ONNX segmentation backend to reduce manual
   review burden on crowded/contacting arches.
-- [ ] Benchmark learned vs. heuristic segmentation on the Phase 13 fixtures while
-  keeping the heuristic backend as the no-dependency fallback.
+- [ ] Benchmark learned vs. heuristic segmentation on the Phase 13/16 benchmark
+  corpus while keeping the heuristic backend as the no-dependency fallback.
 
 ### Phase 12: Automated CBCT Root/Bone Segmentation + Auto-Registration
 

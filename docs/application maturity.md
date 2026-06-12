@@ -15,15 +15,15 @@ deliberately does not model.
 
 | Surface | Current | Target | What the score means |
 |---------|---------|--------|----------------------|
-| Track 1: upload -> printable aligner artifacts | ~8/10 | ≥9/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with a real triangle-triangle self-intersection + nonmanifold engine, per-artifact pass/fail explanations, and an analytic known-good oracle; a robust boolean/offset mesh backend and material/fit modeling are still out of scope. |
-| Track 2: surface-scan staging + honest review aid | ~7/10 | ≥9/10 | Surface planning, movement caps, collision/IPR review, segmentation review, and benchmarks are useful and bounded, but more labelled real-scan validation and stronger segmentation are needed. |
+| Track 1: upload -> printable aligner artifacts | ~9/10 | ≥9/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with real shell QA, a robust Open3D distance-offset backend, messy-corpus validation, and independent full-arch fixtures; material/fit modeling remains out of scope. |
+| Track 2: surface-scan staging + honest review aid | ~7.8/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, and benchmark deltas are useful and bounded, but learned segmentation and broader real-case benchmarks still need work. |
 | Track 3: CBCT root/bone-aware planning from raw volume | ~1-2/10 | ≥9/10 | Reviewed anatomy can be represented and used once supplied, but raw CBCT root/bone segmentation and default auto-registration are still future work. This is the longest road by far. |
-| Track 4: in-app AI assistant (chat) | ~4/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors with PHI-share gating exist, but the chat is single-turn (no memory), non-streaming, with a coupled/hardcoded provider+model picker and a clunky re-render UX. |
+| Track 4: in-app AI assistant (chat) | ~8.5/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors now have bounded memory, incremental rendering, provider/model selection, PHI-share gating, and SSE streaming with fallback; provider-native stream adapters and action tooling remain. |
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
-Current rating: ~8/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Wave 0 + Wave 2).
+Current rating: ~9/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Phase 9.1 through Phase 9.4).
 
 What exists:
 
@@ -54,37 +54,38 @@ What exists:
   compensation, and per-stage shell QA (named failed checks and skip reasons) in
   both the guided print step and the technician print panel.
 - A `shell_backend` setting selects between the always-on pure-Python shell and an
-  optional `robust` path (Open3D mesh repair) behind the `mesh-processing` extra;
-  when the extra is absent the export falls back to pure-Python and records the
-  downgrade in the manifest, API, and UI rather than silently changing geometry.
+  optional `robust` path behind the `mesh-processing` extra; when the extra is
+  absent the export falls back to pure-Python and records the downgrade in the
+  manifest, API, and UI rather than silently changing geometry. The robust path
+  uses Open3D repair plus distance-field offset correction.
+- A dedicated CI lane installs `mesh-processing` and runs robust backend tests.
+- The validation benchmark records robust-vs-pure shell metrics on messy non-PHI
+  fixtures and an independent full-arch generator, including thickness deltas,
+  hash deltas, self-intersections, and nonmanifold edges.
   See [aligner-shell-backend.md](aligner-shell-backend.md).
 
 Why it is not higher:
 
-- Shell construction is still a vertex-normal approximation. The optional robust
-  backend currently does mesh repair only; a true boolean/signed-distance
-  (Minkowski) offset is not implemented, and the robust path is not yet validated
-  in CI (Open3D is not installed there).
-- The known-good comparison is analytic/primitive-level and the messy corpus is
-  synthetic; there is no full-arch known-good set from an independent mesh
-  pipeline and no messy real-scan corpus.
+- The pure-Python no-extra shell remains a vertex-normal approximation; the
+  Open3D robust backend is optional and its validation is only exercised in the
+  mesh-processing CI lane.
+- The bundled known-good and messy fixtures are non-PHI synthetic/open fixtures;
+  broader messy real-scan corpus validation is still future work.
 - Material deformation, thermoforming fit, printer calibration, support strategy,
   and physical validation remain outside the software.
 
 What reaching the ≥9/10 target requires:
 
-- Robust mesh repair and offset backend behind optional extras, with pure-Python
-  fallback preserved.
-- Known-good full-arch shell fixtures from an independent mesh pipeline.
-- Messy non-PHI full-arch fixtures covering holes, islands, thin slivers,
-  inverted winding, nonmanifold edges, and trimline edge cases beyond the current
-  synthetic unit fixtures.
-- Printer/material tolerance profiles and benchmarked output deltas.
+- Keep the robust backend and benchmark corpus green as new shell features land.
+- Expand reviewed non-PHI real-scan validation where contributors can supply
+  consented fixtures.
+- Printer/material tolerance profiles and benchmarked output deltas remain
+  outside the current software target unless the product scope changes.
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
-Current rating: ~7/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Phases 13 -> 16 -> 14).
+Current rating: ~7.8/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Phase 14).
 
 What exists:
 
@@ -92,15 +93,16 @@ What exists:
 - Movement caps, clinical controls, fixed teeth, exclusions, IPR metadata, and
   timeline projection.
 - Auto-segmentation proposal path with human review and per-tooth mesh exports.
-- Adjacent same-arch collision/IPR review using bbox prefiltering plus capped
-  representative surface samples.
-- Synthetic benchmarks for segmentation, movement, collision/IPR, and shell
-  thickness.
+- Adjacent same-arch collision/IPR review using reviewed full-triangle geometry
+  from the mesh workspace when available, with capped samples and bbox fallback.
+- Synthetic benchmarks for segmentation, movement, collision/IPR, shell
+  thickness, messy shells, and sampled-vs-triangle collision distance deltas.
 
 Why it is not higher:
 
 - Segmentation still needs more labelled real-scan validation.
-- Contact/IPR uses capped sample points rather than full triangle-level distance.
+- Learned ONNX segmentation is still optional and not yet benchmarked as a clear
+  improvement over the heuristic on crowded/contacting arches.
 - Occlusion dynamics, bite force, periodontal status, and biological response are
   intentionally not inferred from STL surfaces.
 
@@ -109,8 +111,8 @@ What reaching the ≥9/10 target requires:
 - Reviewed open-dataset benchmarks with clear provenance and no PHI.
 - Stronger segmentation backend with measurable improvement on crowded/contacting
   arches.
-- More complete mesh proximity/contact analysis using robust geometry when
-  optional dependencies are installed.
+- Full-geometry collision/IPR already exists for reviewed workspace assets; the
+  next lift is stronger segmentation so more cases need less manual cleanup.
 - Regression dashboards that track metric deltas across benchmark releases.
 
 ## Track 3: CBCT Root/Bone-Aware Planning From Raw Volume
@@ -146,15 +148,19 @@ What reaching the ≥9/10 target requires:
 
 ## Track 4: In-App AI Assistant (Chat)
 
-Current rating: ~4/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Wave 1 / Phase 15).
+Current rating: ~8.5/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", future provider/action tooling).
 
 What exists:
 
-- Plan-scoped, auditable chat gateway that packages a bounded plan context and
-  records which scope was shared.
+- Plan-scoped, auditable chat gateway that packages a bounded plan context,
+  bounded conversation memory, and records which scope was shared.
 - Connector catalog (local helper, OpenAI, Claude Code, MCP, open-source) with
   per-request credentials that are never stored.
+- Cursor-style provider -> model selection, connector model catalogs,
+  per-provider remembered model choices, and custom self-hosted model IDs.
+- Incremental message rendering, Enter-to-send, and token streaming where the
+  connector supports it, with a non-streaming JSON fallback.
 - Safety posture: model output is kept separate from deterministic findings, and
   any model-generated finding still passes `lint_finding()` before display/export.
 - PHI-share acknowledgement and `shares_patient_data` labeling before any
@@ -163,20 +169,18 @@ What exists:
 
 Why it is not higher:
 
-- The chat is single-turn: each request sends only the current message and no
-  prior turns are threaded back, so the assistant has no conversational memory.
-- No token streaming - the full answer appears at once after a static status line.
-- Provider and model are coupled in one hardcoded dropdown; there is no
-  per-provider model list or Cursor-style provider -> model selection.
-- The message view rebuilds its full markup on every render (including on each
-  keystroke), causing scroll/focus churn and no incremental append.
+- Streaming is implemented through the common SSE path, but richer
+  provider-native stream adapters could expose finer-grained status and errors.
+- The assistant does not yet propose tool-style plan actions for deterministic
+  review, acceptance, or rejection workflows.
+- It remains advisory: deterministic validation still owns findings and clinical
+  boundary language.
 
 What reaching the ≥9/10 target requires:
 
-- Multi-turn conversation memory (bounded history threaded to the backend).
-- Incremental rendering with preserved scroll/auto-scroll/focus, a pending/typing
-  indicator, and Enter-to-send / Shift+Enter.
-- Token streaming where the provider supports it, with a non-streaming fallback.
-- Two-step provider -> model selection with a real per-provider model list (plus
-  free-text model ids for self-hosted/open-source endpoints).
+- Provider-native streaming adapters for the most important connectors.
+- Tool-style proposed actions that remain untrusted until deterministic review
+  and explicit user acceptance.
+- Better transcript/export audit views for provider, model, PHI-share scope, and
+  request timing.
 - All safety constraints above preserved unchanged.
