@@ -38,6 +38,8 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
         "raw_volume_proposal_roots",
         "raw_volume_proposal_trusted_objects",
         "raw_volume_unaccepted_registration_fails_closed",
+        "raw_volume_noise_components_dropped",
+        "raw_volume_boundary_truncation_flags",
     } <= names
     assert "reviewed_non_phi_corpus_cases" in names
 
@@ -47,6 +49,8 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
     )
     assert trusted.value == 0.0
     assert fail_closed.value == 1.0
+    assert next(m for m in report.metrics if m.name == "raw_volume_noise_components_dropped").value >= 1
+    assert next(m for m in report.metrics if m.name == "raw_volume_boundary_truncation_flags").value >= 1
 
 
 def test_validation_benchmark_tracks_metric_deltas() -> None:

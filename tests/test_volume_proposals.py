@@ -57,6 +57,8 @@ def test_volume_path_proposes_roots_axes_and_bone_only() -> None:
     assert len(proposal.alveolar_bone) == 1
     assert all(obj.review_status == "proposed" for obj in proposal.all_objects())
     assert all(obj.trusted is False for obj in proposal.all_objects())
+    assert proposal.roots[0].quality_metrics["voxel_count"] == 4
+    assert proposal.roots[0].quality_metrics["centerline_points"] == 4
 
 
 def test_volume_path_requires_accepted_registration() -> None:
@@ -100,3 +102,42 @@ def test_registration_proposal_is_unaccepted_review_packet() -> None:
     assert proposal.requires_human_acceptance is True
     assert proposal.transform.accepted is False
     assert proposal.transform.is_acceptable is False
+
+
+def test_volume_path_filters_small_disconnected_root_components() -> None:
+    proposal = propose_cbct_anatomy_from_volume(
+        VolumeProposalInput(
+            cbct_record=_cbct(),
+            registration=_reg(),
+            root_voxels_by_tooth={
+                "11": [(4, 4, z) for z in range(5)] + [(20, 20, 20), (25, 25, 25)],
+            },
+            bone_voxels=[],
+            min_root_component_voxels=3,
+        )
+    )
+    root = proposal.roots[0]
+
+    assert root.quality_metrics["input_voxel_count"] == 7
+    assert root.quality_metrics["voxel_count"] == 5
+    assert root.quality_metrics["component_count"] == 3
+    assert root.quality_metrics["dropped_component_count"] == 2
+    assert any("dropped 2 small disconnected" in note for note in root.notes)
+
+
+def test_volume_path_flags_field_boundary_truncation() -> None:
+    proposal = propose_cbct_anatomy_from_volume(
+        VolumeProposalInput(
+            cbct_record=_cbct(),
+            registration=_reg(),
+            root_voxels_by_tooth={"11": [(0, 4, z) for z in range(4)]},
+            bone_voxels=[(x, 0, z) for x in range(4) for z in range(4)],
+            volume_dimensions=(8, 8, 8),
+        )
+    )
+
+    assert proposal.roots[0].out_of_field is True
+    assert proposal.tooth_axes[0].out_of_field is True
+    assert proposal.alveolar_bone[0].out_of_field is True
+    assert proposal.roots[0].quality_metrics["touches_volume_boundary"] is True
+    assert any("field boundary" in note for note in proposal.roots[0].notes)

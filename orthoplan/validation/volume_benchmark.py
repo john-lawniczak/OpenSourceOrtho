@@ -51,6 +51,19 @@ def volume_proposal_metrics() -> list[BenchmarkMetric]:
             "cbct-volume",
             "synthetic-open-volume",
         ),
+        _metric(
+            "raw_volume_noise_components_dropped",
+            _dropped_components(proposal),
+            "cbct-volume",
+            "synthetic-open-volume",
+        ),
+        _metric(
+            "raw_volume_boundary_truncation_flags",
+            _boundary_flags(proposal),
+            "cbct-volume",
+            "synthetic-open-volume",
+            notes="Counts proposal objects flagged out-of-field by volume boundary contact.",
+        ),
     ]
 
 
@@ -72,11 +85,12 @@ def _fixture_payload(
         cbct_record=cbct,
         registration=registration,
         root_voxels_by_tooth={
-            "11": [(10, 10, z) for z in range(5)],
+            "11": [(10, 10, z) for z in range(5)] + [(1, 1, 1)],
             "21": [(14, 10, z) for z in range(5)],
         },
         bone_voxels=[(x, y, z) for x in range(8) for y in range(2) for z in range(4)],
         voxel_spacing_mm=(0.3, 0.3, 0.5),
+        volume_dimensions=(8, 16, 8),
         model_provenance="synthetic-volume-fixture",
     )
 
@@ -97,6 +111,14 @@ def _unaccepted_registration_fails_closed(
     except VolumeProposalUnavailable:
         return 1.0
     return 0.0
+
+
+def _dropped_components(proposal) -> float:
+    return float(sum(int(root.quality_metrics.get("dropped_component_count", 0)) for root in proposal.roots))
+
+
+def _boundary_flags(proposal) -> float:
+    return float(sum(1 for obj in proposal.all_objects() if obj.out_of_field))
 
 
 def _metric(

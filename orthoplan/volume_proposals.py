@@ -21,8 +21,14 @@ from orthoplan.model.assets import CaseRecord
 from orthoplan.model.geometry import Vec3
 from orthoplan.model.identity import ToothId
 from orthoplan.model.registration import RegistrationTransform
-
-VoxelIndex = tuple[int, int, int]
+from orthoplan.volume_geometry import (
+    VoxelIndex,
+    boundary_voxel_count,
+    connected_components,
+    format_voxel,
+    touches_boundary,
+    voxel_bounds,
+)
 
 
 class VolumeProposalUnavailable(RuntimeError):
@@ -44,6 +50,8 @@ class VolumeProposalInput:
     root_voxels_by_tooth: dict[str, list[VoxelIndex]]
     bone_voxels: list[VoxelIndex]
     voxel_spacing_mm: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    volume_dimensions: tuple[int, int, int] | None = None
+    min_root_component_voxels: int = 3
     model_provenance: str = "local-volume-threshold-proposal"
 
 
@@ -71,12 +79,15 @@ def _root_axis_proposals(payload: VolumeProposalInput) -> tuple[list[RootGeometr
     roots: list[RootGeometry] = []
     axes: list[ToothAxis] = []
     for tooth, voxels in sorted(payload.root_voxels_by_tooth.items()):
-        if not voxels:
+        kept, metrics = _clean_root_voxels(voxels, payload)
+        if not kept:
             continue
-        points = [_voxel_to_mm(v, payload.voxel_spacing_mm) for v in voxels]
-        centerline = _centerline(points)
-        confidence = _mask_confidence(len(points), minimum=4, target=24)
-        notes = ["raw-volume root proposal; human review required before trust"]
+        points = [_voxel_to_mm(v, payload.voxel_spacing_mm) for v in kept]
+        centerline = _smooth_centerline(_centerline(points))
+        metrics.update(_centerline_metrics(centerline))
+        confidence = _quality_confidence(metrics, minimum=4, target=24)
+        out_of_field = bool(metrics["touches_volume_boundary"])
+        notes = _quality_notes("root", metrics)
         roots.append(
             RootGeometry(
                 tooth=ToothId(value=tooth),
@@ -85,8 +96,10 @@ def _root_axis_proposals(payload: VolumeProposalInput) -> tuple[list[RootGeometr
                 model_provenance=payload.model_provenance,
                 confidence=confidence,
                 review_status=ReviewStatus.PROPOSED,
+                out_of_field=out_of_field,
                 centerline=centerline,
                 notes=notes,
+                quality_metrics=metrics,
             )
         )
         if len(centerline) >= 2:
@@ -103,10 +116,12 @@ def _root_axis_proposals(payload: VolumeProposalInput) -> tuple[list[RootGeometr
                     model_provenance=payload.model_provenance,
                     confidence=confidence,
                     review_status=ReviewStatus.PROPOSED,
+                    out_of_field=out_of_field,
                     origin_mm=centerline[0],
                     direction=direction,
                     derived_from="raw-volume-root-proposal",
-                    notes=["raw-volume axis proposal; human review required before trust"],
+                    notes=_quality_notes("axis", metrics),
+                    quality_metrics=metrics,
                 )
             )
     return roots, axes
@@ -115,18 +130,67 @@ def _root_axis_proposals(payload: VolumeProposalInput) -> tuple[list[RootGeometr
 def _bone_proposals(payload: VolumeProposalInput) -> list[AlveolarBoneRecord]:
     bone: list[AlveolarBoneRecord] = []
     if payload.bone_voxels:
+        metrics = _bone_metrics(payload.bone_voxels, payload)
         bone.append(
             AlveolarBoneRecord(
                 source_cbct_record_id=payload.cbct_record.id,
                 registration_id=payload.registration.id,
                 model_provenance=payload.model_provenance,
-                confidence=_mask_confidence(len(payload.bone_voxels), minimum=8, target=96),
+                confidence=_quality_confidence(metrics, minimum=8, target=96),
                 review_status=ReviewStatus.PROPOSED,
+                out_of_field=bool(metrics["touches_volume_boundary"]),
                 boundary_volume_reference=f"{payload.cbct_record.id}:local-bone-mask",
-                notes=["raw-volume alveolar bone proposal; human review required before trust"],
+                notes=_quality_notes("bone", metrics),
+                quality_metrics=metrics,
             )
         )
     return bone
+
+
+def _clean_root_voxels(
+    voxels: list[VoxelIndex], payload: VolumeProposalInput
+) -> tuple[list[VoxelIndex], dict[str, bool | float | int | str]]:
+    components = connected_components(voxels)
+    kept = [
+        voxel
+        for component in components
+        if len(component) >= payload.min_root_component_voxels
+        for voxel in component
+    ]
+    source = kept or list(dict.fromkeys(voxels))
+    kept_components = [c for c in components if len(c) >= payload.min_root_component_voxels]
+    largest = max((len(c) for c in components), default=0)
+    metrics = _mask_metrics(source, payload)
+    metrics.update({
+        "input_voxel_count": len(set(voxels)),
+        "component_count": len(components),
+        "kept_component_count": len(kept_components) or int(bool(source)),
+        "dropped_component_count": max(0, len(components) - len(kept_components)),
+        "largest_component_fraction": round(largest / len(set(voxels)), 3) if voxels else 0.0,
+    })
+    return source, metrics
+
+
+def _bone_metrics(
+    voxels: list[VoxelIndex], payload: VolumeProposalInput
+) -> dict[str, bool | float | int | str]:
+    metrics = _mask_metrics(voxels, payload)
+    metrics["boundary_voxel_count"] = boundary_voxel_count(set(voxels))
+    return metrics
+
+
+def _mask_metrics(
+    voxels: list[VoxelIndex], payload: VolumeProposalInput
+) -> dict[str, bool | float | int | str]:
+    unique = set(voxels)
+    bounds = voxel_bounds(unique)
+    return {
+        "voxel_count": len(unique),
+        "bbox_min": format_voxel(bounds[0]),
+        "bbox_max": format_voxel(bounds[1]),
+        "touches_volume_boundary": touches_boundary(unique, payload.volume_dimensions),
+        "voxel_spacing_mm": ",".join(str(v) for v in payload.voxel_spacing_mm),
+    }
 
 
 def _voxel_to_mm(voxel: VoxelIndex, spacing: tuple[float, float, float]) -> Vec3:
@@ -146,6 +210,26 @@ def _centerline(points: list[Vec3]) -> list[Vec3]:
     return [_mean3(by_z[z]) for z in sorted(by_z)]
 
 
+def _smooth_centerline(centerline: list[Vec3]) -> list[Vec3]:
+    if len(centerline) < 3:
+        return centerline
+    smoothed = [centerline[0]]
+    for index in range(1, len(centerline) - 1):
+        smoothed.append(_mean3(centerline[index - 1:index + 2]))
+    smoothed.append(centerline[-1])
+    return smoothed
+
+
+def _centerline_metrics(centerline: list[Vec3]) -> dict[str, float | int]:
+    length = 0.0
+    for start, end in zip(centerline, centerline[1:]):
+        length += sum((end[i] - start[i]) ** 2 for i in range(3)) ** 0.5
+    return {
+        "centerline_points": len(centerline),
+        "centerline_length_mm": round(length, 3),
+    }
+
+
 def _mean3(points: list[Vec3]) -> Vec3:
     return (
         sum(p[0] for p in points) / len(points),
@@ -161,7 +245,25 @@ def _unit(vector: Vec3) -> Vec3:
     return tuple(v / length for v in vector)  # type: ignore[return-value]
 
 
-def _mask_confidence(count: int, *, minimum: int, target: int) -> float:
+def _quality_confidence(
+    metrics: dict[str, bool | float | int | str], *, minimum: int, target: int
+) -> float:
+    count = int(metrics.get("voxel_count", 0))
     if count < minimum:
         return 0.1
-    return round(min(0.85, 0.25 + 0.6 * (count / target)), 3)
+    value = min(0.85, 0.25 + 0.6 * (count / target))
+    if metrics.get("touches_volume_boundary"):
+        value *= 0.65
+    if float(metrics.get("largest_component_fraction", 1.0)) < 0.75:
+        value *= 0.8
+    return round(value, 3)
+
+
+def _quality_notes(kind: str, metrics: dict[str, bool | float | int | str]) -> list[str]:
+    notes = [f"raw-volume {kind} proposal; human review required before trust"]
+    if metrics.get("touches_volume_boundary"):
+        notes.append("mask touches the CBCT field boundary; proposal may be truncated")
+    dropped = int(metrics.get("dropped_component_count", 0))
+    if dropped:
+        notes.append(f"dropped {dropped} small disconnected component(s) as likely noise")
+    return notes
