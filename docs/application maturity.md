@@ -16,7 +16,7 @@ deliberately does not model.
 | Surface | Current | Target | What the score means |
 |---------|---------|--------|----------------------|
 | Track 1: upload -> printable aligner artifacts | ~9/10 | ≥9/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with real shell QA, a robust Open3D distance-offset backend, messy-corpus validation, and independent full-arch fixtures; material/fit modeling remains out of scope. |
-| Track 2: surface-scan staging + honest review aid | ~7.8/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, and benchmark deltas are useful and bounded, but learned segmentation and broader real-case benchmarks still need work. |
+| Track 2: surface-scan staging + honest review aid | ~7.8/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, a severity-aware guided review dashboard, and benchmark deltas are useful and bounded, but learned segmentation and broader real-case benchmarks still need work. |
 | Track 3: CBCT root/bone-aware planning from raw volume | ~1-2/10 | ≥9/10 | Reviewed anatomy can be represented and used once supplied, but raw CBCT root/bone segmentation and default auto-registration are still future work. This is the longest road by far. |
 | Track 4: in-app AI assistant (chat) | ~8.5/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors now have bounded memory, incremental rendering, provider/model selection, PHI-share gating, and SSE streaming with fallback; provider-native stream adapters and action tooling remain. |
 
@@ -97,6 +97,13 @@ What exists:
   from the mesh workspace when available, with capped samples and bbox fallback.
 - Synthetic benchmarks for segmentation, movement, collision/IPR, shell
   thickness, messy shells, and sampled-vs-triangle collision distance deltas.
+- A guided review dashboard leads the "Review your plan" step with a single
+  honest verdict (`ready` / `needs-review` / `cannot-assess`) plus edit-diff,
+  warnings, root/bone, and print-readiness cards. It classifies findings by
+  severity so only `warning`-severity findings are treated as blocking review
+  concerns; `info`/`notice` context (e.g. the `root-bone-context` info finding
+  emitted for healthy root/bone-aware plans, and `*-scale-unconfirmed`
+  skipped-check notices) never flips the verdict or fabricates 3D overlay chips.
 
 Why it is not higher:
 
