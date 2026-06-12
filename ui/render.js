@@ -137,8 +137,13 @@ function updateViewer(result) {
   const scanSources = filterScanSources(allScanSources);
   if (scanSources.length) {
     v.loadScanSources(scanSources).then(({ loaded, count }) => {
+      const movingFragments = Boolean(
+        result.render_meshes?.some((item) => item.source === "model-generated" && toothMatchesArch(item.tooth)),
+      );
       state.scanRenderStatus = count
-        ? "Showing your scan. Tooth movement in the preview is simulated."
+        ? (movingFragments
+          ? "Showing your STL scan with reviewed per-tooth fragments moving in 3D."
+          : "Showing your STL scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.")
         : "Your scan could not be displayed.";
       renderScanStatus();
       if (loaded && state.lastEval === result) updateViewer(result);
@@ -295,6 +300,8 @@ export function renderAll() {
   renderProximity();
   renderScale();
   renderCbctWorkflow();
+  renderMovementFidelity();
+  renderStagePlayback();
   renderSampleStatus();
   renderSegmentation();
   renderManualEdit();
@@ -302,6 +309,12 @@ export function renderAll() {
   el("planJson").value = JSON.stringify(planJson(), null, 2);
   updateStagePhase();
   scheduleEvaluate();
+  drawCanvas();
+  if (state.lastEval) updateViewer(state.lastEval);
+}
+
+export function renderStagePreview() {
+  updateStagePhase();
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
 }
@@ -323,6 +336,34 @@ function renderCbctWorkflow() {
   status.textContent = workflow.busy
     ? "Building proposed CBCT-derived anatomy..."
     : (workflow.status || parts.join(" ") || "Mask ready for proposal import.");
+}
+
+function renderMovementFidelity() {
+  const target = el("movementFidelityStatus");
+  if (!target) return;
+  const scanCount = state.scanSources.length || state.files.length;
+  const appliedCount = state.segmentation.applied?.tooth_meshes?.length || 0;
+  const renderLinks = state.lastEval?.render_meshes?.filter((item) => item.source === "model-generated") || [];
+  if (appliedCount && renderLinks.length) {
+    target.dataset.mode = "real";
+    target.textContent = `Movement layer: reviewed per-tooth 3D meshes (${renderLinks.length}) moving over the scan.`;
+  } else if (scanCount) {
+    target.dataset.mode = "scan-arrow";
+    target.textContent = "Movement layer: scan is real; tooth movement is shown with markers/arrows until segmentation is reviewed.";
+  } else {
+    target.dataset.mode = "schematic";
+    target.textContent = "Movement layer: schematic preview until STL scans and reviewed per-tooth meshes are available.";
+  }
+}
+
+function renderStagePlayback() {
+  const button = el("stagePlayToggle");
+  if (!button) return;
+  const max = Number(el("stageSlider").max || 0);
+  button.disabled = max <= 0;
+  button.textContent = state.stagePlayback.playing ? "Pause" : "Play";
+  button.setAttribute("aria-pressed", state.stagePlayback.playing ? "true" : "false");
+  button.classList.toggle("is-active", state.stagePlayback.playing);
 }
 
 function renderReviewHeading() {
@@ -1164,6 +1205,30 @@ function renderManualEdit() {
 function renderDownloadActions() {
   el("downloadEvaluation").disabled = !state.lastEval;
   el("downloadPrintMetadata").disabled = !state.lastEval?.print_export;
+  renderMovementReadiness();
+}
+
+function renderMovementReadiness() {
+  const target = el("movementReadinessChecklist");
+  if (!target) return;
+  const scanReady = Boolean(state.scanSources.length || state.files.length);
+  const unitsReady = scaleConfirmed(state.scanUnits);
+  const appliedMeshes = state.segmentation.applied?.tooth_meshes?.length || 0;
+  const renderMeshes = state.lastEval?.render_meshes?.filter((item) => item.source === "model-generated").length || 0;
+  const printReady = Boolean(state.lastEval?.print_export?.ready);
+  const items = [
+    ["STL scan registered", scanReady],
+    ["Units confirmed in mm", unitsReady],
+    ["Reviewed per-tooth meshes applied", appliedMeshes > 0],
+    ["3D movement uses real tooth fragments", renderMeshes > 0],
+    ["Print package inputs complete", printReady],
+  ];
+  target.innerHTML = `
+    <strong>Real movement / print checklist</strong>
+    <ul>
+      ${items.map(([label, ok]) => `<li data-ok="${ok ? "1" : "0"}">${ok ? "✓" : "○"} ${escapeHtml(label)}</li>`).join("")}
+    </ul>
+  `;
 }
 
 function renderPrintExport(status) {

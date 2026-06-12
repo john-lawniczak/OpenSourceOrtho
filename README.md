@@ -51,8 +51,9 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   (same step chips), pre-loaded with the two bundled test-case STL scans and a
   Balanced 10-day pace. It starts at step 1 so a first-time viewer can walk the
   whole flow, and it renders the real scans in 3D (the per-tooth movement layer is
-  simulated over the whole-arch shell). It snapshots and restores your working
-  state, so opening it never changes your own plan, uploads, or editors.
+  marker/schematic until reviewed per-tooth meshes are applied). It snapshots and
+  restores your working state, so opening it never changes your own plan, uploads,
+  or editors.
 - **Print / send**: the final guided step builds printable 3D files (one model
   per stage plus a manifest) via `POST /api/print-package` and offers a zip
   download and a pre-filled email draft (`.eml`) you can open in your mail app to
@@ -145,12 +146,12 @@ physical use. Automated raw-volume root/bone segmentation remains future work.
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
 test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), and starts at
-step 1 so you can walk the whole flow. The 3D preview renders the real scans with
-a simulated movement layer; drag the stage slider to watch the planned movement
-across stages. The per-tooth movement over a whole-arch shell is schematic, not a
-clinical prediction. Use the on-screen **＋ / ⌂ / −** controls (or scroll/drag) to
-zoom and orbit, the **Tooth #** toggle to label teeth, and **Exit Sample Test
-Case** to return - your own work is untouched.
+step 1 so you can walk the whole flow. The 3D preview renders the real scans and
+clearly labels whether staged movement is schematic/marker-based or backed by
+reviewed per-tooth STL fragments. Drag the stage slider, or use **Play**, to watch
+the planned movement across stages. Use the on-screen **＋ / ⌂ / −** controls (or
+scroll/drag) to zoom and orbit, the **Tooth #** toggle to label teeth, and **Exit
+Sample Test Case** to return - your own work is untouched.
 
 In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
 ask educational questions about the active plan. The default local helper stays on

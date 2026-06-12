@@ -521,6 +521,7 @@
                     <button class="viewer-aux" id="proximityToggle" type="button" aria-pressed="false" title="Show where the upper and lower arches meet (geometric proximity of the registered surfaces, not bite force)">Bite proximity</button>
                     <button class="viewer-aux" id="scaleToggle" type="button" aria-pressed="false" title="Show a true-scale millimetre reference bar beside the loaded scan (needs confirmed mm units)">Scale</button>
                     <button class="viewer-aux" id="registeredBiteToggle" type="button" aria-pressed="false" title="Move the lower arch into the registered occlusion. Only changes separate-frame scans; arches scanned in occlusion already show the true bite.">Registered bite</button>
+                    <button class="viewer-aux" id="stagePlayToggle" type="button" aria-pressed="false" title="Animate through aligner stages">Play</button>
                     <label class="arch-filter">
                       Show
                       <select id="scanArchFilter">
@@ -536,6 +537,7 @@
                       <input id="stageSlider" type="range" min="0" max="0" value="0" />
                     </label>
                   </div>
+                  <p id="movementFidelityStatus" class="scan-status"></p>
                   <p id="scanRenderStatus" class="scan-status"></p>
                   <div id="proximityLegend" class="proximity-legend" aria-label="Bite proximity colours" hidden>
                     <span><span class="legend-swatch prox-contact" aria-hidden="true"></span> Touching / overlapping</span>
@@ -636,6 +638,7 @@
               </section>
               <section class="download-actions" aria-label="Downloads">
                 <h2>Downloads</h2>
+                <div id="movementReadinessChecklist" class="movement-readiness"></div>
                 <button class="primary-action" id="downloadPlan" type="button">Download Plan JSON</button>
                 <button id="downloadEvaluation" type="button">Download Evaluation JSON</button>
                 <button id="downloadPrintMetadata" type="button">Download Print Metadata</button>

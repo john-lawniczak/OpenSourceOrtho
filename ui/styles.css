@@ -1930,6 +1930,15 @@ td input {
   padding: 10px 12px;
 }
 
+#movementFidelityStatus[data-mode="real"] {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+}
+
+#movementFidelityStatus[data-mode="scan-arrow"] {
+  border-color: color-mix(in srgb, var(--blue) 35%, var(--line));
+}
+
 .download-actions {
   border: 1px solid var(--line);
   background: var(--panel-alt);
@@ -1944,6 +1953,31 @@ td input {
 
 .download-actions button {
   width: 100%;
+}
+
+.movement-readiness {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.movement-readiness ul {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.movement-readiness li {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.movement-readiness li[data-ok="1"] {
+  color: var(--accent);
 }
 
 .stage-slider {

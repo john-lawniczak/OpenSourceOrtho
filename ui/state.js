@@ -150,6 +150,10 @@ export const state = {
   // status strip text, set by the viewer render.
   showScale: false,
   scaleStatus: "",
+  stagePlayback: {
+    playing: false,
+    timer: null,
+  },
   // Manual target authoring: the user clicks a tooth in the 3D preview and
   // nudges its final in-plane position. The authored target lives in `rows` as a
   // normal source:"manual" stage delta (see manual_edit.js), so only selection

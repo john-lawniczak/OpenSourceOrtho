@@ -1,6 +1,6 @@
 import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, requestCbctAnatomyProposal, requestCbctAnatomyReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadStlFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
-import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
+import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderStagePreview, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
 import { qrSvg } from "./qrcode.js";
 import {
@@ -263,6 +263,10 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "generationAck") state.generation.acknowledged = target.checked;
   if (target.id === "generationNotes") state.generation.notes = target.value;
   if (target.id === "scanArchFilter") state.scanArchFilter = target.value;
+  if (target.id === "stageSlider") {
+    renderStagePreview();
+    return;
+  }
   if (target.id === "glossarySearch") filterGlossary(target.value);
   if (target.id === "versionNote") state.versions.note = target.value;
   if (target.id === "agentEndpoint") state.chat.agentEndpoint = target.value;
@@ -489,6 +493,9 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "registeredBiteToggle") {
     toggleRegisteredBite();
   }
+  if (button?.id === "stagePlayToggle") {
+    toggleStagePlayback();
+  }
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
@@ -531,6 +538,7 @@ function goToStep(step) {
 }
 
 async function setUploadedFiles(files) {
+  stopStagePlayback();
   const stlFiles = files.filter((file) => file?.name?.toLowerCase().endsWith(".stl"));
   state.files = stlFiles;
   state.file = stlFiles[0] || null;
@@ -851,6 +859,7 @@ function applyManualNudge(direction) {
 }
 
 function loadSyntheticDemo() {
+  stopStagePlayback();
   state.userMode = "simple";
   state.simpleAcknowledged = true;
   state.simpleGoal = "crowding";
@@ -967,6 +976,30 @@ async function toggleRegisteredBite() {
       "These arches already occlude as scanned, so the viewer already shows the true bite — nothing to register.";
   }
   renderAll();
+}
+
+function toggleStagePlayback() {
+  if (state.stagePlayback.playing) {
+    stopStagePlayback();
+    renderAll();
+    return;
+  }
+  const slider = el("stageSlider");
+  const max = Number(slider.max || 0);
+  if (max <= 0) return;
+  state.stagePlayback.playing = true;
+  state.stagePlayback.timer = setInterval(() => {
+    const current = Number(slider.value || 0);
+    slider.value = String(current >= max ? 0 : current + 1);
+    renderStagePreview();
+  }, 750);
+  renderAll();
+}
+
+function stopStagePlayback() {
+  if (state.stagePlayback.timer) clearInterval(state.stagePlayback.timer);
+  state.stagePlayback.timer = null;
+  state.stagePlayback.playing = false;
 }
 
 async function sendChatMessage() {
@@ -1145,6 +1178,7 @@ async function saveVersion() {
 }
 
 function restorePlan(snapshot) {
+  stopStagePlayback();
   el("planId").value = snapshot.id || "";
   el("planTitle").value = snapshot.title || "";
   const wear = snapshot.settings?.timeline?.wear_interval_days;

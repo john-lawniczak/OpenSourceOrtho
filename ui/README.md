@@ -60,7 +60,8 @@ workflows:
 
 The Sample Test Case renders the exact bundled STL models
 (`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`); the
-per-tooth movement layer over a whole-arch shell is schematic.
+movement layer is explicitly labeled as schematic/marker-based until reviewed
+per-tooth meshes are applied.
 
 The 3D viewer, AI box, and upload control are single instances relocated into the
 active surface (delegated events + id-based renders), so there is never a second
@@ -118,8 +119,7 @@ rendering stable as the product evolves (and as the first tracked data
 contribution). You can load them via the normal upload control to see exact
 whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
 STLs as its already-present records and renders them in an overlay view, with a
-simulated tooth-movement layer animating across stages; the per-tooth movement
-over a whole-arch shell is schematic.
+clearly labeled tooth-movement layer animating across stages.
 
 ## 3D viewer
 
@@ -135,6 +135,9 @@ constraints, surfaced in the on-screen caveat:
   scan layer in Current and Overlay views. Current schematic proxy teeth are hidden
   when that exact scan layer is present, so the user is not shown two competing
   "current" anatomies.
+- Reviewed per-tooth segmentation upgrades the movement layer from markers/arrows
+  to real STL crown fragments moving over the scan; the viewer status and print
+  checklist label which mode is active.
 - Whole-arch scans are rotated from common STL dental coordinates into the viewer
   frame (`x, y, z` -> `x, z, -y`) so the occlusal plane lies on the 3D grid and
   tooth height points upward.
@@ -146,6 +149,8 @@ constraints, surfaced in the on-screen caveat:
 - A **Tooth #** toolbar toggle overlays FDI tooth-number badges on each tooth so a
   user can see which teeth they are focusing on. It is off by default and follows
   the displayed (current or planned) tooth position.
+- A **Play** toolbar button steps through the stage slider so users can inspect
+  the movement path across aligner stages without manually scrubbing.
 - A **Bite proximity** toggle paints a red/amber/green overlay of how close the
   upper and lower crown surfaces are (contact / near / clearance). It is GEOMETRIC
   proximity of the registered surfaces, NOT bite force or a diagnosis, and is shown
