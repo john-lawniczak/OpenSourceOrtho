@@ -74,6 +74,12 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   Open3D ICP has an explicit auto-registration proposal wrapper with quality
   metrics and human acceptance gating; synthetic volume benchmarks and fail-closed
   tests prove unaccepted/rejected/proposed anatomy never becomes trusted.
+- Guided "Review your plan" step now leads with a review dashboard: an at-a-glance
+  verdict (`ready` / `needs-review` / `cannot-assess`) plus edit-diff,
+  warnings, root/bone, and print-readiness cards and 3D overlay chips. Only
+  `warning`-severity findings count as blocking warnings; `info`/`notice` context
+  (e.g. the healthy-plan `root-bone-context` info finding and skipped-check
+  notices) never flips the verdict or fabricates overlay highlights.
 
 ## Honest effectiveness snapshot
 

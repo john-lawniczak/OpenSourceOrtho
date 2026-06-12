@@ -937,6 +937,115 @@ body[data-theme="dark"] .sample-banner {
   color: var(--muted);
 }
 
+.guided-dashboard {
+  display: grid;
+  gap: 12px;
+  margin: 10px 0 16px;
+}
+
+.guided-dashboard-hero {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--line);
+  background: var(--panel-alt);
+  padding: 14px 16px;
+  border-radius: 8px;
+}
+
+.guided-dashboard-hero[data-status="ready"] {
+  border-left-color: #16a34a;
+}
+
+.guided-dashboard-hero[data-status="needs-review"] {
+  border-left-color: var(--warn);
+}
+
+.guided-dashboard-hero[data-status="cannot-assess"] {
+  border-left-color: #64748b;
+}
+
+.guided-dashboard-hero strong {
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.guided-dashboard-hero span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.guided-dashboard-card {
+  min-height: 132px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--line);
+  background: var(--field);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.guided-dashboard-card[data-status="ready"] {
+  border-top-color: #16a34a;
+}
+
+.guided-dashboard-card[data-status="needs-review"] {
+  border-top-color: var(--warn);
+}
+
+.guided-dashboard-card[data-status="cannot-assess"] {
+  border-top-color: #64748b;
+}
+
+.guided-dashboard-card > span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  margin-bottom: 6px;
+}
+
+.guided-dashboard-card strong {
+  display: block;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.guided-dashboard-card ul {
+  margin: 8px 0 0;
+  display: grid;
+  gap: 4px;
+}
+
+.guided-dashboard-card li {
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.guided-overlay-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guided-overlay-chips span {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
 /* Step 4 plain-language summary + timeline bullets. */
 .guided-summary {
   display: grid;
@@ -1922,7 +2031,8 @@ td input {
   .toggle-grid,
   .review-grid,
   .metadata-grid,
-  .guided-edit-layout {
+  .guided-edit-layout,
+  .guided-dashboard-grid {
     grid-template-columns: 1fr;
   }
 }

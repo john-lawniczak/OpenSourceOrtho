@@ -13,7 +13,14 @@
 import { el, state } from "./state.js";
 import { planJson } from "./plan.js";
 import { requestPrintPackage } from "./state.js";
-import { scaleConfirmed, targetFor, targetStatusText, targetWarningTier } from "./manual_edit.js";
+import {
+  TARGET_STAGE,
+  scaleConfirmed,
+  targetFor,
+  targetMagnitudeMm,
+  targetStatusText,
+  targetWarningTier,
+} from "./manual_edit.js";
 
 // Step order. Each id maps to a <section class="gstep" data-gstep="..."> panel
 // and a progress-rail dot in index.html.
@@ -81,6 +88,142 @@ export function setWearInterval(days) {
 // Teeth that the current plan actually moves (appear in any authored stage row).
 function planTeeth() {
   return [...new Set(state.rows.map((row) => String(row.tooth)))].sort();
+}
+
+function rowMagnitude(row) {
+  return targetMagnitudeMm({ x: row?.x || 0, y: row?.y || 0 });
+}
+
+function editedTargets(rows = state.rows) {
+  return (rows || [])
+    .filter((row) => row.stage === TARGET_STAGE && rowMagnitude(row) > 0)
+    .map((row) => ({
+      tooth: String(row.tooth),
+      x: row.x || 0,
+      y: row.y || 0,
+      magnitude: rowMagnitude(row),
+    }))
+    .sort((a, b) => b.magnitude - a.magnitude || a.tooth.localeCompare(b.tooth));
+}
+
+export function guidedReviewDashboard(result, rows = []) {
+  if (!result?.timeline) {
+    return {
+      verdict: "cannot-assess",
+      label: "Cannot assess yet",
+      summary: "Build your plan first.",
+      cards: [],
+      highlights: [],
+    };
+  }
+  const findings = result.findings || [];
+  // Only `warning`-severity findings are blocking review concerns. `info`/`notice`
+  // findings are educational or data-gap context (e.g. the `root-bone-context` info
+  // finding emitted for healthy root/bone-aware plans) and must NOT flip the
+  // dashboard to "needs review". Unknown/missing severity is surfaced fail-safe.
+  const warnings = findings.filter((finding) => !isAdvisorySeverity(finding.severity));
+  const edits = editedTargets(rows);
+  const tier = result.review_tier || {};
+  const print = result.print_export || {};
+  const readiness = print.manufacturing_readiness || {};
+  const rootAware = Boolean(tier.root_bone_aware);
+  const scaleOk = result.scale_confirmed !== false;
+  const printReady = Boolean(print.ready && readiness.verdict === "CONSISTENT");
+  const issueCount = warnings.length + (readiness.verdict === "ISSUES" ? 1 : 0);
+  const cannotAssess = !scaleOk || !rootAware || readiness.verdict === "NOT_APPLICABLE";
+  const verdict = cannotAssess ? "cannot-assess" : (issueCount ? "needs-review" : "ready");
+
+  return {
+    verdict,
+    label: {
+      ready: "Ready for reviewed export",
+      "needs-review": "Needs review",
+      "cannot-assess": "Cannot assess fully",
+    }[verdict],
+    summary: dashboardSummary({ warnings, edits, rootAware, printReady, scaleOk, readiness }),
+    cards: [
+      editCard(edits),
+      warningCard(warnings),
+      rootBoneCard(tier, result.root_bone_review),
+      printCard(print),
+    ],
+    highlights: overlayHighlights(warnings, readiness, tier),
+  };
+}
+
+// `info` and `notice` findings are advisory context, not blocking warnings.
+// Anything else (including a malformed finding with no severity) is treated as a
+// warning so a genuine concern is never silently hidden.
+function isAdvisorySeverity(severity) {
+  return severity === "info" || severity === "notice";
+}
+
+function dashboardSummary({ warnings, edits, rootAware, printReady, scaleOk, readiness }) {
+  if (!scaleOk) return "Confirm scan units before trusting millimeter checks.";
+  if (warnings.length) return `${warnings.length} warning(s) need review before export.`;
+  if (!rootAware) return "Surface plan is reviewable; root/bone anatomy is not trusted.";
+  if (!printReady) return `Print status: ${readiness.verdict || "not ready"}.`;
+  if (edits.length) return "Edits rebuilt with no deterministic warnings.";
+  return "No deterministic warnings in the current review.";
+}
+
+function editCard(edits) {
+  return {
+    id: "edits",
+    title: "Edit diff",
+    status: edits.length ? "needs-review" : "ready",
+    value: edits.length ? `${edits.length} tooth change(s)` : "No guided edits",
+    detail: edits.slice(0, 4).map((edit) => `Tooth ${edit.tooth}: ${edit.magnitude.toFixed(1)} mm`),
+  };
+}
+
+function warningCard(warnings) {
+  return {
+    id: "warnings",
+    title: "Warnings",
+    status: warnings.length ? "needs-review" : "ready",
+    value: warnings.length ? `${warnings.length} finding(s)` : "No findings",
+    detail: warnings.slice(0, 3).map((finding) => finding.title || finding.code || "Review finding"),
+  };
+}
+
+function rootBoneCard(tier, review) {
+  const aware = Boolean(tier.root_bone_aware);
+  return {
+    id: "root-bone",
+    title: "Root / bone",
+    status: aware ? "ready" : "cannot-assess",
+    value: aware ? "Trusted anatomy" : "Cannot assess",
+    detail: [tier.label || "STL surface only", review?.verdict ? `Review: ${review.verdict}` : ""].filter(Boolean),
+  };
+}
+
+function printCard(print) {
+  const readiness = print?.manufacturing_readiness || {};
+  const verdict = readiness.verdict || "NOT_APPLICABLE";
+  return {
+    id: "print",
+    title: "Print readiness",
+    status: verdict === "CONSISTENT" && print?.ready ? "ready" : (verdict === "ISSUES" ? "needs-review" : "cannot-assess"),
+    value: verdict,
+    detail: [readiness.reason, ...(print?.blockers || []).slice(0, 2)].filter(Boolean),
+  };
+}
+
+// `warnings` is already filtered to warning-severity findings, so the `*-scale-
+// unconfirmed` notice codes (which also contain "movement-cap"/"collision") do
+// not produce phantom overlay chips for checks that were skipped, not violated.
+function overlayHighlights(warnings, readiness, tier) {
+  const highlights = [];
+  if ((warnings || []).some((finding) => String(finding.code || "").includes("movement-cap"))) {
+    highlights.push("Movement cap markers");
+  }
+  if ((warnings || []).some((finding) => String(finding.code || "").includes("collision"))) {
+    highlights.push("Collision/IPR highlights");
+  }
+  if (!tier?.root_bone_aware) highlights.push("Root/bone unavailable badge");
+  if (readiness?.verdict && readiness.verdict !== "CONSISTENT") highlights.push("Print readiness badge");
+  return highlights;
 }
 
 function relocate(blockId, hostId) {
@@ -240,12 +383,15 @@ function renderGuidedTeeth() {
 function renderGuidedReview() {
   const headline = el("guidedHeadline");
   const summary = el("guidedSummary");
+  const dashboard = el("guidedReviewDashboard");
   const t = state.lastEval?.timeline;
   if (!t) {
     if (headline) headline.innerHTML = "";
     if (summary) summary.innerHTML = "<li>Build your plan in step 2 to see a summary and timeline here.</li>";
+    renderDashboard(dashboard, guidedReviewDashboard(null));
     return;
   }
+  renderDashboard(dashboard, guidedReviewDashboard(state.lastEval, state.rows));
   // The headline carries the two things that matter most: how many trays, and how
   // long overall. Everything else is supporting detail below it.
   const trays = t.stage_count;
@@ -265,6 +411,39 @@ function renderGuidedReview() {
       `<li class="guided-summary-note">${escapeText(t.caveat)}</li>`,
     ].join("");
   }
+}
+
+function renderDashboard(host, dashboard) {
+  if (!host) return;
+  const cards = dashboard.cards?.length
+    ? dashboard.cards.map(dashboardCardMarkup).join("")
+    : "<p class=\"guided-hint\">Build your plan to populate review checks.</p>";
+  const highlights = dashboard.highlights?.length
+    ? `<div class="guided-overlay-chips" aria-label="3D warning overlays">${
+        dashboard.highlights.map((item) => `<span>${escapeText(item)}</span>`).join("")
+      }</div>`
+    : "";
+  host.innerHTML = `
+    <div class="guided-dashboard-hero" data-status="${dashboard.verdict}">
+      <strong>${escapeText(dashboard.label)}</strong>
+      <span>${escapeText(dashboard.summary)}</span>
+    </div>
+    <div class="guided-dashboard-grid">${cards}</div>
+    ${highlights}
+  `;
+}
+
+function dashboardCardMarkup(card) {
+  const detail = card.detail?.length
+    ? `<ul>${card.detail.map((item) => `<li>${escapeText(item)}</li>`).join("")}</ul>`
+    : "";
+  return `
+    <article class="guided-dashboard-card" data-status="${card.status}">
+      <span>${escapeText(card.title)}</span>
+      <strong>${escapeText(card.value)}</strong>
+      ${detail}
+    </article>
+  `;
 }
 
 function renderGuidedPrint() {
