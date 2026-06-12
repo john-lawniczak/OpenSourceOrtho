@@ -16,6 +16,29 @@ Vec3 = tuple[float, float, float]
 NEG_INF = float("-inf")
 
 
+ArcContext = tuple[float, float, float]  # (center_x, center_y, origin_angle)
+
+
+def arc_context(centroids: list[Vec3]) -> ArcContext:
+    """The arc mapping (arch centre + wrap origin) defined by a scan's centroids.
+
+    Exposed so OTHER points (e.g. CBCT-derived boundary priors in scan space)
+    can be projected into the exact same arc coordinate the segmenters walk.
+    """
+
+    center_x = sum(c[0] for c in centroids) / len(centroids)
+    center_y = sum(c[1] for c in centroids) / len(centroids)
+    angles = [atan2(c[1] - center_y, c[0] - center_x) for c in centroids]
+    return center_x, center_y, wrap_origin(angles)
+
+
+def arc_position_of(point: Vec3, context: ArcContext) -> float:
+    """Arc position of an arbitrary scan-space point under ``context``."""
+
+    center_x, center_y, origin = context
+    return (atan2(point[1] - center_y, point[0] - center_x) - origin) % tau
+
+
 def arc_signal(centroids: list[Vec3]) -> tuple[list[float], list[float]]:
     """Arc positions (around the arch centroid) and occlusal heights for centroids.
 
@@ -24,10 +47,8 @@ def arc_signal(centroids: list[Vec3]) -> tuple[list[float], list[float]]:
     z coordinate is the occlusal height profiled into valleys between crowns.
     """
 
-    center_x = sum(c[0] for c in centroids) / len(centroids)
-    center_y = sum(c[1] for c in centroids) / len(centroids)
-    angles = [atan2(c[1] - center_y, c[0] - center_x) for c in centroids]
-    return arc_positions(angles, wrap_origin(angles)), [c[2] for c in centroids]
+    context = arc_context(centroids)
+    return [arc_position_of(c, context) for c in centroids], [c[2] for c in centroids]
 
 
 def wrap_origin(angles: list[float]) -> float:

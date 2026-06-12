@@ -117,3 +117,39 @@ def test_movement_context_emitted_for_reviewed_root_with_movement() -> None:
     )
     review = root_bone_review(plan)
     assert any(f.code == "root-bone-context" for f in review.findings)
+
+
+def test_apex_displacement_info_for_small_angulation() -> None:
+    # 10 mm root, 2 deg torque -> apex sweep ~0.35 mm: documented, not flagged.
+    plan = _ready_plan(
+        [_root("11", 0.0), _root("12", 5.0)],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), rotate_torque_deg=2.0)])],
+    )
+    review = root_bone_review(plan)
+    apex = [f for f in review.findings if f.code == "root-apex-displacement"]
+    assert len(apex) == 1
+    assert apex[0].severity.value == "info"
+    assert "0.35 mm" in apex[0].message
+
+
+def test_apex_displacement_warns_beyond_review_threshold() -> None:
+    # 10 mm root, 10+10 deg of tip+torque over two stages -> sweep > 2 mm.
+    stages = [
+        Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), rotate_tip_deg=10.0)]),
+        Stage(index=1, deltas=[ToothDelta(tooth=ToothId(value="11"), rotate_torque_deg=10.0)]),
+    ]
+    plan = _ready_plan([_root("11", 0.0), _root("12", 5.0)], stages=stages)
+    review = root_bone_review(plan)
+    apex = [f for f in review.findings if f.code == "root-apex-displacement"]
+    assert len(apex) == 1
+    assert apex[0].severity.value == "warning"
+    assert review.verdict is RootBoneVerdict.ISSUES
+
+
+def test_apex_displacement_silent_without_angulation() -> None:
+    plan = _ready_plan(
+        [_root("11", 0.0), _root("12", 5.0)],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), translate_x_mm=0.2)])],
+    )
+    review = root_bone_review(plan)
+    assert not any(f.code == "root-apex-displacement" for f in review.findings)

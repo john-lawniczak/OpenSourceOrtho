@@ -23,12 +23,14 @@ from orthoplan.evaluation.engine import run_rules
 from orthoplan.evaluation.rules.root_bone import root_bone_review
 from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.model.registration_gate import gate_registrations
 from orthoplan.model.review_tier import (
     cbct_handoff,
     cbct_status,
     registration_ready,
     review_tier_info,
 )
+from orthoplan.planning.anatomical_frame import upgrade_tooth_mesh_frames
 from orthoplan.planning.biomechanics import movement_mode
 from orthoplan.planning.optimizer import optimize_staging
 from orthoplan.planning.timeline import project_timeline
@@ -47,6 +49,10 @@ def _format_errors(error: ValidationError) -> list[str]:
 def evaluate_plan(plan: TreatmentPlan, *, workspace: str | Path | None = None) -> dict[str, Any]:
     """Evaluate a validated plan with the canonical engine."""
 
+    # Trusted CBCT-derived axes (behind an open registration gate) upgrade
+    # per-tooth frames to non-approximate anatomical frames, which is what makes
+    # rotation renderable downstream. Pure derivation from plan content.
+    plan = upgrade_tooth_mesh_frames(plan)
     findings = run_rules(plan, workspace=workspace)
     frames = build_stage_progress_frames(plan)
     timeline = project_timeline(plan)
@@ -60,6 +66,9 @@ def evaluate_plan(plan: TreatmentPlan, *, workspace: str | Path | None = None) -
         "registration": {
             "ready": registration_ready(plan),
             "transforms": [reg.model_dump(mode="json") for reg in plan.registrations],
+            # Numeric quality-gate verdicts (PASS/MARGINAL/FAIL) per registration:
+            # the fail-closed judgement of the recorded metrics, not the click.
+            "gate": [result.model_dump(mode="json") for result in gate_registrations(plan)],
         },
         "derived_anatomy": _derived_anatomy_block(plan),
         "root_bone_review": {"verdict": root_bone_review(plan).verdict.value},

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { applySegmentation, isValidFdi, parseMissingTeeth, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
+import { applySegmentation, cbctPriorNote, isValidFdi, parseMissingTeeth, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { state } from "./state.js";
 
 test("parseMissingTeeth keeps valid FDI, drops junk, de-duplicates", () => {
@@ -89,4 +89,20 @@ test("applySegmentation yields no fragment when nothing valid is selected", () =
   for (const id of ["a1", "a2", "a3"]) setSegmentInclude(id, false);
   applySegmentation();
   assert.equal(state.segmentation.applied, null);
+});
+
+test("cbctPriorNote summarizes prior usage per arch", () => {
+  assert.equal(cbctPriorNote(null), "");
+  assert.equal(cbctPriorNote({ used: false, status: "no plan supplied" }), "");
+  const note = cbctPriorNote({
+    used: true,
+    arches: { maxillary: { boundary_count: 13, mean_agreement: 0.82 } },
+  });
+  assert.match(note, /maxillary: 13 CBCT boundary prior\(s\), agreement 0.82/);
+  const noAgreement = cbctPriorNote({
+    used: true,
+    arches: { mandibular: { boundary_count: 5, mean_agreement: null } },
+  });
+  assert.match(noAgreement, /mandibular: 5 CBCT boundary prior\(s\)/);
+  assert.doesNotMatch(noAgreement, /agreement/);
 });

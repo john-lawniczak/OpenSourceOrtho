@@ -21,6 +21,7 @@ from orthoplan.model.assets import CaseRecord
 from orthoplan.model.geometry import Vec3
 from orthoplan.model.identity import ToothId
 from orthoplan.model.registration import RegistrationTransform
+from orthoplan.model.registration_gate import gate_registration
 from orthoplan.volume_geometry import (
     VoxelIndex,
     boundary_voxel_count,
@@ -72,6 +73,13 @@ def _validate_payload(payload: VolumeProposalInput) -> None:
     if not payload.registration.is_acceptable:
         raise VolumeProposalUnavailable(
             "volume proposals require a human-accepted registration with quality metrics"
+        )
+    gate = gate_registration(payload.registration)
+    if not gate.open:
+        raise VolumeProposalUnavailable(
+            "registration quality gate is FAIL ("
+            + "; ".join(gate.reasons)
+            + ") - acceptance cannot override the recorded metrics"
         )
 
 

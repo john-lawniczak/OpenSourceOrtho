@@ -5,6 +5,7 @@
 // and never a statement that a plan is safe or complete.
 
 import { requestSegmentation, state } from "./state.js";
+import { planJson } from "./plan.js";
 
 // Valid FDI two-digit notation: quadrant 1-8, position 1-8. Mirrors the engine's
 // ToothId validator so a corrected number can never reach the plan and silently
@@ -44,7 +45,10 @@ export async function proposeSegmentation() {
   seg.busy = true;
   seg.status = "Proposing per-tooth segmentation on this machine...";
   try {
-    const result = await requestSegmentation({ scans, missing_teeth: missingTeeth });
+    // The current plan rides along so the server can derive CBCT boundary
+    // priors from any trusted, gate-passing registered anatomy it carries.
+    // Strictly additive: without usable anatomy the server segments surface-only.
+    const result = await requestSegmentation({ scans, missing_teeth: missingTeeth, plan: currentPlanJson() });
     if (result.ok === false) {
       seg.proposal = null;
       seg.status = (result.errors || ["segmentation failed"]).join("; ");
@@ -58,7 +62,8 @@ export async function proposeSegmentation() {
       const method = result.method ? ` · ${result.method}` : "";
       seg.status =
         `Draft ready · ${result.teeth.length} teeth · overall confidence ` +
-        `${result.overall_confidence}${backend}${method}. Review and correct, then apply.`;
+        `${result.overall_confidence}${backend}${method}${cbctPriorNote(result.cbct_prior)}. ` +
+        "Review and correct, then apply.";
     }
   } catch (error) {
     seg.proposal = null;
@@ -66,6 +71,30 @@ export async function proposeSegmentation() {
   } finally {
     seg.busy = false;
   }
+}
+
+// The plan ride-along enables CBCT boundary priors but is strictly additive:
+// a plan that cannot be built (e.g. form fields unavailable) must never block
+// a surface-only proposal, so failures degrade to "no plan supplied".
+function currentPlanJson() {
+  try {
+    return planJson();
+  } catch {
+    return null;
+  }
+}
+
+// One-line summary of whether CBCT boundary priors informed this proposal: how
+// many volume-indicated boundaries were used and how well the surface cuts
+// agreed with them. Empty when the proposal was surface-only.
+export function cbctPriorNote(prior) {
+  if (!prior?.used) return "";
+  const parts = Object.entries(prior.arches || {}).map(([arch, info]) => {
+    const agreement = info.mean_agreement == null ? "" : `, agreement ${info.mean_agreement}`;
+    return `${arch}: ${info.boundary_count} CBCT boundary prior(s)${agreement}`;
+  });
+  if (!parts.length) return "";
+  return ` · CBCT priors used (${parts.join("; ")})`;
 }
 
 // Build the accepted (and possibly corrected) plan fragment from the per-tooth

@@ -19,6 +19,7 @@ from math import sqrt
 from pydantic import BaseModel
 
 from orthoplan.arch_contract import arch_from_tooth_value
+from orthoplan.evaluation.rules.root_apex import apex_displacement_findings, total_axis
 from orthoplan.evaluation.finding import (
     Finding,
     FindingCategory,
@@ -78,6 +79,7 @@ def root_bone_review(plan: TreatmentPlan) -> RootBoneReview:
     findings.extend(_root_proximity_findings(roots))
     findings.extend(_cortical_findings(plan, roots))
     findings.extend(_movement_context_findings(plan, anatomy, final_translate))
+    findings.extend(apex_displacement_findings(plan, anatomy))
 
     has_issue = any(f.severity == FindingSeverity.WARNING for f in findings)
     verdict = RootBoneVerdict.ISSUES if has_issue else RootBoneVerdict.CONSISTENT
@@ -233,7 +235,7 @@ def _movement_context_findings(plan: TreatmentPlan, anatomy, final_translate) ->
     context_teeth = root_teeth | axis_teeth
     findings: list[Finding] = []
     for tooth in sorted(context_teeth):
-        moved = [label for field, label in _CONTEXT_AXES if abs(_total_axis(plan, tooth, field)) > 0]
+        moved = [label for field, label in _CONTEXT_AXES if abs(total_axis(plan, tooth, field)) > 0]
         if not moved:
             continue
         findings.append(lint_finding(Finding(
@@ -249,15 +251,6 @@ def _movement_context_findings(plan: TreatmentPlan, anatomy, final_translate) ->
             code="root-bone-context",
         )))
     return findings
-
-
-def _total_axis(plan: TreatmentPlan, tooth: str, field: str) -> float:
-    total = 0.0
-    for stage in plan.stages:
-        for delta in stage.deltas:
-            if delta.tooth.value == tooth:
-                total += getattr(delta, field, 0.0)
-    return total
 
 
 def _warn(title: str, message: str, code: str) -> Finding:

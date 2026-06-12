@@ -86,6 +86,71 @@ SCAN_FRAME = CoordinateFrame()
 
 Vec3 = tuple[float, float, float]
 
+Matrix4 = list[list[float]]
+
+
+def invert_affine(matrix: Matrix4) -> Matrix4 | None:
+    """Invert a ``[R t; 0 1]`` affine: inverse = ``[A^-1, -A^-1 t]``. None if singular.
+
+    Registration matrices map STL (scan) space into CBCT space; CBCT-derived
+    anatomy comes back into scan space through this inverse. Pure list math so
+    the core stays dependency-free.
+    """
+
+    a = [row[:3] for row in matrix[:3]]
+    t = [matrix[0][3], matrix[1][3], matrix[2][3]]
+    det = (
+        a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1])
+        - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0])
+        + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0])
+    )
+    if abs(det) < 1e-12:
+        return None
+    cof = [
+        [
+            (a[1][1] * a[2][2] - a[1][2] * a[2][1]) / det,
+            (a[0][2] * a[2][1] - a[0][1] * a[2][2]) / det,
+            (a[0][1] * a[1][2] - a[0][2] * a[1][1]) / det,
+        ],
+        [
+            (a[1][2] * a[2][0] - a[1][0] * a[2][2]) / det,
+            (a[0][0] * a[2][2] - a[0][2] * a[2][0]) / det,
+            (a[0][2] * a[1][0] - a[0][0] * a[1][2]) / det,
+        ],
+        [
+            (a[1][0] * a[2][1] - a[1][1] * a[2][0]) / det,
+            (a[0][1] * a[2][0] - a[0][0] * a[2][1]) / det,
+            (a[0][0] * a[1][1] - a[0][1] * a[1][0]) / det,
+        ],
+    ]
+    inv_t = [-sum(cof[i][j] * t[j] for j in range(3)) for i in range(3)]
+    return [
+        [cof[0][0], cof[0][1], cof[0][2], inv_t[0]],
+        [cof[1][0], cof[1][1], cof[1][2], inv_t[1]],
+        [cof[2][0], cof[2][1], cof[2][2], inv_t[2]],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+
+
+def apply_affine(matrix: Matrix4, point: Vec3) -> Vec3:
+    """Apply a 4x4 affine to a POINT (rotation + translation)."""
+
+    return (
+        matrix[0][0] * point[0] + matrix[0][1] * point[1] + matrix[0][2] * point[2] + matrix[0][3],
+        matrix[1][0] * point[0] + matrix[1][1] * point[1] + matrix[1][2] * point[2] + matrix[1][3],
+        matrix[2][0] * point[0] + matrix[2][1] * point[1] + matrix[2][2] * point[2] + matrix[2][3],
+    )
+
+
+def apply_affine_direction(matrix: Matrix4, direction: Vec3) -> Vec3:
+    """Apply only the linear part of a 4x4 affine to a DIRECTION (no translation)."""
+
+    return (
+        matrix[0][0] * direction[0] + matrix[0][1] * direction[1] + matrix[0][2] * direction[2],
+        matrix[1][0] * direction[0] + matrix[1][1] * direction[1] + matrix[1][2] * direction[2],
+        matrix[2][0] * direction[0] + matrix[2][1] * direction[1] + matrix[2][2] * direction[2],
+    )
+
 APPROXIMATE_FRAME_NOTE = (
     "Approximate visualization frame from crown-surface PCA. Axes are ordered by "
     "geometric variance, NOT anatomy; this is not a mesiodistal/buccolingual/long-axis "
