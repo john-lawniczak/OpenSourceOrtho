@@ -95,6 +95,9 @@ def test_ai_connector_catalog_is_served(server: int) -> None:
     assert status == 200
     assert payload["ok"] is True
     assert any(connector["kind"] == "local" for connector in payload["connectors"])
+    openai = next(connector for connector in payload["connectors"] if connector["kind"] == "openai")
+    assert "gpt-5.5" in openai["models"]
+    assert openai["requires_api_key"] is True
 
 
 def test_local_chat_endpoint_returns_session(server: int) -> None:

@@ -27,6 +27,8 @@ import { registeredOffsetForViewer } from "./proximity.js";
 
 let viewer = null;
 let viewerFailed = false;
+let renderedChatCount = 0;
+let renderedChatSignature = "";
 // One-shot request to re-frame the camera once the next evaluation has populated
 // the scene. Used when a new scene becomes visible (sample screen, guided 3D
 // step) where the viewer may have been sized while hidden or framed for a
@@ -239,7 +241,8 @@ export function renderAll() {
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
   state.simpleAcknowledged = el("simpleAcknowledged").checked;
-  state.chat.model = el("chatModel").value;
+  state.chat.provider = el("chatProvider").value || state.chat.provider;
+  state.chat.model = currentChatModel();
   state.chat.input = el("chatInput").value;
   state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
   state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
@@ -343,7 +346,7 @@ const AI_KEY_HELP = {
 };
 
 export function renderChat() {
-  el("chatModel").value = state.chat.model;
+  renderChatConnectorControls();
   el("chatInput").value = state.chat.input;
   el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
   el("agentEndpoint").value = state.chat.agentEndpoint;
@@ -362,19 +365,110 @@ export function renderChat() {
   // The local helper needs no key, so hide the key field for it; for any real
   // provider show the field with provider-specific, plain-language instructions.
   const isLocal = state.chat.provider === "local";
-  el("aiKeyField").hidden = isLocal;
+  const connector = chatConnector(state.chat.provider);
+  el("aiKeyField").hidden = isLocal || connector?.requires_api_key === false;
+  el("chatCustomModelField").hidden = !connector?.allow_custom_model;
   el("aiKeyHelp").textContent = AI_KEY_HELP[state.chat.provider] || AI_KEY_HELP.local;
   const secretStatus = state.chat.apiKeyPresent ? " · key in session" : "";
   const agentStatus = state.chat.agentAccessEnabled ? " · agent access staged" : "";
   el("chatStatus").textContent = `${state.chat.status}${secretStatus}${agentStatus}`;
-  el("chatMessages").innerHTML = state.chat.messages.length
-    ? state.chat.messages.map((message) => `
-      <div class="chat-message ${escapeHtml(message.role)}">
-        <strong>${message.role === "user" ? "You" : "AI"}</strong>
-        <p>${escapeHtml(message.content)}</p>
-      </div>
-    `).join("")
-    : "<p class=\"chat-empty\">Ask what the preview can and cannot tell you.</p>";
+  renderChatMessages();
+}
+
+function currentChatModel() {
+  const custom = el("chatCustomModel")?.value.trim();
+  const selected = el("chatModel")?.value;
+  if (selected === "__custom__") return custom || state.chat.model || "custom-model";
+  return selected || state.chat.model;
+}
+
+function chatConnector(kind) {
+  return (state.chat.connectors || []).find((connector) => connector.kind === kind);
+}
+
+function renderChatConnectorControls() {
+  const provider = el("chatProvider");
+  const model = el("chatModel");
+  const custom = el("chatCustomModel");
+  const connectors = state.chat.connectors || [];
+  const providerSignature = connectors.map((item) => `${item.kind}:${item.label}`).join("|");
+  if (provider.dataset.signature !== providerSignature) {
+    provider.replaceChildren(...connectors.map((connector) => {
+      const option = document.createElement("option");
+      option.value = connector.kind;
+      option.textContent = connector.shares_patient_data
+        ? `${connector.label} (shares plan context)`
+        : connector.label;
+      return option;
+    }));
+    provider.dataset.signature = providerSignature;
+  }
+  provider.value = state.chat.provider;
+  const connector = chatConnector(state.chat.provider) || connectors[0];
+  const models = connector?.models?.length ? connector.models : [connector?.model || state.chat.model];
+  const modelSignature = `${connector?.kind || ""}:${models.join("|")}:${connector?.allow_custom_model ? "custom" : ""}`;
+  if (model.dataset.signature !== modelSignature) {
+    const options = models.map((modelId) => {
+      const option = document.createElement("option");
+      option.value = modelId;
+      option.textContent = modelId;
+      return option;
+    });
+    if (connector?.allow_custom_model) {
+      const option = document.createElement("option");
+      option.value = "__custom__";
+      option.textContent = "Custom model ID";
+      options.push(option);
+    }
+    model.replaceChildren(...options);
+    model.dataset.signature = modelSignature;
+  }
+  const selected = state.chat.modelByProvider[state.chat.provider] || connector?.model || models[0];
+  const customSelected = connector?.allow_custom_model && !models.includes(selected);
+  model.value = customSelected ? "__custom__" : selected;
+  custom.value = customSelected ? selected : custom.value;
+  state.chat.model = customSelected ? custom.value : model.value;
+}
+
+function renderChatMessages() {
+  const host = el("chatMessages");
+  const signature = state.chat.messages.map((message) => `${message.role}:${message.content}`).join("\n");
+  if (!state.chat.messages.length) {
+    if (renderedChatSignature !== signature) {
+      host.replaceChildren(chatEmptyNode("Ask what the preview can and cannot tell you."));
+      renderedChatCount = 0;
+      renderedChatSignature = signature;
+    }
+    return;
+  }
+  if (!signature.startsWith(renderedChatSignature) || renderedChatCount > state.chat.messages.length) {
+    host.replaceChildren();
+    renderedChatCount = 0;
+  }
+  for (const message of state.chat.messages.slice(renderedChatCount)) {
+    host.appendChild(chatMessageNode(message));
+  }
+  renderedChatCount = state.chat.messages.length;
+  renderedChatSignature = signature;
+  host.scrollTop = host.scrollHeight;
+}
+
+function chatEmptyNode(text) {
+  const node = document.createElement("p");
+  node.className = "chat-empty";
+  node.textContent = text;
+  return node;
+}
+
+function chatMessageNode(message) {
+  const node = document.createElement("div");
+  node.className = `chat-message ${escapeHtml(message.role)}`;
+  const label = document.createElement("strong");
+  label.textContent = message.role === "user" ? "You" : "AI";
+  const body = document.createElement("p");
+  body.textContent = message.content;
+  node.append(label, body);
+  return node;
 }
 
 function chatStageLabel() {

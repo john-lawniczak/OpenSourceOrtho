@@ -9,6 +9,8 @@ external mesh pipeline or PHI.
 
 from __future__ import annotations
 
+import time
+
 import pytest
 
 from orthoplan.aligner_shell import build_aligner_shell
@@ -87,3 +89,40 @@ def test_failed_checks_names_thin_walls_below_minimum_feature() -> None:
     thin = base.model_copy(update={"min_thickness_mm": 0.1, "minimum_printable_feature_mm": 0.3})
     reasons = _failed_checks(thin)
     assert any("min wall thickness" in reason for reason in reasons)
+
+
+def test_full_arch_scale_shell_qa_stays_within_wall_clock_budget() -> None:
+    surface = _arch_surface(cols=72, rows=28, spacing=0.45)
+
+    start = time.perf_counter()
+    result = build_aligner_shell(surface, thickness_mm=0.6)
+    elapsed = time.perf_counter() - start
+
+    assert result.stats.triangle_count >= 8_000
+    assert result.stats.self_intersection_count == 0
+    assert result.stats.inner_outer_min_clearance_mm == pytest.approx(0.6, abs=1e-6)
+    assert elapsed < 5.0
+
+
+def _arch_surface(*, cols: int, rows: int, spacing: float) -> list:
+    points = [
+        [
+            (
+                (col - cols / 2) * spacing,
+                (row - rows / 2) * spacing,
+                0.08 * ((col - cols / 2) * spacing) ** 2,
+            )
+            for col in range(cols + 1)
+        ]
+        for row in range(rows + 1)
+    ]
+    triangles = []
+    for row in range(rows):
+        for col in range(cols):
+            a = points[row][col]
+            b = points[row][col + 1]
+            c = points[row + 1][col]
+            d = points[row + 1][col + 1]
+            triangles.append((a, b, d))
+            triangles.append((a, d, c))
+    return triangles

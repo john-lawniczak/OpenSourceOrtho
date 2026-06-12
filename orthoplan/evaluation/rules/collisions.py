@@ -12,6 +12,7 @@ from orthoplan.evaluation.rules.contact_geometry import (
     staged_contact_candidates,
 )
 from orthoplan.model.assets import BoundingBox, MeshAsset
+from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import TreatmentPlan
 
 _REFERENCE = (
@@ -25,14 +26,22 @@ _GAP = (
 _QUESTION = "Should tooth positions, staging, IPR, or segmentation be reviewed for this contact?"
 
 
-def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
+def evaluate_segmented_mesh_collisions(
+    plan: TreatmentPlan,
+    *,
+    triangles_by_tooth: dict[str, list[tuple[Vec3, Vec3, Vec3]]] | None = None,
+) -> list[Finding]:
     bounds_by_tooth = _bounds_by_tooth(plan)
     if len(bounds_by_tooth) < 2:
         return []
     if not plan.scale_confirmed:
         return [_scale_unconfirmed_notice()]
 
-    candidates = staged_contact_candidates(plan, bounds_by_tooth)
+    candidates = staged_contact_candidates(
+        plan,
+        bounds_by_tooth,
+        triangles_by_tooth=triangles_by_tooth,
+    )
     return [
         _contact_finding(candidate)
         for candidate in sorted(candidates.values(), key=lambda item: (item.tooth_a, item.tooth_b))
@@ -71,6 +80,11 @@ def _contact_finding(candidate: ContactCandidate) -> Finding:
 
 
 def _sample_detail(candidate: ContactCandidate) -> str:
+    if candidate.triangle_based:
+        return (
+            f"Minimum triangle-surface distance is "
+            f"{candidate.triangle_distance_mm:.3f} mm after bbox prefilter."
+        )
     if candidate.sample_based:
         return (
             f"Minimum representative-surface distance is "

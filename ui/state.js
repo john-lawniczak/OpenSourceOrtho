@@ -44,6 +44,58 @@ export const state = {
   chat: {
     provider: "local",
     model: "local-educational-helper",
+    connectors: [
+      {
+        kind: "local",
+        label: "Local educational helper",
+        model: "local-educational-helper",
+        models: ["local-educational-helper"],
+        enabled: true,
+        shares_patient_data: false,
+        requires_api_key: false,
+      },
+      {
+        kind: "openai",
+        label: "OpenAI",
+        model: "gpt-5.5",
+        models: ["gpt-5.5", "gpt-5.4", "gpt-4.1"],
+        shares_patient_data: true,
+        requires_api_key: true,
+      },
+      {
+        kind: "claude-code",
+        label: "Claude Code",
+        model: "claude-opus-4-8",
+        models: ["claude-opus-4-8", "claude-sonnet-4-7", "claude-code-default"],
+        shares_patient_data: true,
+        requires_api_key: true,
+      },
+      {
+        kind: "mcp",
+        label: "MCP-compatible model host",
+        model: "mcp-model",
+        models: ["mcp-model"],
+        shares_patient_data: true,
+        requires_api_key: true,
+        allow_custom_model: true,
+      },
+      {
+        kind: "open-source",
+        label: "Open-source local model",
+        model: "local-model",
+        models: ["local-model", "llama-3.1", "qwen2.5"],
+        shares_patient_data: true,
+        requires_api_key: false,
+        allow_custom_model: true,
+      },
+    ],
+    modelByProvider: {
+      local: "local-educational-helper",
+      openai: "gpt-5.5",
+      "claude-code": "claude-opus-4-8",
+      mcp: "mcp-model",
+      "open-source": "local-model",
+    },
     // The assistant always has the full plan context (no user-facing scope toggle).
     contextScope: "full_plan",
     input: "",
@@ -54,6 +106,7 @@ export const state = {
     apiKeyPresent: false,
     agentAccessEnabled: false,
     agentEndpoint: "",
+    sessionId: null,
   },
   // Latest /api/generate-plan orchestration result, shown in the Review panel.
   generation: {
@@ -262,6 +315,12 @@ export async function askPlanAssistant(payload) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["chat request failed"]).join("; "));
   }
+  return response.json();
+}
+
+export async function loadAiConnectors() {
+  const response = await fetch("/api/ai/connectors");
+  if (!response.ok) return { ok: false, connectors: [] };
   return response.json();
 }
 

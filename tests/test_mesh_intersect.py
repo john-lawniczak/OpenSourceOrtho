@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from orthoplan.aligner_shell_quality import count_nonmanifold_edges, count_self_intersections
+import pytest
+
+from orthoplan.aligner_shell_quality import (
+    count_nonmanifold_edges,
+    count_self_intersections,
+    count_self_intersections_quadratic_reference,
+    min_inner_outer_clearance,
+    min_inner_outer_clearance_quadratic_reference,
+)
 from orthoplan.mesh_intersect import triangles_intersect
 
 # A large reference triangle in the z=0 plane, reused across cases.
@@ -46,6 +54,28 @@ def test_count_self_intersections_ignores_box_overlap_without_crossing() -> None
     outside_pierce = ((3.0, 3.0, -1.0), (3.9, 3.0, -1.0), (3.0, 3.9, 1.0))
     assert _boxes_touch(_FLAT, outside_pierce)
     assert count_self_intersections([_FLAT, outside_pierce]) == 0
+
+
+def test_grid_self_intersection_matches_quadratic_reference() -> None:
+    triangles = [
+        _FLAT,
+        ((1.0, 1.0, -1.0), (1.0, 1.0, 1.0), (3.0, 1.0, 0.0)),
+        ((8.0, 8.0, 0.0), (9.0, 8.0, 0.0), (8.0, 9.0, 0.0)),
+        ((3.0, 3.0, -1.0), (3.9, 3.0, -1.0), (3.0, 3.9, 1.0)),
+    ]
+
+    assert count_self_intersections(triangles) == count_self_intersections_quadratic_reference(
+        triangles
+    )
+
+
+def test_grid_clearance_matches_quadratic_reference() -> None:
+    inner = [(0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (0.0, 8.0, 0.0)]
+    outer = [(0.0, 0.0, 0.5), (9.0, 0.0, 0.0), (100.0, 100.0, 100.0)]
+
+    assert min_inner_outer_clearance(inner, outer) == pytest.approx(
+        min_inner_outer_clearance_quadratic_reference(inner, outer), abs=1e-9
+    )
 
 
 def test_count_nonmanifold_edges_flags_an_edge_shared_by_three_faces() -> None:

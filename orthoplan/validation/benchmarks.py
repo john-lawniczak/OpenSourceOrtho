@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
-
 from orthoplan.aligner_shell import build_aligner_shell
 from orthoplan.evaluation.rules.collisions import evaluate_segmented_mesh_collisions
 from orthoplan.model import (
@@ -14,33 +12,16 @@ from orthoplan.model import (
     TreatmentPlan,
 )
 from orthoplan.segmentation.auto import load_local_segmenter
+from orthoplan.validation.benchmark_collision import triangle_collision_metrics
+from orthoplan.validation.benchmark_corpus import reviewed_benchmark_corpus
+from orthoplan.validation.benchmark_models import (
+    BenchmarkCorpusCase,
+    BenchmarkMetric,
+    BenchmarkReport,
+)
 from orthoplan.validation.segmentation_truth import full_arch_truth, score_segmentation
 from orthoplan.validation.synthetic_arch import build_synthetic_arch, realistic_widths
 from orthoplan.viz.progress import build_stage_progress_frames
-
-
-class BenchmarkMetric(BaseModel):
-    name: str
-    value: float
-    unit: str = ""
-    component: str
-    case_id: str
-    notes: str | None = None
-
-
-class BenchmarkReport(BaseModel):
-    benchmark_id: str = "synthetic-validation-v1"
-    caveat: str = (
-        "Synthetic benchmark metrics are tracked numbers, not pass/fail clinical "
-        "clearance. Reviewed open-dataset cases can be added beside these fixtures."
-    )
-    metrics: list[BenchmarkMetric] = Field(default_factory=list)
-
-    def by_component(self) -> dict[str, list[BenchmarkMetric]]:
-        grouped: dict[str, list[BenchmarkMetric]] = {}
-        for metric in self.metrics:
-            grouped.setdefault(metric.component, []).append(metric)
-        return grouped
 
 
 def run_validation_benchmarks() -> BenchmarkReport:
@@ -48,8 +29,12 @@ def run_validation_benchmarks() -> BenchmarkReport:
     metrics.extend(_segmentation_metrics())
     metrics.extend(_movement_metrics())
     metrics.extend(_collision_metrics())
+    metrics.extend(triangle_collision_metrics())
     metrics.extend(_shell_metrics())
-    return BenchmarkReport(metrics=metrics)
+    metrics.extend(_messy_shell_metrics())
+    corpus_cases = reviewed_benchmark_corpus()
+    metrics.extend(_corpus_metrics(corpus_cases))
+    return BenchmarkReport(metrics=_with_baseline_deltas(metrics), corpus_cases=corpus_cases)
 
 
 def _segmentation_metrics() -> list[BenchmarkMetric]:
@@ -111,6 +96,55 @@ def _shell_metrics() -> list[BenchmarkMetric]:
     return [_metric("shell_thickness_error", error, "shell-thickness", "flat-quad", unit="mm")]
 
 
+def _messy_shell_metrics() -> list[BenchmarkMetric]:
+    quad = [
+        ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (1.0, 1.0, 0.0)),
+        ((0.0, 0.0, 0.0), (1.0, 1.0, 0.0), (0.0, 1.0, 0.0)),
+    ]
+    shifted = [
+        tuple((vertex[0] + 5.0, vertex[1], vertex[2]) for vertex in tri)  # type: ignore[misc]
+        for tri in quad
+    ]
+    shell = build_aligner_shell([*quad, *shifted], thickness_mm=0.5)
+    return [
+        _metric(
+            "messy_shell_connected_components",
+            float(shell.stats.connected_components),
+            "messy-shell",
+            "disconnected-double-slab",
+            notes="Deliberately disconnected non-PHI shell fixture for QA delta tracking.",
+        ),
+        _metric(
+            "messy_shell_self_intersections",
+            float(shell.stats.self_intersection_count),
+            "messy-shell",
+            "disconnected-double-slab",
+        ),
+    ]
+
+
+def _corpus_metrics(cases: list[BenchmarkCorpusCase]) -> list[BenchmarkMetric]:
+    scan_count = sum(len(case.scans) for case in cases)
+    face_count = sum(scan.face_count for case in cases for scan in case.scans)
+    return [
+        _metric(
+            "reviewed_non_phi_corpus_cases",
+            float(len(cases)),
+            "benchmark-corpus",
+            "reviewed-scan-corpus",
+            notes="Reviewed corpus entries with provenance and PHI status recorded.",
+        ),
+        _metric(
+            "reviewed_non_phi_scan_faces",
+            float(face_count),
+            "benchmark-corpus",
+            "reviewed-scan-corpus",
+            unit="faces",
+            notes=f"{scan_count} scan(s) available for real-scan benchmark expansion.",
+        ),
+    ]
+
+
 def _collision_plan(overlap: bool) -> TreatmentPlan:
     bounds_21 = (0.8, 1.8) if overlap else (1.3, 2.3)
     mesh_11 = MeshAsset(
@@ -141,7 +175,13 @@ def _collision_plan(overlap: bool) -> TreatmentPlan:
 
 
 def _metric(
-    name: str, value: float, component: str, case_id: str, *, unit: str = ""
+    name: str,
+    value: float,
+    component: str,
+    case_id: str,
+    *,
+    unit: str = "",
+    notes: str | None = None,
 ) -> BenchmarkMetric:
     return BenchmarkMetric(
         name=name,
@@ -149,4 +189,41 @@ def _metric(
         unit=unit,
         component=component,
         case_id=case_id,
+        notes=notes,
     )
+
+
+_BASELINE_VALUES = {
+    "segmentation_dice": 0.951811,
+    "segmentation_iou": 0.908031,
+    "region_purity": 0.9,
+    "movement_translation_error": 0.0,
+    "collision_ipr_precision": 1.0,
+    "collision_ipr_recall": 1.0,
+    "collision_sample_distance": 2.059126,
+    "collision_triangle_distance": 0.0,
+    "collision_triangle_delta_vs_sample": -2.059126,
+    "shell_thickness_error": 0.0,
+    "messy_shell_connected_components": 2.0,
+    "messy_shell_self_intersections": 0.0,
+    "reviewed_non_phi_corpus_cases": 1.0,
+    "reviewed_non_phi_scan_faces": 617110.0,
+}
+
+
+def _with_baseline_deltas(metrics: list[BenchmarkMetric]) -> list[BenchmarkMetric]:
+    out: list[BenchmarkMetric] = []
+    for metric in metrics:
+        baseline = _BASELINE_VALUES.get(metric.name)
+        if baseline is None:
+            out.append(metric)
+            continue
+        out.append(
+            metric.model_copy(
+                update={
+                    "baseline_value": baseline,
+                    "delta_from_baseline": round(metric.value - baseline, 6),
+                }
+            )
+        )
+    return out

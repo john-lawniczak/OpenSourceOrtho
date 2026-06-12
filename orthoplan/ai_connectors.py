@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from orthoplan.evaluation.providers.base import ModelProvider
 from orthoplan.evaluation.providers.claude_code_provider import ClaudeCodeProvider
@@ -28,41 +28,66 @@ class AIConnector(BaseModel):
     endpoint: str | None = None
     enabled: bool = False
     shares_patient_data: bool = False
+    requires_api_key: bool = False
+    supports_streaming: bool = False
+    models: list[str] = Field(default_factory=list)
+    allow_custom_model: bool = False
     notes: str | None = None
 
 
 def connector_catalog() -> list[AIConnector]:
     return [
-        AIConnector(id="local", kind="local", label="Local educational helper", enabled=True),
+        AIConnector(
+            id="local",
+            kind="local",
+            label="Local educational helper",
+            model="local-educational-helper",
+            enabled=True,
+            models=["local-educational-helper"],
+            notes="No key required; plan context stays on this machine.",
+        ),
         AIConnector(
             id="openai",
             kind="openai",
             label="OpenAI",
-            model="configured externally",
+            model="gpt-5.5",
             shares_patient_data=True,
+            requires_api_key=True,
+            supports_streaming=True,
+            models=["gpt-5.5", "gpt-5.4", "gpt-4.1"],
             notes="Live connector; supply an API key in Connector Settings to enable.",
         ),
         AIConnector(
             id="claude-code",
             kind="claude-code",
             label="Claude Code",
-            model="configured externally",
+            model="claude-opus-4-8",
             shares_patient_data=True,
+            requires_api_key=True,
+            models=["claude-opus-4-8", "claude-sonnet-4-7", "claude-code-default"],
             notes="Live CLI connector; requires the local Claude Code CLI on PATH.",
         ),
         AIConnector(
             id="mcp",
             kind="mcp",
             label="MCP-compatible model host",
+            model="mcp-model",
             endpoint="user supplied",
             shares_patient_data=True,
+            requires_api_key=True,
+            supports_streaming=True,
+            models=["mcp-model"],
+            allow_custom_model=True,
         ),
         AIConnector(
             id="open-source",
             kind="open-source",
             label="Open-source local model",
+            model="local-model",
             endpoint="local or user supplied",
             shares_patient_data=True,
+            models=["local-model", "llama-3.1", "qwen2.5"],
+            allow_custom_model=True,
         ),
     ]
 

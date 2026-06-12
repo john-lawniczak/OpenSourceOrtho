@@ -1,4 +1,4 @@
-import { askPlanAssistant, el, listCaseVersions, maxStage, requestCaseReview, savePlanVersion, state, uploadCaseRecord, uploadStlFile } from "./state.js";
+import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, savePlanVersion, state, uploadCaseRecord, uploadStlFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -28,6 +28,21 @@ import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manua
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
+
+loadAiConnectors().then((result) => {
+  if (result.ok && Array.isArray(result.connectors) && result.connectors.length) {
+    state.chat.connectors = result.connectors;
+    state.chat.modelByProvider = Object.fromEntries(
+      result.connectors.map((connector) => [
+        connector.kind,
+        state.chat.modelByProvider[connector.kind] || connector.model || connector.models?.[0],
+      ]),
+    );
+    renderChat();
+  }
+}).catch(() => {
+  state.chat.status = "Local helper ready";
+});
 
 el("themeToggle").addEventListener("click", () => {
   state.theme = state.theme === "dark" ? "light" : "dark";
@@ -223,11 +238,19 @@ document.body.addEventListener("input", (event) => {
   }
   if (target.id === "simpleGoal") state.simpleGoal = target.value;
   if (target.id === "simpleAcknowledged") state.simpleAcknowledged = target.checked;
+  if (target.id === "chatProvider") {
+    state.chat.provider = target.value;
+    state.chat.model = state.chat.modelByProvider[state.chat.provider] || defaultModelForProvider(state.chat.provider);
+  }
   if (target.id === "chatModel") {
-    // One dropdown picks both the model and its provider (carried on the option).
-    state.chat.model = target.value;
-    const option = target.selectedOptions && target.selectedOptions[0];
-    state.chat.provider = (option && option.dataset.provider) || "local";
+    state.chat.model = target.value === "__custom__"
+      ? el("chatCustomModel").value.trim() || "custom-model"
+      : target.value;
+    if (state.chat.model) state.chat.modelByProvider[state.chat.provider] = state.chat.model;
+  }
+  if (target.id === "chatCustomModel") {
+    state.chat.model = target.value.trim();
+    if (state.chat.model) state.chat.modelByProvider[state.chat.provider] = state.chat.model;
   }
   if (target.id === "chatInput") state.chat.input = target.value;
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
@@ -248,6 +271,14 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "sheetThickness") state.printExport.sheet_thickness_mm = Number(target.value) || 0.6;
   if (target.id === "trimMargin") state.printExport.gingival_trim_margin_mm = Number(target.value);
   renderAll();
+});
+
+document.body.addEventListener("keydown", (event) => {
+  if (event.target?.id !== "chatInput") return;
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendChatMessage();
+  }
 });
 
 document.body.addEventListener("click", (event) => {
@@ -829,9 +860,13 @@ async function toggleRegisteredBite() {
 async function sendChatMessage() {
   const message = state.chat.input.trim();
   if (!message || state.chat.busy) return;
+  const history = state.chat.messages
+    .filter((item) => item.role === "user" || item.role === "assistant")
+    .slice(-16);
   state.chat.busy = true;
   state.chat.status = "Reviewing the scoped plan context...";
   state.chat.messages.push({ role: "user", content: message });
+  state.chat.messages.push({ role: "assistant", content: "Reviewing the scoped plan context..." });
   el("chatInput").value = "";
   state.chat.input = "";
   renderChat();
@@ -842,6 +877,7 @@ async function sendChatMessage() {
     const result = await askPlanAssistant({
       plan: planJson(),
       message,
+      history,
       provider: state.chat.provider,
       model: state.chat.model,
       // The assistant always works from the full plan context (no scope selector).
@@ -850,28 +886,33 @@ async function sendChatMessage() {
       api_key: apiKey || undefined,
       endpoint: state.chat.agentEndpoint.trim() || undefined,
       share_acknowledged: state.chat.agentAccessEnabled,
+      session_id: state.chat.sessionId || undefined,
     });
+    const pending = state.chat.messages[state.chat.messages.length - 1];
     if (result.ok === false) {
-      state.chat.messages.push({
-        role: "assistant",
-        content: (result.errors || ["AI chat is not available."]).join(" "),
-      });
+      pending.content = (result.errors || ["AI chat is not available."]).join(" ");
       state.chat.status = "Connector unavailable";
     } else {
       const assistant = [...result.session.messages].reverse().find((item) => item.role === "assistant");
-      state.chat.messages.push({
-        role: "assistant",
-        content: assistant?.content || "No answer returned.",
-      });
+      pending.content = assistant?.content || "No answer returned.";
+      state.chat.sessionId = result.session.session_id;
       state.chat.status = `${result.session.connector.label} · ${result.session.context_scope.name}`;
     }
   } catch (error) {
-    state.chat.messages.push({ role: "assistant", content: error.message });
+    const pending = state.chat.messages[state.chat.messages.length - 1];
+    if (pending?.role === "assistant") pending.content = error.message;
+    else state.chat.messages.push({ role: "assistant", content: error.message });
     state.chat.status = "Chat request failed";
   } finally {
     state.chat.busy = false;
+    el("chatInput").focus();
     renderChat();
   }
+}
+
+function defaultModelForProvider(provider) {
+  const connector = (state.chat.connectors || []).find((item) => item.kind === provider);
+  return connector?.model || connector?.models?.[0] || "local-educational-helper";
 }
 
 function buildChatUiContext() {
