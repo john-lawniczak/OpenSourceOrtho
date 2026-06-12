@@ -44,10 +44,10 @@ def _format_errors(error: ValidationError) -> list[str]:
     return messages
 
 
-def evaluate_plan(plan: TreatmentPlan) -> dict[str, Any]:
+def evaluate_plan(plan: TreatmentPlan, *, workspace: str | Path | None = None) -> dict[str, Any]:
     """Evaluate a validated plan with the canonical engine."""
 
-    findings = run_rules(plan)
+    findings = run_rules(plan, workspace=workspace)
     frames = build_stage_progress_frames(plan)
     timeline = project_timeline(plan)
     optimized = optimize_staging(plan)
@@ -136,14 +136,16 @@ def _derived_anatomy_block(plan: TreatmentPlan) -> dict[str, Any] | None:
     }
 
 
-def evaluate_plan_payload(payload: dict[str, Any]) -> dict[str, Any]:
+def evaluate_plan_payload(
+    payload: dict[str, Any], *, workspace: str | Path | None = None
+) -> dict[str, Any]:
     """Validate a raw plan payload and evaluate it. Never raises."""
 
     try:
         plan = TreatmentPlan.model_validate(payload)
     except ValidationError as exc:
         return {"ok": False, "errors": _format_errors(exc)}
-    return evaluate_plan(plan)
+    return evaluate_plan(plan, workspace=workspace)
 
 
 def print_package_payload(

@@ -1,12 +1,4 @@
-"""Local development server wiring the static UI to the Python engine.
-
-Serves the ``ui/`` directory and exposes ``POST /api/evaluate`` backed by
-``orthoplan.api.evaluate_plan_payload``. This is the bridge that lets the
-browser UI consume the canonical engine instead of reimplementing it.
-
-It is a localhost development tool, not a production server. It binds to
-127.0.0.1 by default, caps request bodies, and refuses path traversal.
-"""
+"""Local development server wiring the static UI to the Python engine."""
 
 from __future__ import annotations
 
@@ -19,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
+from orthoplan.ai_chat_stream import send_chat_stream
 from orthoplan.api import evaluate_plan_payload, print_package_payload
 from orthoplan.case_api import (
     case_versions_payload,
@@ -144,6 +137,7 @@ class Handler(BaseHTTPRequestHandler):
             if path not in {
                 "/api/evaluate",
                 "/api/chat",
+                "/api/chat/stream",
                 "/api/generate-plan",
                 "/api/plan/version",
                 "/api/print-package",
@@ -169,6 +163,9 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(payload, dict):
                 self._send_json(400, {"ok": False, "errors": ["plan payload must be an object"]})
                 return
+            if path == "/api/chat/stream":
+                send_chat_stream(self, payload)
+                return
             self._send_json(200, self._dispatch_json_post(path, payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
@@ -190,7 +187,7 @@ class Handler(BaseHTTPRequestHandler):
             return segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
         if path == "/api/occlusion":
             return proximity_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
-        return evaluate_plan_payload(payload)
+        return evaluate_plan_payload(payload, workspace=self._mesh_workspace())
 
     def log_message(self, *args: object) -> None:  # silence default stderr logging
         return
