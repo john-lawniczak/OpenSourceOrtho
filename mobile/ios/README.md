@@ -1,28 +1,35 @@
 # OpenSource Ortho - iOS (Lite)
 
-Native **SwiftUI** lite client. A thin client over the Python engine; it renders
-what the engine returns and never synthesizes a plan on-device. See the shared
-[`../README.md`](../README.md) and the wire contract in
+Native **SwiftUI** lite client. It uses the Python engine for full-fidelity work
+and can synthesize only a clearly labeled STL-only review when that engine is
+offline. CBCT/DICOM, segmentation, mesh-backed edits, and print-critical exports
+remain browser/full-engine workflows. See the shared [`../README.md`](../README.md)
+and the wire contract in
 [`../API_CONTRACT.md`](../API_CONTRACT.md).
 
 ## Layout
 
 ```
 ios/
+  OpenSourceOrthoLite.xcodeproj      generated app project for Simulator/device
+  project.yml                        XcodeGen source for the app project
   Package.swift                       SwiftPM library + tests for the core
   Sources/OpenSourceOrthoLiteKit/     engine logic (no UI) - compiles & tests headless
     EngineConfig.swift                engine base URL (one place to change)
     EngineModels.swift                Codable mirrors of the contract subset
     AnyCodable.swift                  type-erased JSON for the opaque plan payload
     EngineClient.swift                async HTTP client for the lite endpoints
-    LiteFlow.swift                    flow steps + minimal plan builder
+    LiteFlow.swift                    flow steps, minimal plan builder, STL fallback
     SafetyText.swift                  standing disclaimer + verdict labels
   Tests/OpenSourceOrthoLiteKitTests/  XCTest for the core
   App/                                SwiftUI app target sources (added in Xcode)
     OpenSourceOrthoLiteApp.swift      @main entry
+    Info.plist                        app metadata + version placeholders
+    AppIdentity.swift                 bundle version/build reader for About
     LiteFlowViewModel.swift           view state, delegates to the kit
     RootView.swift                    nav + non-dismissible safety banner
-    Screens.swift                     Upload / Generate / Review / Progression
+    Screens.swift                     Upload / Teeth + Time / Review / Print + Send
+    SettingsView.swift                Settings / About / Glossary / Teeth map
 ```
 
 ## Build the core (no Xcode)
@@ -37,35 +44,47 @@ swift test
 
 ## Run the app
 
-The SwiftUI `App/` sources need an Xcode app target (a SwiftUI `@main` entry
-cannot be built by SwiftPM). One-time setup:
+Open `OpenSourceOrthoLite.xcodeproj`, select the `OpenSourceOrthoLite` scheme,
+choose an iPhone Simulator, and press Run. If the project needs to be regenerated:
 
-1. Open Xcode -> **New Project -> iOS App** (SwiftUI), name `OpenSourceOrthoLite`.
-2. Remove the generated `ContentView.swift`/`App.swift`; add the files under
-   `App/` to the app target.
-3. Add this package as a **local Swift Package** dependency and link
-   `OpenSourceOrthoLiteKit` to the app target.
-4. Start the engine: `python3 -m orthoplan.server` (host loopback `127.0.0.1:8000`,
-   which the Simulator reaches directly - see `EngineConfig.simulator`).
-5. Run on the iOS Simulator.
+```bash
+cd mobile/ios
+xcodegen generate
+```
 
-> The generated `.xcodeproj` is intentionally **not** committed - it is
-> machine/Xcode-version specific and noisy to review. The committed Swift sources
-> are the durable scaffolding.
+The app target keeps `CFBundleShortVersionString` as `$(MARKETING_VERSION)` and
+`CFBundleVersion` as `$(CURRENT_PROJECT_VERSION)`. `SettingsView` displays those
+bundle values as `Version 1.5 (5)`.
+
+Start the engine before generating a plan: `python3 -m orthoplan.server` (host
+loopback `127.0.0.1:8000`, which the Simulator reaches directly - see
+`EngineConfig.simulator`).
 
 ## What still has to be built (lite v1 -> shippable)
 
-- **STL file picker**: replace the stub in `UploadView` with `.fileImporter`
-  for `.stl`, and register bytes with the engine mesh workspace.
-- **3D progression renderer**: a SceneKit/Metal view in `ProgressionView` that
-  animates `plan.stages` over time, mirroring `ui/viewer3d.js`. Mesh bytes come
-  from `GET /api/mesh/<id>`; fall back to schematic proxy teeth when absent.
+- **Mesh registration**: `UploadView` accepts `.stl`, CBCT/DICOM attachments,
+  photos from the library or Files/iCloud/Drive providers, and browser-generated
+  JSON reviews/packages; the next step is uploading/registering STL bytes with
+  the engine mesh workspace instead of sending metadata only.
+- **Persistent review library**: browser JSON can be imported and included in
+  the exported mobile package; add durable app storage and deletion/rename UI.
+- **Per-tooth 3D renderer**: `TeethAndTimeView` now renders selected STL scan
+  geometry in SceneKit when local bytes are available. The next step is replacing
+  whole-arch STL preview with segmented per-tooth meshes from `GET /api/mesh/<id>`
+  and rendering engine stage transforms on those meshes.
+- **Destination-specific print/send handoff**: `PrintAndSendView` writes a JSON
+  package and exposes the system share sheet; add lab/printer profiles as those
+  destinations are chosen.
 - **Production engine URL** over `https://`, plus App Transport Security set so
   cleartext is allowed only for the local dev hosts.
 - **Optional model review consent** UI before setting `share_acknowledged`.
+- **Browser handoff links** for opening the same case in the local/hosted
+  browser workspace when CBCT/DICOM or plan editing is needed.
 
 ## Safety
 
 The non-dismissible banner (`SafetyText.disclaimer`) and `CONSISTENT`/`ISSUES`
-verdict labels are mandatory. Never present a plan as safe, approved, cleared, or
-ready for treatment. See [`../../docs/SAFETY.md`](../../docs/SAFETY.md).
+verdict labels are mandatory. Never present a plan, generated package, printed
+model, aligner, or other appliance as safe, approved, cleared, complete, suitable,
+or ready for treatment or physical use. Any physical use is the user's own
+responsibility and risk. See [`../../docs/SAFETY.md`](../../docs/SAFETY.md).

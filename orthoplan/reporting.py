@@ -21,6 +21,7 @@ from orthoplan.api import evaluate_plan
 from orthoplan.hashing import canonical_json, sha256_text
 from orthoplan.io.serialization import plan_to_json
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.model.review_tier import review_tier_info, unresolved_surface_gaps
 
 
 REPORT_SCHEMA_VERSION = "orthoplan-report-v1"
@@ -56,6 +57,12 @@ def build_handoff_report(
             "mesh_asset_ids": sorted(plan.asset_ids),
             "tooth_mesh_count": len(plan.tooth_meshes),
         },
+        # The review tier and the anatomy domains this report cannot resolve are
+        # surfaced at the top level so any reader sees the evidence ceiling and the
+        # explicit blind spots (roots, bone, periodontal, occlusion, CBCT anatomy)
+        # without parsing the full evaluation payload.
+        "review_tier": review_tier_info(plan).model_dump(mode="json"),
+        "unresolved_data_gaps": unresolved_surface_gaps(plan),
         "evaluation": evaluation,
         "evaluation_sha256": sha256_text(canonical_json(evaluation)),
         "review": {

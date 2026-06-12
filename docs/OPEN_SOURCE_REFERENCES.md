@@ -26,7 +26,8 @@ SlicerCMF
 Open3D
 
 - MIT-licensed 3D data processing library
-- useful for point clouds, meshes, registration, visualization, and geometry utilities
+- useful for point clouds, meshes, registration, visualization, geometry utilities, and local segmentation experiments
+- available as the optional `mesh-processing` extra; the core app still has a pure-Python segmentation baseline
 
 PyVista / VTK
 
@@ -37,7 +38,7 @@ PyVista / VTK
 pydicom
 
 - MIT-licensed Python DICOM library
-- useful only if CBCT/DICOM support is added
+- candidate optional dependency for the planned CBCT/DICOM ingestion milestone
 
 Three.js
 

@@ -1,32 +1,31 @@
-"""Local development server wiring the static UI to the Python engine.
-
-Serves the ``ui/`` directory and exposes ``POST /api/evaluate`` backed by
-``orthoplan.api.evaluate_plan_payload``. This is the bridge that lets the
-browser UI consume the canonical engine instead of reimplementing it.
-
-It is a localhost development tool, not a production server. It binds to
-127.0.0.1 by default, caps request bodies, and refuses path traversal.
-"""
+"""Local development server wiring the static UI to the Python engine."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import tempfile
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
+from orthoplan.ai_chat_stream import send_chat_stream
 from orthoplan.api import evaluate_plan_payload, print_package_payload
 from orthoplan.case_api import (
     case_versions_payload,
     list_cases_payload,
     save_plan_version_payload,
 )
+from orthoplan.case_review import case_review_payload
 from orthoplan.cases import default_case_store
 from orthoplan.generation import generate_plan_payload
-from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
+from orthoplan.io.stl_import import MAX_STL_BYTES
+from orthoplan.mesh_workspace import default_mesh_workspace, register_stl_mesh, resolve_mesh_path
+from orthoplan.model.assets import MeshProvenance, redact_reference
+from orthoplan.occlusion.proximity_api import proximity_payload
+from orthoplan.record_workspace import MAX_RECORD_BYTES, register_case_record
 from orthoplan.segmentation_api import segment_payload
 
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
@@ -129,13 +128,22 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
+            if path == "/api/upload/stl":
+                _handle_stl_upload(self)
+                return
+            if path == "/api/upload/record":
+                _handle_case_record_upload(self)
+                return
             if path not in {
                 "/api/evaluate",
                 "/api/chat",
+                "/api/chat/stream",
                 "/api/generate-plan",
                 "/api/plan/version",
                 "/api/print-package",
+                "/api/case-review",
                 "/api/segment",
+                "/api/occlusion",
             }:
                 self._send_json(404, {"ok": False, "errors": ["unknown endpoint"]})
                 return
@@ -155,26 +163,113 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(payload, dict):
                 self._send_json(400, {"ok": False, "errors": ["plan payload must be an object"]})
                 return
-            if path == "/api/chat":
-                self._send_json(200, answer_chat_payload(payload))
-            elif path == "/api/generate-plan":
-                self._send_json(200, generate_plan_payload(payload))
-            elif path == "/api/plan/version":
-                self._send_json(200, save_plan_version_payload(payload, store_path=self._case_store()))
-            elif path == "/api/print-package":
-                self._send_json(200, print_package_payload(payload))
-            elif path == "/api/segment":
-                self._send_json(
-                    200,
-                    segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace()),
-                )
-            else:
-                self._send_json(200, evaluate_plan_payload(payload))
+            if path == "/api/chat/stream":
+                send_chat_stream(self, payload)
+                return
+            self._send_json(200, self._dispatch_json_post(path, payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 
+    def _dispatch_json_post(self, path: str, payload: dict) -> dict:
+        """Route a validated JSON POST body to its payload handler."""
+
+        if path == "/api/chat":
+            return answer_chat_payload(payload)
+        if path == "/api/generate-plan":
+            return generate_plan_payload(payload)
+        if path == "/api/plan/version":
+            return save_plan_version_payload(payload, store_path=self._case_store())
+        if path == "/api/print-package":
+            return print_package_payload(payload, workspace=self._mesh_workspace())
+        if path == "/api/case-review":
+            return case_review_payload(payload)
+        if path == "/api/segment":
+            return segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
+        if path == "/api/occlusion":
+            return proximity_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
+        return evaluate_plan_payload(payload, workspace=self._mesh_workspace())
+
     def log_message(self, *args: object) -> None:  # silence default stderr logging
         return
+
+
+def _handle_stl_upload(handler: Handler) -> None:
+    length = handler._content_length()
+    if length is None or length <= 0:
+        handler._send_json(400, {"ok": False, "errors": ["missing or invalid Content-Length"]})
+        return
+    if length > MAX_STL_BYTES:
+        handler._send_json(413, {"ok": False, "errors": ["STL upload too large"]})
+        return
+
+    filename = redact_reference(
+        urllib.parse.unquote(handler.headers.get("X-Filename", "uploaded.stl"))
+    ) or "uploaded.stl"
+    if not filename.lower().endswith(".stl"):
+        handler._send_json(400, {"ok": False, "errors": ["only .stl uploads are supported"]})
+        return
+
+    raw = handler.rfile.read(length)
+    with tempfile.TemporaryDirectory(prefix="orthoplan-upload-") as tmp:
+        temp_path = Path(tmp) / filename
+        temp_path.write_bytes(raw)
+        try:
+            asset = register_stl_mesh(
+                temp_path,
+                workspace=handler._mesh_workspace(),
+                provenance=MeshProvenance.PATIENT_DERIVED,
+            )
+        except Exception as exc:  # noqa: BLE001 - return validation errors as data
+            handler._send_json(400, {"ok": False, "errors": [f"could not register STL: {exc}"]})
+            return
+
+    handler._send_json(
+        200,
+        {
+            "ok": True,
+            "asset": asset.model_dump(mode="json"),
+            "url": f"/api/mesh/{asset.id}",
+        },
+    )
+
+
+def _handle_case_record_upload(handler: Handler) -> None:
+    length = handler._content_length()
+    if length is None or length <= 0:
+        handler._send_json(400, {"ok": False, "errors": ["missing or invalid Content-Length"]})
+        return
+    if length > MAX_RECORD_BYTES:
+        handler._send_json(413, {"ok": False, "errors": ["case record upload too large"]})
+        return
+
+    kind = handler.headers.get("X-Record-Kind", "document").strip().lower()
+    if kind not in {"cbct", "dicom", "photo", "radiograph", "document"}:
+        handler._send_json(400, {"ok": False, "errors": ["unsupported case record kind"]})
+        return
+
+    filename = redact_reference(
+        urllib.parse.unquote(handler.headers.get("X-Filename", "record"))
+    ) or "record"
+    modality = handler.headers.get("X-Modality")
+    content_type = handler.headers.get("Content-Type")
+
+    raw = handler.rfile.read(length)
+    with tempfile.TemporaryDirectory(prefix="orthoplan-record-") as tmp:
+        temp_path = Path(tmp) / filename
+        temp_path.write_bytes(raw)
+        try:
+            record = register_case_record(
+                temp_path,
+                workspace=handler._mesh_workspace(),
+                kind=kind,  # type: ignore[arg-type]
+                modality=modality,
+                content_type=content_type,
+            )
+        except Exception as exc:  # noqa: BLE001 - return validation errors as data
+            handler._send_json(400, {"ok": False, "errors": [f"could not register record: {exc}"]})
+            return
+
+    handler._send_json(200, {"ok": True, "record": record.model_dump(mode="json")})
 
 
 def serve(host: str = "127.0.0.1", port: int = 8000) -> None:

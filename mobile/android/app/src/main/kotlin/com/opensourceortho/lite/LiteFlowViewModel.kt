@@ -2,16 +2,20 @@ package com.opensourceortho.lite
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 /** Immutable UI state for the lite flow. */
 data class LiteUiState(
     val step: LiteStep = LiteStep.UPLOAD,
     val scans: List<SelectedScan> = emptyList(),
+    val storedReviews: List<StoredPlanReview> = emptyList(),
     val isGenerating: Boolean = false,
     val result: GeneratePlanResponse? = null,
     val errorMessage: String? = null,
@@ -32,10 +36,25 @@ class LiteFlowViewModel(
     val state: StateFlow<LiteUiState> = _state.asStateFlow()
 
     fun addScan(scan: SelectedScan) {
-        _state.update { it.copy(scans = it.scans + scan, step = LiteStep.GENERATE) }
+        _state.update { it.copy(scans = it.scans + scan, step = LiteStep.TEETH_AND_TIME) }
     }
 
-    /** One-tap "Generate Plan": posts to the engine and advances to Review. */
+    fun navigate(step: LiteStep) {
+        _state.update { it.copy(step = step) }
+    }
+
+    fun addDevSample(byteCount: Int) {
+        addScan(
+            SelectedScan(
+                fileName = "dev-sample-incisor.stl",
+                arch = "upper",
+                byteCount = byteCount,
+                modality = "stl",
+            ),
+        )
+    }
+
+    /** Posts selected records to the engine and advances to Review. */
     fun generate() {
         val scans = _state.value.scans
         if (scans.isEmpty()) return
@@ -47,12 +66,67 @@ class LiteFlowViewModel(
                     it.copy(isGenerating = false, result = response, step = LiteStep.REVIEW)
                 }
             } catch (e: EngineException) {
-                _state.update { it.copy(isGenerating = false, errorMessage = e.message) }
+                synthesizeOnDeviceOrReport(e.message ?: "Engine offline / request rejected.")
             }
         }
     }
 
-    fun showProgression() = _state.update { it.copy(step = LiteStep.PROGRESSION) }
+    fun importBrowserReview(review: StoredPlanReview) {
+        _state.update {
+            it.copy(storedReviews = it.storedReviews + review, errorMessage = null)
+        }
+    }
+
+    fun reportImportError(message: String) {
+        _state.update { it.copy(errorMessage = message) }
+    }
+
+    fun showPrintAndSend() = _state.update { it.copy(step = LiteStep.PRINT_AND_SEND) }
 
     fun reset() = _state.update { LiteUiState() }
+
+    fun exportPackageJson(): String {
+        val payload = MobileExportPackage(
+            generatedAtEpochMillis = System.currentTimeMillis(),
+            scans = _state.value.scans,
+            result = _state.value.result,
+            storedReviews = _state.value.storedReviews,
+            disclaimer = "See the in-app safety disclaimer. Engine verdicts are not clinical approval.",
+        )
+        return exportJson.encodeToString(payload)
+    }
+
+    private fun synthesizeOnDeviceOrReport(engineMessage: String) {
+        val scans = _state.value.scans
+        if (!OnDevicePlanSynthesizer.canSynthesize(scans)) {
+            _state.update {
+                it.copy(
+                    isGenerating = false,
+                    errorMessage = "$engineMessage\nMobile generation is STL-only. Open the browser/full engine for CBCT/DICOM, segmentation, and plan changes.",
+                )
+            }
+            return
+        }
+        _state.update {
+            it.copy(
+                isGenerating = false,
+                result = OnDevicePlanSynthesizer.response(scans),
+                errorMessage = "Using limited on-device STL synthesis because the engine was unavailable. Open the browser/full engine for mesh-backed edits, CBCT/DICOM, and print-critical review.",
+                step = LiteStep.REVIEW,
+            )
+        }
+    }
+
+    private companion object {
+        val exportJson: Json = Json { prettyPrint = true; encodeDefaults = true }
+    }
 }
+
+@Serializable
+private data class MobileExportPackage(
+    val generatedAtEpochMillis: Long,
+    val scans: List<SelectedScan>,
+    val result: GeneratePlanResponse?,
+    val storedReviews: List<StoredPlanReview>,
+    val disclaimer: String,
+)

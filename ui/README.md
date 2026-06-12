@@ -16,6 +16,12 @@ Browser prototype for the data-model workflow:
 9. plan-shaped JSON output
 10. print-export readiness and package metadata
 
+This UI is a safety-review playground. It is not complete treatment-planning
+software, does not diagnose, does not approve treatment, and does not authorize
+printing, wearing, or physically applying any output. Printable files and package
+metadata are informational geometry artifacts; any physical use is the user's own
+responsibility and risk.
+
 ## Run it
 
 The UI is backed by the Python engine and must be served by the dev server so
@@ -46,9 +52,9 @@ workflows:
   a progress rail and Back/Next, showing one step at a time. It lets a user upload
   an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
   default, with Faster/Gentle behind a disclosure), build the plan, review it as a
-  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
-  printable files. It acknowledges that the preview is not a diagnosis or treatment
-  plan.
+	  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
+	  printable files. It acknowledges that the preview is not a diagnosis or treatment
+	  plan and that physical use is the user's own responsibility and risk.
 - **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 
@@ -63,24 +69,25 @@ WebGL context.
 ## Plan AI
 
 The Review surface includes a prominent **Ask AI about your plan** box. It posts
-the current plan-shaped JSON to `POST /api/chat` with a selected connector, model
-preference, and context scope. The default `local` connector produces an
-educational explanation without leaving the local server. External connectors for
-OpenAI, Claude (Anthropic), MCP hosts, Odysseus, and open-source models perform
-live completions once a provider is selected, a key/endpoint is supplied, and
-per-session egress consent (`share_acknowledged`) is given.
+the current plan-shaped JSON to `POST /api/chat`. A single model dropdown picks
+both the model and its provider, and the chat always sends the full plan context.
+The default `local` helper produces an educational explanation without leaving the
+local server. External models (OpenAI GPT, Claude, and open-source / self-hosted
+endpoints) perform live completions once a model is selected, a key/endpoint is
+supplied, and per-session egress consent (`share_acknowledged`) is given.
 
-The **provider selector and a session-only API-key field are shown directly in
-the AI box** with provider-specific, plain-language help (the key field is hidden
-for the no-key local helper); the agent/MCP endpoint and egress consent live under
-**Advanced connector settings**. API keys are read only at send time and are not
-written into plan JSON, case snapshots, `localStorage`, or exported reports.
+The **single model dropdown** (each option carries its provider) and a
+**session-only API-key field** are shown directly in the AI box with
+provider-specific, plain-language help (the key field is hidden for the no-key
+local helper); the model endpoint (for an open-source / self-hosted model) and the
+egress consent live under **Connector settings**. API keys are read only at send
+time and are not written into plan JSON, case snapshots, `localStorage`, or
+exported reports.
 
-Context scopes:
-
-- **Summary**: findings, data gaps, timeline, and clinical controls.
-- **Clinical metadata**: summary plus mesh/tooth-mesh metadata.
-- **Full plan snapshot**: the complete plan payload.
+The assistant always works from the **full plan context** (findings, data gaps,
+timeline, clinical controls, mesh metadata, and the plan snapshot); there is no
+context-scope selector. For an external model the egress-consent checkbox is the
+sole control over what leaves the machine.
 
 ## Engine is the single source of truth
 
@@ -139,6 +146,18 @@ constraints, surfaced in the on-screen caveat:
 - A **Tooth #** toolbar toggle overlays FDI tooth-number badges on each tooth so a
   user can see which teeth they are focusing on. It is off by default and follows
   the displayed (current or planned) tooth position.
+- A **Bite proximity** toggle paints a red/amber/green overlay of how close the
+  upper and lower crown surfaces are (contact / near / clearance). It is GEOMETRIC
+  proximity of the registered surfaces, NOT bite force or a diagnosis, and is shown
+  only when the scans register as already-occluding. Backed by `POST /api/occlusion`
+  (server-resolvable scans only). See [docs/occlusion-registration.md](../docs/occlusion-registration.md).
+- A **Scale** toggle draws a true-scale 10 mm reference bar beside the loaded scan
+  and reports its measured W×H×D extent. The scan geometry is at true scale (only
+  movement is exaggerated), so the bar is honest; it needs a loaded scan with
+  confirmed mm units.
+- A **Registered bite** toggle moves the lower arch into the registered occlusal
+  frame. It only changes separate-frame scans; arches scanned already in occlusion
+  show the true bite unchanged.
 
 Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
@@ -153,12 +172,14 @@ planning needs segmentation. The Technician Review side panel **Auto-Segmentatio
 `POST /api/segment`:
 
 - It runs **on this machine** (scans are PHI; segmentation never calls a hosted
-  API). Today the local model is a dependency-free **valley-based heuristic**
-  (`orthoplan/segmentation/heuristic.py` + `arch_profile.py`): it walks the arch
-  and cuts at the height valleys between crowns (balanced by equal spacing, then
-  snapped to the nearest real gap). `orthoplan/segmentation/auto.py` is the seam
-  where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can be dropped in
-  behind the same contract.
+  API). Today the local model is a hybrid geometry proposal
+  (`orthoplan/segmentation/hybrid.py`): it walks the arch, scores candidate
+  boundaries from height valleys, curvature, and face-normal changes, then splits
+  triangles with graph-cut-style balanced boundaries. Open3D can be installed via
+  the optional `mesh-processing` extra for future mesh-processing acceleration,
+  while the pure-Python path remains the default baseline. `orthoplan/segmentation/auto.py`
+  is the seam where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can
+  be dropped in behind the same contract.
 - The response is a **draft proposal**, never auto-applied: per-tooth confidence
   (separation, not certainty), advisory model-provenance findings (all pass
   `lint_finding`), and a ready-to-merge plan fragment (`mesh_assets` +

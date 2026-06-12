@@ -95,24 +95,20 @@ def test_ai_connector_catalog_is_served(server: int) -> None:
     assert status == 200
     assert payload["ok"] is True
     assert any(connector["kind"] == "local" for connector in payload["connectors"])
+    openai = next(connector for connector in payload["connectors"] if connector["kind"] == "openai")
+    assert "gpt-5.5" in openai["models"]
+    assert openai["requires_api_key"] is True
 
 
 def test_local_chat_endpoint_returns_session(server: int) -> None:
-    plan = {
-        "id": "chat",
-        "stages": [
-            {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}
-        ],
-    }
+    plan = {"id": "chat", "stages": [
+        {"index": 0, "deltas": [{"tooth": {"system": "FDI", "value": "11"}, "translate_x_mm": 0.2}]}]}
     status, payload = _post(
         server,
         json.dumps({"plan": plan, "message": "What can this tell me?", "provider": "local"}).encode(),
-        {"Content-Type": "application/json"},
-        path="/api/chat",
-    )
+        {"Content-Type": "application/json"}, path="/api/chat")
 
-    assert status == 200
-    assert payload["ok"] is True
+    assert status == 200 and payload["ok"] is True
     assert payload["session"]["connector"]["kind"] == "local"
     assert payload["session"]["messages"][1]["role"] == "assistant"
 

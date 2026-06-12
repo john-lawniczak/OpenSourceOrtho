@@ -7,6 +7,89 @@ export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
 }
 
+// Each arch normally has 14 teeth in this app (third molars excluded), mirroring
+// the engine's default_arch_order length. A proposed count below this means a
+// tooth looks absent - the cue to mark the gap and re-anchor the labels.
+export const FULL_ARCH_TEETH = 14;
+
+export function normalizeArchLabel(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (text === "upper" || text === "maxillary") return "maxillary";
+  if (text === "lower" || text === "mandibular") return "mandibular";
+  return null;
+}
+
+export function inferArchFromName(name = "") {
+  const text = String(name).toLowerCase();
+  const maxillaryMatch =
+    text.includes("upper") ||
+    text.includes("top") ||
+    text.includes("maxilla") ||
+    text.includes("maxillary") ||
+    /(^|[-_\s])u(\.stl|[-_\s])/.test(text);
+  const mandibularMatch =
+    text.includes("lower") ||
+    text.includes("bottom") ||
+    text.includes("mandible") ||
+    text.includes("mandibular") ||
+    /(^|[-_\s])l(\.stl|[-_\s])/.test(text);
+  if (maxillaryMatch && mandibularMatch) return null;
+  if (maxillaryMatch) {
+    return "maxillary";
+  }
+  if (mandibularMatch) {
+    return "mandibular";
+  }
+  return null;
+}
+
+export function archFromTooth(tooth) {
+  const text = String(tooth || "");
+  if (!/^[1-8][1-8]$/.test(text)) return null;
+  const quadrant = text[0];
+  if (quadrant === "1" || quadrant === "2" || quadrant === "5" || quadrant === "6") {
+    return "maxillary";
+  }
+  if (quadrant === "3" || quadrant === "4" || quadrant === "7" || quadrant === "8") {
+    return "mandibular";
+  }
+  return null;
+}
+
+// Confidence tier from a 0-100 percentage. Low confidence (often a count
+// mismatch) should stand out so the reviewer checks those tooth numbers first.
+export function confidenceTier(pct) {
+  if (pct < 45) return "low";
+  if (pct < 65) return "mid";
+  return "high";
+}
+
+// Banner (HTML) when a proposed arch is not a full arch. Returns "" when every
+// arch is complete. The message depends on whether the reviewer has marked a gap,
+// because a count below a full arch is ambiguous: a tooth may be absent OR two
+// crowns may have merged into one region (common on the flat upper occlusal
+// plane). `markedGapCount` is how many missing teeth the user has entered.
+export function countNoteMarkup(teeth, markedGapCount = 0) {
+  const byArch = {};
+  for (const tooth of teeth || []) byArch[tooth.arch] = (byArch[tooth.arch] || 0) + 1;
+  const counts = Object.entries(byArch);
+  if (!counts.length || !counts.some(([, n]) => n !== FULL_ARCH_TEETH)) return "";
+  const summary = counts.map(([arch, n]) => `${n} ${escapeHtml(arch)}`).join(", ");
+  if (markedGapCount > 0) {
+    const gapWord = markedGapCount === 1 ? "gap" : "gaps";
+    return (
+      `<p class="segment-count-note">Proposed ${summary} for your ${markedGapCount} ` +
+      `marked ${gapWord}. Review the tooth numbers below, then apply.</p>`
+    );
+  }
+  return (
+    `<p class="segment-count-note">Proposed ${summary} — a full arch is ${FULL_ARCH_TEETH} teeth. ` +
+    "Some crowns may have merged into one region, or a tooth may be absent. If a tooth " +
+    "is missing, enter its FDI number in “Missing teeth” above and use “Re-anchor labels”; " +
+    "otherwise review the tooth numbers below.</p>"
+  );
+}
+
 // Group stage rows by their stage number and reindex to a contiguous 0..n-1
 // sequence so exported plans satisfy the Python contiguity invariant even when
 // the UI stage numbers have gaps (e.g. 0, 2, 5 -> 0, 1, 2).
@@ -16,6 +99,25 @@ export function stageBuckets(rows) {
     index,
     rows: rows.filter((row) => row.stage === stage),
   }));
+}
+
+export function rowsFromPlan(plan) {
+  const rows = [];
+  for (const stage of plan.stages || []) {
+    for (const delta of stage.deltas || []) {
+      rows.push({
+        stage: stage.index,
+        tooth: delta.tooth.value,
+        x: delta.translate_x_mm,
+        y: delta.translate_y_mm,
+        z: delta.translate_z_mm,
+        tip: delta.rotate_tip_deg,
+        torque: delta.rotate_torque_deg,
+        rotation: delta.rotate_rotation_deg,
+      });
+    }
+  }
+  return rows;
 }
 
 // Cumulative translation per tooth from an engine frame (never recomputed here).

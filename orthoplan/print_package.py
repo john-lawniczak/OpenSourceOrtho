@@ -8,10 +8,13 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from orthoplan import __version__
+from orthoplan.evaluation.engine import run_rules
 from orthoplan.hashing import canonical_json, sha256_bytes, sha256_text
 from orthoplan.io.serialization import plan_to_json
-from orthoplan.model.assets import BoundingBox
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.model.review_tier import review_tier_info
+from orthoplan.print_aligner import write_aligner_shells
+from orthoplan.print_stl import build_tooth_geometry, frame_to_stl
 from orthoplan.printing import PRINT_EXPORT_CAVEAT, build_print_export_status
 from orthoplan.viz.progress import build_stage_progress_frames
 
@@ -21,7 +24,12 @@ class PrintPackageResult(BaseModel):
     manifest_path: str
     artifact_paths: list[str] = Field(default_factory=list)
     artifact_sha256: dict[str, str] = Field(default_factory=dict)
+    aligner_shell_paths: list[str] = Field(default_factory=list)
+    aligner_shell_reports: list[dict] = Field(default_factory=list)
+    aligner_shell_backend: dict = Field(default_factory=dict)
     manifest_sha256: str
+    review_tier: str = "stl-only"
+    uses_real_mesh_geometry: bool = False
     zip_path: str | None = None
     zip_sha256: str | None = None
     email_draft_path: str | None = None
@@ -34,18 +42,34 @@ def export_print_package(
     *,
     make_zip: bool = False,
     make_email_draft: bool = False,
+    workspace: str | Path | None = None,
 ) -> PrintPackageResult:
-    """Generate stage proxy STL files, a manifest, and optional zip/email draft."""
+    """Generate stage STL files, a manifest, and optional zip/email draft.
+
+    Stage geometry uses real per-tooth mesh vertices for *reviewed* segmentation
+    links whose fragments resolve in ``workspace``; every other tooth falls back
+    to a clearly-labeled schematic proxy box.
+    """
 
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     stem = _safe_stem(plan.id)
     status = build_print_export_status(plan)
     frames = build_stage_progress_frames(plan)
-    artifacts, records = _write_stage_artifacts(plan, output, frames, stem)
-    manifest_path = _write_manifest(plan, output, status, records, frames, stem)
+    tooth_geometry = build_tooth_geometry(plan, workspace)
+    artifacts, records = _write_stage_artifacts(output, frames, stem, tooth_geometry)
+    shell_paths, shell_records, shell_reports, shell_backend = _export_shells(
+        plan, output, frames, stem, tooth_geometry
+    )
+    manifest_path = _write_manifest(
+        plan, output, status, records, frames, stem, tooth_geometry,
+        shell_records, shell_reports, shell_backend,
+    )
     zip_path = (
-        _write_zip(stem, output, [manifest_path, *[Path(path) for path in artifacts]])
+        _write_zip(
+            stem, output,
+            [manifest_path, *[Path(p) for p in artifacts], *[Path(p) for p in shell_paths]],
+        )
         if make_zip
         else None
     )
@@ -58,26 +82,40 @@ def export_print_package(
         output_dir=str(output),
         manifest_path=str(manifest_path),
         artifact_paths=artifacts,
-        artifact_sha256={record["filename"]: record["sha256"] for record in records},
+        artifact_sha256={
+            record["filename"]: record["sha256"] for record in (*records, *shell_records)
+        },
+        aligner_shell_paths=shell_paths,
+        aligner_shell_reports=shell_reports,
+        aligner_shell_backend=shell_backend,
         manifest_sha256=sha256_bytes(manifest_path.read_bytes()),
+        review_tier=review_tier_info(plan).tier.value,
+        uses_real_mesh_geometry=any(g["mode"] == "mesh-vertices" for g in tooth_geometry.values()),
         zip_path=str(zip_path) if zip_path else None,
         zip_sha256=sha256_bytes(zip_path.read_bytes()) if zip_path else None,
         email_draft_path=str(email_path) if email_path else None,
     )
 
 
+def _export_shells(
+    plan: TreatmentPlan, output: Path, frames: list, stem: str, tooth_geometry: dict
+) -> tuple[list[str], list[dict], list[dict], dict]:
+    if not plan.settings.print_export.aligner_shell_enabled:
+        return [], [], [], {}
+    return write_aligner_shells(plan, output, frames, stem, tooth_geometry)
+
+
 def _write_stage_artifacts(
-    plan: TreatmentPlan,
     output: Path,
     frames: list,
     stem: str,
+    tooth_geometry: dict,
 ) -> tuple[list[str], list[dict]]:
     artifacts: list[str] = []
     records: list[dict] = []
-    tooth_geometry = _tooth_geometry(plan)
     for frame in frames:
         path = output / f"{stem}-stage-{frame.stage_index:02d}-model.stl"
-        stl, geometry_sources = _frame_to_stl(
+        stl, geometry_sources = frame_to_stl(
             stem,
             frame.stage_index,
             frame.poses,
@@ -107,15 +145,27 @@ def _write_manifest(
     artifacts: list[dict],
     frames: list,
     stem: str,
+    tooth_geometry: dict,
+    shell_records: list[dict],
+    shell_reports: list[dict],
+    shell_backend: dict,
 ) -> Path:
     plan_payload = json.loads(plan_to_json(plan, indent=None))
+    findings = run_rules(plan)
+    settings = plan.settings.print_export
     manifest = {
-        "schema": "orthoplan-print-package-v1",
+        "schema": "orthoplan-print-package-v2",
         "engine": {"name": "orthoplan", "version": __version__},
         "plan_id": plan.id,
         "title": plan.title,
-        "plan_sha256": sha256_text(canonical_json(plan_payload)),
-        "stage_frames_sha256": sha256_text(canonical_json([f.model_dump() for f in frames])),
+        "review_tier": review_tier_info(plan).model_dump(mode="json"),
+        "uses_real_mesh_geometry": any(
+            g["mode"] == "mesh-vertices" for g in tooth_geometry.values()
+        ),
+        "aligner_shells": _aligner_shell_block(
+            settings, shell_records, shell_reports, shell_backend
+        ),
+        "hashes": _hashes_block(plan, plan_payload, frames, findings, tooth_geometry, shell_records),
         "ready": status.ready,
         "blockers": status.blockers,
         "artifacts": artifacts,
@@ -123,11 +173,79 @@ def _write_manifest(
         "model_material": status.model_material,
         "thermoforming_material": status.thermoforming_material,
         "post_processing_notes": status.post_processing_notes,
+        "printer_tolerances": status.printer_tolerances,
         "caveat": status.caveat,
     }
     path = output / f"{stem}-print-manifest.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _aligner_shell_block(
+    settings, shell_records: list[dict], shell_reports: list[dict], shell_backend: dict
+) -> dict:
+    return {
+        "enabled": settings.aligner_shell_enabled,
+        "backend": shell_backend,
+        "sheet_thickness_mm": settings.sheet_thickness_mm,
+        "gingival_trim_margin_mm": settings.gingival_trim_margin_mm,
+        "xy_compensation_mm": settings.xy_compensation_mm,
+        "z_compensation_mm": settings.z_compensation_mm,
+        "minimum_printable_feature_mm": settings.minimum_printable_feature_mm,
+        "manufacturing_readiness": _manufacturing_readiness(
+            settings.aligner_shell_enabled, shell_reports
+        ),
+        "artifacts": shell_records,
+        "stage_reports": shell_reports,
+    }
+
+
+def _hashes_block(
+    plan: TreatmentPlan,
+    plan_payload: dict,
+    frames: list,
+    findings: list,
+    tooth_geometry: dict,
+    shell_records: list[dict],
+) -> dict:
+    return {
+        "plan_sha256": sha256_text(canonical_json(plan_payload)),
+        "stage_frames_sha256": sha256_text(canonical_json([f.model_dump() for f in frames])),
+        "findings_sha256": sha256_text(canonical_json([f.model_dump(mode="json") for f in findings])),
+        "scan_sha256": {scan.asset.id: scan.asset.sha256 for scan in plan.scans if scan.asset.sha256},
+        "segmentation_fragment_sha256": _fragment_hashes(tooth_geometry),
+        "aligner_shell_sha256": {record["filename"]: record["sha256"] for record in shell_records},
+    }
+
+
+def _fragment_hashes(tooth_geometry: dict) -> dict:
+    return {
+        geom["asset_id"]: geom["sha256"]
+        for geom in tooth_geometry.values()
+        if geom["mode"] == "mesh-vertices" and geom["sha256"]
+    }
+
+
+def _manufacturing_readiness(enabled: bool, reports: list[dict]) -> dict:
+    if not enabled:
+        return {
+            "verdict": "NOT_APPLICABLE",
+            "reason": "Aligner-shell export is disabled.",
+        }
+    if not reports or any(report["verdict"] == "ISSUES" for report in reports):
+        return {
+            "verdict": "ISSUES",
+            "reason": "One or more shell stages could not produce consistent shell QA.",
+        }
+    if all(report["verdict"] == "NOT_APPLICABLE" for report in reports):
+        return {
+            "verdict": "NOT_APPLICABLE",
+            "reason": "No reviewed real geometry was available for shell generation.",
+        }
+    return {
+        "verdict": "CONSISTENT",
+        "reason": "Generated shell artifacts passed available deterministic shell QA checks.",
+    }
 
 
 def _write_zip(plan_id: str, output: Path, paths: list[Path]) -> Path:
@@ -178,90 +296,3 @@ def _safe_stem(plan_id: str) -> str:
 
     cleaned = "".join(char if (char.isalnum() or char in {"-", "_"}) else "-" for char in plan_id)
     return cleaned.strip("-") or "plan"
-
-
-def _tooth_geometry(plan: TreatmentPlan) -> dict[str, tuple[str, tuple[float, float, float]]]:
-    assets = {asset.id: asset for asset in plan.mesh_assets}
-    assets.update({scan.asset.id: scan.asset for scan in plan.scans})
-    geometry: dict[str, tuple[str, tuple[float, float, float]]] = {}
-    for link in plan.tooth_meshes:
-        asset = assets.get(link.mesh_asset_id)
-        if asset and asset.bounds:
-            geometry[link.tooth.value] = (
-                f"segmented-mesh-bounds:{asset.id}",
-                _box_size_from_bounds(asset.bounds),
-            )
-    return geometry
-
-
-def _box_size_from_bounds(bounds: BoundingBox) -> tuple[float, float, float]:
-    sizes = [
-        max(bounds.max_xyz[index] - bounds.min_xyz[index], 0.5)
-        for index in range(3)
-    ]
-    return (sizes[0], sizes[1], sizes[2])
-
-
-def _frame_to_stl(
-    plan_id: str,
-    stage_index: int,
-    poses: list,
-    tooth_geometry: dict,
-) -> tuple[str, list[dict]]:
-    triangles: list[tuple[tuple[float, float, float], ...]] = []
-    geometry_sources: list[dict] = []
-    for index, pose in enumerate(poses):
-        cx = (index % 8) * 4.0 + pose.translate_x_mm
-        cy = (index // 8) * 5.0 + pose.translate_y_mm
-        cz = pose.translate_z_mm
-        source, size = tooth_geometry.get(
-            pose.tooth.value,
-            ("schematic-stage-proxy", (2.4, 3.2, 1.8)),
-        )
-        triangles.extend(_box_triangles(cx, cy, cz, *size))
-        geometry_sources.append(
-            {
-                "tooth": pose.tooth.value,
-                "source": source,
-                "center_xyz_mm": [cx, cy, cz],
-                "size_xyz_mm": list(size),
-            }
-        )
-    return _stl_text(plan_id, stage_index, triangles), geometry_sources
-
-
-def _stl_text(plan_id: str, stage_index: int, triangles: list) -> str:
-    lines = [f"solid {plan_id}_stage_{stage_index:02d}"]
-    for tri in triangles:
-        lines.extend(
-            [
-                "  facet normal 0 0 0",
-                "    outer loop",
-                f"      vertex {tri[0][0]:.6f} {tri[0][1]:.6f} {tri[0][2]:.6f}",
-                f"      vertex {tri[1][0]:.6f} {tri[1][1]:.6f} {tri[1][2]:.6f}",
-                f"      vertex {tri[2][0]:.6f} {tri[2][1]:.6f} {tri[2][2]:.6f}",
-                "    endloop",
-                "  endfacet",
-            ]
-        )
-    lines.append(f"endsolid {plan_id}_stage_{stage_index:02d}")
-    return "\n".join(lines) + "\n"
-
-
-def _box_triangles(cx: float, cy: float, cz: float, sx: float, sy: float, sz: float):
-    x0, x1 = cx - sx / 2, cx + sx / 2
-    y0, y1 = cy - sy / 2, cy + sy / 2
-    z0, z1 = cz - sz / 2, cz + sz / 2
-    v = [
-        (x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
-        (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1),
-    ]
-    faces = [
-        (0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1),
-        (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0),
-    ]
-    tris = []
-    for a, b, c, d in faces:
-        tris.append((v[a], v[b], v[c]))
-        tris.append((v[a], v[c], v[d]))
-    return tris

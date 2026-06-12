@@ -1,0 +1,388 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */; };
+		16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */ = {isa = PBXBuildFile; fileRef = 4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */; };
+		37A52C95416DB193C1647EB4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3EC22871DE3570233EAFD /* RootView.swift */; };
+		4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FEC8D213B7576DB4208180A /* Assets.xcassets */; };
+		74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8589067755F44462FE798BC8 /* SettingsView.swift */; };
+		7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */; };
+		BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A1C676D724465EA395DAFA /* AppIdentity.swift */; };
+		DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919681E695F14AC323DB1F57 /* Screens.swift */; };
+		FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		038A93E4FA3E99A155B4AD33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0FEC8D213B7576DB4208180A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceOrthoLiteApp.swift; sourceTree = "<group>"; };
+		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
+		8589067755F44462FE798BC8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		888F68B82367F953AA8FC715 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = .; sourceTree = SOURCE_ROOT; };
+		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiteFlowViewModel.swift; sourceTree = "<group>"; };
+		919681E695F14AC323DB1F57 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
+		94A1C676D724465EA395DAFA /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
+		9BB3EC22871DE3570233EAFD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5522AA9F3778601F5F68CC41 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		002C8182D0A6C4AA83FF47B4 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				888F68B82367F953AA8FC715 /* ios */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		631AC2D2F8BFBA05067850FF = {
+			isa = PBXGroup;
+			children = (
+				BE0697D1F65F6EE1B627E84F /* App */,
+				002C8182D0A6C4AA83FF47B4 /* Packages */,
+				6E48634B4930BC68BB41C389 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6E48634B4930BC68BB41C389 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A012910D6970A6D2D2581C6B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		BE0697D1F65F6EE1B627E84F /* App */ = {
+			isa = PBXGroup;
+			children = (
+				94A1C676D724465EA395DAFA /* AppIdentity.swift */,
+				0FEC8D213B7576DB4208180A /* Assets.xcassets */,
+				038A93E4FA3E99A155B4AD33 /* Info.plist */,
+				8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */,
+				32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */,
+				9BB3EC22871DE3570233EAFD /* RootView.swift */,
+				919681E695F14AC323DB1F57 /* Screens.swift */,
+				8589067755F44462FE798BC8 /* SettingsView.swift */,
+				A012910D6970A6D2D2581C6B /* Resources */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		41985455D915DDEB2015CE48 /* OpenSourceOrthoLite */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB36442CFD3813268CF15988 /* Build configuration list for PBXNativeTarget "OpenSourceOrthoLite" */;
+			buildPhases = (
+				4E1CADECCFE197AE6EBE4765 /* Sources */,
+				501B069BB3D41898277F1CCD /* Resources */,
+				5522AA9F3778601F5F68CC41 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OpenSourceOrthoLite;
+			packageProductDependencies = (
+				3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */,
+			);
+			productName = OpenSourceOrthoLite;
+			productReference = 8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		15926F78AA8F94B009C18DD3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					41985455D915DDEB2015CE48 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F4C9A97A1409A09CB950891D /* Build configuration list for PBXProject "OpenSourceOrthoLite" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 631AC2D2F8BFBA05067850FF;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CC2B05072D73BECC81BD9818 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				41985455D915DDEB2015CE48 /* OpenSourceOrthoLite */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		501B069BB3D41898277F1CCD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */,
+				16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4E1CADECCFE197AE6EBE4765 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */,
+				FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */,
+				13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */,
+				37A52C95416DB193C1647EB4 /* RootView.swift in Sources */,
+				DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */,
+				74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		06AEE9C6225B7B1A5BAB5C25 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		30D6A713DE44EE64956DD51E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		533C31AB86D4D45BC2FA731A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite;
+				PRODUCT_NAME = OpenSourceOrthoLite;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D51AACC01C1C5F1C8D1CB21B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite;
+				PRODUCT_NAME = OpenSourceOrthoLite;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AB36442CFD3813268CF15988 /* Build configuration list for PBXNativeTarget "OpenSourceOrthoLite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D51AACC01C1C5F1C8D1CB21B /* Debug */,
+				533C31AB86D4D45BC2FA731A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F4C9A97A1409A09CB950891D /* Build configuration list for PBXProject "OpenSourceOrthoLite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06AEE9C6225B7B1A5BAB5C25 /* Debug */,
+				30D6A713DE44EE64956DD51E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		CC2B05072D73BECC81BD9818 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenSourceOrthoLiteKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 15926F78AA8F94B009C18DD3 /* Project object */;
+}

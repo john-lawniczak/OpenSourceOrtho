@@ -2,13 +2,14 @@
 
 [![CI](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml/badge.svg)](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml)
 
-OpenSource Ortho is an open-source orthodontic treatment-planning research toolkit for clear-aligner workflows.
+OpenSource Ortho is an open-source clear-aligner planning safety playground and research toolkit. It supports surface-based STL planning experiments today; reviewed CBCT/DICOM-derived anatomy is a higher-fidelity path for root/bone-aware checks, not a claim that the software produces a complete treatment plan.
 
-[![OpenSource Ortho review workspace](docs/images/review-demo.png)](docs/media/sample-demo.mp4)
+[![Upper and lower dental arches](docs/images/teeth-arches.jpeg)](docs/media/sample-demo.mp4)
 
-> The Review workspace: a stacked **Upper arch / Lower arch** 3D preview with
-> loaded crown meshes, staged movement, findings, data gaps, and the local
-> **Plan AI** helper. ▶ [Watch the demo (MP4)](docs/media/sample-demo.mp4).
+> Upper and lower dental arches — the kind of intraoral input these planning
+> experiments stage. ▶ [Watch the review-workspace demo (MP4)](docs/media/sample-demo.mp4):
+> a stacked **Upper arch / Lower arch** 3D preview with loaded crown meshes,
+> staged movement, findings, data gaps, and the local **Plan AI** helper.
 
 ## Mission
 
@@ -18,11 +19,15 @@ Orthodontic planning is dominated by closed, expensive, proprietary systems that
 lock patients out of their own scans and treatment data. OpenSource Ortho exists
 to change that: a transparent, inspectable, community-owned toolkit where the
 math is auditable, the data stays with the person it belongs to, and the safety
-boundaries are explicit rather than hidden. It is not a medical device and does
-not replace a licensed professional - it lowers the barrier to understanding and
-participating in your own care.
+boundaries are explicit rather than hidden. The goal is a safety-boundary-first
+planning playground for clear-aligner workflows: reproducible staged geometry,
+data-gap visibility, and manufacturing-oriented exports that users evaluate and
+use at their own responsibility and risk. The current build is not distributed as
+a medical device, is not complete treatment-planning software, and does not
+replace a licensed professional.
 
-Most project documentation lives in [docs/](docs/README.md).
+Most project documentation lives in [docs/](docs/README.md), including the
+current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
 
@@ -53,12 +58,14 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   per stage plus a manifest) via `POST /api/print-package` and offers a zip
   download and a pre-filled email draft (`.eml`) you can open in your mail app to
   send the files to yourself or a print service.
-- **Auto-segmentation (experimental)**: an on-device, dependency-free heuristic
-  proposes per-tooth meshes from a whole-arch scan via `POST /api/segment`
-  (cutting at the valleys between crowns). It is a reviewable draft with per-tooth
-  confidence - you correct the FDI numbers and **explicitly** apply it; nothing is
-  auto-accepted, and scans never leave the machine. A `SegmentationModel` seam lets
-  a local learned model (e.g. Teeth3DS) replace the heuristic later.
+- **Auto-segmentation (experimental)**: an on-device hybrid geometry segmenter
+  proposes per-tooth meshes from a whole-arch scan via `POST /api/segment`.
+  It uses arch position, height valleys, curvature, and face-normal changes to
+  choose graph-cut-style boundaries, with optional Open3D mesh-processing support.
+  It is a reviewable draft with per-tooth confidence - you correct the FDI numbers
+  and **explicitly** apply it; nothing is auto-accepted, and scans never leave the
+  machine. A `SegmentationModel` seam lets a local learned model (e.g. Teeth3DS)
+  replace the geometric proposal later.
 - **Generate Plan**: a one-click pipeline (the guided **Build my plan** button,
   and the Technician Review panel) that builds a
   cap-respecting staged plan from the best available target - your authored
@@ -69,22 +76,28 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   checks and a verdict (`CONSISTENT`/`ISSUES`, never "safe"/"approved"); an
   optional model review is consent-gated and linted. It is a proposal, not a
   diagnosis or treatment approval.
+- **Safety-review tiers**: STL-only users get a first-class **Surface Review** based on
+  visible crown geometry. CBCT/DICOM is not required for every user; it is the
+  higher-fidelity path toward **Root/Bone-Aware Review** when the record is
+  locally ingested, registered to the STL, segmented/reviewed, and validated. See
+  [docs/cbct-evaluation.md](docs/cbct-evaluation.md).
 - **Plan versions**: save named snapshots of a plan and restore any version back
   into the editor. Backed by a local case store (`.orthoplan-cases.json`,
   override with `ORTHOPLAN_CASE_STORE`); available in the UI Versions panel, the
   HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
   `case-list`, `case-versions`).
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
-  plan context, findings, data gaps, and timeline. The AI box shows the
-  **provider selector and an API-key field with plain-language instructions**
-  directly, so it is obvious how to enable a real model; the key field is hidden
-  for the **local helper**, which works without any key or external service. Live
-  connectors for OpenAI, Claude (Anthropic), and any OpenAI-compatible host
-  (MCP/Odysseus/open-source local models) are available and gated behind an
-  explicit per-session consent that data leaves the machine. The key is read only
-  when you press **Ask AI** and is never persisted.
+  plan context, findings, data gaps, and timeline. The AI box shows a **single
+  model dropdown** (each option carries its provider) and an **API-key field with
+  plain-language instructions**, so it is obvious how to enable a real model; the
+  key field is hidden for the **local helper**, which works without any key or
+  external service. Live connectors for OpenAI (GPT), Claude (Anthropic), and any
+  OpenAI-compatible host (MCP / open-source / self-hosted local models) are
+  available and gated behind explicit per-session consent that data leaves the
+  machine. The chat always sends the full plan context. The key is read only when
+  you press **Ask AI** and is never persisted.
 
-It is not an Invisalign clone, medical device, diagnostic system, or treatment approval system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations.
+It is not an Invisalign clone, autonomous diagnostic system, clinical approval system, or complete treatment-planning system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations. Any physical use is the user's own responsibility and risk. The software and outputs are provided without warranty or liability for diagnosis, treatment, manufacturing, fit, materials, injury, regulatory compliance, or other use. The roadmap intentionally separates STL-only surface review from CBCT/DICOM-enhanced root/bone-aware review.
 
 Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
 
@@ -94,6 +107,7 @@ The software may:
 
 - represent proposed tooth movements and staged aligner-style plans
 - import, export, and visualize dental mesh data
+- attach and visualize CBCT/DICOM records when that roadmap phase ships
 - check internal consistency against user-configured movement caps
 - surface observational findings, data gaps, and handoff questions
 - rank missing data by deterministic acquisition impact
@@ -105,7 +119,8 @@ The software may not:
 
 - diagnose disease or malocclusion
 - decide whether treatment is safe, suitable, approved, or complete
-- infer unseen anatomy such as roots, bone, periodontal status, or CBCT findings
+- produce or claim to produce a complete treatment plan
+- infer unseen anatomy such as roots, bone, periodontal status, or CBCT findings when those records or reviewed derived anatomy are unavailable
 - invent unsupported thresholds
 - replace user judgment, consent, responsibility, or regulatory obligations
 
@@ -122,6 +137,12 @@ The first workflow is simple:
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
 
+CBCT/DICOM support is tiered: local record metadata intake, on-device viewing
+handoff, STL-to-CBCT registration records, reviewed anatomy representation,
+root/bone-aware checks when trusted anatomy exists, and manufacturing manifests
+that label the review tier, unresolved data gaps, and user responsibility for any
+physical use. Automated raw-volume root/bone segmentation remains future work.
+
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
 test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), and starts at
@@ -134,12 +155,13 @@ Case** to return - your own work is untouched.
 
 In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
 ask educational questions about the active plan. The default local helper stays on
-this machine and needs no key. To use an external model, pick a provider
-(OpenAI, Claude, or an OpenAI-compatible endpoint) in the AI box and paste your
-API key in the field shown there; advanced agent/MCP-endpoint and consent options
-live under **Advanced connector settings**. The key is read only when you press
-**Ask AI**; it is never written to plans, case snapshots, or `localStorage` and is
-never echoed back by the server. See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+this machine and needs no key. To use an external model, pick it from the single
+**model dropdown** (e.g. GPT-5.5, Claude Opus 4.8, or an open-source / self-hosted
+endpoint) in the AI box and paste your API key in the field shown there; the model
+endpoint and egress-consent options live under **Connector settings**. The key is
+read only when you press **Ask AI**; it is never written to plans, case snapshots,
+or `localStorage` and is never echoed back by the server. See
+[docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 

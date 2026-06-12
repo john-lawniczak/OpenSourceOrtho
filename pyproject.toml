@@ -34,6 +34,23 @@ providers = [
 mesh = [
   "trimesh>=4.0"
 ]
+mesh-processing = [
+  "open3d>=0.18"
+]
+# Optional local CBCT/DICOM metadata parsing. Used only to read study metadata
+# (modality, voxel spacing, dimensions, orientation, study date) for local case
+# records; volume bytes are NEVER serialized into plan JSON. The core install
+# stays light without this. See docs/cbct-evaluation.md.
+dicom = [
+  "pydicom>=2.4"
+]
+# Optional on-device learned tooth-segmentation backend. Inference only: NEVER
+# torch at runtime. Weights are user-supplied and never committed (see
+# docs/segmentation-learned-backend.md). The core install stays light without this.
+ml-seg = [
+  "onnxruntime>=1.17",
+  "numpy>=1.24"
+]
 e2e = [
   "playwright>=1.40"
 ]

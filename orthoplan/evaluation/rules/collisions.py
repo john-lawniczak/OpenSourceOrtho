@@ -7,100 +7,115 @@ from orthoplan.evaluation.finding import (
     FindingSeverity,
     lint_finding,
 )
+from orthoplan.evaluation.rules.contact_geometry import (
+    ContactCandidate,
+    staged_contact_candidates,
+)
 from orthoplan.model.assets import BoundingBox, MeshAsset
+from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import TreatmentPlan
-from orthoplan.viz.progress import build_stage_progress_frames
 
-_REFERENCE = "Axis-aligned segmented crown bounding-box overlap check."
+_REFERENCE = (
+    "Adjacent segmented-crown contact check using transformed crown bounds plus "
+    "capped representative surface samples."
+)
 _GAP = (
-    "Collision check uses segmented crown mesh bounds only. It does not evaluate "
-    "roots, occlusion dynamics, material thickness, or biological response."
+    "Collision check uses segmented crown surface samples only. It does not evaluate "
+    "roots, occlusion dynamics, material thickness, enamel biology, or biological response."
 )
 _QUESTION = "Should tooth positions, staging, IPR, or segmentation be reviewed for this contact?"
 
 
-def evaluate_segmented_mesh_collisions(plan: TreatmentPlan) -> list[Finding]:
+def evaluate_segmented_mesh_collisions(
+    plan: TreatmentPlan,
+    *,
+    triangles_by_tooth: dict[str, list[tuple[Vec3, Vec3, Vec3]]] | None = None,
+) -> list[Finding]:
+    bounds_by_tooth = _bounds_by_tooth(plan)
+    if len(bounds_by_tooth) < 2:
+        return []
+    if not plan.scale_confirmed:
+        return [_scale_unconfirmed_notice()]
+
+    candidates = staged_contact_candidates(
+        plan,
+        bounds_by_tooth,
+        triangles_by_tooth=triangles_by_tooth,
+    )
+    return [
+        _contact_finding(candidate)
+        for candidate in sorted(candidates.values(), key=lambda item: (item.tooth_a, item.tooth_b))
+    ]
+
+
+def _bounds_by_tooth(plan: TreatmentPlan) -> dict[str, BoundingBox]:
     assets = _assets_by_id(plan)
     bounds_by_tooth: dict[str, BoundingBox] = {}
     for link in plan.tooth_meshes:
         asset = assets.get(link.mesh_asset_id)
         if asset and asset.bounds:
             bounds_by_tooth[link.tooth.value] = asset.bounds
-    if len(bounds_by_tooth) < 2:
-        return []
+    return bounds_by_tooth
 
-    # Collect the worst (deepest) overlap per tooth pair across all stages so a
-    # contact that persists through many stages is reported once - keyed by the
-    # stage where it is most severe - instead of flooding the findings list with
-    # one near-identical entry per stage.
-    worst_by_pair: dict[tuple[str, str], tuple[int, float]] = {}
-    for frame in build_stage_progress_frames(plan):
-        moved = dict(bounds_by_tooth)
-        for pose in frame.poses:
-            if pose.tooth.value in bounds_by_tooth:
-                moved[pose.tooth.value] = _translate_bounds(bounds_by_tooth[pose.tooth.value], pose)
-        teeth = sorted(moved)
-        for index, tooth_a in enumerate(teeth):
-            for tooth_b in teeth[index + 1 :]:
-                # Opposing arches share the occlusal x/y plane and are not
-                # collision partners; only compare teeth within the same arch.
-                if _arch_of(tooth_a) != _arch_of(tooth_b):
-                    continue
-                overlap = _overlap_depth(moved[tooth_a], moved[tooth_b])
-                if overlap <= 0:
-                    continue
-                pair = (tooth_a, tooth_b)
-                current = worst_by_pair.get(pair)
-                if current is None or overlap > current[1]:
-                    worst_by_pair[pair] = (frame.stage_index, overlap)
 
-    findings: list[Finding] = []
-    for (tooth_a, tooth_b), (stage_index, overlap) in sorted(worst_by_pair.items()):
-        findings.append(
-            lint_finding(
-                Finding(
-                    severity=FindingSeverity.WARNING,
-                    category=FindingCategory.MECHANICS,
-                    provenance=FindingProvenance.RULE,
-                    title=f"Teeth {tooth_a} and {tooth_b} segmented crown bounds overlap",
-                    message=(
-                        f"Teeth {tooth_a} and {tooth_b} have overlapping transformed "
-                        f"axis-aligned crown bounds, deepest at stage {stage_index} by "
-                        f"approximately {overlap:.3f} mm on the shallowest overlapping axis."
-                    ),
-                    data_gap=_GAP,
-                    clinician_question=_QUESTION,
-                    reference=_REFERENCE,
-                )
-            )
+def _contact_finding(candidate: ContactCandidate) -> Finding:
+    detail = _sample_detail(candidate)
+    return lint_finding(
+        Finding(
+            severity=FindingSeverity.WARNING,
+            category=FindingCategory.MECHANICS,
+            provenance=FindingProvenance.RULE,
+            title=f"Teeth {candidate.tooth_a} and {candidate.tooth_b} interproximal contact estimated",
+            message=(
+                f"Teeth {candidate.tooth_a} and {candidate.tooth_b} have transformed adjacent "
+                f"crown contact at stage {candidate.stage_index}. {detail} Estimated IPR "
+                f"needed to separate the sampled crown geometry is {candidate.ipr_mm:.3f} mm."
+            ),
+            code="segmented-crown-sample-contact",
+            data_gap=_GAP,
+            clinician_question=_QUESTION,
+            reference=_REFERENCE,
         )
-    return findings
+    )
 
 
-def _arch_of(tooth_value: str) -> str:
-    # FDI maxillary quadrants are 1,2 (permanent) and 5,6 (primary).
-    return "maxillary" if tooth_value[0] in {"1", "2", "5", "6"} else "mandibular"
+def _sample_detail(candidate: ContactCandidate) -> str:
+    if candidate.triangle_based:
+        return (
+            f"Minimum triangle-surface distance is "
+            f"{candidate.triangle_distance_mm:.3f} mm after bbox prefilter."
+        )
+    if candidate.sample_based:
+        return (
+            f"Minimum representative-surface distance is "
+            f"{candidate.sample_distance_mm:.3f} mm after bbox prefilter."
+        )
+    return (
+        "Representative surface samples are absent, so this falls back to the "
+        f"axis-aligned bbox overlap depth of {candidate.bbox_overlap_mm:.3f} mm."
+    )
+
+
+def _scale_unconfirmed_notice() -> Finding:
+    return lint_finding(
+        Finding(
+            severity=FindingSeverity.NOTICE,
+            category=FindingCategory.DATA_GAP,
+            provenance=FindingProvenance.RULE,
+            title="Crown collision check skipped: scan units unverified",
+            message=(
+                "Segmented crown bounds are present but scan units are unverified, so "
+                "overlap depths cannot be compared in millimeters. Confirm scan units "
+                "to enable the crown collision check."
+            ),
+            code="segmented-crown-collision-scale-unconfirmed",
+            data_gap="Scan units are unverified; declared geometry scale cannot be trusted.",
+            clinician_question="Have the scan units and scale been confirmed?",
+        )
+    )
 
 
 def _assets_by_id(plan: TreatmentPlan) -> dict[str, MeshAsset]:
     assets = {asset.id: asset for asset in plan.mesh_assets}
     assets.update({scan.asset.id: scan.asset for scan in plan.scans})
     return assets
-
-
-def _translate_bounds(bounds: BoundingBox, pose) -> BoundingBox:
-    delta = (pose.translate_x_mm, pose.translate_y_mm, pose.translate_z_mm)
-    return BoundingBox(
-        min_xyz=tuple(bounds.min_xyz[i] + delta[i] for i in range(3)),  # type: ignore[return-value]
-        max_xyz=tuple(bounds.max_xyz[i] + delta[i] for i in range(3)),  # type: ignore[return-value]
-    )
-
-
-def _overlap_depth(a: BoundingBox, b: BoundingBox) -> float:
-    depths = []
-    for axis in range(3):
-        depth = min(a.max_xyz[axis], b.max_xyz[axis]) - max(a.min_xyz[axis], b.min_xyz[axis])
-        if depth <= 0:
-            return 0.0
-        depths.append(depth)
-    return min(depths)

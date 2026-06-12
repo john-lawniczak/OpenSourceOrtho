@@ -65,6 +65,7 @@ class Finding(BaseModel):
     provenance: FindingProvenance
     title: str = Field(min_length=1)
     message: str = Field(min_length=1)
+    code: str | None = None
     data_gap: str | None = None
     clinician_question: str | None = None
     reference: str | None = None

@@ -11,6 +11,7 @@ from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.segmentation.auto import build_advisory_findings, load_local_segmenter
 from orthoplan.segmentation.heuristic import auto_segment_arch, default_arch_order
+from orthoplan.segmentation.hybrid import hybrid_segment_arch_with_diagnostics
 from orthoplan.segmentation.mesh_export import binary_stl_bytes
 from orthoplan.segmentation_api import segment_payload
 
@@ -60,7 +61,20 @@ def test_auto_segment_returns_empty_when_too_sparse() -> None:
 def test_load_local_segmenter_is_on_device_and_named() -> None:
     segmenter = load_local_segmenter()
     assert segmenter.name and segmenter.version
+    assert "hybrid" in segmenter.name
     assert hasattr(segmenter, "segment")
+
+
+def test_hybrid_segment_uses_surface_signal_boundaries() -> None:
+    segments, diagnostics = hybrid_segment_arch_with_diagnostics(
+        _arch_vertices(facets_per_tooth=12),
+        arch="maxillary",
+    )
+
+    assert segments
+    assert diagnostics.backend in {"pure-python", "open3d+pure-python"}
+    assert len(diagnostics.boundary_buckets) == len(default_arch_order("maxillary")) - 1
+    assert any(score > 0 for score in diagnostics.boundary_scores)
 
 
 def test_advisory_findings_are_model_provenance_and_lint_clean() -> None:
@@ -85,6 +99,9 @@ def test_segment_payload_produces_reviewable_proposal(tmp_path: Path) -> None:
 
     assert result["ok"] is True
     assert result["requires_review"] is True
+    assert result["model"]["name"] == "hybrid-arch-graph-cut"
+    assert result["model"]["backend"] in {"pure-python", "open3d+pure-python"}
+    assert "graph cuts" in result["method"]
     assert result["teeth"]
     assert set(t["tooth"] for t in result["teeth"]) == set(default_arch_order("maxillary"))
     assert all(0.0 <= t["confidence"] <= 1.0 for t in result["teeth"])
@@ -117,6 +134,49 @@ def test_segment_payload_fragment_merges_into_a_valid_plan(tmp_path: Path) -> No
     assert {m.id for m in plan.mesh_assets} >= {link.mesh_asset_id for link in plan.tooth_meshes}
 
 
+def test_segment_payload_includes_occlusion_for_both_arches(tmp_path: Path) -> None:
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    _write_arch_stl(ui_dir / "upper.stl")
+    _write_arch_stl(ui_dir / "lower.stl")
+
+    result = segment_payload(
+        {
+            "scans": [
+                {"reference": "upper.stl", "arch": "maxillary"},
+                {"reference": "lower.stl", "arch": "mandibular"},
+            ]
+        },
+        ui_dir=ui_dir,
+        workspace=tmp_path / "ws",
+    )
+
+    assert result["ok"] is True
+    occ = result["occlusion"]
+    assert occ is not None  # both arches present -> bite registration computed
+    assert occ["mode"] in {"as-scanned", "estimated"}
+    assert isinstance(occ["lower_offset"], list) and len(occ["lower_offset"]) == 3
+    assert "extent_mm" in occ and "contact_fraction" in occ
+    # The geometric / not-a-diagnosis framing travels with the metrics.
+    assert "not a" in occ["caveat"].lower() or "not " in occ["caveat"].lower()
+
+
+def test_segment_payload_omits_occlusion_for_single_arch(tmp_path: Path) -> None:
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    _write_arch_stl(ui_dir / "scan.stl")
+
+    result = segment_payload(
+        {"scans": [{"reference": "scan.stl", "arch": "maxillary"}]},
+        ui_dir=ui_dir,
+        workspace=tmp_path / "ws",
+    )
+
+    assert result["ok"] is True
+    # Occlusion is a relationship between two arches; one arch -> no block.
+    assert result["occlusion"] is None
+
+
 def test_segment_payload_rejects_unresolvable_scan(tmp_path: Path) -> None:
     result = segment_payload(
         {"scans": [{"reference": "../../etc/passwd", "arch": "maxillary"}]},
@@ -130,3 +190,36 @@ def test_segment_payload_rejects_unresolvable_scan(tmp_path: Path) -> None:
 def test_segment_payload_requires_a_scan(tmp_path: Path) -> None:
     result = segment_payload({}, ui_dir=tmp_path, workspace=tmp_path)
     assert result["ok"] is False
+
+
+def test_tooth_values_for_arch_drops_marked_gap() -> None:
+    from orthoplan.segmentation.auto import tooth_values_for_arch
+
+    full = default_arch_order("maxillary")
+    labels = tooth_values_for_arch("maxillary", ["15"])
+    assert labels == tuple(t for t in full if t != "15")
+    assert len(labels) == len(full) - 1
+    # Nothing marked, or a tooth from the other arch -> no override (None).
+    assert tooth_values_for_arch("maxillary", []) is None
+    assert tooth_values_for_arch("maxillary", ["38"]) is None
+
+
+def test_segment_payload_anchors_labels_around_marked_gap(tmp_path: Path) -> None:
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    _write_arch_stl(ui_dir / "scan.stl")
+
+    result = segment_payload(
+        {"scans": [{"reference": "scan.stl", "arch": "maxillary"}], "missing_teeth": ["15"]},
+        ui_dir=ui_dir,
+        workspace=tmp_path / "ws",
+    )
+    assert result["ok"] is True
+    teeth = [t["tooth"] for t in result["teeth"]]
+    # The marked tooth is skipped and the arch is one tooth shorter than a full arch.
+    assert "15" not in teeth
+    assert len(teeth) == len(default_arch_order("maxillary")) - 1
+    # A count-difference advisory is surfaced for review.
+    assert any(
+        "tooth count" in f["title"].lower() for f in result["advisory_findings"]
+    )

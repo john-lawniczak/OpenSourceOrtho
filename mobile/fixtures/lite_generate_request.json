@@ -1,0 +1,42 @@
+{
+  "plan": {
+    "id": "lite-plan",
+    "title": "Lite plan",
+    "numbering_system": "FDI",
+    "coordinate_frame": {
+      "name": "scan-local"
+    },
+    "scans": [
+      {
+        "asset": {
+          "id": "lite-0-upper-stl",
+          "format": "stl",
+          "provenance": "patient-derived",
+          "units": "unverified",
+          "vertex_count": 0,
+          "face_count": 0,
+          "reference": "upper.stl"
+        },
+        "arch": "maxillary",
+        "source": "intraoral-scan"
+      },
+      {
+        "asset": {
+          "id": "lite-1-lower-stl",
+          "format": "stl",
+          "provenance": "patient-derived",
+          "units": "unverified",
+          "vertex_count": 0,
+          "face_count": 0,
+          "reference": "lower.stl"
+        },
+        "arch": "mandibular",
+        "source": "intraoral-scan"
+      }
+    ]
+  },
+  "acknowledge_educational": true,
+  "provider": "local",
+  "share_acknowledged": false,
+  "notes": null
+}

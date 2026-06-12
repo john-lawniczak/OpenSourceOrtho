@@ -26,6 +26,14 @@ def add_measurement_lab_parser(subparsers: Any) -> None:
     parser.add_argument("--json", action="store_true", help="emit lab results as JSON")
 
 
+def add_validation_benchmark_parser(subparsers: Any) -> None:
+    parser = subparsers.add_parser(
+        "validation-benchmark",
+        help="emit tracked synthetic accuracy benchmark metrics",
+    )
+    parser.add_argument("--json", action="store_true", help="emit benchmark report as JSON")
+
+
 def cmd_print_package(args: argparse.Namespace) -> int:
     from orthoplan.printing import export_print_package
 
@@ -69,3 +77,20 @@ def cmd_measurement_lab(args: argparse.Namespace) -> int:
             for failure in result.failures:
                 print(f"  - {failure}")
     return 0 if all(result.passed for result in results) else 1
+
+
+def cmd_validation_benchmark(args: argparse.Namespace) -> int:
+    from orthoplan.validation import run_validation_benchmarks
+
+    report = run_validation_benchmarks()
+    if args.json:
+        print(report.model_dump_json(indent=2))
+        return 0
+    print(report.benchmark_id)
+    print(report.caveat)
+    for component, metrics in report.by_component().items():
+        print(f"\n{component}")
+        for metric in metrics:
+            unit = f" {metric.unit}" if metric.unit else ""
+            print(f"  - {metric.name}: {metric.value}{unit} ({metric.case_id})")
+    return 0

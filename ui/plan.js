@@ -17,11 +17,17 @@ export function planJson() {
       },
     },
     scans: scanPayload(),
+    case_records: state.caseRecords,
     // Per-tooth meshes only appear once the user has reviewed and explicitly
     // applied an auto-segmentation proposal (see segment.js). Drafts are never
     // merged automatically.
     mesh_assets: state.segmentation.applied?.mesh_assets || [],
     tooth_meshes: state.segmentation.applied?.tooth_meshes || [],
+    // CBCT registration + reviewed anatomy round-trip when present (e.g. an
+    // imported plan/case version). The browser has no CBCT processing flow yet,
+    // so these are usually empty; reviewer edits mutate them in place.
+    registrations: state.registrations || [],
+    derived_anatomy: state.derivedAnatomy || null,
     fixed_teeth: fixedTeeth(),
     movement_exclusions: parseMovementExclusions(state.clinicalControls.movementExclusions),
     attachments: parseToothList(state.clinicalControls.attachmentTeeth).map((tooth) => ({
@@ -98,27 +104,32 @@ function parseIprContacts(value) {
 }
 
 function scanPayload() {
-  const sources = state.files.length
-    ? state.files.map((file) => ({ name: file.name, reference: file.name, arch: state.scanArch || null }))
-    : state.scanSources.map((source) => ({
+  const sources = state.scanSources.length
+    ? state.scanSources.map((source) => ({
       name: source.name,
-      reference: source.url || source.name,
-      arch: source.arch || state.scanArch || null,
-    }));
+      reference: source.asset?.id || source.url || source.name,
+      arch: state.scanArch || source.arch || null,
+      asset: source.asset || null,
+    }))
+    : state.files.map((file) => ({ name: file.name, reference: file.name, arch: state.scanArch || null, asset: null }));
   if (!sources.length) return [];
   return sources.map((source) => ({
-    asset: {
-      id: `ui-${source.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
-      format: "stl",
-      provenance: "patient-derived",
-      units: state.scanUnits,
-      vertex_count: 0,
-      face_count: 0,
-      reference: source.reference,
-    },
+    asset: source.asset ? { ...source.asset, units: state.scanUnits } : fallbackScanAsset(source),
     arch: source.arch,
     source: "intraoral-scan",
   }));
+}
+
+function fallbackScanAsset(source) {
+  return {
+    id: `ui-${source.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
+    format: "stl",
+    provenance: "patient-derived",
+    units: state.scanUnits,
+    vertex_count: 0,
+    face_count: 0,
+    reference: source.reference,
+  };
 }
 
 function deltaPayload(row) {

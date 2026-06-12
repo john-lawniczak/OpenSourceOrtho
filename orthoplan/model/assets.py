@@ -19,7 +19,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from orthoplan.model.dicom import DicomMetadata
+
 ArchName = Literal["maxillary", "mandibular"]
+CaseRecordKind = Literal["cbct", "dicom", "photo", "radiograph", "note", "document"]
 
 
 class MeshUnits(StrEnum):
@@ -115,6 +118,47 @@ class UploadedScan(BaseModel):
     @property
     def units_confirmed(self) -> bool:
         return self.asset.units_confirmed
+
+
+class CaseRecord(BaseModel):
+    """Local-only case context record.
+
+    Binary payloads (DICOM volumes, photos, radiographs, documents) live in the
+    local case/record workspace. Plan JSON carries only this redacted metadata and
+    a local reference id/path; it never embeds those bytes.
+    """
+
+    id: str
+    kind: CaseRecordKind
+    modality: str | None = None
+    filename: str | None = None
+    content_type: str | None = None
+    size_bytes: int | None = Field(default=None, ge=0)
+    sha256: str | None = None
+    local_reference: str | None = None
+    note_text: str | None = Field(default=None, max_length=2000)
+    provenance: str = "patient-derived"
+    # Structural CBCT/DICOM metadata (no PHI, no pixel bytes). Populated only for
+    # cbct/dicom records when the optional ``dicom`` extra parses the study.
+    dicom: DicomMetadata | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @field_validator("filename")
+    @classmethod
+    def filename_is_basename(cls, value: str | None) -> str | None:
+        return redact_reference(value) if value else None
+
+    @field_validator("local_reference")
+    @classmethod
+    def local_reference_is_relative_and_redacted(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.replace("\\", "/")
+        if os.path.isabs(value) or normalized.startswith("/") or ":" in value:
+            raise ValueError("case record reference must be relative and contain no absolute path")
+        if ".." in normalized.split("/"):
+            raise ValueError("case record reference must not traverse parent directories")
+        return value
 
 
 def bounding_box_sanity(asset: MeshAsset) -> str | None:

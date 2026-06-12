@@ -32,6 +32,7 @@ def _summary(version: PlanVersion) -> dict[str, Any]:
         "created_at": version.created_at.isoformat(),
         "engine_version": version.engine_version,
         "note": version.note,
+        "provenance": version.provenance.model_dump(mode="json") if version.provenance else None,
     }
 
 
@@ -71,6 +72,7 @@ def list_cases_payload(*, store_path: str | Path) -> dict[str, Any]:
                 "title": case.title,
                 "version_count": len(case.versions),
                 "created_at": case.created_at.isoformat(),
+                "latest": _summary(case.versions[-1]) if case.versions else None,
             }
             for case in store.cases.values()
         ],

@@ -10,6 +10,9 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from orthoplan.validation import measurement_cases as cases
+from orthoplan.validation import occlusion_cases as occ_cases
+from orthoplan.validation import segmentation_cases as seg_cases
+from orthoplan.validation import segmentation_compactness_case as seg_compactness
 from orthoplan.validation.measurement_models import MeasurementTruthResult
 
 CaseFn = Callable[[], MeasurementTruthResult]
@@ -25,6 +28,13 @@ def measurement_truth_cases() -> dict[str, CaseFn]:
         "rotation-gating": cases.rotation_gating,
         "movement-cap-resultant": cases.movement_cap_resultant,
         "segmentation-linkage": cases.segmentation_linkage,
+        "segmentation-full-arch-accuracy": seg_cases.segmentation_full_arch_accuracy,
+        "segmentation-realistic-arch-accuracy": seg_cases.segmentation_realistic_arch_accuracy,
+        "segmentation-missing-tooth": seg_cases.segmentation_missing_tooth,
+        "segmentation-open-gap": seg_cases.segmentation_open_gap,
+        "segmentation-missing-tooth-marked": seg_cases.segmentation_missing_tooth_marked,
+        "segmentation-crown-compactness": seg_compactness.segmentation_crown_compactness,
+        "occlusion-registration-accuracy": occ_cases.occlusion_registration_accuracy,
         "report-reproducibility": cases.report_reproducibility,
     }
 

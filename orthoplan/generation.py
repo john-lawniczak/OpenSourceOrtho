@@ -40,7 +40,9 @@ GENERATION_CAVEAT = (
     "Plan generation is deterministic and, when targets are unavailable, educational. "
     "A CONSISTENT verdict means the staging is internally consistent with the configured "
     "caps and controls - NOT that it is safe, approved, clinically appropriate, or "
-    "complete. It does not diagnose or replace a licensed dental professional."
+    "complete. It is not a complete treatment plan, does not diagnose, does not "
+    "authorize physical use, and does not replace a licensed dental professional. "
+    "Any physical use is the user's own responsibility and risk."
 )
 
 

@@ -11,6 +11,7 @@ from orthoplan.ai_chat import (
     connector_catalog,
     scope_for,
 )
+from orthoplan.ai_chat_stream import chat_stream_events, format_sse_event
 from orthoplan.evaluation.providers.base import ModelRequest, ModelResponse
 from orthoplan.evaluation.providers.openai_provider import OpenAIProvider
 from orthoplan.model.plan import Stage, ToothDelta, ToothId, TreatmentPlan
@@ -41,7 +42,11 @@ def test_connector_catalog_models_external_connectors_as_disabled_by_default() -
     assert connectors["local"].enabled is True
     assert connectors["openai"].enabled is False
     assert connectors["openai"].shares_patient_data is True
+    assert connectors["openai"].requires_api_key is True
+    assert connectors["openai"].supports_streaming is True
+    assert "gpt-5.5" in connectors["openai"].models
     assert connectors["mcp"].endpoint == "user supplied"
+    assert connectors["mcp"].allow_custom_model is True
 
 
 def test_summary_context_excludes_full_plan_snapshot() -> None:
@@ -68,6 +73,10 @@ def test_local_chat_returns_auditable_session() -> None:
             "provider": "local",
             "model": "local-test-model",
             "context_scope": "summary",
+            "ui_context": {
+                "label": "Guided step 4: Review",
+                "purpose": "summarize the tray count and projected duration",
+            },
         }
     )
 
@@ -77,7 +86,71 @@ def test_local_chat_returns_auditable_session() -> None:
     assert result["session"]["context_scope"]["name"] == "summary"
     assert result["session"]["messages"][0]["role"] == "user"
     assert result["session"]["messages"][1]["role"] == "assistant"
+    assert "Guided step 4: Review" in result["session"]["messages"][1]["content"]
+    assert result["context"]["ui_context"]["label"] == "Guided step 4: Review"
     assert result["context"]["plan_hash"] == result["session"]["plan_hash"]
+
+
+def test_local_chat_threads_bounded_history() -> None:
+    result = answer_chat_payload(
+        {
+            "plan": _plan().model_dump(mode="json"),
+            "message": "What should I compare next?",
+            "history": [
+                {"role": "user", "content": "What is the first data gap?"},
+                {"role": "assistant", "content": "The first gap is periodontal status."},
+            ],
+            "provider": "local",
+            "context_scope": "summary",
+        }
+    )
+
+    assert result["ok"] is True
+    roles = [message["role"] for message in result["session"]["messages"]]
+    assert roles == ["user", "assistant", "user", "assistant"]
+    assert "What is the first data gap?" in result["session"]["messages"][-1]["content"]
+
+
+def test_chat_stream_events_emit_deltas_and_done() -> None:
+    events = list(
+        chat_stream_events(
+            {
+                "plan": _plan().model_dump(mode="json"),
+                "message": "What are the limitations?",
+                "provider": "local",
+                "context_scope": "summary",
+            }
+        )
+    )
+
+    assert [event["event"] for event in events][0] == "meta"
+    assert any(event["event"] == "delta" and event["data"]["text"] for event in events)
+    assert events[-1]["event"] == "done"
+    assert events[-1]["data"]["session"]["messages"][-1]["role"] == "assistant"
+
+
+def test_chat_stream_errors_are_sse_serializable() -> None:
+    events = list(
+        chat_stream_events(
+            {
+                "plan": _plan().model_dump(mode="json"),
+                "message": "Ask an external model",
+                "provider": "openai",
+                "context_scope": "summary",
+                "api_key": "sk-secret-test-key",
+            }
+        )
+    )
+    wire = format_sse_event(events[0]["event"], events[0]["data"])
+
+    assert events == [
+        {
+            "event": "error",
+            "data": {"errors": [events[0]["data"]["errors"][0]]},
+        }
+    ]
+    assert b"event: error" in wire
+    assert b"sk-secret-test-key" not in wire
 
 
 def test_external_connector_requires_share_acknowledgement() -> None:
@@ -131,6 +204,7 @@ def test_external_connector_calls_live_provider_and_hides_key(monkeypatch) -> No
     assert result["session"]["messages"][1]["content"] == "Educational external answer."
     # The boundary system prompt reaches the provider.
     assert "licensed dental professional" in fake.seen.system
+    assert "Prior conversation" in fake.seen.prompt
     # The API key must never appear anywhere in the serialized response.
     assert "sk-secret-test-key" not in json.dumps(result)
 

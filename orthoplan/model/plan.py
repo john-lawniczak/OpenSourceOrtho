@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from orthoplan.model.assets import MeshAsset, MeshProvenance, UploadedScan
+from orthoplan.model.assets import CaseRecord, MeshAsset, MeshProvenance, UploadedScan
 from orthoplan.model.clinical import (
     Attachment,
     FixedTooth,
@@ -13,9 +13,13 @@ from orthoplan.model.clinical import (
     MovementExclusion,
     PlannedSpacing,
 )
-from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame
+from orthoplan.model.anatomy import DerivedAnatomy
+from orthoplan.model.geometry import SCAN_FRAME, CoordinateFrame, ToothLocalFrame, Vec3
 from orthoplan.model.identity import Arch, NumberingSystem, ToothId
+from orthoplan.model.registration import RegistrationTransform
 from orthoplan.model.settings import TreatmentSettings
+
+CBCT_RECORD_KINDS = ("cbct", "dicom")
 
 
 class ToothDelta(BaseModel):
@@ -107,7 +111,19 @@ class SegmentedToothMesh(BaseModel):
     mesh_asset_id: str
     source: MeshProvenance = MeshProvenance.MANUAL
     local_frame: ToothLocalFrame | None = None
+    surface_sample_points: list[Vec3] = Field(default_factory=list, max_length=64)
+    # A link is ``reviewed`` once a human has accepted/corrected the proposed
+    # segmentation. Real per-tooth vertices are exported ONLY for reviewed links;
+    # auto-draft links (reviewed=False) fall back to a labeled schematic proxy.
+    reviewed: bool = False
     notes: str | None = None
+
+    @field_validator("surface_sample_points")
+    @classmethod
+    def cap_surface_samples(cls, points: list[Vec3]) -> list[Vec3]:
+        if len(points) > 64:
+            raise ValueError("surface_sample_points is capped at 64 points per tooth")
+        return points
 
 
 class TreatmentPlan(BaseModel):
@@ -118,8 +134,11 @@ class TreatmentPlan(BaseModel):
     data: DataAvailability = Field(default_factory=DataAvailability)
     settings: TreatmentSettings = Field(default_factory=TreatmentSettings)
     scans: list[UploadedScan] = Field(default_factory=list)
+    case_records: list[CaseRecord] = Field(default_factory=list)
     mesh_assets: list[MeshAsset] = Field(default_factory=list)
     tooth_meshes: list[SegmentedToothMesh] = Field(default_factory=list)
+    registrations: list[RegistrationTransform] = Field(default_factory=list)
+    derived_anatomy: DerivedAnatomy | None = None
     fixed_teeth: list[FixedTooth] = Field(default_factory=list)
     movement_exclusions: list[MovementExclusion] = Field(default_factory=list)
     attachments: list[Attachment] = Field(default_factory=list)
@@ -160,6 +179,13 @@ class TreatmentPlan(BaseModel):
             raise ValueError("duplicate mesh asset id across scans/mesh_assets")
         asset_ids = set(all_asset_ids)
 
+        record_ids = [record.id for record in self.case_records]
+        if len(record_ids) != len(set(record_ids)):
+            raise ValueError("duplicate case record id")
+
+        self._validate_registrations(asset_ids)
+        self._validate_derived_anatomy(asset_ids)
+
         # Build the canonical tooth -> mesh map while rejecting duplicate links.
         tooth_to_mesh: dict[str, str] = {}
         for link in self.tooth_meshes:
@@ -192,3 +218,56 @@ class TreatmentPlan(BaseModel):
                         f"{delta.mesh_asset_id!r} for tooth {delta.tooth.value}"
                     )
         return self
+
+    def _validate_registrations(self, asset_ids: set[str]) -> None:
+        """Registration transforms must reference a real mesh asset and CBCT record.
+
+        Keeps an accepted registration from ever pointing at geometry or a volume
+        that is not in the plan.
+        """
+
+        cbct_record_ids = {
+            record.id for record in self.case_records if record.kind in CBCT_RECORD_KINDS
+        }
+        seen_reg_ids: set[str] = set()
+        for reg in self.registrations:
+            if reg.id in seen_reg_ids:
+                raise ValueError(f"duplicate registration id: {reg.id}")
+            seen_reg_ids.add(reg.id)
+            if reg.source_stl_asset_id not in asset_ids:
+                raise ValueError(
+                    f"registration references unknown source mesh asset {reg.source_stl_asset_id!r}"
+                )
+            if reg.target_cbct_record_id not in cbct_record_ids:
+                raise ValueError(
+                    "registration references unknown CBCT/DICOM record "
+                    f"{reg.target_cbct_record_id!r}"
+                )
+
+    def _validate_derived_anatomy(self, asset_ids: set[str]) -> None:
+        """Every derived-anatomy object must trace to a real CBCT record and registration.
+
+        Provenance integrity is what makes 'reviewed' meaningful - a trusted root
+        or axis can never reference a volume, registration, or mesh not in the plan.
+        """
+
+        if self.derived_anatomy is None:
+            return
+        cbct_record_ids = {
+            record.id for record in self.case_records if record.kind in CBCT_RECORD_KINDS
+        }
+        registration_ids = {reg.id for reg in self.registrations}
+        for obj in self.derived_anatomy.all_objects():
+            if obj.source_cbct_record_id not in cbct_record_ids:
+                raise ValueError(
+                    f"derived anatomy references unknown CBCT record {obj.source_cbct_record_id!r}"
+                )
+            if obj.registration_id not in registration_ids:
+                raise ValueError(
+                    f"derived anatomy references unknown registration {obj.registration_id!r}"
+                )
+            mesh_id = getattr(obj, "mesh_asset_id", None)
+            if mesh_id is not None and mesh_id not in asset_ids:
+                raise ValueError(
+                    f"derived anatomy references unknown mesh asset {mesh_id!r}"
+                )

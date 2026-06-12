@@ -1,8 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { applySegmentation, isValidFdi, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
+import { applySegmentation, isValidFdi, parseMissingTeeth, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { state } from "./state.js";
+
+test("parseMissingTeeth keeps valid FDI, drops junk, de-duplicates", () => {
+  assert.deepEqual(parseMissingTeeth("15, 38"), ["15", "38"]);
+  assert.deepEqual(parseMissingTeeth("15 15  15"), ["15"]);
+  assert.deepEqual(parseMissingTeeth(" 15 , bad, 9, 21 "), ["15", "21"]);
+  assert.deepEqual(parseMissingTeeth(""), []);
+  assert.deepEqual(parseMissingTeeth(null), []);
+});
 
 function seedProposal() {
   state.segmentation.proposal = {
@@ -65,6 +73,15 @@ test("applySegmentation skips an invalid FDI correction instead of breaking the 
   assert.ok(!ids.includes("a3"));
   assert.equal(state.segmentation.applied.tooth_meshes.length, 2);
   assert.match(state.segmentation.status, /invalid FDI/i);
+});
+
+test("applySegmentation skips duplicate FDI corrections", () => {
+  seedProposal();
+  setSegmentToothEdit("a2", "11");
+  applySegmentation();
+  const values = state.segmentation.applied.tooth_meshes.map((m) => m.tooth.value);
+  assert.deepEqual(values, ["11", "13"]);
+  assert.match(state.segmentation.status, /duplicate tooth number/i);
 });
 
 test("applySegmentation yields no fragment when nothing valid is selected", () => {

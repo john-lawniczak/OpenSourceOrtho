@@ -1,6 +1,6 @@
 # UI and Visualization Design
 
-Visual representation is a primary product requirement for OpenSource Ortho. The interface must help users understand proposed tooth movement accurately without implying approval.
+Visual representation is a primary product requirement for OpenSource Ortho. The interface must help users understand proposed tooth movement accurately without implying approval, complete treatment planning, appliance safety, or authorization for physical use.
 
 ## Visualization Contract
 
@@ -13,6 +13,8 @@ The UI must show what the system actually knows:
 - expose units for translations and rotations
 - show data gaps near the affected visualization, especially missing roots, CBCT, occlusion, periodontal status, and treatment notes
 - avoid colors or badges that imply safe, approved, cleared, or acceptable
+- keep own-risk physical-use language visible anywhere printable files,
+  manufacturing packages, or aligner workflows are shown
 
 ## Core Views
 
@@ -23,15 +25,26 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
 - **Guided wizard** (the default, primary surface) for non-technical users: a
   step-by-step flow with a progress rail of six chips - **Upload → Teeth & time →
   Details → Review → 3D preview → Print / send**. One step is visible at a time
-  with Back/Next. It acknowledges limits in plain language, lets the user choose
-  which teeth move (excluded teeth become fixed) and the tray-wear duration,
-  animates the plan in 3D, and exports printable files. The heavy singletons (3D
-  viewer, AI box, upload control) are single instances relocated into the active
-  step, so there is never a second WebGL context.
+	  with Back/Next. It acknowledges limits in plain language, lets the user choose
+	  which teeth move (excluded teeth become fixed) and the tray-wear duration,
+	  animates the plan in 3D, and exports printable files. The heavy singletons (3D
+	  viewer, AI box, upload control) are single instances relocated into the active
+	  step, so there is never a second WebGL context. It must never imply printable
+	  output is safe, validated, or ready for treatment.
 - **Technician review** for professional users: staged movement authoring, records,
   clinical controls, mesh rendering, rule findings, optimized staging, print
   metadata, plan JSON, and the experimental on-device auto-segmentation panel
-  (reviewable per-tooth proposal, never auto-applied).
+  (reviewable per-tooth proposal, never auto-applied). Each proposed tooth shows a
+  tier-coloured confidence (low/mid/high); when an arch has fewer regions than a
+  full arch a banner explains the ambiguity - a tooth may be absent OR two crowns
+  may have merged into one region (common on the flat upper occlusal plane). If a
+  tooth is missing the reviewer marks it and uses **Re-anchor labels** to line the
+  FDI numbers up around the gap; once a gap is marked the banner becomes
+  confirmatory rather than re-prompting. The review draft
+  (proposal, per-tooth corrections, marked missing teeth, applied fragment) is
+  persisted in the browser keyed by plan id, so it survives a reload; restoring a
+  saved plan version also brings back its applied per-tooth meshes. This working
+  state lives in the browser, not the `TreatmentPlan` model.
 - **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
   (same chips/panels), pre-loaded with the two bundled test-case STL scans and a
   Balanced 10-day pace, starting at step 1. Entering it snapshots the user's
@@ -39,13 +52,37 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   Guided/Technician toggle stays visible inside it, and the sidebar Sample button
   doubles as "Exit Sample Test Case", so the demo can never leak into or be left
   in the user's own editors.
+- **Manual target authoring**: in the 3D preview the user clicks a tooth to
+  select it, then nudges its final IN-PLANE position (mesiodistal `x` and
+  front-back `y`) in 0.2 mm steps. The authored target is written into the plan
+  as a normal `source:"manual"` stage delta, so the engine still computes all
+  movement and **Generate Plan** re-stages the target into cap-respecting stages
+  (its existing "authored" path) - the aligner count follows from the standard
+  timeline projection. The tool deliberately authors crown translation only: no
+  rotation (the scan-local frame is `rotation_renderable=false`) and no vertical
+  `z` movement (unreliable to judge from a front view). Editing is gated on
+  confirmed scan units (`mm`); millimetre nudges against unverified scale are
+  blocked with an explanation. Picking resolves the tooth from the rendered
+  proxy/crown (each tagged with its FDI value); when a scan is segmented the real
+  per-tooth render mesh is the pick target, so the segmentation API is the
+  upstream provider of selectable crowns rather than something this tool modifies.
+  Selectable proxies exist in the **planned / overlay** views, so author targets
+  there. Copy keeps it a geometric target, never a treatment goal or approval.
+- **Reference panels** reachable from the sidebar in BOTH guided and technician
+  mode, each its own tab: **Tooth Map** (FDI numbering + quadrant map), **Glossary**
+  (plain-language key terms with search), and **Imaging & Photos Guide** (which
+  records help, what each adds, and rough US cost, with a relative-value table).
+  They are not workflow steps - opening one surfaces it over the guided wizard and
+  a **Back** button returns to the prior step, so the sidebar links are never dead
+  ends in guided mode.
 - **Plan AI review** for both workflows: scoped chat over the current plan,
-  findings, data gaps, and timeline. The provider selector and a session-only
-  API-key field are surfaced directly (with provider-specific, plain-language
-  help; the key field is hidden for the no-key local helper) so enabling a real
-  model is discoverable. It must label the connector and context scope, keep raw
+  findings, data gaps, and timeline. A single model dropdown (each option carries
+  its provider) and a session-only API-key field are surfaced directly (with
+  provider-specific, plain-language help; the key field is hidden for the no-key
+  local helper) so enabling a real model is discoverable. The assistant always uses
+  the full plan context (no scope selector). It must label the connector, keep raw
   API keys out of persisted plan data, and never present AI text as diagnosis or
-  approval.
+  approval, a complete treatment plan, or authorization for physical use.
 
 The first production-grade clinician UI should include:
 

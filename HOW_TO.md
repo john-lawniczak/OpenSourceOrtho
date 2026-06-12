@@ -1,8 +1,12 @@
 # How To Use OpenSource Ortho
 
-OpenSource Ortho is a research/developer toolkit for staged tooth-movement planning,
-measurement checks, visualization, acquisition advice, and handoff reports. It is not a
-medical device and does not approve treatment.
+OpenSource Ortho is a clear-aligner planning safety playground and research/developer
+toolkit for staged geometry, measurement checks, visualization, acquisition advice,
+and handoff reports. It is not a medical device, not complete treatment-planning
+software, and not a substitute for a licensed dental professional. It does not
+diagnose, prescribe, approve treatment, authorize physical use, or make any
+generated appliance safe. Any use, manufacturing, or physical application of outputs
+is entirely at the user's own responsibility and risk.
 
 New to dental terms (IPR, tip, torque, FDI numbering)? See the
 [Glossary and tooth-numbering diagram](docs/GLOSSARY.md), also reachable in the
@@ -34,7 +38,8 @@ the top bar):
   **Upload → Teeth & time → Details → Review → 3D preview → Print / send** -
   with Back/Next and a progress rail. Choose which teeth move and how long each
   tray is worn, build the plan, watch it animate in 3D, ask the AI about it, and
-  export printable files.
+  export printable files. These outputs are for review only and do not authorize
+  treatment or physical use.
 - **Technician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
 
@@ -73,9 +78,10 @@ tooth, which helps when choosing which teeth to move.
 A whole-arch STL is one shell, not per-tooth meshes, so real per-tooth planning
 needs segmentation. In the **Technician** Review side panel, **Auto-Segmentation
 (experimental)** proposes per-tooth regions from a loaded server-local scan (the
-Sample Test Case / example scans) via `POST /api/segment`. It runs on this machine
-(scans are PHI; nothing is sent off-device). The result is a **draft**: review the
-per-tooth confidence, correct each FDI number, include/exclude teeth, then
+Sample Test Case / example scans) via `POST /api/segment`. It uses local hybrid
+geometry cues: arch position, crown-height valleys, curvature, and face-normal
+changes. It runs on this machine (scans are PHI; nothing is sent off-device).
+The result is a **draft**: review the per-tooth confidence, correct each FDI number, include/exclude teeth, then
 **Apply accepted segmentation to plan** - nothing is auto-applied. It is not a
 diagnosis and does not indicate whether treatment is needed or possible.
 
@@ -183,15 +189,18 @@ For physical workflows:
 - Remove supports, clean, cure, and smooth printed dental models according to material and
   printer instructions before thermoforming.
 - Clear aligners are commonly thermoformed from selected aligner sheet materials
-  such as PETG, TPU/polyurethane blends, EVA-family sheets, or other approved orthodontic
-  thermoforming materials. Material choice and process validation matter.
+  such as PETG, TPU/polyurethane blends, EVA-family sheets, or other clinician-selected
+  orthodontic thermoforming materials. Material choice and process validation matter.
 - Do not assume ordinary hobby resin, general-purpose plastic, or an unvalidated sheet is
   safe for intraoral use.
 - Do not trim, heat, polish, or otherwise alter aligner plastic unless the material
   instructions and chosen process allow it.
 
-Any physical use is at the user's own risk and depends on validated materials, confirmed
-scale, cleaning procedures, and applicable regulatory compliance.
+Any printing, thermoforming, wearing, or other physical use is at the user's own
+responsibility and risk and depends on validated materials, confirmed scale,
+cleaning procedures, professional supervision, and applicable regulatory compliance.
+The software provides no warranty that a generated model, aligner, or package is
+safe, effective, legal, fit for use, or suitable for any person.
 
 ## 6. Helpful Commands
 
@@ -215,9 +224,11 @@ pytest
 
 - It does not diagnose.
 - It does not decide a plan is safe, approved, or acceptable.
+- It does not produce or claim to produce a complete treatment plan.
 - It does not infer roots, bone, periodontal status, occlusion, or treatment goals when those
   data are missing.
 - It exports stage proxy STL files from the supplied plan data, not a guarantee of fit or use.
 - It does not certify any manufactured aligner as safe or suitable.
+- It does not authorize printing, wearing, or physically applying any output.
 - It does not let AI chat diagnose, approve treatment, or replace a licensed
   dental professional.

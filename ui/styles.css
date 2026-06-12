@@ -91,7 +91,11 @@ button:disabled {
 .app-shell {
   min-height: calc(100vh - 60px);
   display: grid;
-  grid-template-columns: 304px minmax(0, 1fr);
+  grid-template-columns: 304px minmax(0, 1fr) 360px;
+}
+
+body[data-chat-collapsed="1"] .app-shell {
+  grid-template-columns: 304px minmax(0, 1fr) 84px;
 }
 
 .sidebar {
@@ -313,6 +317,21 @@ body[data-mode="simple"] .journey-nav {
   display: none;
 }
 
+/* Reference panels (Key Terms / Tooth Map, Imaging & Photos guide) are opened
+   from the sidebar in guided mode too. When one is the active step, surface it
+   over the wizard so the sidebar links are not dead ends. The ID selectors beat
+   the `body[data-mode="simple"] .panel { display: none }` rule above. */
+body[data-mode="simple"][data-step="toothmap"] #guided,
+body[data-mode="simple"][data-step="glossary"] #guided,
+body[data-mode="simple"][data-step="photos"] #guided {
+  display: none;
+}
+body[data-mode="simple"][data-step="toothmap"] #panel-toothmap,
+body[data-mode="simple"][data-step="glossary"] #panel-glossary,
+body[data-mode="simple"][data-step="photos"] #panel-photos {
+  display: block;
+}
+
 body[data-mode="advanced"] #guided {
   display: none;
 }
@@ -351,6 +370,22 @@ body[data-theme="dark"] .sample-banner {
   background: var(--panel-alt);
   border: 1px solid var(--line);
   padding: 8px 12px;
+  font-size: 13px;
+}
+
+.guided-action-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.guided-action-strip span {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 10px;
   font-size: 13px;
 }
 
@@ -501,11 +536,176 @@ body[data-theme="dark"] .sample-banner {
   font-size: 13px;
 }
 
+.case-handoff-qr {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-top: 10px;
+  max-width: 280px;
+}
+
+.case-handoff-qr:empty {
+  display: none;
+}
+
+.case-handoff-qr svg {
+  width: min(220px, 100%);
+  height: auto;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.case-handoff-qr .guided-hint {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
 .guided-teeth {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 8px;
   margin: 8px 0 20px;
+}
+
+/* The single 3D viewer is relocated into these hosts for the guided "teeth" and
+   "details" steps. There it is a focused selection / movement-scale aid, so the
+   full technician toolbar, manual-target panel, and caveats are hidden - leaving
+   the canvas and its zoom controls. */
+.guided-viewer-host {
+  margin: 8px 0 12px;
+}
+
+.guided-viewer-host:empty {
+  display: none;
+}
+
+.guided-viewer-host .viewer-toolbar,
+.guided-viewer-host .manual-edit,
+.guided-viewer-host .viewer-caveat {
+  display: none;
+}
+
+/* Prominent "how the 3D view works" card near the top of the Teeth step, so the
+   click-to-hold behaviour is explained before the user reaches the viewer. */
+.viewer-legend-card {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--accent);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--panel-alt);
+}
+
+.viewer-legend-card h4 {
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+
+.viewer-legend-card p {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 13.5px;
+}
+
+.viewer-legend-card .viewer-legend {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+/* Key for the 3D markers (matches the viewer colours: teal dot = a tooth,
+   blue-grey = held still, blue arrow = planned movement). */
+.viewer-legend {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-alt);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.viewer-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.legend-swatch {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.legend-swatch.dot-move {
+  border-radius: 50%;
+  background: #0f766e;
+}
+
+/* Bite-proximity overlay legend: matches the viewer's clearance bands. */
+.proximity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted, #4b5563);
+}
+
+.proximity-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.proximity-legend em {
+  flex-basis: 100%;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted, #6b7280);
+}
+
+.legend-swatch.prox-contact {
+  border-radius: 3px;
+  background: #dc2626;
+}
+
+.legend-swatch.prox-near {
+  border-radius: 3px;
+  background: #f59e0b;
+}
+
+.legend-swatch.prox-clear {
+  border-radius: 3px;
+  background: #16a34a;
+}
+
+.legend-swatch.dot-hold {
+  border-radius: 50%;
+  background: #9fb2bd;
+}
+
+.legend-swatch.arrow {
+  position: relative;
+  height: 2px;
+  background: #2563eb;
+}
+
+.legend-swatch.arrow::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 7px solid #2563eb;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
 }
 
 .guided-tooth {
@@ -560,6 +760,147 @@ body[data-theme="dark"] .sample-banner {
   margin: 0 8px 4px 0;
 }
 
+.guided-help {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-help summary {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.guided-help p {
+  margin-top: 8px;
+  max-width: 62ch;
+  font-size: 13px;
+}
+
+.guided-edit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+}
+
+.guided-edit-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.guided-edit-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.guided-edit-top h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.guided-edit-top button,
+.guided-edit-actions button,
+.guided-compare button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.guided-edit-status {
+  border-left: 4px solid var(--accent);
+  background: var(--field);
+  color: var(--ink);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.guided-edit-status[data-tier="caution"] {
+  border-left-color: var(--warn);
+}
+
+.guided-edit-status[data-tier="limit"] {
+  border-left-color: #dc2626;
+}
+
+.guided-edit-status[data-tier="muted"] {
+  border-left-color: var(--line);
+  color: var(--muted);
+}
+
+.guided-nudge-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: repeat(3, 44px);
+  justify-content: center;
+  gap: 6px;
+}
+
+.guided-nudge-pad button {
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.guided-nudge-pad button:nth-child(1) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.guided-nudge-pad button:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.guided-nudge-pad button:nth-child(3) {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.guided-nudge-pad button:nth-child(4) {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.guided-edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.guided-edit-readout {
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-compare {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(74px, 1fr));
+  gap: 6px;
+  margin: 6px 0 14px;
+  max-width: 360px;
+}
+
+.guided-compare button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
 /* Plain-language definition callout (e.g. "what is a stage?"). */
 .guided-define {
   border-left: 3px solid var(--accent);
@@ -594,6 +935,115 @@ body[data-theme="dark"] .sample-banner {
 .guided-headline-sub {
   font-size: 13px;
   color: var(--muted);
+}
+
+.guided-dashboard {
+  display: grid;
+  gap: 12px;
+  margin: 10px 0 16px;
+}
+
+.guided-dashboard-hero {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--line);
+  background: var(--panel-alt);
+  padding: 14px 16px;
+  border-radius: 8px;
+}
+
+.guided-dashboard-hero[data-status="ready"] {
+  border-left-color: #16a34a;
+}
+
+.guided-dashboard-hero[data-status="needs-review"] {
+  border-left-color: var(--warn);
+}
+
+.guided-dashboard-hero[data-status="cannot-assess"] {
+  border-left-color: #64748b;
+}
+
+.guided-dashboard-hero strong {
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.guided-dashboard-hero span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.guided-dashboard-card {
+  min-height: 132px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--line);
+  background: var(--field);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.guided-dashboard-card[data-status="ready"] {
+  border-top-color: #16a34a;
+}
+
+.guided-dashboard-card[data-status="needs-review"] {
+  border-top-color: var(--warn);
+}
+
+.guided-dashboard-card[data-status="cannot-assess"] {
+  border-top-color: #64748b;
+}
+
+.guided-dashboard-card > span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  margin-bottom: 6px;
+}
+
+.guided-dashboard-card strong {
+  display: block;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.guided-dashboard-card ul {
+  margin: 8px 0 0;
+  display: grid;
+  gap: 4px;
+}
+
+.guided-dashboard-card li {
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.guided-overlay-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guided-overlay-chips span {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
 }
 
 /* Step 4 plain-language summary + timeline bullets. */
@@ -680,7 +1130,66 @@ body[data-theme="dark"] .sample-banner {
   padding-top: 18px;
 }
 
+.review-tier-panel {
+  border-top: 1px solid #344951;
+  padding-top: 18px;
+}
+
+.review-tier-banner {
+  border-left: 4px solid #5a7d8c;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(90, 125, 140, 0.12);
+}
+
+.review-tier-banner[data-tier="cbct-attached"] {
+  border-left-color: #c79a3a;
+  background: rgba(199, 154, 58, 0.12);
+}
+
+.review-tier-banner[data-tier="root-bone-aware"] {
+  border-left-color: #4f9d6f;
+  background: rgba(79, 157, 111, 0.12);
+}
+
+.review-tier-label {
+  margin: 0 0 4px;
+}
+
+.review-tier-summary {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.review-tier-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.anatomy-row {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.anatomy-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.anatomy-actions button {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.anatomy-row[data-status="rejected"] {
+  opacity: 0.55;
+}
+
 .data-gap-panel h2,
+.review-tier-panel h2,
 .review-side h2 {
   font-size: 14px;
   margin-bottom: 10px;
@@ -707,6 +1216,63 @@ li {
 .workspace {
   min-width: 0;
   padding: 24px;
+}
+
+.ai-rail {
+  min-width: 0;
+  padding: 24px 18px 24px 0;
+  background: var(--bg);
+}
+
+.ai-rail .ai-chat {
+  position: sticky;
+  top: 84px;
+  max-height: calc(100vh - 108px);
+  overflow: auto;
+  margin-top: 0;
+  /* The panel slides as a pop-out drawer when collapsed (see below). */
+  transition: transform 0.28s ease, opacity 0.2s ease;
+}
+
+/* Collapsed: the chat slides off the right edge and gives its column width back
+   to the workspace, instead of squashing into a vertical bar. A fixed tab is the
+   only handle left, and clicking it slides the panel back in. */
+body[data-chat-collapsed="1"] .app-shell {
+  grid-template-columns: 304px minmax(0, 1fr) 0;
+}
+
+body[data-chat-collapsed="1"] .ai-rail {
+  padding: 0;
+  overflow: visible;
+}
+
+body[data-chat-collapsed="1"] .ai-chat {
+  transform: translateX(110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-reopen-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 30;
+  writing-mode: vertical-rl;
+  padding: 16px 8px;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.14);
+}
+
+.chat-reopen-tab[hidden] {
+  display: none;
 }
 
 .topbar {
@@ -797,6 +1363,88 @@ textarea {
   align-items: center;
 }
 
+.info-back {
+  justify-self: start;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.info-back:hover {
+  border-color: var(--accent);
+}
+
+/* Imaging & Photos guide: relative-value comparison table. */
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0 18px;
+  font-size: 14px;
+}
+
+.records-table th,
+.records-table td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.records-table thead th {
+  background: var(--panel-alt, rgba(127, 127, 127, 0.08));
+  font-weight: 600;
+}
+
+.records-table tbody th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.records-score {
+  display: inline-block;
+  min-width: 44px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #08312c;
+}
+
+.records-score[data-tier="high"] {
+  background: #6ee7b7;
+}
+
+.records-score[data-tier="mid"] {
+  background: #fde68a;
+}
+
+.records-score[data-tier="low"] {
+  background: #fca5a5;
+}
+
+@media (max-width: 640px) {
+  .records-table,
+  .records-table thead,
+  .records-table tbody,
+  .records-table tr,
+  .records-table th,
+  .records-table td {
+    display: block;
+  }
+  .records-table thead {
+    display: none;
+  }
+  .records-table tbody th {
+    white-space: normal;
+    border-bottom: none;
+  }
+}
+
 .upload-row {
   display: grid;
   grid-template-columns: minmax(240px, 420px) 1fr;
@@ -841,9 +1489,19 @@ textarea {
   color: var(--ink);
 }
 
+.upload-target.compact-upload {
+  min-height: 112px;
+}
+
 .upload-stack {
   display: grid;
   gap: 10px;
+}
+
+.record-upload-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
 }
 
 .upload-file-list {
@@ -1044,14 +1702,36 @@ body[data-theme="dark"] .sample-status-chip {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 10px;
 }
 
-.ai-chat-heading span {
+.ai-chat-heading span,
+.chat-status {
   color: var(--muted);
   font-size: 12px;
   text-align: right;
+}
+
+.chat-stage-context {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.chat-status {
+  display: block;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.chat-collapse {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  min-height: 30px;
+  padding: 0 10px;
+  cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .chat-controls {
@@ -1081,8 +1761,7 @@ body[data-theme="dark"] .sample-status-chip {
   color: var(--accent-ink);
 }
 
-body[data-generation-detail="basic"] .advanced-generation,
-body[data-ai-detail="basic"] .advanced-ai {
+body[data-generation-detail="basic"] .advanced-generation {
   display: none;
 }
 
@@ -1268,8 +1947,17 @@ td input {
 }
 
 .stage-slider {
+  display: grid;
+  gap: 4px;
   margin-left: auto;
   min-width: 220px;
+}
+
+.stage-phase {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 #archCanvas {
@@ -1310,20 +1998,41 @@ td input {
     grid-template-columns: 1fr;
   }
 
+  body[data-chat-collapsed="1"] .app-shell {
+    grid-template-columns: 1fr;
+  }
+
   .sidebar {
     min-height: auto;
+  }
+
+  .ai-rail {
+    padding: 0 24px 24px;
+  }
+
+  .ai-rail .ai-chat {
+    position: static;
+    max-height: none;
+  }
+
+  body[data-chat-collapsed="1"] .ai-chat-heading h2 {
+    writing-mode: horizontal-tb;
+    transform: none;
   }
 
   .topbar,
   .journey-nav,
   .upload-row,
+  .record-upload-grid,
   .simple-hero,
   .simple-grid,
   .field-grid,
   .field-grid.compact,
   .toggle-grid,
   .review-grid,
-  .metadata-grid {
+  .metadata-grid,
+  .guided-edit-layout,
+  .guided-dashboard-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1498,15 +2207,20 @@ td input {
   background: #ffffff;
 }
 
+.glossary-search {
+  margin-top: 8px;
+}
+
 .glossary-search input {
   width: 100%;
-  min-height: 36px;
-  padding: 6px 10px;
-  margin-bottom: 10px;
-  border: 1px solid var(--line);
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 2px solid var(--accent);
   border-radius: 8px;
   background: var(--field);
   color: var(--ink);
+  font-size: 16px;
+  box-shadow: 0 1px 8px rgba(15, 118, 110, 0.12);
 }
 
 .sr-only {
@@ -1519,6 +2233,25 @@ td input {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.toothmap-systems,
+.starter-steps {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.toothmap-systems li,
+.starter-steps li {
+  line-height: 1.45;
+}
+
+.toothmap-why {
+  margin-top: 10px;
 }
 
 .tooth-map {
@@ -1679,8 +2412,17 @@ td input {
 
 .segment-list {
   display: grid;
-  gap: 6px;
+  gap: 5px;
   margin: 8px 0;
+  /* Keep the (up to 28-row) proposal a self-contained, scrollable box so the
+     "Apply" button below it stays in view instead of forcing the whole panel to
+     scroll to reach the next step. */
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-alt);
 }
 
 .segment-row {
@@ -1690,7 +2432,7 @@ td input {
   gap: 8px;
   border: 1px solid var(--line);
   background: var(--panel);
-  padding: 6px 8px;
+  padding: 4px 8px;
 }
 
 .segment-row input[type="checkbox"] {
@@ -1724,6 +2466,17 @@ td input {
   background: var(--accent);
 }
 
+/* Tier color so low-confidence regions (often a count mismatch) stand out. */
+.segment-conf[data-tier="high"] .segment-conf-bar {
+  background: #10b981;
+}
+.segment-conf[data-tier="mid"] .segment-conf-bar {
+  background: #f59e0b;
+}
+.segment-conf[data-tier="low"] .segment-conf-bar {
+  background: #ef4444;
+}
+
 .segment-conf-num {
   min-width: 34px;
   font-size: 11px;
@@ -1731,7 +2484,102 @@ td input {
   text-align: right;
 }
 
+.segment-conf-num[data-tier="low"] {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.segment-count-note {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  font-size: 13px;
+}
+
+#reanchorSegment {
+  width: 100%;
+  margin-top: 6px;
+}
+
 #applySegment {
   width: 100%;
   margin-top: 6px;
 }
+
+.manual-edit {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.manual-edit h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.manual-edit-selection {
+  margin: 6px 0;
+  font-weight: 600;
+}
+
+.manual-edit-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.manual-edit-controls button {
+  min-width: 46px;
+}
+
+.manual-edit-readout {
+  margin: 6px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Print/manufacturing QA surfacing for the shell export. */
+.print-qa {
+  margin: 10px 0;
+  display: grid;
+  gap: 8px;
+}
+.print-qa-readiness {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+.print-qa-tolerances {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.print-qa-findings {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+}
+.print-qa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.print-qa-table th,
+.print-qa-table td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.qa-ok { color: var(--accent); }
+.qa-issue { color: var(--warn); font-weight: 600; }
+.qa-na { color: var(--muted); }

@@ -13,18 +13,23 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from orthoplan.arch_contract import infer_arch_from_name, normalize_arch_label
 from orthoplan.io.stl_import import read_stl_geometry
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.assets import ArchName, MeshAsset, MeshProvenance
+from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import SegmentedToothMesh, ToothId
+from orthoplan.occlusion.registration import register_bite, registration_to_dict
 from orthoplan.planning.mesh_frame import compute_local_frame
 from orthoplan.segmentation.auto import (
     SEGMENTATION_CAVEAT,
     ProposedTooth,
     build_advisory_findings,
+    build_count_advisories,
     load_local_segmenter,
+    tooth_values_for_arch,
 )
-from orthoplan.segmentation.mesh_export import write_segment_meshes
+from orthoplan.segmentation.mesh_export import surface_sample_points, write_segment_meshes
 
 
 def _resolve_scan_path(
@@ -32,10 +37,12 @@ def _resolve_scan_path(
 ) -> Path | None:
     if not isinstance(reference, str) or not reference.strip():
         return None
-    asset_path = resolve_mesh_path(reference.strip(), workspace=workspace)
+    normalized = reference.strip()
+    asset_id = normalized.removeprefix("/api/mesh/")
+    asset_path = resolve_mesh_path(asset_id, workspace=workspace)
     if asset_path is not None:
         return asset_path
-    relative = reference.strip().lstrip("./").lstrip("/")
+    relative = normalized.lstrip("./").lstrip("/")
     candidate = (ui_dir / relative).resolve()
     if (
         candidate.is_relative_to(ui_dir)
@@ -47,15 +54,7 @@ def _resolve_scan_path(
 
 
 def _scan_arch(scan: dict[str, Any], path: Path) -> ArchName | None:
-    arch = scan.get("arch")
-    if arch in ("maxillary", "mandibular"):
-        return arch  # type: ignore[return-value]
-    name = path.name.lower()
-    if any(token in name for token in ("upper", "maxill", "-u.", "_u.")):
-        return "maxillary"
-    if any(token in name for token in ("lower", "mandib", "-l.", "_l.")):
-        return "mandibular"
-    return None
+    return normalize_arch_label(scan.get("arch")) or infer_arch_from_name(path)
 
 
 def _scan_list(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -66,21 +65,45 @@ def _scan_list(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
+def _missing_teeth(payload: dict[str, Any]) -> list[str]:
+    """FDI numbers the user marked as absent, used to anchor segmentation labels."""
+
+    raw = payload.get("missing_teeth")
+    if not isinstance(raw, list):
+        return []
+    return [str(tooth).strip() for tooth in raw if str(tooth).strip()]
+
+
 def _segment_one_scan(
-    scan: dict[str, Any], segmenter, *, ui_root: Path, workspace: str | Path | None
-) -> tuple[list[ProposedTooth], list[MeshAsset], list[SegmentedToothMesh], str | None]:
-    """Segment a single scan dict. Returns (proposed, assets, links, error)."""
+    scan: dict[str, Any],
+    segmenter,
+    *,
+    ui_root: Path,
+    workspace: str | Path | None,
+    missing_teeth: list[str] | None = None,
+) -> tuple[
+    list[ProposedTooth], list[MeshAsset], list[SegmentedToothMesh], str | None,
+    ArchName | None, list[Vec3],
+]:
+    """Segment a single scan dict. Returns (proposed, assets, links, error, arch, vertices).
+
+    ``arch`` and ``vertices`` are surfaced so the caller can register the bite across
+    a resolved upper/lower pair without re-reading the STLs.
+    """
 
     reference = scan.get("reference") or scan.get("url")
     path = _resolve_scan_path(reference, ui_dir=ui_root, workspace=workspace)
     if path is None:
-        return [], [], [], f"could not resolve scan: {reference!r}"
+        return [], [], [], f"could not resolve scan: {reference!r}", None, []
     arch = _scan_arch(scan, path)
     if arch is None:
-        return [], [], [], f"could not determine arch for scan: {reference!r}"
+        return [], [], [], f"could not determine arch for scan: {reference!r}", None, []
 
     _asset, vertices = read_stl_geometry(path)
-    segments = segmenter.segment(vertices, arch=arch)
+    # User-marked gaps anchor the FDI labels for this arch; None lets the segmenter
+    # detect the tooth count itself.
+    tooth_values = tooth_values_for_arch(arch, missing_teeth)
+    segments = segmenter.segment(vertices, arch=arch, tooth_values=tooth_values)
     proposed: list[ProposedTooth] = []
     assets: list[MeshAsset] = []
     links: list[SegmentedToothMesh] = []
@@ -93,6 +116,7 @@ def _segment_one_scan(
                 mesh_asset_id=mesh_asset.id,
                 source=MeshProvenance.MODEL_GENERATED,
                 local_frame=compute_local_frame(flat),
+                surface_sample_points=surface_sample_points(segment.triangles),
                 notes=f"auto-segment draft (confidence {segment.confidence:.2f})",
             )
         )
@@ -107,7 +131,43 @@ def _segment_one_scan(
                 vertex_count=segment.vertex_count,
             )
         )
-    return proposed, assets, links, None
+    return proposed, assets, links, None, arch, vertices
+
+
+def _collect_segments(
+    scans: list[dict[str, Any]],
+    segmenter,
+    *,
+    ui_root: Path,
+    workspace: str | Path | None,
+    missing_teeth: list[str],
+) -> tuple[
+    list[ProposedTooth], dict[str, MeshAsset], list[SegmentedToothMesh],
+    list[str], dict[ArchName, list[Vec3]], bool,
+]:
+    """Segment every scan, collecting proposals, assets, errors, and per-arch vertices."""
+
+    proposed: list[ProposedTooth] = []
+    assets_by_id: dict[str, MeshAsset] = {}
+    links: list[SegmentedToothMesh] = []
+    errors: list[str] = []
+    arch_vertices: dict[ArchName, list[Vec3]] = {}
+    resolved_any = False
+    for scan in scans:
+        rows, assets, scan_links, error, arch, vertices = _segment_one_scan(
+            scan, segmenter, ui_root=ui_root, workspace=workspace, missing_teeth=missing_teeth
+        )
+        if error:
+            errors.append(error)
+            continue
+        resolved_any = True
+        proposed.extend(rows)
+        links.extend(scan_links)
+        for asset in assets:
+            assets_by_id[asset.id] = asset
+        if arch is not None and vertices:
+            arch_vertices[arch] = vertices
+    return proposed, assets_by_id, links, errors, arch_vertices, resolved_any
 
 
 def segment_payload(
@@ -122,40 +182,35 @@ def segment_payload(
             return {"ok": False, "errors": ["no scan reference provided"]}
 
         segmenter = load_local_segmenter()
-        proposed: list[ProposedTooth] = []
-        assets_by_id: dict[str, MeshAsset] = {}
-        links: list[SegmentedToothMesh] = []
-        errors: list[str] = []
-        resolved_any = False
-        for scan in scans:
-            rows, assets, scan_links, error = _segment_one_scan(
-                scan, segmenter, ui_root=ui_root, workspace=workspace
-            )
-            if error:
-                errors.append(error)
-                continue
-            resolved_any = True
-            proposed.extend(rows)
-            links.extend(scan_links)
-            for asset in assets:
-                assets_by_id[asset.id] = asset
-
+        proposed, assets_by_id, links, errors, arch_vertices, resolved_any = _collect_segments(
+            scans, segmenter, ui_root=ui_root, workspace=workspace,
+            missing_teeth=_missing_teeth(payload),
+        )
         if not resolved_any:
             return {"ok": False, "errors": errors or ["no scan could be segmented"]}
 
         overall = (
             round(sum(p.confidence for p in proposed) / len(proposed), 3) if proposed else 0.0
         )
+        count_by_arch: dict[ArchName, int] = {}
+        for tooth in proposed:
+            count_by_arch[tooth.arch] = count_by_arch.get(tooth.arch, 0) + 1
+        advisory_findings = build_advisory_findings(overall) + build_count_advisories(count_by_arch)
         return {
             "ok": True,
-            "model": {"name": segmenter.name, "version": segmenter.version},
+            "model": _segmenter_metadata(segmenter),
+            "method": _SEGMENTATION_METHOD,
             "requires_review": True,
             "caveat": SEGMENTATION_CAVEAT,
             "advisory_findings": [
-                finding.model_dump(mode="json") for finding in build_advisory_findings(overall)
+                finding.model_dump(mode="json") for finding in advisory_findings
             ],
             "teeth": [tooth.model_dump(mode="json") for tooth in proposed],
             "overall_confidence": overall,
+            # Bite registration across the two arches when BOTH were segmented in this
+            # request; null when only one arch is present. Geometric review metrics
+            # only - never a measured bite, occlusal force, or diagnosis.
+            "occlusion": _occlusion_block(arch_vertices, payload),
             "warnings": errors,
             "plan_fragment": {
                 "mesh_assets": [asset.model_dump(mode="json") for asset in assets_by_id.values()],
@@ -164,3 +219,50 @@ def segment_payload(
         }
     except Exception as exc:  # noqa: BLE001 - payload API must never raise
         return {"ok": False, "errors": [f"segmentation failed: {exc}"]}
+
+
+_SEGMENTATION_METHOD = (
+    "Hybrid geometry proposal: arch-position graph cuts scored by "
+    "height valleys, curvature, and face-normal changes."
+)
+
+
+def _segmenter_metadata(segmenter) -> dict[str, str]:
+    return {
+        "name": segmenter.name,
+        "version": segmenter.version,
+        "backend": getattr(segmenter, "backend", "pure-python"),
+    }
+
+
+_OCCLUSION_CAVEAT = (
+    "Geometric bite registration across the two arches. It is NOT a measured bite, "
+    "occlusal force, or a diagnosis - review only. The lower_offset and gaps are in "
+    "scan units; the dedicated /api/occlusion endpoint adds the per-cell proximity map."
+)
+
+
+def _occlusion_block(
+    arch_vertices: dict[ArchName, list[Vec3]], payload: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Registration metrics when BOTH arches were segmented; ``None`` otherwise.
+
+    A failure here must never sink the segmentation result, so it is isolated: any
+    error returns ``None`` rather than propagating.
+    """
+
+    upper = arch_vertices.get("maxillary")
+    lower = arch_vertices.get("mandibular")
+    if not upper or not lower:
+        return None
+    try:
+        registration = register_bite(
+            upper, lower, units_confirmed=bool(payload.get("units_confirmed", False))
+        )
+        if registration.mode == "unavailable":
+            return None
+        block = registration_to_dict(registration)
+        block["caveat"] = _OCCLUSION_CAVEAT
+        return block
+    except Exception:  # noqa: BLE001 - occlusion is advisory; never break segmentation
+        return None

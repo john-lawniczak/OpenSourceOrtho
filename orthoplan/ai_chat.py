@@ -42,8 +42,10 @@ CHAT_SYSTEM_PROMPT = """You are an educational assistant for OpenSource Ortho.
 
 You may explain the supplied plan context, data gaps, timeline, and deterministic
 findings. You must not diagnose, approve treatment, prescribe aligners, claim a
-plan is safe, or replace review by a licensed dental professional. When data is
-missing, say so plainly and ask what record would resolve the uncertainty.
+plan is safe, produce or imply a complete treatment plan, authorize printing or
+wearing an appliance, or replace review by a licensed dental professional. When
+data is missing, say so plainly and ask what record would resolve the uncertainty.
+Any physical use is the user's own responsibility and risk.
 """
 
 
@@ -77,9 +79,11 @@ class ChatSession(BaseModel):
 class ChatRequest(BaseModel):
     plan: dict[str, Any]
     message: str = Field(min_length=1, max_length=2000)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=40)
     provider: ConnectorKind = "local"
     model: str | None = None
     context_scope: ContextScopeName = "summary"
+    ui_context: dict[str, Any] = Field(default_factory=dict)
     session_id: str | None = None
     # Browser-supplied credentials/endpoint for live external connectors. These
     # are never persisted, never echoed back in the response, and only sent on an
@@ -97,7 +101,9 @@ class ChatResponse(BaseModel):
     context: dict[str, Any]
     caveat: str = (
         "AI chat is educational and advisory only. It cannot diagnose, approve treatment, "
-        "or replace review by a licensed dental professional."
+        "produce a complete treatment plan, authorize physical use, or replace review by "
+        "a licensed dental professional. Any physical use is the user's own responsibility "
+        "and risk."
     )
 
 
@@ -152,36 +158,64 @@ def _format_validation_errors(error: ValidationError) -> list[str]:
         messages.append(f"{location}: {item.get('msg', 'invalid')}")
     return messages
 
-
 def _local_answer(message: str, context: dict[str, Any]) -> str:
     findings = context.get("findings") or []
     gaps = context.get("data_gaps") or []
     timeline = context.get("timeline") or {}
+    ui_context = context.get("ui_context") or {}
     stage_count = context.get("stage_count", 0)
     duration = timeline.get("projected_duration_weeks")
     first_gap = gaps[0] if gaps else "no declared gap from the current context"
     first_finding = findings[0]["title"] if findings else "no deterministic finding from the current rules"
+    ui_label = ui_context.get("label") or "the current workspace stage"
+    ui_purpose = ui_context.get("purpose") or "review the plan context"
+    history = context.get("history") or []
+    previous_user = next(
+        (item.get("content") for item in reversed(history) if item.get("role") == "user"),
+        None,
+    )
+    thread_note = f" You previously asked: \"{previous_user}\"." if previous_user else ""
     asked = message.strip()
     return (
-        f"I can review the current plan context, but only as education. This plan has {stage_count} "
+        f"I can review the current plan context, but only as education. You are in {ui_label}, "
+        f"which is used to {ui_purpose}. This plan has {stage_count} "
         f"stage(s)"
         + (f" and projects to about {duration} week(s)" if duration is not None else "")
         + f". The first deterministic signal is: {first_finding}. The first data limitation is: "
         f"{first_gap}. For your question, \"{asked}\", the most useful next step is to compare the "
         "visual movement timeline with the findings and collect any missing records before relying on "
-        "the preview for clinical decisions."
+        f"the preview for clinical decisions.{thread_note}"
+    )
+
+
+def _bounded_history(messages: list[ChatMessage], *, max_turns: int = 8) -> list[dict[str, str]]:
+    allowed = [item for item in messages if item.role in {"user", "assistant"} and item.content.strip()]
+    return [{"role": item.role, "content": item.content[:2000]} for item in allowed[-max_turns * 2:]]
+
+def _conversation_prompt(message: str, context: dict[str, Any]) -> str:
+    history = context.get("history") or []
+    transcript = "\n".join(
+        f"{item['role'].title()}: {item['content']}"
+        for item in history
+        if item.get("role") in {"user", "assistant"}
+    )
+    history_block = transcript or "(no previous turns)"
+    return (
+        "Plan context JSON:\n"
+        f"{canonical_json(context)}\n\n"
+        "Prior conversation, oldest to newest:\n"
+        f"{history_block}\n\n"
+        f"Latest user question:\n{message}\n\n"
+        "Answer conversationally, with the safety boundary from the system message. "
+        "Use prior turns when they clarify references, but keep deterministic findings "
+        "separate from your model-generated explanation."
     )
 
 
 def _provider_answer(message: str, context: dict[str, Any], provider: ModelProvider) -> str:
     request = ModelRequest(
         system=CHAT_SYSTEM_PROMPT,
-        prompt=(
-            "Plan context JSON:\n"
-            f"{canonical_json(context)}\n\n"
-            f"User question:\n{message}\n\n"
-            "Answer conversationally, with the safety boundary from the system message."
-        ),
+        prompt=_conversation_prompt(message, context),
         metadata={"plan_id": str(context.get("plan_id", "")), "context_scope": str(context.get("scope", ""))},
     )
     return provider.complete(request).text
@@ -239,6 +273,9 @@ def answer_chat_payload(
     scope = scope_for(request.context_scope)
     context = build_chat_context(plan, scope)
     context["scope"] = scope.name
+    context["ui_context"] = request.ui_context
+    history = _bounded_history(request.history)
+    context["history"] = history
     connector = connector_for(request.provider if provider is None else getattr(provider, "name", "local"))
     if request.model:
         connector.model = request.model
@@ -255,6 +292,7 @@ def answer_chat_payload(
         connector=connector,
         context_scope=scope,
         messages=[
+            *[ChatMessage(role=item["role"], content=item["content"]) for item in history],
             ChatMessage(role="user", content=request.message),
             ChatMessage(role="assistant", content=answer),
         ],

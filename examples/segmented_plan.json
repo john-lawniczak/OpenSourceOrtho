@@ -44,6 +44,13 @@
       "model_material": "validated dental model resin",
       "thermoforming_material": "user-selected aligner sheet material",
       "safety_acknowledged": false,
+      "aligner_shell_enabled": false,
+      "shell_backend": "pure-python",
+      "sheet_thickness_mm": 0.6,
+      "gingival_trim_margin_mm": 2.0,
+      "xy_compensation_mm": 0.0,
+      "z_compensation_mm": 0.0,
+      "minimum_printable_feature_mm": 0.3,
       "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material instructions and chosen process explicitly allow it."
     }
   },
@@ -67,6 +74,7 @@
       "notes": null
     }
   ],
+  "case_records": [],
   "mesh_assets": [
     {
       "id": "example-tooth-11",
@@ -117,9 +125,13 @@
         "approximate": true,
         "note": "Approximate visualization frame from crown-surface PCA. Axes are ordered by geometric variance, NOT anatomy; this is not a mesiodistal/buccolingual/long-axis measurement and says nothing about root direction."
       },
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": null
     }
   ],
+  "registrations": [],
+  "derived_anatomy": null,
   "fixed_teeth": [],
   "movement_exclusions": [],
   "attachments": [],

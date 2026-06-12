@@ -1,18 +1,24 @@
 # Architecture
 
-OpenSource Ortho is a Python-first planning and visualization toolkit. The first milestone is not a polished production product; it is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI.
+OpenSource Ortho is a Python-first planning and visualization safety playground for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, generate manufacturing-oriented exports, and feed an accurate UI. It is not a complete treatment-planning system. The roadmap has tiered review modes: STL-only surface review, enhanced-record review, CBCT-attached review, and root/bone-aware review only when registered, reviewed anatomy is trusted.
 
 ## Simple Flow
 
 1. The user uploads an intraoral-scan mesh, usually an STL file.
 2. The mesh is imported and labeled with provenance: patient-derived, imported, manual, model-generated, or synthetic.
-3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device heuristic auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. A learned model (e.g. Teeth3DS) can replace the heuristic behind the `SegmentationModel` seam; it must run locally (scans are PHI).
+3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device hybrid geometric auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. It combines arch position, crown-height valleys, curvature, and face-normal changes into graph-cut-style boundaries, with optional Open3D mesh-processing support. A learned model (e.g. Teeth3DS) can replace the geometric proposal behind the `SegmentationModel` seam; it must run locally (scans are PHI).
 4. A `TreatmentPlan` stores each stage. Each `Stage` contains `ToothDelta` values for individual teeth.
 5. The planning layer checks each stage against user-configured `MovementCaps`.
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
 7. The UI renders current, staged, and planned positions from those cumulative frames.
 8. Deterministic rules run first. Model providers such as OpenAI or Claude Code may add advisory findings, but all findings pass through `lint_finding()`.
 9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
+
+CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
+root/bone-aware checks once the app can ingest local DICOM metadata, record
+registration to STL, represent reviewed anatomy, and expose deterministic
+root/bone-aware findings. Automated raw-volume anatomy proposal remains a future
+optional-extra path. See [cbct-evaluation.md](cbct-evaluation.md).
 
 ## Language and Stack
 
@@ -22,14 +28,14 @@ Python is a good first language here because:
 
 - dental mesh and medical-imaging libraries are mature in Python
 - Pydantic gives us explicit, serializable plan objects
-- PyVista/VTK and Open3D can support early visualization and mesh processing
+- Open3D can support optional mesh processing; PyVista/VTK can support early visualization
 - later web UIs can consume the same JSON frame contract
 
 The likely future split:
 
 - Python: data model, IO, planning, evaluation, CLI, test fixtures
 - Three.js or VTK/PyVista: interactive 3D visualization
-- Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
+- Optional 3D Slicer extension or VTK-style tooling: heavyweight dental/CBCT workflow integration
 
 The browser UI never reimplements the engine. `orthoplan/api.py` exposes pure entry points, and `orthoplan/server.py` serves them: `POST /api/evaluate` for findings/frames, `POST /api/print-package` (`print_package_payload`, reusing `export_print_package`) which returns a base64 zip of stage proxy STLs + manifest and an `.eml` draft for the guided Print / send step, and `POST /api/segment` (`segment_payload`) which runs the on-device segmenter on a server-local scan and returns a reviewable per-tooth proposal (confidence, linted advisory findings, and a ready-to-merge `mesh_assets`/`tooth_meshes` fragment). The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
 
@@ -100,11 +106,18 @@ mesh is missing.
 - data gaps attached for the UI
 - designed so the UI does not recalculate treatment movement differently from the engine; transform composition lives in `planning/transforms.py`, and `viz` only consumes it
 
-## STL Upload
+## Safety-Review Tiers
 
-The initial user upload should be an STL of an intraoral scan. STL contains surface geometry only. It does not contain roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT anatomy.
+### Surface Review: STL Upload
 
-That means the UI must show these data gaps. A surface scan can support crown-surface visualization and staged crown movement, but it cannot prove root position, bone safety, or periodontal suitability.
+The initial user upload can be an STL of an intraoral scan. STL contains surface
+geometry only. It does not contain roots, bone, periodontal status, occlusion
+dynamics, diagnosis, or CBCT anatomy.
+
+That means the UI must show these data gaps. A surface scan can support
+crown-surface visualization, staged crown movement, arch-form proposals,
+crown-collision checks, and manufacturing-oriented handoff. It cannot prove root
+position, bone safety, periodontal suitability, or readiness for physical use.
 
 STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 
@@ -112,6 +125,24 @@ STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 - absolute paths and directory structure (which often carry patient names) are stripped
 - STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
 - a bounding-box sanity check can warn about implausible scale, but never infers units
+
+### Root/Bone-Aware Review: CBCT/DICOM
+
+CBCT/DICOM is planned as an optional higher-fidelity tier rather than a universal
+requirement. It should unlock root/bone-aware checks only after these contracts
+exist:
+
+- local DICOM/CBCT record ingestion with PHI-aware metadata handling
+- on-device volume viewing or trusted local viewer integration
+- explicit STL-to-CBCT registration with quality metrics
+- reviewable derived anatomy such as roots, alveolar bone, and tooth axes
+- deterministic root/bone-aware findings that fail closed when registration or
+  segmentation quality is missing
+
+CBCT-derived data must enter planning through typed model contracts with
+provenance and review status. The planner must never silently assume that STL and
+CBCT coordinate spaces are aligned, and no review tier may imply clinical
+approval or complete treatment planning.
 
 ## How The Plan Moves Teeth
 
@@ -195,7 +226,8 @@ per-artifact SHA-256 hashes, byte sizes, blockers, and geometry-source metadata.
 has linked segmented mesh bounds, the generated proxy is sized from those bounds; otherwise it
 is explicitly labeled as schematic proxy geometry. These are objective geometry outputs from
 the supplied plan data. Material choice, printing, post-processing, and any physical use are
-the user's responsibility and risk.
+the user's own responsibility and risk. The package is not a certification, warranty,
+clearance, or authorization to wear or physically use an appliance.
 
 The next print-geometry phase should package intentionally supplied mesh bytes and transform
 actual per-tooth vertices instead of bounded proxy solids.

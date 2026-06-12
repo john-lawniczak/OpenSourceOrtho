@@ -15,8 +15,9 @@ All responses are JSON objects. Every endpoint returns either:
 - `{ "ok": false, "errors": ["..."] }` - validation/usage error (HTTP 200/4xx).
 
 Clients must treat any non-`ok` body, transport error, or unreachable host as
-"engine offline / request rejected" and surface that plainly - never fall back to
-a second, divergent on-device implementation.
+"engine offline / request rejected" and surface that plainly. The only allowed
+mobile fallback is the explicitly labeled STL-only review described below; it is
+not a second full planning engine.
 
 ## Base URL
 
@@ -55,7 +56,7 @@ Success response (subset of fields the lite UI renders):
 ```jsonc
 {
   "ok": true,
-  "source": "landmarks | crowns | authored | template | none",
+  "source": "authored | landmark-derived | geometry-derived | educational-synthetic | none",
   "requires_acknowledgement": false,
   "warnings": ["..."],
   "steps":   [ { "name": "...", "status": "ok|warning|skipped", "detail": "..." } ],
@@ -88,6 +89,21 @@ Lite screens map to these fields:
 > `verdict` is `CONSISTENT` or `ISSUES`. Never render it as "safe", "approved",
 > "cleared", or "ready". Always show `caveat`.
 
+### STL-only on-device fallback
+
+If `POST /api/generate-plan` is unreachable and every selected input is an STL,
+the native app may return a local `GeneratePlanResponse` with:
+
+- `source: "mobile-stl-best-effort"`
+- `correctness.verdict: "CONSISTENT"` only as an internal consistency label
+- warnings that name the browser/full engine as required for segmentation,
+  mesh-backed edits, CBCT/DICOM, and print-critical review
+- an empty/opaque staged plan suitable for mobile display and export, not for
+  clinical or manufacturing reliance
+
+The fallback must not run for CBCT/DICOM, photos, mixed modalities, or any case
+that implies root/bone-aware review.
+
 ---
 
 ## 2. `POST /api/evaluate` - re-evaluate an existing plan (optional)
@@ -119,17 +135,58 @@ documented here so the apps can add it later without re-deriving the contract.
 
 | Situation                       | App behavior                                        |
 |---------------------------------|-----------------------------------------------------|
-| Host unreachable / timeout      | "Engine offline" state; no on-device plan synthesis |
+| Host unreachable / timeout with STL-only inputs | Limited `mobile-stl-best-effort` response, clearly caveated |
+| Host unreachable / timeout with CBCT/DICOM or mixed inputs | "Engine offline" state; use browser/full engine |
 | `{ "ok": false, "errors": [] }` | Show the returned error strings verbatim            |
 | Missing `caveat`                | Still show the standing safety disclaimer           |
 | `verdict == "ISSUES"`           | Surface findings; never imply the plan is fine      |
+
+## Browser review import
+
+Mobile may import JSON files produced by the browser/Python workspace and store
+them as opaque review artifacts. These imports are for on-device viewing,
+sharing, and export only. Plan changes, CBCT/DICOM work, STL registration,
+segmentation, and mesh-backed print package generation stay in the browser/full
+engine.
+
+### `POST /api/case-review` - generate the importable case review
+
+The browser engine builds the importable document; mobile stores it verbatim.
+
+Request: `{ "plan": { /* TreatmentPlan */ }, "case_id": "optional", "base_url": "optional" }`
+
+Response `review` (schema `orthoplan-case-review-v1`, `kind: "stored-review"`):
+
+```jsonc
+{
+  "review_tier": { "tier": "stl-only", "label": "...", "root_bone_aware": false },
+  "unresolved_data_gaps": [ { "domain": "roots", "reason": "..." }, ... ],
+  "cbct_status": "unavailable|attached|registered|anatomy-reviewed",
+  "root_bone_review": { "verdict": "CONSISTENT|ISSUES|NOT_APPLICABLE" },
+  "findings_summary": { "total": 3, "by_severity": { "warning": 1, "notice": 2 } },
+  "editable": { "in_mobile": false, "requires_browser_engine": true, "reason": "..." },
+  "handoff": { "case_id": "...", "open_url": "...|null", "deep_link": "orthoplan://case/<id>", "qr_payload": "..." },
+  "plan_sha256": "...", "review_sha256": "..."
+}
+```
+
+Mobile MUST surface, at minimum: the `review_tier` (STL-only / enhanced-records /
+CBCT-attached / root-bone-aware), the `unresolved_data_gaps`, and the
+`editable.requires_browser_engine` edit-lock. The `handoff.qr_payload` is what a
+QR code / deep link should encode to reopen the same case on a device. Handoff
+URLs are emitted only for `http`/`https` `base_url` values, and case IDs are
+percent-encoded inside URLs/deep links. Verify `review_sha256` by canonicalizing
+the review object without the `review_sha256` field and hashing that JSON with
+SHA-256.
 
 ## Standing disclaimer string
 
 Both apps embed this exact wording (kept in sync with the engine `caveat`):
 
-> OpenSource Ortho is an educational and research toolkit. It is not a medical
-> device and does not diagnose, treat, or approve treatment. A `CONSISTENT`
-> verdict means the staging is internally consistent with the configured caps and
-> controls - not that it is safe, approved, or clinically appropriate. Always
-> consult a licensed dental professional.
+> OpenSource Ortho is a clear-aligner planning safety playground and research
+> toolkit. The current build is not distributed as a medical device, is not
+> complete treatment-planning software, and does not diagnose, treat, approve
+> treatment, or authorize physical use. A `CONSISTENT` verdict means the staging
+> is internally consistent with the configured caps and controls - not that it is
+> safe, approved, or clinically appropriate. Always consult a licensed dental
+> professional; any physical use is your own responsibility and risk.

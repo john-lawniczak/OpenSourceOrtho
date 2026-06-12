@@ -2,13 +2,14 @@
 
 A plain-language reference for people new to dentistry, so the app and docs make
 sense. This is **educational only** - it does not diagnose, recommend treatment,
-or define clinical thresholds. See [SAFETY.md](SAFETY.md).
+define clinical thresholds, produce a complete treatment plan, or authorize any
+physical use. See [SAFETY.md](SAFETY.md).
 
 ## FDI tooth numbering
 
-OpenSource Ortho identifies teeth using the **FDI two-digit system** (also called
-the ISO 3950 system). The engine uses FDI internally and rejects mixed numbering
-(see `orthoplan/model/identity.py`).
+OpenSource Ortho identifies teeth using the **FDI (FDI World Dental Federation
+notation) two-digit system** (also called the ISO 3950 system). The engine uses
+FDI internally and rejects mixed numbering (see `orthoplan/model/identity.py`).
 
 The first digit is the **quadrant**; the second is the **position** counting out
 from the front midline.
@@ -45,6 +46,12 @@ So **`11`** is the upper-right central incisor, **`23`** the upper-left canine,
 > The diagram shows the **Universal** number (US 1–32) large and the **FDI**
 > number small. The app uses FDI internally; Universal is shown because it is the
 > most common chart in the US. The mapping table below covers both.
+>
+> **Why are there two number types?** They come from different traditions and are
+> both still in everyday use: **FDI** is the international standard (a quadrant
+> digit + a position digit), while **Universal** is the long-standing US habit of
+> counting every tooth 1–32 in a single loop. They label the **same teeth** —
+> only the numbers differ.
 
 ### Numbering systems for orientation only
 

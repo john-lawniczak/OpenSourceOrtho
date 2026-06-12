@@ -44,6 +44,12 @@
       "model_material": "validated dental model resin",
       "thermoforming_material": "user-selected aligner sheet material",
       "safety_acknowledged": false,
+      "aligner_shell_enabled": false,
+      "sheet_thickness_mm": 0.6,
+      "gingival_trim_margin_mm": 2.0,
+      "xy_compensation_mm": 0.0,
+      "z_compensation_mm": 0.0,
+      "minimum_printable_feature_mm": 0.3,
       "post_processing_notes": "Cure and clean printed models per material instructions; remove supports and smooth model artifacts before thermoforming. Do not alter aligner plastic unless the material instructions and chosen process explicitly allow it."
     }
   },
@@ -85,6 +91,7 @@
       "notes": null
     }
   ],
+  "case_records": [],
   "mesh_assets": [
     {
       "id": "lm-11",
@@ -107,7 +114,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736260Z",
+      "created_at": "2026-06-11T19:36:19.970115Z",
       "reference": null
     },
     {
@@ -131,7 +138,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736434Z",
+      "created_at": "2026-06-11T19:36:19.970193Z",
       "reference": null
     },
     {
@@ -155,7 +162,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736442Z",
+      "created_at": "2026-06-11T19:36:19.970198Z",
       "reference": null
     },
     {
@@ -179,7 +186,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736448Z",
+      "created_at": "2026-06-11T19:36:19.970202Z",
       "reference": null
     },
     {
@@ -203,7 +210,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736589Z",
+      "created_at": "2026-06-11T19:36:19.970206Z",
       "reference": null
     },
     {
@@ -227,7 +234,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736594Z",
+      "created_at": "2026-06-11T19:36:19.970209Z",
       "reference": null
     },
     {
@@ -251,7 +258,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736599Z",
+      "created_at": "2026-06-11T19:36:19.970213Z",
       "reference": null
     },
     {
@@ -275,7 +282,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736604Z",
+      "created_at": "2026-06-11T19:36:19.970216Z",
       "reference": null
     },
     {
@@ -299,7 +306,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736607Z",
+      "created_at": "2026-06-11T19:36:19.970220Z",
       "reference": null
     },
     {
@@ -323,7 +330,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736610Z",
+      "created_at": "2026-06-11T19:36:19.970223Z",
       "reference": null
     },
     {
@@ -347,7 +354,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736613Z",
+      "created_at": "2026-06-11T19:36:19.970229Z",
       "reference": null
     },
     {
@@ -371,7 +378,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736617Z",
+      "created_at": "2026-06-11T19:36:19.970234Z",
       "reference": null
     },
     {
@@ -395,7 +402,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736620Z",
+      "created_at": "2026-06-11T19:36:19.970237Z",
       "reference": null
     },
     {
@@ -419,7 +426,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736623Z",
+      "created_at": "2026-06-11T19:36:19.970242Z",
       "reference": null
     },
     {
@@ -443,7 +450,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736702Z",
+      "created_at": "2026-06-11T19:36:19.970304Z",
       "reference": null
     },
     {
@@ -467,7 +474,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736708Z",
+      "created_at": "2026-06-11T19:36:19.970308Z",
       "reference": null
     },
     {
@@ -491,7 +498,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736711Z",
+      "created_at": "2026-06-11T19:36:19.970312Z",
       "reference": null
     },
     {
@@ -515,7 +522,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736715Z",
+      "created_at": "2026-06-11T19:36:19.970318Z",
       "reference": null
     },
     {
@@ -539,7 +546,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736718Z",
+      "created_at": "2026-06-11T19:36:19.970322Z",
       "reference": null
     },
     {
@@ -563,7 +570,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736721Z",
+      "created_at": "2026-06-11T19:36:19.970326Z",
       "reference": null
     },
     {
@@ -587,7 +594,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736724Z",
+      "created_at": "2026-06-11T19:36:19.970330Z",
       "reference": null
     },
     {
@@ -611,7 +618,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736728Z",
+      "created_at": "2026-06-11T19:36:19.970334Z",
       "reference": null
     },
     {
@@ -635,7 +642,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736732Z",
+      "created_at": "2026-06-11T19:36:19.970338Z",
       "reference": null
     },
     {
@@ -659,7 +666,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736735Z",
+      "created_at": "2026-06-11T19:36:19.970341Z",
       "reference": null
     },
     {
@@ -683,7 +690,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736738Z",
+      "created_at": "2026-06-11T19:36:19.970344Z",
       "reference": null
     },
     {
@@ -707,7 +714,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736741Z",
+      "created_at": "2026-06-11T19:36:19.970347Z",
       "reference": null
     },
     {
@@ -731,7 +738,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736744Z",
+      "created_at": "2026-06-11T19:36:19.970350Z",
       "reference": null
     },
     {
@@ -755,7 +762,7 @@
       },
       "quality": null,
       "sha256": null,
-      "created_at": "2026-06-06T19:40:50.736747Z",
+      "created_at": "2026-06-11T19:36:19.970356Z",
       "reference": null
     }
   ],
@@ -768,6 +775,8 @@
       "mesh_asset_id": "lm-11",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -778,6 +787,8 @@
       "mesh_asset_id": "lm-12",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -788,6 +799,8 @@
       "mesh_asset_id": "lm-13",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -798,6 +811,8 @@
       "mesh_asset_id": "lm-14",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -808,6 +823,8 @@
       "mesh_asset_id": "lm-15",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -818,6 +835,8 @@
       "mesh_asset_id": "lm-16",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -828,6 +847,8 @@
       "mesh_asset_id": "lm-17",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -838,6 +859,8 @@
       "mesh_asset_id": "lm-21",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -848,6 +871,8 @@
       "mesh_asset_id": "lm-22",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -858,6 +883,8 @@
       "mesh_asset_id": "lm-23",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -868,6 +895,8 @@
       "mesh_asset_id": "lm-24",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -878,6 +907,8 @@
       "mesh_asset_id": "lm-25",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -888,6 +919,8 @@
       "mesh_asset_id": "lm-26",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -898,6 +931,8 @@
       "mesh_asset_id": "lm-27",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -908,6 +943,8 @@
       "mesh_asset_id": "lm-41",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -918,6 +955,8 @@
       "mesh_asset_id": "lm-42",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -928,6 +967,8 @@
       "mesh_asset_id": "lm-43",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -938,6 +979,8 @@
       "mesh_asset_id": "lm-44",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -948,6 +991,8 @@
       "mesh_asset_id": "lm-45",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -958,6 +1003,8 @@
       "mesh_asset_id": "lm-46",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -968,6 +1015,8 @@
       "mesh_asset_id": "lm-47",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -978,6 +1027,8 @@
       "mesh_asset_id": "lm-31",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -988,6 +1039,8 @@
       "mesh_asset_id": "lm-32",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -998,6 +1051,8 @@
       "mesh_asset_id": "lm-33",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1008,6 +1063,8 @@
       "mesh_asset_id": "lm-34",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1018,6 +1075,8 @@
       "mesh_asset_id": "lm-35",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1028,6 +1087,8 @@
       "mesh_asset_id": "lm-36",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     },
     {
@@ -1038,9 +1099,13 @@
       "mesh_asset_id": "lm-37",
       "source": "synthetic",
       "local_frame": null,
+      "surface_sample_points": [],
+      "reviewed": false,
       "notes": "approximate crown box from landmark + crown-width table"
     }
   ],
+  "registrations": [],
+  "derived_anatomy": null,
   "fixed_teeth": [],
   "movement_exclusions": [],
   "attachments": [
