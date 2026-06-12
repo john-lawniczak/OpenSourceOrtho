@@ -16,7 +16,7 @@
   },
   "engine": {
     "name": "orthoplan",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "findings_summary": {
     "by_severity": {
@@ -33,7 +33,7 @@
   "kind": "stored-review",
   "plan_id": "golden-case-001",
   "plan_sha256": "ce48e8e8305f0d91ea180fa1d09a70ec139432f01bd7f9ab92466c640fea42ba",
-  "review_sha256": "1fd5d143bd3a6dfa3acb6f879753a2b8690d7c846a7466979e697bef9ae0617b",
+  "review_sha256": "49577ee920d64dca36b3daa63fd312d36e2533e9d61e7002d47143de32df1627",
   "review_tier": {
     "label": "STL surface only",
     "rank": 0,
