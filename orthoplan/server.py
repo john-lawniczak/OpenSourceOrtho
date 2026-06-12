@@ -13,13 +13,10 @@ from pathlib import Path
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
 from orthoplan.ai_chat_stream import send_chat_stream
 from orthoplan.api import evaluate_plan_payload, print_package_payload
-from orthoplan.case_api import (
-    case_versions_payload,
-    list_cases_payload,
-    save_plan_version_payload,
-)
+from orthoplan.case_api import case_versions_payload, list_cases_payload, save_plan_version_payload
 from orthoplan.case_review import case_review_payload
 from orthoplan.cases import default_case_store
+from orthoplan.cbct_workflow import cbct_proposal_payload, cbct_review_payload
 from orthoplan.generation import generate_plan_payload
 from orthoplan.io.stl_import import MAX_STL_BYTES
 from orthoplan.mesh_workspace import default_mesh_workspace, register_stl_mesh, resolve_mesh_path
@@ -142,6 +139,8 @@ class Handler(BaseHTTPRequestHandler):
                 "/api/plan/version",
                 "/api/print-package",
                 "/api/case-review",
+                "/api/cbct/propose-anatomy",
+                "/api/cbct/review-anatomy",
                 "/api/segment",
                 "/api/occlusion",
             }:
@@ -166,31 +165,34 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/chat/stream":
                 send_chat_stream(self, payload)
                 return
-            self._send_json(200, self._dispatch_json_post(path, payload))
+            self._send_json(200, _dispatch_json_post(self, path, payload))
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 
-    def _dispatch_json_post(self, path: str, payload: dict) -> dict:
-        """Route a validated JSON POST body to its payload handler."""
-
-        if path == "/api/chat":
-            return answer_chat_payload(payload)
-        if path == "/api/generate-plan":
-            return generate_plan_payload(payload)
-        if path == "/api/plan/version":
-            return save_plan_version_payload(payload, store_path=self._case_store())
-        if path == "/api/print-package":
-            return print_package_payload(payload, workspace=self._mesh_workspace())
-        if path == "/api/case-review":
-            return case_review_payload(payload)
-        if path == "/api/segment":
-            return segment_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
-        if path == "/api/occlusion":
-            return proximity_payload(payload, ui_dir=UI_DIR, workspace=self._mesh_workspace())
-        return evaluate_plan_payload(payload, workspace=self._mesh_workspace())
-
     def log_message(self, *args: object) -> None:  # silence default stderr logging
         return
+
+
+def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/chat":
+        return answer_chat_payload(payload)
+    if path == "/api/generate-plan":
+        return generate_plan_payload(payload)
+    if path == "/api/plan/version":
+        return save_plan_version_payload(payload, store_path=handler._case_store())
+    if path == "/api/print-package":
+        return print_package_payload(payload, workspace=handler._mesh_workspace())
+    if path == "/api/case-review":
+        return case_review_payload(payload)
+    if path == "/api/cbct/propose-anatomy":
+        return cbct_proposal_payload(payload)
+    if path == "/api/cbct/review-anatomy":
+        return cbct_review_payload(payload)
+    if path == "/api/segment":
+        return segment_payload(payload, ui_dir=UI_DIR, workspace=handler._mesh_workspace())
+    if path == "/api/occlusion":
+        return proximity_payload(payload, ui_dir=UI_DIR, workspace=handler._mesh_workspace())
+    return evaluate_plan_payload(payload, workspace=handler._mesh_workspace())
 
 
 def _handle_stl_upload(handler: Handler) -> None:

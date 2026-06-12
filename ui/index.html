@@ -349,6 +349,32 @@
             <button id="addRecordNote" type="button">Add note</button>
             <div id="caseRecordList" class="upload-file-list"></div>
           </div>
+          <div class="workflow-card">
+            <h2>CBCT-to-Reviewed Anatomy</h2>
+            <div class="record-upload-grid">
+              <label class="upload-target compact-upload" for="cbctMaskFile">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span>Import root/bone mask JSON</span>
+                <input id="cbctMaskFile" type="file" accept="application/json,.json" />
+              </label>
+              <label>
+                Registration accepted
+                <input id="cbctRegistrationAccepted" type="checkbox" />
+              </label>
+              <label>
+                RMSE mm
+                <input id="cbctRegistrationRmse" type="number" min="0" step="0.01" value="0.25" />
+              </label>
+              <label>
+                Fitness
+                <input id="cbctRegistrationFitness" type="number" min="0" max="1" step="0.01" value="0.9" />
+              </label>
+            </div>
+            <div class="workflow-actions">
+              <button id="proposeCbctAnatomy" type="button">Propose Anatomy</button>
+            </div>
+            <p id="cbctWorkflowStatus" class="viewer-caveat"></p>
+          </div>
           <div class="workflow-actions">
             <button class="primary-action next-action" id="uploadNext" type="button">Next: Data Availability</button>
           </div>

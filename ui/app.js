@@ -1,4 +1,4 @@
-import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadStlFile } from "./state.js";
+import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, requestCbctAnatomyProposal, requestCbctAnatomyReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadStlFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -188,6 +188,11 @@ el("attachmentFile").addEventListener("change", async (event) => {
   event.target.value = "";
 });
 
+el("cbctMaskFile").addEventListener("change", async (event) => {
+  await loadCbctMaskFile((event.target.files || [])[0]);
+  event.target.value = "";
+});
+
 document.body.addEventListener("input", (event) => {
   const target = event.target;
   // Segmentation edits update state in place and deliberately do NOT trigger a
@@ -270,6 +275,9 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "alignerShellEnabled") state.printExport.aligner_shell_enabled = target.checked;
   if (target.id === "sheetThickness") state.printExport.sheet_thickness_mm = Number(target.value) || 0.6;
   if (target.id === "trimMargin") state.printExport.gingival_trim_margin_mm = Number(target.value);
+  if (target.id === "cbctRegistrationAccepted") state.cbctWorkflow.registrationAccepted = target.checked;
+  if (target.id === "cbctRegistrationRmse") state.cbctWorkflow.rmseMm = Number(target.value) || 0;
+  if (target.id === "cbctRegistrationFitness") state.cbctWorkflow.fitness = Number(target.value) || 0;
   renderAll();
 });
 
@@ -371,6 +379,9 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "addRecordNote") {
     addNoteRecord();
     renderAll();
+  }
+  if (button?.id === "proposeCbctAnatomy") {
+    proposeCbctAnatomy();
   }
   if (printArtifactTarget) {
     downloadPrintArtifact(printArtifactTarget.dataset.printArtifact);
@@ -638,12 +649,89 @@ function updateAvailabilityFromCaseRecords() {
 // flag and review tier (root/bone-aware stays fail-closed unless accepted).
 const ANATOMY_GROUPS = { roots: "roots", tooth_axes: "tooth_axes", alveolar_bone: "alveolar_bone" };
 
-function applyAnatomyReview(group, index, status) {
+async function applyAnatomyReview(group, index, status) {
   const key = ANATOMY_GROUPS[group];
   const list = key && state.derivedAnatomy ? state.derivedAnatomy[key] : null;
   if (!Array.isArray(list) || !list[index]) return;
-  list[index] = { ...list[index], review_status: status };
+  try {
+    const result = await requestCbctAnatomyReview({
+      plan: planJson(),
+      decisions: [{ group: key, index, review_status: status }],
+    });
+    if (result.ok === false) {
+      state.cbctWorkflow.status = (result.errors || ["Could not apply anatomy review."]).join("; ");
+    } else {
+      applyServerPlanParts(result.plan);
+      state.cbctWorkflow.status = `Marked ${key} #${index + 1} ${status}.`;
+    }
+  } catch (error) {
+    state.cbctWorkflow.status = error.message;
+  }
   renderAll();
+}
+
+async function loadCbctMaskFile(file) {
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    state.cbctWorkflow.mask = parsed;
+    const rootCount = Object.keys(parsed.root_voxels_by_tooth || {}).length;
+    const boneCount = Array.isArray(parsed.bone_voxels) ? parsed.bone_voxels.length : 0;
+    state.cbctWorkflow.status = `Loaded ${file.name}: ${rootCount} root mask(s), ${boneCount} bone voxel(s).`;
+  } catch (error) {
+    state.cbctWorkflow.mask = null;
+    state.cbctWorkflow.status = `Could not read mask JSON: ${error.message}`;
+  }
+  renderAll();
+}
+
+async function proposeCbctAnatomy() {
+  const workflow = state.cbctWorkflow;
+  if (workflow.busy || !workflow.mask) return;
+  const cbct = state.caseRecords.find((record) => record.kind === "cbct" || record.kind === "dicom");
+  const source = state.scanSources.find((item) => item.asset?.id);
+  if (!cbct || !source?.asset?.id) {
+    workflow.status = "Attach CBCT/DICOM and register an STL scan before importing masks.";
+    renderAll();
+    return;
+  }
+  workflow.busy = true;
+  workflow.status = "Importing masks as proposed anatomy...";
+  renderAll();
+  try {
+    const result = await requestCbctAnatomyProposal({
+      plan: planJson(),
+      cbct_record_id: cbct.id,
+      source_stl_asset_id: source.asset.id,
+      registration_accepted: workflow.registrationAccepted,
+      registration_quality: {
+        method: "local-review",
+        rmse_mm: workflow.rmseMm,
+        fitness: workflow.fitness,
+      },
+      mask: workflow.mask,
+    });
+    if (result.ok === false) {
+      workflow.status = (result.errors || ["CBCT proposal import failed."]).join("; ");
+    } else {
+      applyServerPlanParts(result.plan);
+      const roots = result.proposal?.roots?.length || 0;
+      const axes = result.proposal?.tooth_axes?.length || 0;
+      const bone = result.proposal?.alveolar_bone?.length || 0;
+      workflow.status = `Proposed ${roots} root(s), ${axes} axis record(s), and ${bone} bone record(s). Review before trust.`;
+    }
+  } catch (error) {
+    workflow.status = error.message;
+  } finally {
+    workflow.busy = false;
+    renderAll();
+  }
+}
+
+function applyServerPlanParts(snapshot) {
+  if (!snapshot) return;
+  state.registrations = snapshot.registrations || [];
+  state.derivedAnatomy = snapshot.derived_anatomy || null;
 }
 
 async function registerUploadedStls(files) {

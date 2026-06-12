@@ -74,6 +74,10 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   Open3D ICP has an explicit auto-registration proposal wrapper with quality
   metrics and human acceptance gating; synthetic volume benchmarks and fail-closed
   tests prove unaccepted/rejected/proposed anatomy never becomes trusted.
+- CBCT-to-reviewed-anatomy V1 is wired through the local UI/API: after attaching
+  CBCT/DICOM and registering an STL scan, a reviewer can import local sparse mask
+  JSON, create proposed roots/axes/bone records, and accept/correct/reject those
+  objects through the reviewed-anatomy gate.
 - Guided "Review your plan" step now leads with a review dashboard: an at-a-glance
   verdict (`ready` / `needs-review` / `cannot-assess`) plus edit-diff,
   warnings, root/bone, and print-readiness cards and 3D overlay chips. Only

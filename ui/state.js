@@ -35,6 +35,14 @@ export const state = {
   // plan carries them, and mutated by the anatomy review controls.
   registrations: [],
   derivedAnatomy: null,
+  cbctWorkflow: {
+    mask: null,
+    status: "",
+    busy: false,
+    registrationAccepted: false,
+    rmseMm: 0.25,
+    fitness: 0.9,
+  },
   scanUnits: "unverified",
   scanArch: "",
   // Latest response from the Python engine (POST /api/evaluate). The UI never
@@ -383,6 +391,32 @@ export async function requestSegmentation(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["segmentation request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestCbctAnatomyProposal(payload) {
+  const response = await fetch("/api/cbct/propose-anatomy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["CBCT proposal request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestCbctAnatomyReview(payload) {
+  const response = await fetch("/api/cbct/review-anatomy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["CBCT review request failed"]).join("; "));
   }
   return response.json();
 }

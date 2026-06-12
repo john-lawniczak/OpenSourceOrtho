@@ -294,6 +294,7 @@ export function renderAll() {
   renderScanStatus();
   renderProximity();
   renderScale();
+  renderCbctWorkflow();
   renderSampleStatus();
   renderSegmentation();
   renderManualEdit();
@@ -303,6 +304,25 @@ export function renderAll() {
   scheduleEvaluate();
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
+}
+
+function renderCbctWorkflow() {
+  const workflow = state.cbctWorkflow || {};
+  const status = el("cbctWorkflowStatus");
+  if (!status) return;
+  const mask = workflow.mask;
+  const cbctRecords = state.caseRecords.filter((record) => record.kind === "cbct" || record.kind === "dicom");
+  el("cbctRegistrationAccepted").checked = Boolean(workflow.registrationAccepted);
+  el("cbctRegistrationRmse").value = workflow.rmseMm ?? 0.25;
+  el("cbctRegistrationFitness").value = workflow.fitness ?? 0.9;
+  el("proposeCbctAnatomy").disabled = Boolean(workflow.busy || !mask || !cbctRecords.length || !state.scanSources.length);
+  const parts = [];
+  if (!cbctRecords.length) parts.push("Attach a CBCT/DICOM record.");
+  if (!state.scanSources.length) parts.push("Register an STL scan with the local engine.");
+  if (!mask) parts.push("Import a root/bone mask JSON.");
+  status.textContent = workflow.busy
+    ? "Building proposed CBCT-derived anatomy..."
+    : (workflow.status || parts.join(" ") || "Mask ready for proposal import.");
 }
 
 function renderReviewHeading() {
