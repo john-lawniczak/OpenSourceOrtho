@@ -10,6 +10,7 @@ field. Proposed, rejected, uncertain, or out-of-field anatomy is never trusted.
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Union
 
 from pydantic import BaseModel, Field
 
@@ -35,6 +36,7 @@ class DerivedAnatomyProvenance(BaseModel):
     review_status: ReviewStatus = ReviewStatus.PROPOSED
     out_of_field: bool = False
     notes: list[str] = Field(default_factory=list)
+    quality_metrics: dict[str, Union[bool, float, int, str]] = Field(default_factory=dict)
 
     @property
     def reviewed(self) -> bool:

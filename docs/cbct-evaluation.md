@@ -1,8 +1,11 @@
 # CBCT/DICOM Safety-Review Roadmap
 
-> Status: in progress. Local DICOM metadata intake (optional `dicom` extra) and a
-> 3D Slicer handoff path are shipped; the volume viewer, segmentation model, and
-> STL-to-CBCT registration pipeline are still being built.
+> Status: in progress. Local DICOM metadata intake, 3D Slicer handoff,
+> review-gated registration proposals, and local sparse-mask root/bone proposals
+> are shipped. Raw-volume proposals now include connected-component cleanup,
+> field-boundary truncation flags, centerline/voxel quality metrics, and
+> synthetic fail-closed benchmarks. A full clinical-grade segmentation model and
+> volume viewer remain out of scope for the core install.
 
 ## Local DICOM metadata intake (shipped)
 
@@ -143,6 +146,13 @@ Every derived object needs:
 - confidence or quality metadata
 - review/correction status
 - clear handling for missing, uncertain, or out-of-field anatomy
+
+Current local sparse-mask proposals satisfy this contract by keeping every object
+`PROPOSED`, filtering tiny disconnected root components, flagging masks that
+touch the CBCT field boundary as out-of-field, and recording quality metrics such
+as voxel counts, component counts, retained/dropped components, centerline length,
+and boundary voxel counts. These metrics are review aids only; they do not make
+raw-volume anatomy trusted without human acceptance/correction.
 
 Segmentation models, weights, and datasets require the same license discipline as
 the learned crown segmenter: code license, weight license, and dataset license are
