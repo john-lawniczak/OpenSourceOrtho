@@ -4,12 +4,11 @@
 
 OpenSource Ortho is an open-source clear-aligner planning safety playground and research toolkit. It supports surface-based STL planning experiments today; reviewed CBCT/DICOM-derived anatomy is a higher-fidelity path for root/bone-aware checks, not a claim that the software produces a complete treatment plan.
 
-[![Upper and lower dental arches](docs/images/teeth-arches.jpeg)](docs/media/sample-demo.mp4)
+[![OpenSource Ortho review workspace](docs/images/sample-workspace.png)](docs/media/sample-demo.mp4)
 
-> Upper and lower dental arches — the kind of intraoral input these planning
-> experiments stage. ▶ [Watch the review-workspace demo (MP4)](docs/media/sample-demo.mp4):
-> a stacked **Upper arch / Lower arch** 3D preview with loaded crown meshes,
-> staged movement, findings, data gaps, and the local **Plan AI** helper.
+> The Review workspace: a stacked **Upper arch / Lower arch** 3D preview with
+> loaded crown meshes, staged movement, crown-proximity overlays, findings, and
+> data gaps. ▶ [Watch the demo (MP4)](docs/media/sample-demo.mp4).
 
 ## Mission
 
