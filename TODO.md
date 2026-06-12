@@ -88,9 +88,9 @@ Ordered paths are below; see also `docs/application maturity.md`.
 
 | Track | Current | Target | Remaining gap |
 |-------|---------|--------|---------------|
-| End-to-end "upload -> printable aligners" | ~9/10 for reviewed real geometry | ≥9/10 | Robust Open3D distance-offset validation and full-arch fixtures are in place; material/fit modeling remains out of scope. |
-| Surface-scan staging + honest review aid | ~9/10 | ≥9/10 | Learned-vs-heuristic benchmarking is in place; real model weights and broader real-case benchmarks remain optional/offline expansion. |
-| CBCT root/bone-aware planning from a raw volume | proposal path in place | ≥9/10 | Raw-volume outputs and auto-registration remain untrusted proposals until human review; robust clinical segmentation/fit guarantees remain out of scope. |
+| End-to-end "upload -> printable aligners" | ~9.0/10 for reviewed real geometry | ≥9/10 | Robust Open3D distance-offset validation and full-arch fixtures are in place; material/fit modeling remains out of scope. |
+| Surface-scan staging + honest review aid | ~8.7/10 | ≥9/10 | Learned-vs-heuristic benchmarking and real-scan smoke coverage are in place; production learned weights and broader labelled real-case benchmarks remain optional/offline expansion. |
+| CBCT root/bone-aware planning from a raw volume | ~8.4/10 | ≥9/10 | Phase 12 is complete as a safety-gated proposal workflow; caller-supplied sparse masks, limited open-volume validation, and no bundled clinical-grade segmenter hold back broader maturity. |
 | In-app AI assistant (chat) | ~8.5/10 | ≥9/10 | SSE streaming and provider/model UX are in place; richer provider-native stream adapters and tool-style plan actions remain. |
 
 ## Remaining roadmap
@@ -125,8 +125,10 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
 
 **Remaining**
 
-No tracked implementation items remain in this roadmap. The geometry tracks still
-intentionally stop short of physical-use/material/fit guarantees.
+No original phase checklist items remain in this roadmap. Further maturity work is
+validation, corpus, optional-backend, provider-adapter, and audit/export hardening.
+The geometry tracks still intentionally stop short of physical-use/material/fit
+guarantees.
 
 ### Recently Completed Reference
 

@@ -15,14 +15,14 @@ deliberately does not model.
 
 | Surface | Current | Target | What the score means |
 |---------|---------|--------|----------------------|
-| Track 1: upload -> printable aligner artifacts | ~9/10 | ≥9/10 | Reviewed real geometry exports reproducible, spec-correct model/shell packages with real shell QA, a robust Open3D distance-offset backend, messy-corpus validation, and independent full-arch fixtures; material/fit modeling remains out of scope. |
-| Track 2: surface-scan staging + honest review aid | ~7.8/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, a severity-aware guided review dashboard, and benchmark deltas are useful and bounded, but learned segmentation and broader real-case benchmarks still need work. |
-| Track 3: CBCT root/bone-aware planning from raw volume | ~1-2/10 | ≥9/10 | Reviewed anatomy can be represented and used once supplied, but raw CBCT root/bone segmentation and default auto-registration are still future work. This is the longest road by far. |
+| Track 1: upload -> printable aligner artifacts | ~9.0/10 | ≥9/10 | Strong within the software-only scope: reviewed real geometry exports reproducible model/shell packages with real shell QA, robust-backend validation hooks, messy fixtures, and independent full-arch fixtures; physical fit/material/printer validation remains out of scope. |
+| Track 2: surface-scan staging + honest review aid | ~8.7/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, guided review UX, real-scan smoke coverage, and learned-vs-heuristic benchmark hooks are in place; the remaining weakness is broader labelled real-case validation and production learned weights. |
+| Track 3: CBCT root/bone-aware planning from raw volume | ~8.4/10 | ≥9/10 | Phase 12 is implemented as a safety-gated proposal workflow: raw-volume sparse-mask proposals, auto-registration proposals, fail-closed tests, and benchmark metrics exist, but maturity is held back by caller-supplied masks, no bundled clinical-grade volume segmenter, and limited open-volume validation. |
 | Track 4: in-app AI assistant (chat) | ~8.5/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors now have bounded memory, incremental rendering, provider/model selection, PHI-share gating, and SSE streaming with fallback; provider-native stream adapters and action tooling remain. |
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
-Current rating: ~9/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+Current rating: ~9.0/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
 operations", Phase 9.1 through Phase 9.4).
 
 What exists:
@@ -84,7 +84,7 @@ What reaching the ≥9/10 target requires:
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
-Current rating: ~7.8/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+Current rating: ~8.7/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
 operations", Phase 14).
 
 What exists:
@@ -97,6 +97,11 @@ What exists:
   from the mesh workspace when available, with capped samples and bbox fallback.
 - Synthetic benchmarks for segmentation, movement, collision/IPR, shell
   thickness, messy shells, and sampled-vs-triangle collision distance deltas.
+- Real-scan segmentation smoke coverage on the bundled canonical Orthocad sample
+  scans, including crown-count regression floors.
+- Learned-vs-heuristic benchmark hooks on synthetic clean, crowded, and
+  contacting-crown arches; the heuristic/hybrid path remains the no-dependency
+  fallback.
 - A guided review dashboard leads the "Review your plan" step with a single
   honest verdict (`ready` / `needs-review` / `cannot-assess`) plus edit-diff,
   warnings, root/bone, and print-readiness cards. It classifies findings by
@@ -107,26 +112,30 @@ What exists:
 
 Why it is not higher:
 
-- Segmentation still needs more labelled real-scan validation.
-- Learned ONNX segmentation is still optional and not yet benchmarked as a clear
-  improvement over the heuristic on crowded/contacting arches.
+- Segmentation still needs more labelled real-scan validation across varied
+  scanners, arch shapes, crowding patterns, and restorations.
+- Learned ONNX segmentation is wired and benchmarked, but production-quality
+  weights and real-case benchmark deltas are still optional/offline expansion.
 - Occlusion dynamics, bite force, periodontal status, and biological response are
   intentionally not inferred from STL surfaces.
 
 What reaching the ≥9/10 target requires:
 
 - Reviewed open-dataset benchmarks with clear provenance and no PHI.
-- Stronger segmentation backend with measurable improvement on crowded/contacting
-  arches.
+- Stronger segmentation backend or supplied weights with measurable improvement
+  on labelled crowded/contacting real arches.
 - Full-geometry collision/IPR already exists for reviewed workspace assets; the
   next lift is stronger segmentation so more cases need less manual cleanup.
 - Regression dashboards that track metric deltas across benchmark releases.
 
 ## Track 3: CBCT Root/Bone-Aware Planning From Raw Volume
 
-Current rating: ~1-2/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Wave 4 / Phase 12a -> 12b -> 12c). The longest road by far -
-raw-volume segmentation plus auto-registration plus validation.
+Current rating: ~8.4/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
+operations", Phase 12a -> 12b -> 12c). Phase 12 is implemented for the intended
+safety-gated scope: raw-volume and automatic-registration outputs are proposals
+only until reviewed and explicitly accepted. The lower score reflects true layer
+maturity beyond the Phase 12 checklist: sparse masks are caller-supplied, and
+open-volume validation is still thin.
 
 What exists:
 
@@ -136,22 +145,41 @@ What exists:
 - Root/bone-aware checks and root-aware movement when trusted reviewed anatomy is
   present.
 - Fail-closed behavior when registration or reviewed anatomy is unavailable.
+- Optional raw-volume sparse-mask proposal path that emits `PROPOSED` root
+  centerlines, tooth axes, and alveolar-bone records into the reviewed-anatomy
+  pipeline without storing volume bytes in plan JSON.
+- Automatic STL-to-CBCT registration proposal wrapper with quality metrics and
+  explicit human acceptance gating.
+- Synthetic volume benchmarks and fail-closed tests proving unaccepted
+  registration, proposed anatomy, optional-extra absence, and rejected anatomy do
+  not promote a plan to trusted root/bone-aware behavior.
+- Proposal quality aids including connected-component cleanup, dropped-noise
+  counts, field-boundary truncation flags, centerline metrics, and confidence
+  notes for reviewer attention.
 
 Why it is not higher:
 
-- The application does not yet segment roots or bone from raw CBCT volumes.
-- Auto-registration is not a default accepted workflow.
-- There are no volume-processing fixtures or reviewed open CBCT benchmark cases.
+- The raw-volume path consumes caller-supplied sparse masks/labels; it is not a
+  bundled clinical-grade CBCT segmentation model with validated weights.
+- Auto-registration remains a proposal workflow and never becomes trusted without
+  explicit human acceptance.
+- Benchmarks are synthetic/open and fail-closed oriented; broader reviewed
+  open-volume cases and real-world validation remain future work.
+- Volume viewing, clinical fit guarantees, diagnosis, material response, and
+  physical-use validation remain outside the core software target.
 
 What reaching the ≥9/10 target requires:
 
-- Optional volume-processing backend that proposes roots, axes, and bone
-  boundaries from CBCT while keeping proposals untrusted until human review.
-- Auto-registration proposal path with quality metrics and human acceptance.
-- Synthetic and reviewed open-volume benchmarks.
-- End-to-end fail-closed tests proving raw-volume absence, optional-extra
-  absence, and rejected anatomy never promote a plan to trusted root/bone-aware
-  behavior.
+- No remaining Phase 12 implementation item is tracked in `TODO.md`; Phase 12a,
+  12b, and 12c are complete as the safety-gated proposal workflow.
+- Keep raw-volume proposal, auto-registration, and fail-closed benchmark tests
+  green as the model contracts evolve.
+- Expand reviewed non-PHI/open-volume benchmark cases with clear provenance.
+- Add stronger optional segmentation backends or external-tool adapters when
+  model weights and datasets can be used under compatible licenses.
+- Preserve the untrusted-proposal boundary: raw-volume outputs and automatic
+  registrations must require deterministic checks plus explicit human review
+  before any root/bone-aware behavior is trusted.
 
 ## Track 4: In-App AI Assistant (Chat)
 
