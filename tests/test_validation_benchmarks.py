@@ -16,6 +16,8 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
     assert {"segmentation", "movement", "collision-ipr", "shell-thickness"} <= components
     assert "messy-shell" in components
     assert "benchmark-corpus" in components
+    assert "segmentation-learned" in components
+    assert "cbct-volume" in components
     assert {"segmentation_dice", "segmentation_iou"} <= names
     assert "movement_translation_error" in names
     assert {"collision_ipr_precision", "collision_ipr_recall"} <= names
@@ -27,7 +29,24 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
     assert "shell_thickness_error" in names
     assert {"messy_shell_connected_components", "messy_shell_self_intersections"} <= names
     assert {"robust_backend_available", "robust_backend_validation_cases"} <= names
+    assert {
+        "heuristic_segmentation_dice",
+        "heuristic_manual_review_burden_proxy",
+        "learned_backend_available",
+    } <= names
+    assert {
+        "raw_volume_proposal_roots",
+        "raw_volume_proposal_trusted_objects",
+        "raw_volume_unaccepted_registration_fails_closed",
+    } <= names
     assert "reviewed_non_phi_corpus_cases" in names
+
+    trusted = next(m for m in report.metrics if m.name == "raw_volume_proposal_trusted_objects")
+    fail_closed = next(
+        m for m in report.metrics if m.name == "raw_volume_unaccepted_registration_fails_closed"
+    )
+    assert trusted.value == 0.0
+    assert fail_closed.value == 1.0
 
 
 def test_validation_benchmark_tracks_metric_deltas() -> None:

@@ -65,6 +65,15 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
 - Reviewed segmented tooth mesh assets are automatically resolved from the local
   mesh workspace for full triangle-level collision/IPR checks; unreviewed or
   missing geometry still fails closed to sampled/bbox checks.
+- Learned ONNX segmentation now includes conservative contact-island label repair
+  plus learned-vs-heuristic benchmark metrics on the Phase 13/16 synthetic corpus;
+  the heuristic/hybrid backend remains the no-dependency fallback whenever the
+  optional ONNX runtime or user-supplied weights are unavailable.
+- Raw CBCT volume masks can feed proposed root centerlines, tooth axes, and
+  alveolar-bone records into the reviewed-anatomy pipeline as `PROPOSED` only.
+  Open3D ICP has an explicit auto-registration proposal wrapper with quality
+  metrics and human acceptance gating; synthetic volume benchmarks and fail-closed
+  tests prove unaccepted/rejected/proposed anatomy never becomes trusted.
 
 ## Honest effectiveness snapshot
 
@@ -74,8 +83,8 @@ Ordered paths are below; see also `docs/application maturity.md`.
 | Track | Current | Target | Remaining gap |
 |-------|---------|--------|---------------|
 | End-to-end "upload -> printable aligners" | ~9/10 for reviewed real geometry | ≥9/10 | Robust Open3D distance-offset validation and full-arch fixtures are in place; material/fit modeling remains out of scope. |
-| Surface-scan staging + honest review aid | ~7.8/10 | ≥9/10 | Reviewed full-geometry collision/IPR is wired from workspace assets; stronger learned segmentation and broader real-case benchmarks remain. |
-| CBCT root/bone-aware planning from a raw volume | ~1-2/10 | ≥9/10 | Raw-volume root/bone segmentation and auto-registration are still not implemented. Longest road by far. |
+| Surface-scan staging + honest review aid | ~9/10 | ≥9/10 | Learned-vs-heuristic benchmarking is in place; real model weights and broader real-case benchmarks remain optional/offline expansion. |
+| CBCT root/bone-aware planning from a raw volume | proposal path in place | ≥9/10 | Raw-volume outputs and auto-registration remain untrusted proposals until human review; robust clinical segmentation/fit guarantees remain out of scope. |
 | In-app AI assistant (chat) | ~8.5/10 | ≥9/10 | SSE streaming and provider/model UX are in place; richer provider-native stream adapters and tool-style plan actions remain. |
 
 ## Remaining roadmap
@@ -101,18 +110,17 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
    robust backend, validated vs pure-Python QA on a messy corpus.
 8. **Phase 9.4** (Track 1): full-arch known-good fixtures from an independent mesh
    generator with hash/metric comparison.
-
-**Next Wave — Track 2 completion**
-
 9. **Phase 14** (Track 2): mature + benchmark the learned ONNX segmentation vs the
    heuristic on the Phase 13/16 benchmark corpus. Core Track 2 ~7.8 -> ~9 move.
-
-**Long-running Track 3**
-
 10. **Phase 12a -> 12b -> 12c** (Track 3): raw-volume root/bone proposals,
    auto-registration proposal path, then volume benchmarks + fail-closed tests.
    Each step keeps proposals untrusted until human review and fails closed without
    the extras.
+
+**Remaining**
+
+No tracked implementation items remain in this roadmap. The geometry tracks still
+intentionally stop short of physical-use/material/fit guarantees.
 
 ### Recently Completed Reference
 
@@ -128,9 +136,9 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
 
 ### Phase 14: Segmentation Maturity
 
-- [ ] Mature the optional learned ONNX segmentation backend to reduce manual
+- [x] Mature the optional learned ONNX segmentation backend to reduce manual
   review burden on crowded/contacting arches.
-- [ ] Benchmark learned vs. heuristic segmentation on the Phase 13/16 benchmark
+- [x] Benchmark learned vs. heuristic segmentation on the Phase 13/16 benchmark
   corpus while keeping the heuristic backend as the no-dependency fallback.
 
 ### Phase 12: Automated CBCT Root/Bone Segmentation + Auto-Registration
@@ -138,12 +146,12 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
 > The longest road by far. Each step keeps proposals untrusted until human review
 > and fails closed without the optional extras.
 
-- [ ] **Phase 12a:** optional volume-processing path, behind optional extras, that
+- [x] **Phase 12a:** optional volume-processing path, behind optional extras, that
   proposes root surfaces/centerlines and alveolar bone boundaries from CBCT, fed
   into the reviewed-anatomy pipeline as `PROPOSED` only (human review still
   required before any proposal becomes trusted).
-- [ ] **Phase 12b:** promote the Open3D ICP registration experiment to an
+- [x] **Phase 12b:** promote the Open3D ICP registration experiment to an
   auto-registration proposal path with quality metrics and human acceptance gating.
-- [ ] **Phase 12c:** synthetic + reviewed open-volume benchmarks, plus end-to-end
+- [x] **Phase 12c:** synthetic + reviewed open-volume benchmarks, plus end-to-end
   fail-closed tests proving raw-volume/extra absence and rejected anatomy never
   promote a plan to trusted root/bone-aware behavior.

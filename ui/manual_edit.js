@@ -26,6 +26,7 @@ export const NUDGE_STEP_MM = 0.2;
 // from typing in a 50 mm target), NOT a clinical or per-stage movement cap - the
 // engine's movement_caps rules own those and apply after Generate Plan re-stages.
 export const TARGET_LIMIT_MM = 4;
+export const TARGET_CAUTION_MM = 1.5;
 
 // Authored targets live in a single stage; Generate Plan re-stages from there.
 export const TARGET_STAGE = 1;
@@ -65,6 +66,26 @@ export function targetFor(rows, tooth, stage = TARGET_STAGE) {
 // Resultant in-plane magnitude, for a readout. Never implies biomechanics.
 export function targetMagnitudeMm(target) {
   return Math.hypot(target?.x || 0, target?.y || 0);
+}
+
+export function targetWarningTier(target, { caution = TARGET_CAUTION_MM, limit = TARGET_LIMIT_MM } = {}) {
+  const magnitude = targetMagnitudeMm(target);
+  if (magnitude >= limit) return "limit";
+  if (magnitude >= caution) return "caution";
+  return "ok";
+}
+
+export function targetStatusText(target, options = {}) {
+  const magnitude = targetMagnitudeMm(target);
+  const tier = targetWarningTier(target, options);
+  if (tier === "limit") {
+    return `At the ${TARGET_LIMIT_MM.toFixed(1)} mm guided edit limit. Use smaller changes or technician review.`;
+  }
+  if (tier === "caution") {
+    return `${magnitude.toFixed(1)} mm total shift. Review warnings after rebuilding the plan.`;
+  }
+  if (magnitude > 0) return `${magnitude.toFixed(1)} mm total shift.`;
+  return "No guided shift yet.";
 }
 
 // Return a NEW rows array with `tooth`'s target nudged by `deltaMm` on `axis`.

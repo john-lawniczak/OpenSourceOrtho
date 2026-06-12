@@ -149,6 +149,7 @@ export const state = {
   manualEdit: {
     selectedTooth: null,
     status: "",
+    undoStack: [],
   },
   // Advisory auto-segmentation proposal (POST /api/segment). Never auto-applied:
   // `applied` holds only what the user explicitly accepted (and may have corrected).

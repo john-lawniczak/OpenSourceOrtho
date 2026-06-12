@@ -165,15 +165,9 @@
 
           <section class="gstep" data-gstep="plan">
             <h3>2 · Which teeth move, and how long</h3>
-            <p class="guided-define"><strong>What is a stage?</strong> A stage is one aligner tray — a single step in the sequence. Each tray nudges your teeth a little, and you wear it for the number of days you choose before swapping to the next one. More movement needed means more stages, which means more trays and more total time.</p>
-            <div class="viewer-legend-card">
-              <h4>Reading the 3D view</h4>
-              <p><strong>Click a tooth to hold it still</strong> — it turns blue-grey and the plan leaves it where it is. Click it again to let it move. (You can also untick it in the list below.)</p>
-              <ul class="viewer-legend" aria-label="What the 3D markers mean">
-                <li><span class="legend-swatch dot-move" aria-hidden="true"></span> A tooth you can click to hold still</li>
-                <li><span class="legend-swatch dot-hold" aria-hidden="true"></span> <strong>Held still</strong> (blue-grey) — the plan will not move it</li>
-                <li><span class="legend-swatch arrow" aria-hidden="true"></span> Which way a tooth is planned to move (simulated; the Details slider scales it)</li>
-              </ul>
+            <div class="guided-action-strip">
+              <span>Click a tooth in 3D to hold or release it.</span>
+              <span>Held teeth turn blue-grey.</span>
             </div>
             <div class="guided-build">
               <label>What are you exploring?
@@ -187,12 +181,9 @@
               </label>
               <button class="primary-action" id="guidedBuild" type="button">Build my plan</button>
             </div>
-            <p class="guided-hint">"Build my plan" turns your scan into a step-by-step sequence of small tooth movements (the aligner stages). You can then review it, preview it in 3D, and export the print files.</p>
             <p id="guidedBuildStatus" class="guided-status" hidden></p>
-            <p class="guided-hint">These are the teeth the plan moves. Untick any you'd like to hold still (or click it in the 3D view below).</p>
             <div id="guidedTeeth" class="guided-teeth"></div>
             <div id="guidedPlanViewerHost" class="guided-viewer-host"></div>
-            <p class="guided-hint">The 3D view appears once you've loaded a scan and built your plan.</p>
             <h4>How long should each tray be worn?</h4>
             <div id="guidedDuration" class="guided-duration">
               <button data-wear="10" type="button">Balanced · 10-day trays</button>
@@ -203,19 +194,50 @@
               </details>
             </div>
             <p id="guidedDurationSummary" class="guided-hint"></p>
+            <details class="guided-help">
+              <summary>What is a stage?</summary>
+              <p>A stage is one aligner tray. More movement usually means more stages and more total time.</p>
+            </details>
           </section>
 
           <section class="gstep" data-gstep="details">
-            <h3>3 · Small details (optional)</h3>
-            <p>Make the on-screen movement easier to see — this only changes the preview, not the plan.</p>
-            <label class="guided-range">Preview movement scale
-              <input id="guidedExaggeration" type="range" min="1" max="40" step="1" value="12" />
-              <span id="guidedExaggerationValue">×12</span>
-            </label>
-            <p class="guided-hint">Real aligners move teeth a fraction of a millimeter per stage — too small to see on screen. This slider multiplies the movement in the 3D preview only, so you can actually watch it (×12 means shown twelve times larger than reality). Your saved plan and print files always use the true, un-exaggerated values.</p>
-            <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
-            <p class="guided-hint">Drag the scale slider above and watch the blue arrows in the 3D view grow or shrink — each arrow shows which way a tooth is planned to move. You can still click a tooth's dot here to hold it still. Movement shown is simulated.</p>
-            <p class="viewer-caveat">Want fine control — per-tooth movement caps, attachments, IPR, and the raw plan JSON? Switch to the Technician view with the toggle in the sidebar.</p>
+            <h3>3 · Small edits</h3>
+            <div class="guided-edit-layout">
+              <div>
+                <div class="guided-action-strip">
+                  <span>Click a tooth to select it.</span>
+                  <span>Nudge in 0.2 mm steps.</span>
+                </div>
+                <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
+                <label class="guided-range">Preview scale
+                  <input id="guidedExaggeration" type="range" min="1" max="40" step="1" value="12" />
+                  <span id="guidedExaggerationValue">×12</span>
+                </label>
+              </div>
+              <aside class="guided-edit-card" aria-label="Guided tooth edit controls">
+                <div class="guided-edit-top">
+                  <h4 id="guidedEditTitle">No tooth selected</h4>
+                  <button id="guidedEditUndo" type="button" aria-label="Undo last guided edit" disabled>Undo</button>
+                </div>
+                <p id="guidedEditStatus" class="guided-edit-status">Select a tooth in the 3D view.</p>
+                <div class="guided-nudge-pad" role="group" aria-label="Nudge selected tooth">
+                  <button data-manual-nudge="y+" type="button" aria-label="Nudge selected tooth forward">↑</button>
+                  <button data-manual-nudge="x-" type="button" aria-label="Nudge selected tooth left">←</button>
+                  <button data-manual-nudge="x+" type="button" aria-label="Nudge selected tooth right">→</button>
+                  <button data-manual-nudge="y-" type="button" aria-label="Nudge selected tooth back">↓</button>
+                </div>
+                <div class="guided-edit-actions">
+                  <button id="guidedTargetReset" type="button" disabled>Reset tooth</button>
+                  <button id="guidedClearSelection" type="button" disabled>Deselect</button>
+                </div>
+                <div id="guidedEditReadout" class="guided-edit-readout"></div>
+                <button class="primary-action" id="guidedRebuild" type="button">Rebuild plan</button>
+                <details class="guided-help">
+                  <summary>What these edits do</summary>
+                  <p>Guided edits author crown translation only. The engine rebuilds stages and warnings after you rebuild the plan.</p>
+                </details>
+              </aside>
+            </div>
           </section>
 
           <section class="gstep" data-gstep="review">
@@ -227,8 +249,16 @@
 
           <section class="gstep" data-gstep="preview">
             <h3>5 · See the full 3D plan</h3>
-            <p>A <strong>stage</strong> is one aligner tray — a single step in the sequence. Stage&nbsp;0 is your starting position; each later stage nudges the teeth a little closer to the goal, and you would wear that tray for the number of days you chose before moving to the next. Drag the stage slider to watch the planned movement tray by tray.</p>
+            <div class="guided-compare" aria-label="Compare before and after">
+              <button data-guided-view="current" type="button">Before</button>
+              <button data-guided-view="planned" type="button">After</button>
+              <button data-guided-view="overlay" type="button">Overlay</button>
+            </div>
             <div id="guidedPreviewHost"></div>
+            <details class="guided-help">
+              <summary>Stage slider</summary>
+              <p>Stage 0 is the starting position. Later stages show each tray in sequence.</p>
+            </details>
           </section>
 
           <section class="gstep" data-gstep="print">

@@ -21,6 +21,7 @@ from orthoplan.segmentation.learned import (
     SegmenterUnavailable,
     build_cell_features,
     load_learned_segmenter,
+    repair_short_label_runs,
     resolve_weights_by_arch,
     segments_from_labels,
 )
@@ -153,6 +154,27 @@ def test_segment_runs_injected_runner_end_to_end() -> None:
     order = default_arch_order("maxillary")
     assert captured["arch"] == "maxillary"
     assert [s.tooth_value for s in segments] == [order[0], order[1]]
+
+
+def test_learned_segmenter_repairs_short_contact_label_islands() -> None:
+    vertices = _triangle_vertices(5)
+    order = default_arch_order("maxillary")
+    segmenter = LearnedMeshSegmenter(
+        {"maxillary": Path("dummy.onnx")},
+        runner=lambda *_: [1, 1, 2, 1, 1],
+        min_label_run=2,
+    )
+
+    segments = segmenter.segment(vertices, arch="maxillary")
+
+    assert [s.tooth_value for s in segments] == [order[0]]
+    assert len(segments[0].triangles) == 5
+
+
+def test_repair_short_label_runs_is_conservative() -> None:
+    assert repair_short_label_runs([1, 2, 1], min_run=2) == [1, 1, 1]
+    assert repair_short_label_runs([1, 2, 2, 1], min_run=2) == [1, 2, 2, 1]
+    assert repair_short_label_runs([0, 2, 0], min_run=2) == [0, 2, 0]
 
 
 def test_segment_raises_for_unconfigured_arch() -> None:

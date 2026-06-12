@@ -343,6 +343,10 @@ document.body.addEventListener("click", (event) => {
     generatePlan();
     renderAll();
   }
+  if (button?.id === "guidedRebuild") {
+    generatePlan();
+    renderAll();
+  }
   if (button?.id === "toothLabelToggle") {
     state.showToothLabels = !state.showToothLabels;
     renderAll();
@@ -388,15 +392,27 @@ document.body.addEventListener("click", (event) => {
   if (button?.dataset.manualNudge) {
     applyManualNudge(button.dataset.manualNudge);
   }
-  if (button?.id === "manualTargetReset") {
+  if (button?.id === "manualTargetReset" || button?.id === "guidedTargetReset") {
     const tooth = state.manualEdit.selectedTooth;
     if (tooth) {
+      pushManualUndo();
       state.rows = clearTarget(state.rows, tooth);
       renderAll();
     }
   }
-  if (button?.id === "manualClearSelection") {
+  if (button?.id === "manualClearSelection" || button?.id === "guidedClearSelection") {
     state.manualEdit.selectedTooth = null;
+    renderAll();
+  }
+  if (button?.id === "guidedEditUndo") {
+    const previous = state.manualEdit.undoStack?.pop();
+    if (previous) {
+      state.rows = previous;
+      renderAll();
+    }
+  }
+  if (button?.dataset.guidedView) {
+    state.view = button.dataset.guidedView;
     renderAll();
   }
   if (button?.id === "loadDemo") {
@@ -730,11 +746,18 @@ function renderCaseHandoff(review) {
 // "x-" | "x+" | "y-" | "y+". Gated on confirmed scan units so a mm nudge is
 // never authored against unverified scale. Movement itself is recomputed by the
 // engine on the next evaluation (the UI never computes poses).
+function pushManualUndo() {
+  const stack = state.manualEdit.undoStack || [];
+  stack.push(state.rows.map((row) => ({ ...row })));
+  state.manualEdit.undoStack = stack.slice(-20);
+}
+
 function applyManualNudge(direction) {
   const tooth = state.manualEdit.selectedTooth;
   if (!tooth || !scaleConfirmed(state.scanUnits)) return;
   const axis = direction[0]; // "x" or "y"
   const delta = direction.endsWith("-") ? -NUDGE_STEP_MM : NUDGE_STEP_MM;
+  pushManualUndo();
   state.rows = nudgeTarget(state.rows, tooth, axis, delta);
   renderAll();
 }
@@ -759,6 +782,7 @@ function loadSyntheticDemo() {
   el("planId").value = "synthetic-crowding-demo";
   el("wearInterval").value = "30";
   el("exaggeration").value = "12";
+  el("scanUnits").value = "mm";
   el("simpleGoal").value = "crowding";
   el("simpleAcknowledged").checked = true;
   renderAll();

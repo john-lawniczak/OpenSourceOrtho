@@ -79,7 +79,7 @@ function ensureViewer() {
     // equivalent of the checkbox list). Everywhere else it selects the tooth for
     // manual target authoring (only honored when scan units are confirmed).
     viewer.setSelectionHandler((tooth) => {
-      if (guidedSelectionStep()) {
+      if (guidedSelectionStep() === "plan") {
         toggleExcludedTooth(tooth);
       } else {
         state.manualEdit.selectedTooth = tooth;

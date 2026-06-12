@@ -20,6 +20,7 @@ from orthoplan.registration_auto import (
     RegistrationBackendUnavailable,
     auto_register_icp,
     open3d_available,
+    propose_auto_registration,
 )
 
 
@@ -106,6 +107,33 @@ def test_accepted_registration_alone_is_not_root_bone_aware() -> None:
         registrations=[_reg(accepted=True, with_quality=True)],
     )
     assert root_bone_aware_ready(registered) is False
+
+
+def test_auto_registration_proposal_requires_human_acceptance(monkeypatch) -> None:
+    def fake_icp(*_args, **kwargs):
+        return RegistrationTransform(
+            id=kwargs["registration_id"],
+            source_stl_asset_id=kwargs["source_stl_asset_id"],
+            target_cbct_record_id=kwargs["target_cbct_record_id"],
+            method=RegistrationMethod.AUTOMATIC_ICP,
+            quality=RegistrationQuality(method="fake-icp", rmse_mm=0.1, fitness=0.9),
+            accepted=False,
+        )
+
+    monkeypatch.setattr("orthoplan.registration_auto.auto_register_icp", fake_icp)
+    proposal = propose_auto_registration(
+        [(0, 0, 0)],
+        [(0, 0, 0)],
+        registration_id="auto-reg",
+        source_stl_asset_id="scan",
+        target_cbct_record_id="cb",
+    )
+
+    assert proposal.status == "proposed"
+    assert proposal.requires_human_acceptance is True
+    assert proposal.transform.accepted is False
+    assert proposal.transform.is_acceptable is False
+    assert "review metrics" in proposal.transform.quality.notes[-1]
 
 
 @pytest.mark.skipif(open3d_available(), reason="Open3D installed; tests the fail-closed path")
