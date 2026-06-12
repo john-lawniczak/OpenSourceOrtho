@@ -9,18 +9,21 @@
 // Opening it snapshots the user's working state and restores it on exit, so
 // nothing the sample does leaks into the user's own plan, uploads, or editors.
 //
-// The 3D preview shows the real STL scans (static) in OVERLAY view with a planned
-// movement layer animating crowded -> aligned across stages as the slider drags;
-// per-tooth movement over a whole-arch shell is necessarily schematic.
+// The 3D preview shows the real STL scans in OVERLAY view. On entry the sample
+// also runs the on-device auto-segmenter on the bundled scans and applies the
+// per-tooth draft (see prepareSampleSegmentation), so the planned layer animates
+// the scan's own crowns moving crowded -> aligned across stages as the slider
+// drags. If segmentation is unavailable, movement falls back to markers/arrows.
 
 import { el, state } from "./state.js";
+import { applySegmentation, proposeSegmentation } from "./segment.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 
 // State keys the sample overwrites and therefore must save/restore.
 const SNAPSHOT_STATE_KEYS = [
   "rows", "files", "file", "scanSources", "caseRecords", "recordUploadStatus", "useDemoMeshes", "demoInitialOffsets",
   "view", "activeStep", "userMode", "scanArchFilter", "simpleGoal",
-  "simpleAcknowledged", "dim", "sampleStatus", "scanRenderStatus",
+  "simpleAcknowledged", "dim", "sampleStatus", "scanRenderStatus", "availability",
 ];
 // DOM field values the sample overwrites and must restore.
 const SNAPSHOT_FIELDS = ["planTitle", "planId", "wearInterval", "exaggeration", "scanUnits", "scanArch", "simpleGoal"];
@@ -53,6 +56,15 @@ export function enterSample() {
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
   state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null, registeredView: false };
   state.manualEdit = { selectedTooth: null, status: "", undoStack: [] };
+  // Fresh data manifest for the sample plan (the user's object is snapshotted
+  // above and restored on exit): only the bundled intraoral scans are "available"
+  // until the sample's segmentation is applied (prepareSampleSegmentation).
+  state.availability = {
+    ...state.availability,
+    intraoral_scan: true, segmented_teeth: false, roots: false, cbct: false,
+    periodontal_status: false, occlusion_scan: false, photos: false,
+    radiographs: false, clinician_notes: false,
+  };
 
   // Isolated walkthrough plan: a simulated crowding correction over 4 stages
   // (0 = the starting point), paired with the two real test-case STL scans so the
@@ -80,13 +92,52 @@ export function enterSample() {
   state.guided.step = "upload";
   state.simpleAcknowledged = true;
   state.sampleStatus =
-    "A simulated walkthrough so you can see how a plan animates. Not a real patient and not a medical device.";
+    "A simulated walkthrough so you can see how a plan animates. Segmenting the bundled scans into "
+    + "individual 3D teeth on this machine (a few seconds)... Not a real patient and not a medical device.";
   el("planTitle").value = "Sample test case";
   el("planId").value = "sample-test-case";
   el("wearInterval").value = "10";
-  el("exaggeration").value = "16";
+  // x8 keeps the segmented real crowns visibly moving without flinging them off
+  // the arch (the schematic demo uses higher values, but those are placeholder
+  // pegs - real crowns at true scan scale read as broken above ~x8).
+  el("exaggeration").value = "8";
   el("scanUnits").value = "mm";
   el("simpleAcknowledged").checked = true;
+}
+
+// Prepare the sample's moving teeth: run the on-device auto-segmenter on the two
+// bundled scans and apply the resulting per-tooth draft, so the 3D preview moves
+// the scan's own crowns stage by stage instead of marker arrows. Pre-applying a
+// model-generated draft is sample-only behaviour: the sample is an isolated,
+// clearly-labelled simulation (a user's own plan still requires explicit review
+// and apply in the segmentation panel), and exit restores the user's state.
+// Returns true when per-tooth movement is ready, false on fallback.
+export async function prepareSampleSegmentation() {
+  if (!state.sample.active) return false;
+  const seg = state.segmentation;
+  await proposeSegmentation();
+  // The user may exit (or restart) the sample while the segmenter runs; apply
+  // only when THIS sample run's segmentation is still the active one.
+  if (!state.sample.active || state.segmentation !== seg) return false;
+  if (!seg.proposal) {
+    state.sampleStatus =
+      "A simulated walkthrough. Per-tooth segmentation is unavailable, so planned movement is shown "
+      + "with markers and arrows. Not a real patient and not a medical device.";
+    return false;
+  }
+  applySegmentation();
+  if (!seg.applied) return false;
+  // The sample plan now carries per-tooth meshes; reflect that in its data
+  // manifest (replace, never mutate - the user's object is snapshotted).
+  state.availability = { ...state.availability, segmented_teeth: true };
+  seg.status =
+    "Sample: an auto-segmentation draft was applied for you so the 3D preview can move each tooth. "
+    + "In your own plan you review and apply segmentation yourself.";
+  state.sampleStatus =
+    "A simulated walkthrough: each tooth is segmented from the bundled scans, and the 3D preview "
+    + "animates the planned movement — drag the stage slider or press Play. "
+    + "Not a real patient and not a medical device.";
+  return true;
 }
 
 export function exitSample() {
