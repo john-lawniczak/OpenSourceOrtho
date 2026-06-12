@@ -1,30 +1,9 @@
-"""Optional learned (ONNX) tooth segmenter, behind the same ToothSegment contract.
+"""Optional local ONNX tooth segmenter behind the ToothSegment contract.
 
-This is the on-device learned backend the heuristic was always a fallback for. It
-drops into ``load_local_segmenter`` (``segmentation/auto.py``) WITHOUT changing any
-caller: it returns the same :class:`ToothSegment` proposals as the heuristic, so
-``segmentation_api``, ``mesh_export``, ``api.render_meshes``, and the viewer are
-untouched.
-
-Phase 1 ships the CONTRACT, not a model. There is no committed model and no torch
-at runtime (see docs/segmentation-learned-backend.md). The backend is therefore
-designed to be *inert by default*:
-
-- It needs the optional ``ml-seg`` extra (``onnxruntime`` + ``numpy``); neither is
-  imported at module load, so importing this file is always safe in the light core.
-- It needs user-supplied weights resolved from a path / env var; weights are never
-  committed (size + provenance/licensing - see the doc's "Model availability").
-- When onnxruntime OR weights are missing, the factory raises
-  :class:`SegmenterUnavailable`, which ``load_local_segmenter`` catches to fall
-  back to the always-on heuristic. The chosen backend name is surfaced in
-  ``_segmenter_metadata`` either way.
-
-On-device only: like the heuristic, inference runs locally. Scan bytes (PHI) never
-leave the machine - there is no hosted-model path here.
-
-Everything this produces is an advisory PROPOSAL for human review: never a
-diagnosis, a treatment decision, or a claim that care is needed, possible, safe, or
-complete.
+No model is committed. The backend is inert unless the optional ``ml-seg`` extra
+and user-supplied weights are present; otherwise callers fall back to the
+heuristic. Outputs are advisory proposals for human review, never diagnosis,
+treatment clearance, or physical-use approval.
 """
 
 from __future__ import annotations
@@ -41,38 +20,21 @@ from orthoplan.segmentation.heuristic import (
     default_arch_order,
 )
 
-# User-supplied weights location: a directory holding ``maxillary.onnx`` and
-# ``mandibular.onnx``, or a single ``.onnx`` file used for both arches. Resolved at
-# runtime so the project never commits or redistributes weights.
 _WEIGHTS_ENV = "OPENSOURCE_ORTHO_SEG_WEIGHTS"
 _ARCH_WEIGHT_FILE: dict[ArchName, str] = {
     "maxillary": "maxillary.onnx",
     "mandibular": "mandibular.onnx",
 }
-# Per-cell feature width the exported model is expected to consume: 9 vertex coords
-# + 3 face normal + 3 relative position (see docs - MeshSegNet-style preprocessing).
 _FEATURE_DIM = 15
-# Class convention the exported model MUST emit: 0 = gingiva (discarded), 1..N =
-# teeth in canonical FDI arch order. The export spike maps the model's raw classes
-# onto this so labelling stays consistent with the heuristic.
 _GINGIVA_CLASS = 0
-# Placeholder per-tooth confidence until a real model supplies softmax probabilities.
-# Like the heuristic, confidence stays below 1.0: this is a draft, not a measurement.
 _DEFAULT_CONFIDENCE = 0.5
+_DEFAULT_MIN_LABEL_RUN = 2
 
-# A runner maps (vertices, arch, weights_path) -> one integer class label per face.
-# Injectable so the contract logic (label -> ToothSegment) is testable without
-# onnxruntime or weights; the default runner does the numpy + ONNX work.
 FaceLabelRunner = Callable[[list[Vec3], ArchName, Path], list[int]]
 
 
 class SegmenterUnavailable(RuntimeError):
-    """The learned backend cannot run (no onnxruntime, or no resolvable weights).
-
-    This is the explicit "inert" signal Phase 1 requires: ``load_local_segmenter``
-    catches it and falls back to the heuristic, so the core never depends on the
-    optional ``ml-seg`` extra.
-    """
+    """The learned backend cannot run, so callers should use the fallback."""
 
 
 def _onnxruntime_available() -> bool:
@@ -224,6 +186,33 @@ def segments_from_labels(
     return segments
 
 
+def repair_short_label_runs(labels: list[int], *, min_run: int = _DEFAULT_MIN_LABEL_RUN) -> list[int]:
+    """Replace short non-gingiva label islands with the surrounding label.
+
+    ONNX mesh classifiers emit one label per face. On crowded/contacting arches,
+    isolated one-face flips near interproximal contacts add manual cleanup without
+    changing the broad tooth boundary. This conservative repair only touches a
+    short run when the same non-gingiva label appears on both sides.
+    """
+
+    if min_run <= 1 or len(labels) < 3:
+        return labels
+    repaired = list(labels)
+    start = 0
+    while start < len(labels):
+        label = labels[start]
+        end = start + 1
+        while end < len(labels) and labels[end] == label:
+            end += 1
+        if 0 < start and end < len(labels) and 0 < (end - start) < min_run:
+            left = labels[start - 1]
+            right = labels[end]
+            if left == right and left != _GINGIVA_CLASS and label != left:
+                repaired[start:end] = [left] * (end - start)
+        start = end
+    return repaired
+
+
 def _onnx_face_labels(vertices: list[Vec3], arch: ArchName, weights_path: Path) -> list[int]:
     """Default runner: build features, run the ONNX session, return per-face labels.
 
@@ -257,9 +246,11 @@ class LearnedMeshSegmenter:
         weights_by_arch: dict[ArchName, Path],
         *,
         runner: FaceLabelRunner | None = None,
+        min_label_run: int = _DEFAULT_MIN_LABEL_RUN,
     ) -> None:
         self._weights_by_arch = weights_by_arch
         self._runner = runner or _onnx_face_labels
+        self._min_label_run = min_label_run
 
     def segment(
         self,
@@ -275,7 +266,9 @@ class LearnedMeshSegmenter:
         if not facets:
             return []
         centroids = [_tri_centroid(tri) for tri in facets]
-        labels = self._runner(vertices, arch, weights_path)
+        labels = repair_short_label_runs(
+            self._runner(vertices, arch, weights_path), min_run=self._min_label_run
+        )
         return segments_from_labels(
             facets, centroids, labels, arch=arch, tooth_values=tooth_values
         )

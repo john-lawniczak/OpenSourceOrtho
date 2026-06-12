@@ -373,6 +373,22 @@ body[data-theme="dark"] .sample-banner {
   font-size: 13px;
 }
 
+.guided-action-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.guided-action-strip span {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
 /* AI provider + key are always visible so it is obvious how to enable a real AI. */
 .ai-connector {
   display: grid;
@@ -742,6 +758,147 @@ body[data-theme="dark"] .sample-banner {
 
 .guided-duration-more > button {
   margin: 0 8px 4px 0;
+}
+
+.guided-help {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-help summary {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.guided-help p {
+  margin-top: 8px;
+  max-width: 62ch;
+  font-size: 13px;
+}
+
+.guided-edit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+}
+
+.guided-edit-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.guided-edit-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.guided-edit-top h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.guided-edit-top button,
+.guided-edit-actions button,
+.guided-compare button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.guided-edit-status {
+  border-left: 4px solid var(--accent);
+  background: var(--field);
+  color: var(--ink);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.guided-edit-status[data-tier="caution"] {
+  border-left-color: var(--warn);
+}
+
+.guided-edit-status[data-tier="limit"] {
+  border-left-color: #dc2626;
+}
+
+.guided-edit-status[data-tier="muted"] {
+  border-left-color: var(--line);
+  color: var(--muted);
+}
+
+.guided-nudge-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: repeat(3, 44px);
+  justify-content: center;
+  gap: 6px;
+}
+
+.guided-nudge-pad button {
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.guided-nudge-pad button:nth-child(1) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.guided-nudge-pad button:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.guided-nudge-pad button:nth-child(3) {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.guided-nudge-pad button:nth-child(4) {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.guided-edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.guided-edit-readout {
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guided-compare {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(74px, 1fr));
+  gap: 6px;
+  margin: 6px 0 14px;
+  max-width: 360px;
+}
+
+.guided-compare button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 /* Plain-language definition callout (e.g. "what is a stage?"). */
@@ -1764,7 +1921,8 @@ td input {
   .field-grid.compact,
   .toggle-grid,
   .review-grid,
-  .metadata-grid {
+  .metadata-grid,
+  .guided-edit-layout {
     grid-template-columns: 1fr;
   }
 }

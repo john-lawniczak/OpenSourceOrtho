@@ -13,6 +13,8 @@ import {
   scaleConfirmed,
   targetFor,
   targetMagnitudeMm,
+  targetStatusText,
+  targetWarningTier,
 } from "./manual_edit.js";
 
 test("scaleConfirmed only accepts confirmed mm units", () => {
@@ -96,6 +98,14 @@ test("targetFor returns zeros for an unauthored tooth", () => {
 test("targetMagnitudeMm is the in-plane resultant", () => {
   assert.ok(Math.abs(targetMagnitudeMm({ x: 3, y: 4 }) - 5) < 1e-9);
   assert.equal(targetMagnitudeMm(), 0);
+});
+
+test("targetWarningTier and targetStatusText summarize guided edit risk", () => {
+  assert.equal(targetWarningTier({ x: 0, y: 0 }), "ok");
+  assert.equal(targetWarningTier({ x: 1.5, y: 0 }), "caution");
+  assert.equal(targetWarningTier({ x: TARGET_LIMIT_MM, y: 0 }), "limit");
+  assert.match(targetStatusText({ x: 0.2, y: 0 }), /0\.2 mm total shift/);
+  assert.match(targetStatusText({ x: TARGET_LIMIT_MM, y: 0 }), /guided edit limit/);
 });
 
 test("clearTarget removes only the tooth's target row", () => {

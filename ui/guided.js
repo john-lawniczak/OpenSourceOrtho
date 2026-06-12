@@ -13,6 +13,7 @@
 import { el, state } from "./state.js";
 import { planJson } from "./plan.js";
 import { requestPrintPackage } from "./state.js";
+import { scaleConfirmed, targetFor, targetStatusText, targetWarningTier } from "./manual_edit.js";
 
 // Step order. Each id maps to a <section class="gstep" data-gstep="..."> panel
 // and a progress-rail dot in index.html.
@@ -123,6 +124,9 @@ export function renderGuided() {
     dot.classList.toggle("is-active", dot.dataset.gstepNav === active);
     dot.classList.toggle("is-done", done);
   });
+  document.querySelectorAll("[data-guided-view]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.guidedView === state.view);
+  });
 
   const idx = stepIndex(active);
   const back = el("guidedBack");
@@ -141,6 +145,7 @@ export function renderGuided() {
   }
 
   renderGuidedTeeth();
+  renderGuidedEdit();
   renderGuidedBuildStatus();
   renderGuidedReview();
   renderGuidedPrint();
@@ -154,6 +159,46 @@ function renderGuidedBuildStatus() {
   const text = gen.busy ? "Building your plan..." : (gen.status || "");
   status.hidden = !text;
   status.textContent = text;
+}
+
+function renderGuidedEdit() {
+  const title = el("guidedEditTitle");
+  if (!title) return;
+  const selected = state.manualEdit.selectedTooth;
+  const confirmed = scaleConfirmed(state.scanUnits);
+  const target = selected ? targetFor(state.rows, selected) : { x: 0, y: 0 };
+  const tier = targetWarningTier(target);
+  const canEdit = Boolean(selected && confirmed);
+
+  title.textContent = selected ? `Tooth ${selected}` : "No tooth selected";
+  const status = el("guidedEditStatus");
+  if (status) {
+    status.dataset.tier = selected && confirmed ? tier : "muted";
+    status.textContent = !selected
+      ? "Select a tooth in the 3D view."
+      : (!confirmed
+          ? "Set scan units to mm before nudging."
+          : targetStatusText(target));
+  }
+
+  const readout = el("guidedEditReadout");
+  if (readout) {
+    readout.textContent = selected
+      ? `x ${target.x.toFixed(2)} mm · y ${target.y.toFixed(2)} mm`
+      : "";
+  }
+
+  document.querySelectorAll(".guided-nudge-pad button").forEach((button) => {
+    button.disabled = !canEdit;
+  });
+  const undo = el("guidedEditUndo");
+  if (undo) undo.disabled = !(state.manualEdit.undoStack || []).length;
+  const rebuild = el("guidedRebuild");
+  if (rebuild) rebuild.disabled = !state.rows.length;
+  const reset = el("guidedTargetReset");
+  if (reset) reset.disabled = !canEdit;
+  const clear = el("guidedClearSelection");
+  if (clear) clear.disabled = !selected;
 }
 
 function renderGuidedTeeth() {
