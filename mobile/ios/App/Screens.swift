@@ -240,7 +240,11 @@ struct TeethAndTimeView: View {
         VStack(spacing: 16) {
             Text("Teeth + time")
                 .font(.title3.bold())
-            DentalScenePreview(stage: stage, scans: model.previewScans)
+            DentalScenePreview(
+                stage: stage,
+                scans: model.previewScans,
+                hasSelectedStl: model.scans.contains { $0.modality.lowercased() == "stl" }
+            )
                 .frame(height: 340)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             Slider(value: $stage, in: 0...12, step: 1)
@@ -378,6 +382,7 @@ struct PrintAndSendView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
     @State private var packageURL: URL?
     @State private var exportError: String?
+    @State private var packageStatus = "Preparing package..."
 
     var body: some View {
         VStack(spacing: 16) {
@@ -390,6 +395,10 @@ struct PrintAndSendView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            Text(packageStatus)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
             if let packageURL {
                 ShareLink(item: packageURL) {
                     Label("Export print package", systemImage: "square.and.arrow.up")
@@ -397,6 +406,12 @@ struct PrintAndSendView: View {
                 .buttonStyle(.borderedProminent)
                 ShareLink(item: packageURL) {
                     Label("Send to 3D printer", systemImage: "printer")
+                }
+                .buttonStyle(.bordered)
+                Button {
+                    preparePackage()
+                } label: {
+                    Label("Refresh package", systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(.bordered)
             } else {
@@ -423,8 +438,14 @@ struct PrintAndSendView: View {
         do {
             packageURL = try model.exportPackageURL()
             exportError = nil
+            if let packageURL {
+                let bytes = ((try? packageURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+                packageStatus = "Package ready: \(packageURL.lastPathComponent) · \(ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file))"
+            }
         } catch {
             exportError = "Could not prepare export package: \(error.localizedDescription)"
+            packageURL = nil
+            packageStatus = "Package is not ready."
         }
     }
 }
@@ -432,6 +453,7 @@ struct PrintAndSendView: View {
 struct DentalScenePreview: View {
     var stage: Double
     var scans: [PreviewScan]
+    var hasSelectedStl: Bool = false
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -451,6 +473,9 @@ struct DentalScenePreview: View {
     private var previewCaption: String {
         if scans.contains(where: { $0.modality.lowercased() == "stl" }) {
             return "Rendering selected STL geometry"
+        }
+        if hasSelectedStl {
+            return "Showing sample teeth preview"
         }
         if scans.contains(where: { $0.modality.lowercased() == "cbct" }) {
             return "CBCT attached; open browser/full engine for volume rendering"
@@ -650,10 +675,16 @@ struct GlossaryView: View {
     // END GENERATED GLOSSARY TERMS
 
     var body: some View {
-        List(filteredTerms, id: \.0) { term, definition in
-            VStack(alignment: .leading, spacing: 4) {
-                Text(term).font(.headline)
-                Text(definition).font(.subheadline).foregroundStyle(.secondary)
+        List {
+            ForEach(groupedTerms, id: \.letter) { group in
+                Section(group.letter) {
+                    ForEach(group.items, id: \.0) { term, definition in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(term).font(.headline)
+                            Text(definition).font(.subheadline).foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
         }
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search glossary")
@@ -665,6 +696,15 @@ struct GlossaryView: View {
         guard !needle.isEmpty else { return terms }
         return terms.filter { term, definition in
             term.lowercased().contains(needle) || definition.lowercased().contains(needle)
+        }
+    }
+
+    private var groupedTerms: [(letter: String, items: [(String, String)])] {
+        let grouped = Dictionary(grouping: filteredTerms) { item in
+            String(item.0.prefix(1)).uppercased()
+        }
+        return grouped.keys.sorted().map { letter in
+            (letter, grouped[letter, default: []].sorted { $0.0 < $1.0 })
         }
     }
 }
@@ -699,44 +739,24 @@ private struct ToothMapDiagram: View {
             let size = proxy.size
             let centerX = size.width / 2
             let centerY = size.height / 2
-            let radiusX = min(size.width * 0.43, 172)
-            let upperY = centerY - 68
-            let lowerY = centerY + 68
-            let mouthRect = CGRect(x: 16, y: 24, width: size.width - 32, height: size.height - 48)
+            let radiusX = min(size.width * 0.41, 150)
+            let upperY = centerY - 112
+            let lowerY = centerY + 112
 
             ZStack {
                 RoundedRectangle(cornerRadius: 18)
                     .fill(Color(.secondarySystemGroupedBackground))
                 Canvas { context, _ in
-                    let mouth = Path(ellipseIn: mouthRect)
-                    context.fill(mouth, with: .color(.pink.opacity(0.16)))
-                    context.stroke(mouth, with: .color(.pink.opacity(0.38)), lineWidth: 3)
+                    let upperGum = gumPath(centerX: centerX, baseY: upperY, radiusX: radiusX, upper: true)
+                    let lowerGum = gumPath(centerX: centerX, baseY: lowerY, radiusX: radiusX, upper: false)
+                    context.stroke(upperGum, with: .color(.pink.opacity(0.34)), lineWidth: 28)
+                    context.stroke(lowerGum, with: .color(.pink.opacity(0.34)), lineWidth: 28)
 
-                    let palate = Path(ellipseIn: CGRect(x: centerX - 70, y: centerY - 82, width: 140, height: 104))
-                    context.fill(palate, with: .color(.pink.opacity(0.18)))
+                    let palate = Path(ellipseIn: CGRect(x: centerX - 86, y: upperY + 12, width: 172, height: 86))
+                    context.fill(palate, with: .color(.pink.opacity(0.12)))
 
-                    let tongue = Path(ellipseIn: CGRect(x: centerX - 78, y: centerY + 20, width: 156, height: 118))
-                    context.fill(tongue, with: .color(.red.opacity(0.12)))
-
-                    var upperArch = Path()
-                    upperArch.addArc(
-                        center: CGPoint(x: centerX, y: upperY + 86),
-                        radius: radiusX,
-                        startAngle: .degrees(202),
-                        endAngle: .degrees(338),
-                        clockwise: false
-                    )
-                    context.stroke(upperArch, with: .color(.pink.opacity(0.48)), lineWidth: 34)
-
-                    var lowerArch = Path()
-                    lowerArch.addArc(
-                        center: CGPoint(x: centerX, y: lowerY - 86),
-                        radius: radiusX,
-                        startAngle: .degrees(22),
-                        endAngle: .degrees(158),
-                        clockwise: false
-                    )
-                    context.stroke(lowerArch, with: .color(.pink.opacity(0.48)), lineWidth: 34)
+                    let tongue = Path(ellipseIn: CGRect(x: centerX - 92, y: lowerY - 98, width: 184, height: 92))
+                    context.fill(tongue, with: .color(.red.opacity(0.08)))
 
                     var occlusalGap = Path()
                     occlusalGap.move(to: CGPoint(x: centerX - radiusX + 12, y: centerY))
@@ -763,7 +783,7 @@ private struct ToothMapDiagram: View {
                 Text("Patient right")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .position(x: 70, y: centerY)
+                    .position(x: 68, y: centerY)
                 Text("Patient left")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -786,14 +806,35 @@ private struct ToothMapDiagram: View {
         }
     }
 
+    private func gumPath(centerX: CGFloat, baseY: CGFloat, radiusX: CGFloat, upper: Bool) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: centerX - radiusX, y: baseY + (upper ? 96 : -96)))
+        path.addCurve(
+            to: CGPoint(x: centerX - 18, y: baseY),
+            control1: CGPoint(x: centerX - radiusX * 0.78, y: baseY + (upper ? 38 : -38)),
+            control2: CGPoint(x: centerX - radiusX * 0.32, y: baseY + (upper ? 10 : -10))
+        )
+        path.addCurve(
+            to: CGPoint(x: centerX + 18, y: baseY),
+            control1: CGPoint(x: centerX - 8, y: baseY + (upper ? -4 : 4)),
+            control2: CGPoint(x: centerX + 8, y: baseY + (upper ? -4 : 4))
+        )
+        path.addCurve(
+            to: CGPoint(x: centerX + radiusX, y: baseY + (upper ? 96 : -96)),
+            control1: CGPoint(x: centerX + radiusX * 0.32, y: baseY + (upper ? 10 : -10)),
+            control2: CGPoint(x: centerX + radiusX * 0.78, y: baseY + (upper ? 38 : -38))
+        )
+        return path
+    }
+
     private func toothPoint(label: String, centerX: CGFloat, upperY: CGFloat, lowerY: CGFloat, radiusX: CGFloat) -> CGPoint {
         let quadrant = Int(label.prefix(1)) ?? 1
         let digit = CGFloat(Int(label.suffix(1)) ?? 1)
         let side: CGFloat = (quadrant == 1 || quadrant == 4) ? -1 : 1
         let isUpper = quadrant == 1 || quadrant == 2
         let t = (digit - 1) / 7
-        let distance = 18 + t * (radiusX - 54)
-        let posteriorCurve = sin(t * .pi / 2) * 74
+        let distance = 17 + t * (radiusX - 22)
+        let posteriorCurve = t * t * 96
         let y = isUpper ? upperY + posteriorCurve : lowerY - posteriorCurve
         return CGPoint(x: centerX + side * distance, y: y)
     }
@@ -843,10 +884,10 @@ private struct ToothBadge: View {
 
     private var toothSize: CGSize {
         switch kind {
-        case .incisor: return CGSize(width: 34, height: 42)
-        case .canine: return CGSize(width: 36, height: 46)
-        case .premolar: return CGSize(width: 42, height: 40)
-        case .molar: return CGSize(width: 48, height: 42)
+        case .incisor: return CGSize(width: 30, height: 38)
+        case .canine: return CGSize(width: 32, height: 42)
+        case .premolar: return CGSize(width: 35, height: 36)
+        case .molar: return CGSize(width: 39, height: 36)
         }
     }
 }

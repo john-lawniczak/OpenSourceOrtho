@@ -372,11 +372,22 @@ private fun RefinementRow(title: String, detail: String) {
 @Composable
 fun PrintAndSendScreen(model: LiteFlowViewModel) {
     val context = LocalContext.current
-    val packageJson = remember { model.exportPackageJson() }
+    var packageJson by remember { mutableStateOf(model.exportPackageJson()) }
+    var packageStatus by remember { mutableStateOf(printPackageStatus(packageJson)) }
+
+    fun refreshPackage() {
+        packageJson = model.exportPackageJson()
+        packageStatus = printPackageStatus(packageJson)
+    }
+
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json"),
     ) { uri ->
-        uri?.let { context.writeTextToUri(it, packageJson) }
+        packageStatus = when {
+            uri == null -> "Export cancelled."
+            context.writeTextToUri(uri, packageJson) -> "Package exported."
+            else -> "Could not export package."
+        }
     }
 
     Column(
@@ -390,14 +401,27 @@ fun PrintAndSendScreen(model: LiteFlowViewModel) {
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
+        Text(
+            packageStatus,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Button(onClick = ::refreshPackage) { Text("Refresh package") }
         Button(onClick = {
             exportLauncher.launch("opensource-ortho-print-package.json")
         }) { Text("Export print package") }
         Button(onClick = {
-            context.sharePackage(packageJson)
+            packageStatus = runCatching {
+                context.sharePackage(packageJson)
+                "Choose an app to send the package."
+            }.getOrElse { "Could not open share sheet." }
         }) { Text("Send to 3D printer") }
         Button(onClick = {
-            context.printPackage(packageJson)
+            packageStatus = runCatching {
+                context.printPackage(packageJson)
+                "Print dialog opened."
+            }.getOrElse { "Could not open print dialog." }
         }) { Text("Open print dialog") }
         Text(
             "Android has no universal 3D-printer API; this opens document export, share targets, and print services.",
@@ -410,6 +434,7 @@ fun PrintAndSendScreen(model: LiteFlowViewModel) {
 @Composable
 fun SettingsScreen() {
     var glossaryQuery by remember { mutableStateOf("") }
+    var showAboutDetails by remember { mutableStateOf(false) }
     val filteredGlossary = remember(glossaryQuery) {
         val needle = glossaryQuery.trim().lowercase()
         if (needle.isEmpty()) {
@@ -419,6 +444,11 @@ fun SettingsScreen() {
                 term.lowercase().contains(needle) || definition.lowercase().contains(needle)
             }
         }
+    }
+    val groupedGlossary = remember(filteredGlossary) {
+        filteredGlossary
+            .groupBy { (term, _) -> term.firstOrNull()?.uppercaseChar()?.toString() ?: "#" }
+            .toSortedMap()
     }
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
@@ -441,6 +471,27 @@ fun SettingsScreen() {
                         textAlign = TextAlign.End,
                     )
                 }
+                Column(
+                    modifier = Modifier.fillMaxWidth().clickable { showAboutDetails = !showAboutDetails },
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text("Mobile app and browser accuracy", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        if (showAboutDetails) "Hide details" else "Tap for details",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    if (showAboutDetails) {
+                        Text(
+                            "OpenSource Ortho Lite is a mobile review and handoff companion for scan intake, quick case review, glossary lookup, and sharing packages.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            "For large STL/CBCT files, detailed segmentation, full 3D rendering, restaging, and final print-package QA, use the full browser version. Mobile previews may simplify geometry when files are too large or unsupported.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
             }
         }
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -456,8 +507,15 @@ fun SettingsScreen() {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                filteredGlossary.forEach { (term, definition) ->
-                    GlossaryRow(term, definition)
+                groupedGlossary.forEach { (letter, terms) ->
+                    Text(
+                        letter,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    terms.sortedBy { it.first }.forEach { (term, definition) ->
+                        GlossaryRow(term, definition)
+                    }
                 }
                 if (filteredGlossary.isEmpty()) {
                     Text("No matching terms.", style = MaterialTheme.typography.bodySmall)
@@ -553,11 +611,25 @@ private fun inferredArch(fileName: String): String? {
     }
 }
 
-private fun Context.writeTextToUri(uri: Uri, text: String) {
-    contentResolver.openOutputStream(uri)?.use { stream ->
-        stream.write(text.toByteArray(Charsets.UTF_8))
+private fun printPackageStatus(packageJson: String): String =
+    "Package ready: ${packageSizeLabel(packageJson)}"
+
+private fun packageSizeLabel(packageJson: String): String {
+    val bytes = packageJson.toByteArray(Charsets.UTF_8).size
+    return when {
+        bytes < 1024 -> "$bytes bytes"
+        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
+        else -> "${bytes / (1024 * 1024)} MB"
     }
 }
+
+private fun Context.writeTextToUri(uri: Uri, text: String): Boolean =
+    runCatching {
+        contentResolver.openOutputStream(uri)?.use { stream ->
+            stream.write(text.toByteArray(Charsets.UTF_8))
+            true
+        } ?: false
+    }.getOrDefault(false)
 
 private fun Context.sharePackage(packageJson: String) {
     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -665,6 +737,8 @@ private class DentalPreview3dView(context: Context) : View(context) {
             paint.color = AndroidColor.rgb(71, 85, 105)
             val caption = if (scans.any { it.modality == "cbct" }) {
                 "CBCT attached; open browser/full engine for volume rendering"
+            } else if (scans.any { it.isStl }) {
+                "Showing sample teeth preview"
             } else {
                 "Add an STL scan to render patient geometry"
             }
@@ -836,45 +910,25 @@ private class TeethMapView(context: Context) : View(context) {
         super.onDraw(canvas)
         val centerX = width / 2f
         val centerY = height / 2f
-        val radiusX = minOf(width * 0.43f, 172f)
-        val upperY = centerY - 68f
-        val lowerY = centerY + 68f
+        val radiusX = minOf(width * 0.41f, 150f)
+        val upperY = centerY - 112f
+        val lowerY = centerY + 112f
 
         paint.style = Paint.Style.FILL
         paint.color = AndroidColor.rgb(248, 250, 252)
         canvas.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), 36f, 36f, paint)
 
-        paint.color = AndroidColor.argb(40, 244, 114, 182)
-        canvas.drawOval(RectF(16f, 24f, width - 16f, height - 24f), paint)
-
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 3f
-        paint.color = AndroidColor.argb(96, 244, 114, 182)
-        canvas.drawOval(RectF(16f, 24f, width - 16f, height - 24f), paint)
-
         paint.style = Paint.Style.FILL
         paint.color = AndroidColor.argb(45, 244, 114, 182)
-        canvas.drawOval(RectF(centerX - 70f, centerY - 82f, centerX + 70f, centerY + 22f), paint)
+        canvas.drawOval(RectF(centerX - 86f, upperY + 12f, centerX + 86f, upperY + 98f), paint)
         paint.color = AndroidColor.argb(32, 239, 68, 68)
-        canvas.drawOval(RectF(centerX - 78f, centerY + 20f, centerX + 78f, centerY + 138f), paint)
+        canvas.drawOval(RectF(centerX - 92f, lowerY - 98f, centerX + 92f, lowerY - 6f), paint)
 
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 34f
-        paint.color = AndroidColor.argb(122, 244, 114, 182)
-        canvas.drawArc(
-            RectF(centerX - radiusX, upperY + 86f - radiusX, centerX + radiusX, upperY + 86f + radiusX),
-            202f,
-            136f,
-            false,
-            paint,
-        )
-        canvas.drawArc(
-            RectF(centerX - radiusX, lowerY - 86f - radiusX, centerX + radiusX, lowerY - 86f + radiusX),
-            22f,
-            136f,
-            false,
-            paint,
-        )
+        paint.strokeWidth = 28f
+        paint.color = AndroidColor.argb(86, 244, 114, 182)
+        canvas.drawPath(gumPath(centerX, upperY, radiusX, upper = true), paint)
+        canvas.drawPath(gumPath(centerX, lowerY, radiusX, upper = false), paint)
 
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 1.5f
@@ -914,10 +968,41 @@ private class TeethMapView(context: Context) : View(context) {
         val side = if (quadrant == 1 || quadrant == 4) -1f else 1f
         val isUpper = quadrant == 1 || quadrant == 2
         val t = (digit - 1f) / 7f
-        val distance = 18f + t * (radiusX - 54f)
-        val posteriorCurve = sin(t * Math.PI / 2.0).toFloat() * 74f
+        val distance = 17f + t * (radiusX - 22f)
+        val posteriorCurve = t * t * 96f
         val y = if (isUpper) upperY + posteriorCurve else lowerY - posteriorCurve
         return floatArrayOf(centerX + side * distance, y)
+    }
+
+    private fun gumPath(centerX: Float, baseY: Float, radiusX: Float, upper: Boolean): Path {
+        val direction = if (upper) 1f else -1f
+        return Path().apply {
+            moveTo(centerX - radiusX, baseY + direction * 96f)
+            cubicTo(
+                centerX - radiusX * 0.78f,
+                baseY + direction * 38f,
+                centerX - radiusX * 0.32f,
+                baseY + direction * 10f,
+                centerX - 18f,
+                baseY,
+            )
+            cubicTo(
+                centerX - 8f,
+                baseY - direction * 4f,
+                centerX + 8f,
+                baseY - direction * 4f,
+                centerX + 18f,
+                baseY,
+            )
+            cubicTo(
+                centerX + radiusX * 0.32f,
+                baseY + direction * 10f,
+                centerX + radiusX * 0.78f,
+                baseY + direction * 38f,
+                centerX + radiusX,
+                baseY + direction * 96f,
+            )
+        }
     }
 
     private fun drawTooth(canvas: Canvas, label: String, x: Float, y: Float, kind: ToothKind, upper: Boolean) {
@@ -953,16 +1038,16 @@ private class TeethMapView(context: Context) : View(context) {
 
     private fun toothRect(kind: ToothKind, x: Float, y: Float): RectF {
         val width = when (kind) {
-            ToothKind.INCISOR -> 34f
-            ToothKind.CANINE -> 36f
-            ToothKind.PREMOLAR -> 42f
-            ToothKind.MOLAR -> 48f
+            ToothKind.INCISOR -> 30f
+            ToothKind.CANINE -> 32f
+            ToothKind.PREMOLAR -> 35f
+            ToothKind.MOLAR -> 39f
         }
         val height = when (kind) {
-            ToothKind.INCISOR -> 42f
-            ToothKind.CANINE -> 46f
-            ToothKind.PREMOLAR -> 40f
-            ToothKind.MOLAR -> 42f
+            ToothKind.INCISOR -> 38f
+            ToothKind.CANINE -> 42f
+            ToothKind.PREMOLAR -> 36f
+            ToothKind.MOLAR -> 36f
         }
         return RectF(x - width / 2f, y - height / 2f, x + width / 2f, y + height / 2f)
     }
