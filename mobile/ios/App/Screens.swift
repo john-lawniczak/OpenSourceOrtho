@@ -536,7 +536,7 @@ private enum DentalPreviewScene {
         let stlNodes = scans
             .filter { $0.modality.lowercased() == "stl" }
             .prefix(2)
-            .compactMap { STLSceneMesh.node(from: $0.data) }
+            .compactMap(STLSceneMesh.node)
         if stlNodes.isEmpty {
             addSampleDentalCast(to: scene, stage: stage)
         } else {
@@ -574,11 +574,11 @@ private enum DentalPreviewScene {
         addArch(to: parent, y: 0.28, stage: stage, isUpper: true)
         addArch(to: parent, y: -0.28, stage: stage, isUpper: false)
 
-        let grid = SCNFloor()
-        grid.reflectivity = 0
+        let grid = SCNPlane(width: 7.2, height: 3.2)
         grid.firstMaterial?.diffuse.contents = UIColor.systemGray5
         let gridNode = SCNNode(geometry: grid)
         gridNode.position = SCNVector3(0, -1.72, -0.92)
+        gridNode.eulerAngles.x = -.pi / 2
         scene.rootNode.addChildNode(gridNode)
     }
 
@@ -643,10 +643,17 @@ private enum DentalPreviewScene {
 }
 
 private enum STLSceneMesh {
-    private static let trianglePreviewLimit = 220_000
+    private static let trianglePreviewLimit = 80_000
+    private static var geometryCache: [String: SCNGeometry] = [:]
+    private static let cacheLock = NSLock()
 
-    static func node(from data: Data) -> SCNNode? {
-        let triangles = parseTriangles(from: data)
+    static func node(from scan: PreviewScan) -> SCNNode? {
+        let cacheKey = "\(scan.fileName):\(scan.data.count)"
+        if let cached = cachedGeometry(for: cacheKey) {
+            return SCNNode(geometry: cached)
+        }
+
+        let triangles = parseTriangles(from: scan.data)
         guard !triangles.isEmpty else { return nil }
         let vertices = triangles.flatMap { $0 }
         let source = SCNGeometrySource(vertices: vertices)
@@ -662,7 +669,20 @@ private enum STLSceneMesh {
         geometry.firstMaterial?.diffuse.contents = UIColor(red: 0.94, green: 0.88, blue: 0.74, alpha: 1.0)
         geometry.firstMaterial?.specular.contents = UIColor.white
         geometry.firstMaterial?.isDoubleSided = true
+        storeGeometry(geometry, for: cacheKey)
         return SCNNode(geometry: geometry)
+    }
+
+    private static func cachedGeometry(for key: String) -> SCNGeometry? {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        return geometryCache[key]
+    }
+
+    private static func storeGeometry(_ geometry: SCNGeometry, for key: String) {
+        cacheLock.lock()
+        geometryCache[key] = geometry
+        cacheLock.unlock()
     }
 
     private static func parseTriangles(from data: Data) -> [[SCNVector3]] {
@@ -681,25 +701,43 @@ private enum STLSceneMesh {
                 [vertices[$0], vertices[$0 + 1], vertices[$0 + 2]]
             }
         }
-        guard data.count >= 84 else { return [] }
-        let triangleCount = Int(data.withUnsafeBytes { $0.load(fromByteOffset: 80, as: UInt32.self) })
+        guard data.count >= 84, let rawTriangleCount = littleEndianUInt32(in: data, at: 80) else { return [] }
+        let triangleCount = Int(rawTriangleCount)
         var triangles: [[SCNVector3]] = []
         triangles.reserveCapacity(min(triangleCount, trianglePreviewLimit))
-        var offset = 84
-        for _ in 0..<min(triangleCount, trianglePreviewLimit) where offset + 50 <= data.count {
-            offset += 12
+        let sampleStep = Swift.max(1, triangleCount / trianglePreviewLimit)
+        var triangleIndex = 0
+        while triangleIndex < triangleCount && triangles.count < trianglePreviewLimit {
+            var offset = 84 + triangleIndex * 50 + 12
+            guard offset + 36 <= data.count else { break }
             var triangle: [SCNVector3] = []
             for _ in 0..<3 {
-                let x = data.withUnsafeBytes { $0.load(fromByteOffset: offset, as: Float.self) }
-                let y = data.withUnsafeBytes { $0.load(fromByteOffset: offset + 4, as: Float.self) }
-                let z = data.withUnsafeBytes { $0.load(fromByteOffset: offset + 8, as: Float.self) }
+                guard let x = littleEndianFloat(in: data, at: offset),
+                      let y = littleEndianFloat(in: data, at: offset + 4),
+                      let z = littleEndianFloat(in: data, at: offset + 8) else {
+                    break
+                }
                 triangle.append(SCNVector3(x, y, z))
                 offset += 12
             }
-            triangles.append(triangle)
-            offset += 2
+            if triangle.count == 3 {
+                triangles.append(triangle)
+            }
+            triangleIndex += sampleStep
         }
         return triangles
+    }
+
+    private static func littleEndianFloat(in data: Data, at offset: Int) -> Float? {
+        littleEndianUInt32(in: data, at: offset).map { Float(bitPattern: $0) }
+    }
+
+    private static func littleEndianUInt32(in data: Data, at offset: Int) -> UInt32? {
+        guard offset >= 0, offset + 4 <= data.count else { return nil }
+        return UInt32(data[offset])
+            | UInt32(data[offset + 1]) << 8
+            | UInt32(data[offset + 2]) << 16
+            | UInt32(data[offset + 3]) << 24
     }
 }
 
