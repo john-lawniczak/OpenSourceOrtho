@@ -73,16 +73,18 @@ _TIER_SUMMARY = {
 
 
 def accepted_registration(plan: TreatmentPlan):
-    """The first accepted, quality-backed registration, or ``None``.
+    """The best accepted, quality-backed, gate-passing registration, or ``None``.
 
-    Acceptance is fail-closed: a registration must be ``accepted`` AND carry
-    quality metrics (``is_acceptable``) to gate any CBCT-derived behavior.
+    Acceptance is fail-closed twice over: a registration must be ``accepted``
+    AND carry quality metrics, AND those metric VALUES must pass the numeric
+    registration gate (see ``model.registration_gate``). A reviewer click can
+    never unlock CBCT-derived behavior when the recorded metrics contradict it.
     """
 
-    for reg in getattr(plan, "registrations", None) or []:
-        if getattr(reg, "is_acceptable", False):
-            return reg
-    return None
+    from orthoplan.model.registration_gate import best_gated_registration
+
+    registration, _result = best_gated_registration(plan)
+    return registration
 
 
 def registration_ready(plan: TreatmentPlan) -> bool:

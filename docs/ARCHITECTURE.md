@@ -6,7 +6,7 @@ OpenSource Ortho is a Python-first planning and visualization safety playground 
 
 1. The user uploads an intraoral-scan mesh, usually an STL file.
 2. The mesh is imported and labeled with provenance: patient-derived, imported, manual, model-generated, or synthetic.
-3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device hybrid geometric auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. It combines arch position, crown-height valleys, curvature, and face-normal changes into graph-cut-style boundaries, with optional Open3D mesh-processing support. A learned model (e.g. Teeth3DS) can replace the geometric proposal behind the `SegmentationModel` seam; it must run locally (scans are PHI).
+3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device hybrid geometric auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. It combines arch position, crown-height valleys, curvature, and face-normal changes into graph-cut-style boundaries, with optional Open3D mesh-processing support. When the request carries a plan with trusted, gate-passing registered CBCT anatomy, volume-derived interproximal boundary priors bias the cut placement and cut/prior agreement calibrates the per-tooth confidence (see the CBCT fidelity path below). A learned model (e.g. Teeth3DS) can replace the geometric proposal behind the `SegmentationModel` seam; it must run locally (scans are PHI).
 4. A `TreatmentPlan` stores each stage. Each `Stage` contains `ToothDelta` values for individual teeth.
 5. The planning layer checks each stage against user-configured `MovementCaps`.
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
@@ -131,9 +131,8 @@ STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
 
 ### Root/Bone-Aware Review: CBCT/DICOM
 
-CBCT/DICOM is planned as an optional higher-fidelity tier rather than a universal
-requirement. It should unlock root/bone-aware checks only after these contracts
-exist:
+CBCT/DICOM is an optional higher-fidelity tier rather than a universal
+requirement. It unlocks root/bone-aware behavior only behind these contracts:
 
 - local DICOM/CBCT record ingestion with PHI-aware metadata handling
 - on-device volume viewing or trusted local viewer integration
@@ -146,6 +145,36 @@ CBCT-derived data must enter planning through typed model contracts with
 provenance and review status. The planner must never silently assume that STL and
 CBCT coordinate spaces are aligned, and no review tier may imply clinical
 approval or complete treatment planning.
+
+The CBCT fidelity path is sequenced fail-closed, each step gating the next:
+
+1. **Registration quality gate** (`model/registration_gate.py`): a numeric
+   PASS/MARGINAL/FAIL judgement of each registration's recorded metrics (RMSE,
+   fitness, inlier ratio). A reviewer's acceptance click can never unlock
+   CBCT-derived behavior when the metrics contradict it; every CBCT consumer
+   (anatomy proposals, boundary priors, axis frames, root/bone checks) consults
+   the gate. Verdicts surface in the evaluate payload (`registration.gate`).
+2. **Boundary priors + cross-modal confidence** (`segmentation/cbct_prior.py`,
+   `segmentation/prior_blend.py`): trusted per-tooth root/axis anatomy behind an
+   open gate is mapped through the inverse registration into scan space; the
+   midpoints between adjacent teeth become interproximal priors that BIAS (never
+   replace) the hybrid segmenter's cut placement. Cut/prior agreement is then a
+   measured per-tooth confidence calibration: disagreement always lowers
+   confidence, and raising it above the surface-only score requires a PASS gate
+   (capped below certainty). The `/api/segment` payload may carry the plan; the
+   response reports the `cbct_prior` block.
+3. **Trusted anatomical frames** (`planning/anatomical_frame.py`): a trusted
+   CBCT tooth axis (open gate, invertible registration, computable arch tangent
+   from neighbouring crown centroids) rebuilds that tooth's local frame as
+   non-approximate, which is exactly the validated frame source that makes
+   tip/torque/rotation renderable (see below).
+4. **Root-aware movement checks** (`evaluation/rules/root_bone.py`,
+   `evaluation/rules/root_apex.py`): root proximity, cortical-boundary
+   proximity, and a geometric root-apex sweep estimate
+   (`root_length * sin(angulation)` about the crown-centroid pivot) that
+   documents every trusted tooth's estimate and warns past a stated review
+   threshold. All of it emits `cannot assess` rather than guessing when
+   readiness is missing.
 
 ## How The Plan Moves Teeth
 
@@ -160,9 +189,14 @@ Translation accumulates as a true vector sum (translation is commutative), so cu
 
 Rotation is different. Summed Euler components (tip/torque/rotation) are not a composable rigid rotation, and converting them to a renderable transform requires per-tooth anatomical axes that the Phase 1 scan frame does not resolve. So frames report cumulative rotation values but flag `rotation_renderable=False`; a UI must not build a rotation matrix from a non-renderable pose. This is why `build_stage_progress_frames()` exists and why transform composition lives in `planning/transforms.py`.
 
-Approximate crown-surface PCA frames are not enough to change that flag. A future real-mesh
-orientation path must supply non-approximate anatomical frames or another validated frame
-source before rotation can be rendered.
+Approximate crown-surface PCA frames are not enough to change that flag. The validated
+frame source is the trusted-CBCT-axis path (`planning/anatomical_frame.py`): when a plan
+carries a human-reviewed, in-field CBCT tooth axis behind a registration whose numeric
+quality gate is open, `evaluate_plan()` rebuilds that tooth's local frame as
+non-approximate (long axis from the registered CBCT axis, mesiodistal from the arch
+tangent through neighbouring crown centroids, buccolingual as their cross product) and
+rotation becomes renderable for that tooth only. Everything else keeps
+`rotation_renderable=False`.
 
 For local real-mesh visualization, `planning/mesh_transform.py` can transform externally
 supplied per-tooth vertices by cumulative translation while preserving the same rotation

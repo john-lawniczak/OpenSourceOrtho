@@ -127,6 +127,18 @@ explicit quality metrics.
 - Do not let planning consume CBCT anatomy unless registration quality is present
   and acceptable for that feature.
 
+Shipped: the numeric registration quality gate
+(`orthoplan/model/registration_gate.py`) grades each registration's recorded
+metrics into PASS / MARGINAL / FAIL (RMSE <= 0.5 mm passes, <= 1.0 mm is
+marginal; fitness/inlier ratio >= 0.8 passes, >= 0.5 is marginal; missing
+metrics fail). Acceptance plus a FAIL verdict unlocks nothing: anatomy mask
+import, segmentation boundary priors, trusted axis frames, and root/bone
+readiness all consult the gate. A MARGINAL registration may bias segmentation
+cuts but can never raise confidence; only PASS allows the cross-modal boost.
+Verdicts are surfaced per registration in the evaluate payload
+(`registration.gate`) and the CBCT workflow panel. Thresholds are geometric
+review heuristics, never clinical acceptance criteria.
+
 ## Phase 4: Reviewable Anatomy Segmentation
 
 Goal: represent CBCT-derived anatomy as explicit, editable objects.
@@ -164,13 +176,24 @@ without explicit permission and a reviewed license.
 Goal: let the engine consume trusted CBCT-derived anatomy as constraints and
 warnings, not as silent approval or a complete treatment plan.
 
-Potential checks:
+Shipped checks:
 
 - renderable tooth axes from trusted root/crown anatomy
+  (`planning/anatomical_frame.py`: trusted CBCT axis + arch tangent -> a
+  non-approximate per-tooth frame, which is what flips rotation renderable)
+- CBCT interproximal boundary priors for the surface segmenter with measured
+  cut/prior agreement calibrating per-tooth confidence
+  (`segmentation/cbct_prior.py`, `segmentation/prior_blend.py`)
 - root proximity and inter-root collision warnings
 - cortical boundary proximity warnings
+- estimated root-apex sweep for planned tip/torque
+  (`evaluation/rules/root_apex.py`: `root_length * sin(angulation)` about the
+  crown-centroid pivot; INFO documents, WARNING past a stated review threshold)
 - root/bone context for tip, torque, intrusion, extrusion, and expansion
 - "cannot assess" findings when registration or segmentation quality is missing
+
+Potential next checks:
+
 - tooth-specific constraints derived from reviewed anatomy
 
 The verdict vocabulary must remain limited to internal consistency terms such as

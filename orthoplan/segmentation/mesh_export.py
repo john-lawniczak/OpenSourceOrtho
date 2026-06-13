@@ -88,3 +88,50 @@ def surface_sample_points(triangles: list[Triangle], *, limit: int = 64) -> list
     last = len(unique) - 1
     indexes = {round(i * last / (limit - 1)) for i in range(limit)}
     return [unique[i] for i in sorted(indexes)]
+
+
+def export_proposal_rows(
+    segments: list[ToothSegment],
+    *,
+    arch: str,
+    workspace: str | os.PathLike[str] | None = None,
+):
+    """Write segments and build the proposal rows + plan-fragment links.
+
+    Returns ``(proposed, assets, links)`` - the reviewable per-tooth rows for the
+    /api/segment response, the registered mesh assets, and the ready-to-merge
+    ``SegmentedToothMesh`` links (still drafts: ``reviewed`` stays False).
+    """
+
+    from orthoplan.model.plan import SegmentedToothMesh, ToothId
+    from orthoplan.planning.mesh_frame import compute_local_frame
+    from orthoplan.segmentation.auto import ProposedTooth
+
+    proposed: list[ProposedTooth] = []
+    assets: list[MeshAsset] = []
+    links: list[SegmentedToothMesh] = []
+    for segment, mesh_asset in write_segment_meshes(segments, workspace=workspace):
+        assets.append(mesh_asset)
+        flat = [v for tri in segment.triangles for v in tri]
+        links.append(
+            SegmentedToothMesh(
+                tooth=ToothId(value=segment.tooth_value),
+                mesh_asset_id=mesh_asset.id,
+                source=MeshProvenance.MODEL_GENERATED,
+                local_frame=compute_local_frame(flat),
+                surface_sample_points=surface_sample_points(segment.triangles),
+                notes=f"auto-segment draft (confidence {segment.confidence:.2f})",
+            )
+        )
+        proposed.append(
+            ProposedTooth(
+                arch=arch,
+                tooth=segment.tooth_value,
+                confidence=segment.confidence,
+                mesh_asset_id=mesh_asset.id,
+                url=f"/api/mesh/{mesh_asset.id}",
+                centroid=segment.centroid,
+                vertex_count=segment.vertex_count,
+            )
+        )
+    return proposed, assets, links

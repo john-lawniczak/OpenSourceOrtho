@@ -32,7 +32,11 @@ from orthoplan.segmentation.heuristic import (
     auto_segment_arch,
     default_arch_order,
 )
-from orthoplan.segmentation.hybrid import hybrid_segment_arch, mesh_processing_backend
+from orthoplan.segmentation.hybrid import (
+    CrossModalReport,
+    hybrid_segment_arch_with_diagnostics,
+    mesh_processing_backend,
+)
 
 SEGMENTATION_CAVEAT = (
     "Automated segmentation is a draft produced by a model, not a measurement. "
@@ -78,7 +82,11 @@ class HybridArchSegmenter:
     """Local hybrid segmenter using arch position, height, normals, and curvature."""
 
     name = "hybrid-arch-graph-cut"
-    version = "0.1.0"
+    version = "0.2.0"
+    # The hybrid segmenter can bias cut placement with CBCT boundary priors and
+    # report cross-modal agreement (see segment_with_priors). Other backends
+    # (learned, heuristic) ignore priors; callers must check this flag.
+    supports_boundary_priors = True
 
     def segment(
         self,
@@ -87,10 +95,32 @@ class HybridArchSegmenter:
         arch: ArchName,
         tooth_values: tuple[str, ...] | None = None,
     ) -> list[ToothSegment]:
-        segments = hybrid_segment_arch(vertices, arch=arch, tooth_values=tooth_values)
+        segments, _report = self.segment_with_priors(
+            vertices, arch=arch, tooth_values=tooth_values
+        )
+        return segments
+
+    def segment_with_priors(
+        self,
+        vertices: list[Vec3],
+        *,
+        arch: ArchName,
+        tooth_values: tuple[str, ...] | None = None,
+        prior_points: list[Vec3] | None = None,
+        prior_boost: bool = False,
+    ) -> tuple[list[ToothSegment], CrossModalReport | None]:
+        """Segment with optional CBCT boundary priors + cross-modal agreement report."""
+
+        segments, diagnostics = hybrid_segment_arch_with_diagnostics(
+            vertices,
+            arch=arch,
+            tooth_values=tooth_values,
+            prior_points=prior_points,
+            prior_boost=prior_boost,
+        )
         if segments:
-            return segments
-        return auto_segment_arch(vertices, arch=arch, tooth_values=tooth_values)
+            return segments, diagnostics.cross_modal
+        return auto_segment_arch(vertices, arch=arch, tooth_values=tooth_values), None
 
     @property
     def backend(self) -> str:

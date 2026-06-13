@@ -47,6 +47,13 @@ from orthoplan.model.registration import (
     RegistrationQuality,
     RegistrationTransform,
 )
+from orthoplan.model.registration_gate import (
+    RegistrationGateResult,
+    RegistrationGateVerdict,
+    best_gated_registration,
+    gate_registration,
+    gate_registrations,
+)
 from orthoplan.model.review_tier import (
     CbctHandoff,
     CbctStatus,
@@ -98,6 +105,8 @@ __all__ = [
     "MovementExclusion",
     "PlannedSpacing",
     "PrintExportSettings",
+    "RegistrationGateResult",
+    "RegistrationGateVerdict",
     "RegistrationMethod",
     "RegistrationQuality",
     "RegistrationTransform",
@@ -116,7 +125,10 @@ __all__ = [
     "TreatmentSettings",
     "UploadedScan",
     "accepted_registration",
+    "best_gated_registration",
     "bounding_box_sanity",
+    "gate_registration",
+    "gate_registrations",
     "cbct_handoff",
     "cbct_status",
     "registration_ready",

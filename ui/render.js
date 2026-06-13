@@ -341,9 +341,15 @@ function renderCbctWorkflow() {
   if (!cbctRecords.length) parts.push("Attach a CBCT/DICOM record.");
   if (!state.scanSources.length) parts.push("Register an STL scan with the local engine.");
   if (!mask) parts.push("Import a root/bone mask JSON.");
+  // The engine's fail-closed numeric gate on each registration's recorded
+  // quality metrics: acceptance alone never unlocks CBCT-derived behavior.
+  const gates = state.lastEval?.registration?.gate || [];
+  const gateText = gates.length
+    ? ` Registration quality gate: ${gates.map((g) => `${g.registration_id} ${g.verdict}`).join(", ")}.`
+    : "";
   status.textContent = workflow.busy
     ? "Building proposed CBCT-derived anatomy..."
-    : (workflow.status || parts.join(" ") || "Mask ready for proposal import.");
+    : (workflow.status || parts.join(" ") || "Mask ready for proposal import.") + gateText;
 }
 
 function renderMovementFidelity() {
