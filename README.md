@@ -1,8 +1,9 @@
 # OpenSource Ortho
 
-[![CI](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml/badge.svg)](https://github.com/john-lawniczak/OpenSourceOrtho/actions/workflows/ci.yml)
-
 OpenSource Ortho is an open-source clear-aligner planning safety playground and research toolkit. It supports surface-based STL planning experiments today; reviewed CBCT/DICOM-derived anatomy is a higher-fidelity path for root/bone-aware checks, not a claim that the software produces a complete treatment plan.
+
+Created by John Lawniczak with the goal of making clear-aligner planning tools
+more transparent, inspectable, and patient-data-portable.
 
 [![OpenSource Ortho review workspace](docs/images/sample-workspace.png)](docs/media/sample-demo.mp4)
 
@@ -18,12 +19,13 @@ Orthodontic planning is dominated by closed, expensive, proprietary systems that
 lock patients out of their own scans and treatment data. OpenSource Ortho exists
 to change that: a transparent, inspectable, community-owned toolkit where the
 math is auditable, the data stays with the person it belongs to, and the safety
-boundaries are explicit rather than hidden. The goal is a safety-boundary-first
-planning playground for clear-aligner workflows: reproducible staged geometry,
-data-gap visibility, and manufacturing-oriented exports that users evaluate and
-use at their own responsibility and risk. The current build is not distributed as
-a medical device, is not complete treatment-planning software, and does not
-replace a licensed professional.
+boundaries are explicit rather than hidden. The product north star is to cover as
+much of the modern clear-aligner treatment workflow as can be built lawfully,
+openly, and safely: scan intake, segmentation, target setup, 3D controls,
+side-by-side plan comparison, live restaging, root/bone-aware review, staged
+exports, manufacturing-oriented QA, monitoring records, and retention handoff.
+The current build is not distributed as a medical device, is not complete
+treatment-planning software, and does not replace a licensed professional.
 
 Most project documentation lives in [docs/](docs/README.md), including the
 current [application maturity](docs/application%20maturity.md) scorecard.
@@ -86,6 +88,12 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   override with `ORTHOPLAN_CASE_STORE`); available in the UI Versions panel, the
   HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
   `case-list`, `case-versions`).
+- **Treatment-system parity roadmap**: the next major workflow layer is an open
+  implementation of common clear-aligner planning capabilities: side-by-side
+  comparison of setups, live recomputation after 3D edits, richer controls for
+  translation/intrusion/extrusion/rotation/tip/torque, arch-form edits,
+  attachment/cut/IPR/spacing editors, tooth locking, and automatic arch response.
+  These controls stay proposals until deterministic checks and human review run.
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
   plan context, findings, data gaps, and timeline. The AI box shows a **single
   model dropdown** (each option carries its provider) and an **API-key field with
@@ -97,7 +105,7 @@ the left sidebar. A light/dark switch is anchored in the top bar.
   machine. The chat always sends the full plan context. The key is read only when
   you press **Ask AI** and is never persisted.
 
-It is not an Invisalign clone, autonomous diagnostic system, clinical approval system, or complete treatment-planning system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations. Any physical use is the user's own responsibility and risk. The software and outputs are provided without warranty or liability for diagnosis, treatment, manufacturing, fit, materials, injury, regulatory compliance, or other use. The roadmap intentionally separates STL-only surface review from CBCT/DICOM-enhanced root/bone-aware review.
+It is not an autonomous diagnostic system, clinical approval system, or complete treatment-planning system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations. Any physical use is the user's own responsibility and risk. The software and outputs are provided without warranty or liability for diagnosis, treatment, manufacturing, fit, materials, injury, regulatory compliance, or other use. The roadmap intentionally separates STL-only surface review from CBCT/DICOM-enhanced root/bone-aware review.
 
 Visual progress representation is a first-class requirement. The UI must accurately show staged tooth movement, data gaps, units, and provenance without implying approval. See [docs/UI_DESIGN.md](docs/UI_DESIGN.md).
 
@@ -185,7 +193,7 @@ The project should stay modular and composable as it grows. Follow [docs/MAINTAI
 
 ## References
 
-Commercial software such as BlueSkyPlan and ClinCheck may be studied as workflow references only. Do not fork, copy, reverse engineer, or import proprietary source, assets, terminology, or private workflows. See [docs/OPEN_SOURCE_REFERENCES.md](docs/OPEN_SOURCE_REFERENCES.md) and [docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md](docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md).
+Commercial clear-aligner and dental-planning systems may be studied as workflow references only. Do not fork, copy, reverse engineer, or import proprietary source, assets, terminology, or private workflows. See [docs/OPEN_SOURCE_REFERENCES.md](docs/OPEN_SOURCE_REFERENCES.md) and [docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md](docs/SOURCES_AND_RECOMMENDED_SOFTWARE.md).
 
 ## Development
 
@@ -221,7 +229,7 @@ If venv creation fails partway through, remove the broken environment and recrea
 
 ```bash
 rm -rf .venv
-/Users/johnlaw/.local/bin/python3.11 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 orthoplan serve
@@ -254,17 +262,33 @@ proxy teeth when no registered mesh can be loaded.
 
 ## Contribute Your Data
 
-The engine gets better when more real scans and results are tested against it.
-You can contribute STL intraoral scans and the plans/results you produced from
-them. Every contributed dataset is tracked by a stable, **non-identifying**
-specimen id (`spec-<uuid>`) so data stays organized as the collection scales -
-without ever storing patient identity.
+Modern clear-aligner planning systems succeed partly because they learn from a
+large base of scans, planned setups, refinements, and outcomes. OpenSource Ortho
+needs an open, privacy-preserving version of that evidence base. For a general
+user, the most helpful contributions are, from most to least useful:
+
+1. **Before-and-after STL scans**: upper and lower scans from before treatment
+   and after treatment, ideally from the same scanner/export format.
+2. **Progress or refinement scans**: any mid-treatment scan, refinement scan, or
+   scan taken when trays stopped tracking.
+3. **The intended plan in a non-proprietary form**: an OpenSource Ortho plan JSON,
+   a hand-entered summary, or notes listing stage count, wear interval, which
+   teeth moved, attachments, IPR/spacing, and any locked teeth.
+4. **Outcome notes**: whether refinements were needed, whether trays tracked, what
+   changed mid-treatment, scanner model, scan units, and known scan quirks -
+   without patient identity.
+5. **Initial STL scans only**: still useful for segmentation, scale, mesh-quality,
+   and arch-form benchmarks, but they cannot teach outcome prediction by
+   themselves.
+6. **Optional imaging-derived anatomy**: reviewed CBCT/DICOM-derived root/bone
+   records only when you have the right to share them and PHI has been removed.
 
 Privacy is enforced in code, not just requested. The manifest model
 (`orthoplan/model/dataset.py`) stores redacted metadata only (never mesh bytes),
 reduces filenames to a basename, forbids unknown fields, and has **no** name,
 date-of-birth, contact, or record-number fields by construction (locked by a
-test). Register a contribution locally with:
+test). Register a contribution locally to generate a stable `spec-<uuid>` id,
+hash each STL, and write the manifest:
 
 ```bash
 orthoplan register-contribution upper.stl lower.stl \
@@ -273,10 +297,12 @@ orthoplan register-contribution upper.stl lower.stl \
 ```
 
 The `--i-confirm-no-phi` flag is required and asserts you have removed
-patient-identifying information. The first tracked specimen is the bundled
-example at `ui/example-scans/canonical-orthocad-001/manifest.json`. See
-[docs/DATA_CONTRIBUTION.md](docs/DATA_CONTRIBUTION.md) for the full workflow and
-manifest schema, and [docs/SAFETY.md](docs/SAFETY.md) before sharing anything.
+patient-identifying information. For long-term usefulness, put each case in a
+folder named by that specimen id and use standard file labels such as
+`initial-upper.stl`, `initial-lower.stl`, `final-upper.stl`, `progress-01-upper.stl`,
+and `plan-summary.json`. See [docs/DATA_CONTRIBUTION.md](docs/DATA_CONTRIBUTION.md)
+for the full case-bundle standard, manifest schema, and privacy rules, and
+[docs/SAFETY.md](docs/SAFETY.md) before sharing anything.
 
 New to dental terminology? The [Glossary](docs/GLOSSARY.md) explains key terms
 (IPR, tip, torque, crowding, FDI numbering) and includes a tooth-numbering

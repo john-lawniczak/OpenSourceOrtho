@@ -4,10 +4,14 @@
 
 The browser workspace turns uploaded STL scans, and reviewed CBCT-derived anatomy
 when present, into reproducible staged geometry and 3D-printable model/shell
-artifacts. Safety posture is unchanged and fail-closed: generating geometry never
-means diagnosis, clinical approval, treatment clearance, or that physical use is
-safe. Printing, fit, materials, post-processing, and any physical use remain the
-user's own responsibility and risk. Every output must keep its review tier,
+artifacts. The north star is functional coverage of the modern clear-aligner
+treatment-system workflow: scan intake, segmentation, target setup, side-by-side
+setup comparison, direct 3D controls, live restaging, root/bone-aware review,
+manufacturing-oriented QA, progress/refinement records, and retention handoff.
+Safety posture is unchanged and fail-closed: generating geometry never means
+diagnosis, clinical approval, treatment clearance, or that physical use is safe.
+Printing, fit, materials, post-processing, and any physical use remain the user's
+own responsibility and risk. Every output must keep its review tier,
 manufacturing-readiness status, and unresolved data gaps clearly labeled.
 
 ## Current status on `feat/v1.2`
@@ -130,9 +134,26 @@ NOT a target for the geometry tracks (no material/fit/physical-use modeling).
 **Remaining**
 
 No original phase checklist items remain in this roadmap. Further maturity work is
-validation, corpus, optional-backend, provider-adapter, and audit/export hardening.
-The geometry tracks still intentionally stop short of physical-use/material/fit
-guarantees.
+validation, corpus, optional-backend, provider-adapter, audit/export hardening,
+and the treatment-system parity layers below. The geometry tracks still
+intentionally stop short of physical-use/material/fit guarantees.
+
+1. **Phase 17** (Track 2/UI): setup comparison + live restaging workbench.
+   Add side-by-side comparisons for current/generated/edited/saved-version
+   setups; show per-tooth and per-stage diffs; after every accepted edit, rerun
+   staging optimization, deterministic checks, collision/IPR review, timeline,
+   and print-readiness without overwriting the previous setup.
+2. **Phase 18** (Track 2/planning): richer 3D controls and arch response.
+   Expand direct controls for translation, intrusion/extrusion, rotation, crown
+   tip, crown torque, arch-form expansion/contraction, attachment/cut metadata,
+   IPR/spacing, tooth locking, and movement exclusions. Add visible same-arch
+   response proposals that preserve contacts/spacing when possible, with
+   provenance and review gates.
+3. **Phase 19** (Track 2/data): longitudinal case-bundle schema and benchmarks.
+   Extend contribution manifests to link initial scans, final scans, progress or
+   refinement scans, intended movement, controls, wear interval, refinement count,
+   and non-identifying outcome notes. Add benchmark reports for target setup,
+   tracking error, and refinement prediction using only consented/non-PHI data.
 
 ### Recently Completed Reference
 

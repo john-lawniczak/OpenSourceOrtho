@@ -2,7 +2,7 @@
 
 This file is the living source ledger for OpenSource Ortho. Use it to track external references, license posture, implementation ideas, and changes that may affect product direction.
 
-Last recorded source review: 2026-06-04.
+Last recorded source review: 2026-06-13.
 
 ## How To Use This File
 
@@ -17,7 +17,8 @@ Last recorded source review: 2026-06-04.
 | Source | URL | Current Use | Watch For |
 | --- | --- | --- | --- |
 | BlueSkyPlan download/license language | https://www.blueskybio.digital/page/download-software | Proprietary/freeware cautionary reference only. Do not fork or copy. | License terms, any explicit OSI-approved source license, product workflow changes. |
-| ClinCheck Pro | https://www.invisalign.com/provider/align-digital-platform/clincheck | Commercial workflow reference for review, staging, visualization, and provider handoff. | Proprietary terminology, UI/workflow changes, feature ideas to describe generically. |
+| Commercial clear-aligner platform overview | https://www.invisalign.com/provider/align-digital-platform | Commercial full-workflow reference for connect/scan/diagnose/plan/treat/monitor/retain coverage. | Proprietary terminology, workflow claims, product scope changes, and features to describe only generically. |
+| Commercial clear-aligner plan-editing software | https://www.invisalign.com/provider/align-digital-platform/clincheck | Commercial workflow reference for review, staging, side-by-side comparison, 3D controls, live updates, CBCT integration, and provider handoff. | Proprietary terminology, UI/workflow changes, feature ideas to describe generically. |
 | 3D Slicer license/commercial-use notes | https://slicer.readthedocs.io/en/5.10/user_guide/about.html | License/regulatory reference for a possible host platform. | License notes, medical-device disclaimers, extension guidance. |
 | 3D Slicer platform | https://www.slicer.org/ | Open-source platform reference for imaging, segmentation, and possible extension hosting. | Platform roadmap, extension APIs, segmentation and DICOM workflows. |
 | SlicerCMF | https://cmf.slicer.org/ | Dental/craniofacial workflow reference inside 3D Slicer. | Extension status, algorithms, dependency/license updates. |
@@ -71,10 +72,12 @@ BlueSkyPlan
 - Reference only.
 - Free availability is not enough; do not treat it as open source without a permissive source license.
 
-ClinCheck Pro
+Commercial Clear-Aligner Plan Editors
 
 - Reference only.
-- Useful for understanding expectations around staged tooth visualization, doctor review, and patient communication.
+- Useful for understanding expectations around staged tooth visualization, setup
+  comparison, doctor review, direct 3D controls, live restaging, and patient
+  communication.
 - Describe learned workflow ideas in generic language.
 
 ## Monitoring Cadence

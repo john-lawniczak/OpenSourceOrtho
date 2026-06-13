@@ -2,6 +2,58 @@
 
 OpenSource Ortho is a Python-first planning and visualization safety playground for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, generate manufacturing-oriented exports, and feed an accurate UI. It is not a complete treatment-planning system. The roadmap has tiered review modes: STL-only surface review, enhanced-record review, CBCT-attached review, and root/bone-aware review only when registered, reviewed anatomy is trusted.
 
+## Full Treatment-System North Star
+
+The product direction is to get as close as possible to the functional coverage
+of a modern commercial clear-aligner treatment system while staying open,
+auditable, privacy-preserving, and safety-boundary-first. Commercial systems are
+workflow references only; do not copy proprietary UI, source, assets, private
+workflows, or product naming. The open target is generic capability parity where
+lawful and clinically honest, not a clone or a medical-device claim.
+
+Short version of the commercial reference workflow:
+
+1. Capture patient records with an intraoral scanner and related records such as
+   photos, bite scans, prescription/Rx preferences, and optionally CBCT.
+2. Convert the scan into segmented dentition and a proposed setup using a
+   cloud-backed planning system, doctor preferences, historical case data, and
+   technician/CAD workflows.
+3. Let the doctor modify the setup with plan-editing tools: side-by-side setup
+   comparison, direct 3D tooth controls, arch-form controls, attachment/cut
+   placement, IPR/spacing controls, tooth locking, automatic same-arch response,
+   and fast restaging after edits.
+4. Review roots/bone when CBCT-derived anatomy is available, then approve the
+   plan in the commercial system so manufacturing can begin.
+5. Manufacture aligners using validated material/process controls, monitor
+   progress against the planned stages, handle refinements, and retain the result.
+
+OpenSource Ortho's matching architecture should therefore grow in these generic
+layers:
+
+- **Data flywheel:** privacy-preserving longitudinal case bundles: initial scans,
+  target/final scans, refinements, intended movements, controls, and outcome
+  notes. Single pre-treatment STL files help segmentation, but paired
+  before/after and refinement data are what teach target setup and tracking.
+- **Setup workbench:** side-by-side comparison of original, generated, edited,
+  and saved-version setups, all backed by plan hashes and deterministic checks.
+- **3D controls:** direct authoring for translation, intrusion/extrusion,
+  rotation, crown tip, crown torque, arch-form edits, attachments/cuts,
+  IPR/spacing, and tooth locks. Controls may be edited from STL surface geometry,
+  but root-sensitive controls must stay flagged until trusted anatomy exists.
+- **Live restaging:** after an edit, run target resolution, staging optimization,
+  collision/IPR checks, fixed-tooth/exclusion checks, and timeline projection
+  immediately, then show diffs rather than silently replacing the plan.
+- **Automatic arch response:** when a tooth or arch-form change is made, propose
+  coupled same-arch adjustments to maintain contacts/spacing. The response is a
+  visible proposal with provenance, not hidden clinical intent.
+- **Manufacturing/monitoring loop:** exported geometry, shell QA, progress scans,
+  refinement records, and final scans should feed back into the case bundle for
+  validation and model improvement.
+
+The safety boundary is unchanged: a live-updated or data-informed plan can be
+internally consistent without being safe, clinically appropriate, approved, or
+complete.
+
 ## Simple Flow
 
 1. The user uploads an intraoral-scan mesh, usually an STL file.

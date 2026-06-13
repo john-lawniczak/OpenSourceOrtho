@@ -25,8 +25,10 @@ In-scope security issues include, for example:
 
 Please **do not open a public issue for a security vulnerability.**
 
-- Preferred: open a [private security advisory](https://github.com/john-lawniczak/OpenSourceOrtho/security/advisories/new).
-- Or email **lawniczak.john@gmail.com** with steps to reproduce and impact.
+- Preferred: open a private security advisory from the repository's
+  **Security** tab.
+- If private advisories are unavailable, contact the active project maintainer
+  through their current public project profile with steps to reproduce and impact.
 
 You can expect an acknowledgement within a few days. This is a volunteer-run
 open-source project, so timelines are best-effort. Please give us a reasonable

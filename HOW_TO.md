@@ -16,7 +16,7 @@ scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md
 ## 1. Start The App
 
 ```bash
-/Users/johnlaw/.local/bin/python3.11 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 orthoplan serve

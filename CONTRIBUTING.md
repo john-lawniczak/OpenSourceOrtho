@@ -8,7 +8,7 @@ and [docs/MAINTAINABILITY.md](docs/MAINTAINABILITY.md).
 ## Setup
 
 ```bash
-git clone https://github.com/john-lawniczak/OpenSourceOrtho
+git clone https://github.com/<your-org-or-user>/OpenSourceOrtho
 cd OpenSourceOrtho
 python -m venv .venv && source .venv/bin/activate   # Python 3.11+
 pip install -e ".[dev]"
