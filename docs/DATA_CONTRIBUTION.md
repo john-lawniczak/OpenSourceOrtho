@@ -153,8 +153,15 @@ orthoplan register-contribution path/to/upper.stl path/to/lower.stl \
 - `--i-confirm-no-phi` is **required**: it asserts the files and notes contain no
   patient-identifying information. Without it, nothing is written.
 - The command inspects each STL (via `io/stl_import.py::inspect_stl`), records
-  `sha256`, vertex/face counts, and bounds, generates a fresh `spec-…` id, and
-  writes a manifest. It never copies or uploads mesh bytes.
+  `sha256`, vertex/face counts, bounds, role, sequence, and arch labels,
+  generates a fresh `spec-…` id, and writes a manifest. It never copies or
+  uploads mesh bytes.
+- Standard filenames such as `initial-upper.stl`, `progress-01-lower.stl`, and
+  `final-upper.stl` are parsed automatically into per-file role/arch labels.
+- `--plan-summary` validates and embeds a non-proprietary
+  `opensource-ortho-plan-summary-v1` summary in the manifest.
+- `--outcome-notes` records the notes filename and SHA-256 hash after rejecting
+  obvious PHI field markers in the text.
 - Output is local. Sharing the dataset (e.g. a pull request or a data drop) is a
   separate, deliberate step you take.
 
@@ -173,12 +180,6 @@ orthoplan register-contribution \
   --out datasets/spec-<uuid>/manifest.json
 ```
 
-Current CLI limitation: `register-contribution` records shared arch metadata for
-the command, so mixed upper/lower bundles may leave `arch` unset in the manifest.
-Use the standard filenames above as the canonical role/arch labels until the
-manifest schema grows explicit `role` (`initial`/`progress`/`refinement`/`final`)
-and per-file arch fields.
-
 ## Manifest Schema
 
 | Field | Meaning |
@@ -186,7 +187,11 @@ and per-file arch fields.
 | `specimen_id` | `spec-<uuid4 hex>` stable handle |
 | `created_at` | UTC registration time |
 | `engine_version` | engine version at registration |
-| `scans[]` | per-file: `filename` (redacted), `sha256`, `units`, `provenance`, `arch`, `vertex_count`, `face_count`, `bounds` |
+| `scans[]` | per-file: `filename` (redacted), `role`, `sequence_index`, `sha256`, `units`, `provenance`, `arch`, `vertex_count`, `face_count`, `bounds` |
+| `plan_summary` | optional validated non-proprietary plan summary |
+| `plan_summary_filename` | optional redacted sidecar filename |
+| `outcome_notes_filename` | optional redacted sidecar filename |
+| `outcome_notes_sha256` | optional content hash for outcome notes |
 | `consent_acknowledged` | you confirmed you may share this data |
 | `phi_removed` | you confirmed PHI was removed |
 | `notes` | optional, non-identifying notes |

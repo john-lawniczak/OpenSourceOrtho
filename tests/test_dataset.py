@@ -10,7 +10,9 @@ from orthoplan.model.dataset import (
     SPECIMEN_ID_PREFIX,
     ContributedScan,
     DatasetManifest,
+    PlanSummary,
     new_specimen_id,
+    infer_scan_labels,
     read_manifest,
     write_manifest,
 )
@@ -80,3 +82,40 @@ def test_manifest_has_no_phi_fields_by_construction() -> None:
     fields = set(DatasetManifest.model_fields) | set(ContributedScan.model_fields)
     for forbidden in ("name", "patient_name", "dob", "date_of_birth", "email", "mrn", "ssn"):
         assert forbidden not in fields
+
+
+def test_scan_labels_are_inferred_from_standard_filename() -> None:
+    role, arch, sequence = infer_scan_labels("/tmp/spec/progress-02-lower.stl")
+    assert role == "progress"
+    assert arch == "mandibular"
+    assert sequence == 2
+
+    role, arch, sequence = infer_scan_labels("final-upper.stl")
+    assert role == "final"
+    assert arch == "maxillary"
+    assert sequence is None
+
+
+def test_unknown_scan_filename_stays_loadable() -> None:
+    role, arch, sequence = infer_scan_labels("scan.stl")
+    assert role == "unknown"
+    assert arch is None
+    assert sequence is None
+
+
+def test_plan_summary_accepts_non_proprietary_context() -> None:
+    summary = PlanSummary(
+        stage_count=24,
+        wear_interval_days=7,
+        arches_treated=["upper", "lower"],
+        moved_teeth=["11", "21"],
+        ipr_contacts=[{"between": ["11", "21"], "amount_mm": 0.2}],
+        refinement_count=1,
+    )
+    assert summary.schema_id == "opensource-ortho-plan-summary-v1"
+    assert summary.ipr_contacts[0].between == ("11", "21")
+
+
+def test_plan_summary_rejects_phi_markers() -> None:
+    with pytest.raises(ValidationError):
+        PlanSummary(notes="Patient email is in the attached file")

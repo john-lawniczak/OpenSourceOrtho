@@ -88,6 +88,10 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   `warning`-severity findings count as blocking warnings; `info`/`notice` context
   (e.g. the healthy-plan `root-bone-context` info finding and skipped-check
   notices) never flips the verdict or fabricates overlay highlights.
+- Phase 19 first slice: contribution manifests now support longitudinal scan
+  labels (`initial`/`progress`/`refinement`/`final`), per-file arch inference
+  from standard filenames, validated `plan-summary.json` sidecars, outcome-notes
+  hashing, and CLI/tests for privacy-safe case bundles.
 
 ## Honest effectiveness snapshot
 
@@ -149,11 +153,11 @@ intentionally stop short of physical-use/material/fit guarantees.
    IPR/spacing, tooth locking, and movement exclusions. Add visible same-arch
    response proposals that preserve contacts/spacing when possible, with
    provenance and review gates.
-3. **Phase 19** (Track 2/data): longitudinal case-bundle schema and benchmarks.
-   Extend contribution manifests to link initial scans, final scans, progress or
-   refinement scans, intended movement, controls, wear interval, refinement count,
-   and non-identifying outcome notes. Add benchmark reports for target setup,
-   tracking error, and refinement prediction using only consented/non-PHI data.
+3. **Phase 19** (Track 2/data): longitudinal case-bundle benchmarks.
+   The manifest/schema/CLI side is implemented for initial, final, progress, and
+   refinement scan bundles plus intended movement/context sidecars. Remaining
+   work is benchmark reports for target setup, tracking error, and refinement
+   prediction using only consented/non-PHI data.
 
 ### Recently Completed Reference
 
