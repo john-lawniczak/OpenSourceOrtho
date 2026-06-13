@@ -21,6 +21,7 @@ import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
 import { renderGuided, toggleExcludedTooth } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
+import { CONTROL_AXES, CONTROL_STEPS, controlGate } from "./direct_controls.js";
 import { parseMissingTeeth } from "./segment.js";
 import { formatScaleStatus } from "./scale.js";
 import { registeredOffsetForViewer } from "./proximity.js";
@@ -330,6 +331,7 @@ export function renderAll() {
   renderSampleStatus();
   renderSegmentation();
   renderManualEdit();
+  renderDirectControls();
   renderDownloadActions();
   const currentPlan = planJson();
   el("planJson").value = JSON.stringify(currentPlan, null, 2);
@@ -1245,6 +1247,76 @@ function renderManualEdit() {
   }
   const clearBtn = el("manualClearSelection");
   if (clearBtn) clearBtn.disabled = !selected;
+}
+
+function renderDirectControls() {
+  const panel = el("directControls");
+  if (!panel) return;
+  const selected = state.manualEdit.selectedTooth;
+  const appliedSegmentation = Boolean(state.segmentation.applied?.tooth_meshes?.length);
+  const gate = controlGate({
+    unitsConfirmed: scaleConfirmed(state.scanUnits),
+    segmentedTeeth: appliedSegmentation,
+    rootsAvailable: Boolean(state.availability.roots || state.derivedAnatomy?.roots?.length),
+    reviewedAnatomy: state.lastEval?.review_tier?.root_bone_aware,
+  });
+  const familyHost = el("directControlFamilies");
+  if (familyHost) {
+    familyHost.innerHTML = Object.keys(CONTROL_AXES).map((family) => `
+      <button data-direct-family="${escapeHtml(family)}" class="${state.directControls.selectedFamily === family ? "is-active" : ""}" type="button">
+        ${escapeHtml(family.replace(/_/g, " "))}
+      </button>
+    `).join("");
+  }
+  const status = el("directControlStatus");
+  if (status) {
+    status.textContent = selected
+      ? `Selected tooth ${selected}`
+      : "Select a tooth in the 3D preview";
+  }
+  const axes = CONTROL_AXES[state.directControls.selectedFamily] || [];
+  const editable = Boolean(selected && gate.allowed);
+  const grid = el("directControlGrid");
+  if (grid) {
+    grid.innerHTML = axes.map((axis) => {
+      const step = CONTROL_STEPS[axis] || 0.1;
+      const unit = axis === "x" || axis === "y" || axis === "z" ? "mm" : "deg";
+      return `
+        <div class="direct-axis">
+          <span>${escapeHtml(axisLabel(axis))}</span>
+          <button data-direct-axis="${escapeHtml(axis)}" data-direct-delta="${-step}" ${editable ? "" : "disabled"} type="button">-</button>
+          <button data-direct-axis="${escapeHtml(axis)}" data-direct-delta="${step}" ${editable ? "" : "disabled"} type="button">+</button>
+          <small>${escapeHtml(step)} ${unit}</small>
+        </div>
+      `;
+    }).join("");
+  }
+  const archAmount = el("archResponseAmount");
+  if (archAmount) archAmount.value = state.directControls.archResponseMm;
+  const archButton = el("applyArchResponse");
+  if (archButton) archButton.disabled = !editable;
+  const warnings = [
+    ...gate.blockers,
+    ...gate.warnings,
+    ...(state.directControls.warnings || []),
+  ];
+  const warningTarget = el("directControlWarnings");
+  if (warningTarget) {
+    warningTarget.textContent = warnings.length
+      ? warnings.join(". ")
+      : "Direct controls are geometric proposals and remain review-gated; generate/restage and review findings before use.";
+  }
+}
+
+function axisLabel(axis) {
+  return {
+    x: "Translate X",
+    y: "Translate Y",
+    z: "Intrude / extrude",
+    tip: "Crown tip",
+    torque: "Crown torque",
+    rotation: "Rotation",
+  }[axis] || axis;
 }
 
 function renderDownloadActions() {

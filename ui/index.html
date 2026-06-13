@@ -469,6 +469,24 @@
             <h2>Step 4: Build The Timeline</h2>
             <p>Each row is one tooth movement at one stage. Use small increments, then review the cumulative sequence with the stage slider.</p>
           </div>
+          <section class="inline-tool" id="directControls" aria-label="Direct 3D controls">
+            <div class="section-heading">
+              <div>
+                <h2>Direct Controls</h2>
+                <p>Review-gated crown movement proposals for the selected tooth.</p>
+              </div>
+              <span id="directControlStatus"></span>
+            </div>
+            <div class="segmented-control compact" id="directControlFamilies" aria-label="Control family"></div>
+            <div class="direct-control-grid" id="directControlGrid"></div>
+            <div class="direct-arch-response">
+              <label>Arch expansion / contraction
+                <input id="archResponseAmount" type="number" step="0.1" value="0" />
+              </label>
+              <button id="applyArchResponse" type="button">Propose same-arch response</button>
+            </div>
+            <p id="directControlWarnings" class="viewer-caveat"></p>
+          </section>
           <div class="stage-table-wrap">
             <table class="stage-table">
               <thead>
@@ -652,7 +670,11 @@
                   <input id="setupLiveRestage" type="checkbox" checked />
                 </label>
                 <p class="viewer-caveat">Baseline: <strong id="setupCompareBaseline">No baseline selected</strong></p>
+                <div id="setupWorkspace" class="setup-workspace"></div>
                 <div id="setupCompareReport" class="setup-compare-report"></div>
+                <div class="setup-compare-actions">
+                  <button id="promoteSetupCandidate" type="button">Promote compared setup</button>
+                </div>
               </section>
               <section class="download-actions" aria-label="Downloads">
                 <h2>Downloads</h2>

@@ -172,6 +172,12 @@ export const state = {
     status: "",
     undoStack: [],
   },
+  directControls: {
+    selectedFamily: "translation",
+    archResponseMm: 0,
+    status: "",
+    warnings: [],
+  },
   // Advisory auto-segmentation proposal (POST /api/segment). Never auto-applied:
   // `applied` holds only what the user explicitly accepted (and may have corrected).
   segmentation: {

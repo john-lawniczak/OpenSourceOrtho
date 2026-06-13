@@ -84,14 +84,19 @@ What reaching the ≥9/10 target requires:
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
-Current rating: ~8.7/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Phase 14).
+Current rating: ~8.8/10. Target: ≥9/10.
 
 What exists:
 
 - Surface-only planning with explicit data gaps and review tiers.
 - Movement caps, clinical controls, fixed teeth, exclusions, IPR metadata, and
   timeline projection.
+- Setup comparison now includes captured/saved/generated provenance labels,
+  live-restaged candidates, side-by-side workspace summaries, and explicit
+  non-overwriting promotion into the editor.
+- Direct technician controls cover translation, intrusion/extrusion, rotation,
+  crown tip, crown torque, crown angulation, and same-arch response proposals
+  while failing closed without confirmed units and reviewed segmentation.
 - Auto-segmentation proposal path with human review and per-tooth mesh exports.
 - Adjacent same-arch collision/IPR review using reviewed full-triangle geometry
   from the mesh workspace when available, with capped samples and bbox fallback.

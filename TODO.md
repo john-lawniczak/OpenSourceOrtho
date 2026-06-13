@@ -20,62 +20,9 @@ provenance, and unresolved data gaps clearly labeled.
 
 ## Active Roadmap
 
-### Phase 17: Side-By-Side Setup Comparison And Live Restaging
-
-Already in place: deterministic setup comparison/restage contracts, CLI output,
-and a Review-side setup comparison panel with saved/captured baselines, live
-restage updates, movement/control deltas, timeline changes, and JSON payloads.
-
-Remaining implementation:
-
-- Build a full side-by-side 3D workspace for current, generated, edited, and
-  saved-version setups.
-- Add per-stage visual diff controls that keep before/after/overlay views
-  synchronized.
-- Add explicit non-overwriting version promotion so a candidate setup can become
-  the active plan only after user confirmation.
-- Preserve provenance for every compared setup: generated, manual, saved
-  version, restored version, or imported plan.
-- Add focused UI/browser tests for comparison rendering, stage sync, live
-  restage updates, and promotion behavior.
-
-### Phase 18: Richer 3D Controls And Arch Response
-
-Remaining implementation:
-
-- Add direct controls for translation, intrusion/extrusion, rotation, crown tip,
-  crown torque, and crown angulation.
-- Add arch-form expansion/contraction controls with visible arch response
-  proposals.
-- Add editors for attachment/cut metadata, IPR/spacing, tooth locking, movement
-  exclusions, and reviewed movement notes.
-- Propose same-arch response adjustments that preserve contacts/spacing when
-  possible, with deterministic warnings when the response cannot be assessed.
-- Keep every control review-gated and provenance-labeled; no direct control
-  should imply treatment approval or physical-use readiness.
-- Add engine/UI tests for each control family and for fail-closed behavior when
-  units, segmentation, roots, or reviewed anatomy are missing.
-
-### Phase 19: Longitudinal Case-Bundle Outcomes
-
-Already in place: contribution manifests, CLI registration, longitudinal scan
-labels, validated sidecars, and benchmark readiness metrics for target setup,
-tracking error, and refinement-prediction coverage.
-
-Remaining implementation:
-
-- Define numeric outcome-error metrics once consented before/progress/refinement/
-  final STL scan bundles exist.
-- Add target-setup error reports comparing intended setup geometry against final
-  or refinement setup geometry.
-- Add tracking-error reports comparing planned stage positions against progress
-  scans where stage timing is known.
-- Add refinement-prediction reports that separate planned refinements from
-  unplanned refinements and missing/unknown outcomes.
-- Expand non-PHI fixture coverage without committing identifiable scans or
-  proprietary treatment exports.
-- Document benchmark interpretation so sparse community data does not get
-  overstated as clinical accuracy.
+No phase-sized implementation items are currently open. New work should be added
+here only when it still needs implementation; shipped roadmap phases belong in
+release notes, git history, and the relevant feature docs.
 
 ## Cross-Cutting Backlog
 

@@ -14,7 +14,7 @@ const AXIS_LABELS = {
 };
 
 export function captureSetupBaseline() {
-  state.setupCompare.baseline = planJson();
+  state.setupCompare.baseline = setupSnapshot(planJson(), "manual", "captured editor setup");
   state.setupCompare.baselineLabel = "Captured editor setup";
   state.setupCompare.result = null;
   state.setupCompare.latestKey = "";
@@ -29,7 +29,7 @@ export function useLatestVersionBaseline() {
     renderSetupCompare();
     return;
   }
-  state.setupCompare.baseline = latest.snapshot;
+  state.setupCompare.baseline = setupSnapshot(latest.snapshot, "saved-version", latest.version_id);
   state.setupCompare.baselineLabel = `Saved version ${latest.version_id}`;
   state.setupCompare.result = null;
   state.setupCompare.latestKey = "";
@@ -44,6 +44,46 @@ export function clearSetupBaseline() {
   state.setupCompare.latestKey = "";
   state.setupCompare.status = "Capture a baseline or save a version to compare setups.";
   renderSetupCompare();
+}
+
+export function setupSnapshot(plan, provenance = "manual", label = "") {
+  return {
+    ...structuredClone(plan),
+    setup_provenance: {
+      source: provenance,
+      label,
+      captured_at: new Date().toISOString(),
+      caveat: "Compared setup provenance only; this is not clinical approval or manufacturing readiness.",
+    },
+  };
+}
+
+export function currentComparisonCandidate(result) {
+  if (!result || result.ok === false) return null;
+  return result.restaged_plan || result.after || null;
+}
+
+export function setupWorkspaceMarkup(compare) {
+  const baseline = compare.baseline?.setup_provenance;
+  const result = compare.result;
+  const candidate = currentComparisonCandidate(result);
+  const candidateProvenance = candidate?.setup_provenance;
+  const cards = [
+    ["Current", compare.currentProvenance || { source: "manual", label: "current editor" }],
+    ["Baseline", baseline],
+    ["Candidate", candidateProvenance || (result?.source ? { source: "generated", label: result.source } : null)],
+  ];
+  return `
+    <div class="setup-workspace-grid">
+      ${cards.map(([title, provenance]) => `
+        <div>
+          <strong>${escapeHtml(title)}</strong>
+          <span>${escapeHtml(provenance?.source || "unavailable")}</span>
+          <small>${escapeHtml(provenance?.label || "No setup loaded")}</small>
+        </div>
+      `).join("")}
+    </div>
+  `;
 }
 
 export function scheduleSetupCompare(currentPlan = planJson()) {
@@ -69,7 +109,7 @@ async function runSetupCompare(payload, key) {
   try {
     const result = await requestSetupComparison(payload);
     if (state.setupCompare.latestKey !== key) return;
-    state.setupCompare.result = result;
+    state.setupCompare.result = tagComparisonResult(result, payload);
     state.setupCompare.status = result.ok === false
       ? (result.errors || ["Setup comparison failed."]).join("; ")
       : "Comparison updated.";
@@ -83,6 +123,20 @@ async function runSetupCompare(payload, key) {
   }
 }
 
+function tagComparisonResult(result, payload) {
+  if (!result || result.ok === false) return result;
+  if (payload.live_restage) {
+    return {
+      ...result,
+      restaged_plan: setupSnapshot(result.restaged_plan || payload.edited, "generated", result.source || "live restage preview"),
+    };
+  }
+  return {
+    ...result,
+    after: setupSnapshot(payload.after, "manual", "current editor candidate"),
+  };
+}
+
 export function renderSetupCompare() {
   const compare = state.setupCompare;
   const live = el("setupLiveRestage");
@@ -91,6 +145,10 @@ export function renderSetupCompare() {
   el("setupCompareStatus").textContent = compare.busy ? "Working..." : compare.status;
   el("setupCompareBaseline").textContent = compare.baselineLabel || "No baseline selected";
   el("clearSetupBaseline").disabled = !compare.baseline;
+  const promote = el("promoteSetupCandidate");
+  if (promote) promote.disabled = !currentComparisonCandidate(compare.result);
+  const workspace = el("setupWorkspace");
+  if (workspace) workspace.innerHTML = setupWorkspaceMarkup(compare);
   el("setupCompareReport").innerHTML = setupComparisonMarkup(compare.result);
 }
 

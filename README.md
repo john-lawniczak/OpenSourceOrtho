@@ -110,17 +110,18 @@ context first:
   higher-fidelity path toward **Root/Bone-Aware Review** when the record is
   locally ingested, registered to the STL, segmented/reviewed, and validated. See
   [docs/cbct-evaluation.md](docs/cbct-evaluation.md).
-- **Plan versions**: save named snapshots of a plan and restore any version back
-  into the editor. Backed by a local case store (`.orthoplan-cases.json`,
-  override with `ORTHOPLAN_CASE_STORE`); available in the UI Versions panel, the
-  HTTP API (`/api/plan/version`, `/api/cases`), and the CLI (`case-save`,
-  `case-list`, `case-versions`).
-- **Treatment-system parity roadmap**: the next major workflow layer is an open
-  implementation of common clear-aligner planning capabilities: side-by-side
-  comparison of setups, live recomputation after 3D edits, richer controls for
-  translation/intrusion/extrusion/rotation/tip/torque, arch-form edits,
-  attachment/cut/IPR/spacing editors, tooth locking, and automatic arch response.
-  These controls stay proposals until deterministic checks and human review run.
+- **Plan versions and setup comparison**: save named snapshots of a plan, restore
+  any version back into the editor, compare captured/saved/current/generated
+  setups side by side, live-restage an edited candidate, and promote a compared
+  setup only after an explicit user action. Compared setups carry provenance
+  labels such as manual, generated, saved version, restored version, or imported
+  plan.
+- **Direct 3D controls**: technician controls can author review-gated geometric
+  proposals for translation, intrusion/extrusion, rotation, crown tip, crown
+  torque, crown angulation, arch expansion/contraction, attachment/IPR/spacing
+  metadata, tooth locking, and movement exclusions. These controls stay
+  proposals until deterministic checks and human review run, and fail closed
+  when scale, reviewed segmentation, roots, or reviewed anatomy are missing.
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
   plan context, findings, data gaps, and timeline. The AI box shows a **single
   model dropdown** (each option carries its provider) and an **API-key field with

@@ -234,6 +234,17 @@ component with readiness metrics for:
 - refinement-prediction benchmarks: progress/refinement scans or a nonzero
   `refinement_count` in `plan-summary.json`
 
-These are readiness and corpus-coverage metrics, not clinical performance
-claims. They tell contributors whether the open dataset is becoming useful for
-future target setup, tracking, and refinement studies.
+For consented longitudinal bundles, `longitudinal_outcome_reports()` also emits
+numeric bounds-centroid proxy reports:
+
+- target-setup error: initial scan bounds compared with final or refinement scan
+  bounds per arch
+- tracking error: initial scan bounds compared with progress scans only when
+  stage timing is known
+- refinement prediction: planned refinements separated from unplanned observed
+  refinements and missing/unknown outcomes
+
+These are readiness, corpus-coverage, and geometry-proxy metrics, not clinical
+performance claims. Sparse community data must not be described as clinical
+accuracy; it only shows whether the open dataset is becoming useful for future
+target setup, tracking, and refinement studies.

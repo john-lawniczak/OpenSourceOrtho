@@ -2213,6 +2213,85 @@ td input {
   padding: 4px 6px;
 }
 
+.inline-tool {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: var(--panel);
+}
+
+.segmented-control.compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+
+.segmented-control.compact button {
+  padding: 0.35rem 0.55rem;
+  text-transform: capitalize;
+}
+
+.direct-control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+}
+
+.direct-axis {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem;
+}
+
+.direct-axis small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
+.direct-arch-response {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: end;
+  margin-top: 0.8rem;
+}
+
+.direct-arch-response input {
+  width: 7rem;
+}
+
+.setup-workspace {
+  margin: 0.75rem 0;
+}
+
+.setup-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.setup-workspace-grid > div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem;
+}
+
+.setup-workspace-grid strong,
+.setup-workspace-grid span,
+.setup-workspace-grid small {
+  display: block;
+}
+
+.setup-workspace-grid small {
+  color: var(--muted);
+}
+
 /* Glossary / Key Terms */
 .glossary-link {
   background: transparent;

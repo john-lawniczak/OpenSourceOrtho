@@ -26,9 +26,11 @@ import { enterSample, exitSample, prepareSampleSegmentation, sampleActive } from
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { registrationActionable, requestProximity } from "./proximity.js";
 import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
+import { applyDirectControl, controlGate, proposeArchResponse } from "./direct_controls.js";
 import {
   captureSetupBaseline,
   clearSetupBaseline,
+  currentComparisonCandidate,
   scheduleSetupCompare,
   useLatestVersionBaseline,
 } from "./setup_compare.js";
@@ -275,6 +277,7 @@ document.body.addEventListener("input", (event) => {
     scheduleSetupCompare();
     return;
   }
+  if (target.id === "archResponseAmount") state.directControls.archResponseMm = Number(target.value) || 0;
   if (target.id === "scanArchFilter") state.scanArchFilter = target.value;
   if (target.id === "stageSlider") {
     renderStagePreview();
@@ -323,6 +326,8 @@ document.body.addEventListener("click", (event) => {
   const printArtifactTarget = closestDatasetTarget(target, "printArtifact");
   const wearTarget = closestDatasetTarget(target, "wear");
   const anatomyReviewTarget = closestDatasetTarget(target, "anatomyReview");
+  const directFamilyTarget = closestDatasetTarget(target, "directFamily");
+  const directAxisTarget = closestDatasetTarget(target, "directAxis");
 
   if (wearTarget) {
     setWearInterval(Number(wearTarget.dataset.wear));
@@ -480,6 +485,13 @@ document.body.addEventListener("click", (event) => {
       anatomyReviewTarget.dataset.anatomyReview,
     );
   }
+  if (directFamilyTarget) {
+    state.directControls.selectedFamily = directFamilyTarget.dataset.directFamily;
+    renderAll();
+  }
+  if (directAxisTarget) {
+    applyDirectAxis(directAxisTarget.dataset.directAxis, Number(directAxisTarget.dataset.directDelta || 0));
+  }
   if (detailModeTarget) {
     state.detailMode[detailModeTarget.dataset.detailMode] = detailModeTarget.dataset.detailValue;
     renderAll();
@@ -532,6 +544,12 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "clearSetupBaseline") {
     clearSetupBaseline();
+  }
+  if (button?.id === "promoteSetupCandidate") {
+    promoteSetupCandidate();
+  }
+  if (button?.id === "applyArchResponse") {
+    applyDirectArchResponse();
   }
   if (restoreVersionTarget) {
     const version = state.versions.list[Number(restoreVersionTarget.dataset.restoreVersion)];
@@ -882,6 +900,57 @@ function applyManualNudge(direction) {
   const delta = direction.endsWith("-") ? -NUDGE_STEP_MM : NUDGE_STEP_MM;
   pushManualUndo();
   state.rows = nudgeTarget(state.rows, tooth, axis, delta);
+  renderAll();
+}
+
+function directControlGate() {
+  return controlGate({
+    unitsConfirmed: scaleConfirmed(state.scanUnits),
+    segmentedTeeth: Boolean(state.segmentation.applied?.tooth_meshes?.length),
+    rootsAvailable: Boolean(state.availability.roots || state.derivedAnatomy?.roots?.length),
+    reviewedAnatomy: state.lastEval?.review_tier?.root_bone_aware,
+  });
+}
+
+function applyDirectAxis(axis, delta) {
+  const tooth = state.manualEdit.selectedTooth;
+  const gate = directControlGate();
+  if (!tooth || !gate.allowed) {
+    state.directControls.warnings = gate.blockers;
+    renderAll();
+    return;
+  }
+  pushManualUndo();
+  state.rows = applyDirectControl(state.rows, tooth, axis, delta);
+  state.directControls.warnings = gate.warnings;
+  renderAll();
+}
+
+function applyDirectArchResponse() {
+  const tooth = state.manualEdit.selectedTooth;
+  const result = proposeArchResponse(state.rows, tooth, state.directControls.archResponseMm, directControlGateOptions());
+  if (result.proposed.length) pushManualUndo();
+  state.rows = result.rows;
+  state.directControls.warnings = result.warnings;
+  renderAll();
+}
+
+function directControlGateOptions() {
+  return {
+    unitsConfirmed: scaleConfirmed(state.scanUnits),
+    segmentedTeeth: Boolean(state.segmentation.applied?.tooth_meshes?.length),
+    rootsAvailable: Boolean(state.availability.roots || state.derivedAnatomy?.roots?.length),
+    reviewedAnatomy: state.lastEval?.review_tier?.root_bone_aware,
+  };
+}
+
+function promoteSetupCandidate() {
+  const candidate = currentComparisonCandidate(state.setupCompare.result);
+  if (!candidate) return;
+  restorePlan(candidate);
+  state.setupCompare.status = "Compared setup promoted into the editor. Save a new version to preserve it.";
+  state.setupCompare.result = null;
+  state.setupCompare.latestKey = "";
   renderAll();
 }
 
@@ -1236,6 +1305,7 @@ function restorePlan(snapshot) {
   state.caseRecords = snapshot.case_records || [];
   state.registrations = snapshot.registrations || [];
   state.derivedAnatomy = snapshot.derived_anatomy || null;
+  restoreClinicalControls(snapshot);
   state.rows = rowsFromPlan(snapshot);
   // Bring back this plan's segmentation review draft (corrections, marked gaps),
   // then let the saved snapshot's applied per-tooth meshes win - they are the
@@ -1253,6 +1323,29 @@ function restorePlan(snapshot) {
   state.versions.status = `Restored ${snapshot.id || "plan"} into the editor`;
   renderAvailability();
   renderAll();
+}
+
+function restoreClinicalControls(snapshot) {
+  const fixed = (snapshot.fixed_teeth || []).map((item) => item.tooth?.value).filter(Boolean).join(", ");
+  const attachments = (snapshot.attachments || []).map((item) => item.tooth?.value).filter(Boolean).join(", ");
+  const exclusions = (snapshot.movement_exclusions || [])
+    .map((item) => `${item.tooth?.value}:${[...(item.axes || [])].join(",")}`)
+    .join("; ");
+  const iprContacts = {};
+  for (const item of snapshot.interproximal_reductions || []) {
+    const a = item.tooth_a?.value;
+    const b = item.tooth_b?.value;
+    if (a && b) iprContacts[`${a}-${b}`] = item.amount_mm;
+  }
+  state.clinicalControls = {
+    fixedTeeth: fixed,
+    attachmentTeeth: attachments,
+    movementExclusions: exclusions,
+    iprContacts,
+  };
+  el("fixedTeeth").value = fixed;
+  el("attachmentTeeth").value = attachments;
+  el("movementExclusions").value = exclusions;
 }
 
 renderGlossaryTerms();

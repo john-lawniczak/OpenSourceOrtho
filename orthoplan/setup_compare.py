@@ -59,6 +59,7 @@ class LiveRestageComparison(BaseModel):
     before_timeline_days: int
     restaged_timeline_days: int
     comparison: SetupComparison
+    restaged_plan: dict[str, Any]
     warnings: list[str] = Field(default_factory=list)
     caveat: str
 
@@ -99,6 +100,7 @@ def live_restage_comparison(before: TreatmentPlan, edited: TreatmentPlan) -> Liv
         before_timeline_days=project_timeline(before).projected_duration_days,
         restaged_timeline_days=project_timeline(generated.plan).projected_duration_days,
         comparison=comparison,
+        restaged_plan=generated.plan.model_dump(mode="json"),
         warnings=generated.warnings,
         caveat=generated.caveat,
     )

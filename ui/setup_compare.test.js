@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { setupComparisonMarkup } from "./setup_compare.js";
+import {
+  currentComparisonCandidate,
+  setupComparisonMarkup,
+  setupSnapshot,
+  setupWorkspaceMarkup,
+} from "./setup_compare.js";
 
 test("setup comparison markup shows side-by-side restage details", () => {
   const html = setupComparisonMarkup({
@@ -44,4 +49,36 @@ test("setup comparison markup escapes server values", () => {
   });
 
   assert.match(html, /bad &lt;plan&gt;/);
+});
+
+test("setup snapshots preserve provenance for compared plans", () => {
+  const snapshot = setupSnapshot({ id: "plan-a", stages: [] }, "imported-plan", "vendor export");
+
+  assert.equal(snapshot.id, "plan-a");
+  assert.equal(snapshot.setup_provenance.source, "imported-plan");
+  assert.match(snapshot.setup_provenance.caveat, /not clinical approval/);
+});
+
+test("currentComparisonCandidate prefers restaged plan for promotion", () => {
+  const restaged = { id: "restaged", stages: [] };
+  const edited = { id: "edited", stages: [] };
+
+  assert.equal(currentComparisonCandidate({ ok: true, restaged_plan: restaged, after: edited }), restaged);
+  assert.equal(currentComparisonCandidate({ ok: true, after: edited }), edited);
+  assert.equal(currentComparisonCandidate({ ok: false }), null);
+});
+
+test("setup workspace markup labels candidate provenance", () => {
+  const html = setupWorkspaceMarkup({
+    baseline: setupSnapshot({ id: "base", stages: [] }, "saved-version", "v1"),
+    result: {
+      ok: true,
+      after: setupSnapshot({ id: "candidate", stages: [] }, "manual", "edited"),
+    },
+  });
+
+  assert.match(html, /Baseline/);
+  assert.match(html, /saved-version/);
+  assert.match(html, /Candidate/);
+  assert.match(html, /manual/);
 });
