@@ -45,9 +45,6 @@ struct SettingsView: View {
                         Text(theme.title).tag(theme.rawValue)
                     }
                 }
-                Text("Dark mode can increase contrast for the mobile STL teeth preview.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             Section("Reference") {
                 NavigationLink("Glossary", destination: GlossaryView())
