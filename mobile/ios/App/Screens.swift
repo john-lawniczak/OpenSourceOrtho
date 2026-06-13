@@ -13,12 +13,49 @@ import OpenSourceOrthoLiteKit
 struct UploadView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
     @State private var importer: ImporterKind?
+    @State private var selectedImport: ImporterKind = .stl
     @State private var photoItems: [PhotosPickerItem] = []
 
     private enum ImporterKind: Identifiable {
         case stl, cbct, photoFiles, browserReview
 
         var id: String { modality }
+
+        var title: String {
+            switch self {
+            case .stl: return "STL scans"
+            case .cbct: return "CBCT / DICOM"
+            case .photoFiles: return "Photos"
+            case .browserReview: return "Browser review"
+            }
+        }
+
+        var subtitle: String {
+            switch self {
+            case .stl: return "3D surface files"
+            case .cbct: return "Attach for handoff"
+            case .photoFiles: return "Library or files"
+            case .browserReview: return "Case JSON"
+            }
+        }
+
+        var actionTitle: String {
+            switch self {
+            case .stl: return "Choose STL scans"
+            case .cbct: return "Choose CBCT / DICOM"
+            case .photoFiles: return "Choose photos"
+            case .browserReview: return "Import review JSON"
+            }
+        }
+
+        var systemImage: String {
+            switch self {
+            case .stl: return "cube.transparent"
+            case .cbct: return "waveform.path.ecg.rectangle"
+            case .photoFiles: return "photo"
+            case .browserReview: return "doc.text"
+            }
+        }
 
         var modality: String {
             switch self {
@@ -58,28 +95,51 @@ struct UploadView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-            VStack(spacing: 10) {
-                Button("Add STL scan") {
-                    importer = .stl
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Choose what to add")
+                    .font(.headline)
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    ForEach([ImporterKind.stl, .cbct, .photoFiles, .browserReview]) { option in
+                        ImportOptionCard(
+                            title: option.title,
+                            subtitle: option.subtitle,
+                            systemImage: option.systemImage,
+                            isSelected: selectedImport == option
+                        ) {
+                            selectedImport = option
+                        }
+                    }
                 }
-                Button("Add CBCT / DICOM") {
-                    importer = .cbct
-                }
-                PhotosPicker(selection: $photoItems, maxSelectionCount: 12, matching: .images) {
-                    Text("Add photos from library")
-                        .frame(maxWidth: .infinity)
-                }
-                Button("Browse photos in Files, iCloud, or Drive") {
-                    importer = .photoFiles
-                }
-                Button("Import browser review") {
-                    importer = .browserReview
+                if selectedImport == .photoFiles {
+                    PhotosPicker(selection: $photoItems, maxSelectionCount: 12, matching: .images) {
+                        Label("Add photos from library", systemImage: "photo.on.rectangle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button {
+                        importer = .photoFiles
+                    } label: {
+                        Label("Browse Files or Drive", systemImage: "folder")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                } else {
+                    Button {
+                        importer = selectedImport
+                    } label: {
+                        Label(selectedImport.actionTitle, systemImage: selectedImport.systemImage)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
                 Button("Use dev sample STL") {
                     model.addDevSampleSTL()
                 }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.borderedProminent)
+            .padding(12)
+            .background(.thinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             if !model.storedReviews.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Stored browser reviews")
@@ -137,6 +197,37 @@ struct UploadView: View {
             }
             self.importer = nil
         }
+    }
+}
+
+private struct ImportOptionCard: View {
+    var title: String
+    var subtitle: String
+    var systemImage: String
+    var isSelected: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.title3)
+                Text(title)
+                    .font(.subheadline.bold())
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(10)
+            .background(isSelected ? Color.accentColor.opacity(0.12) : Color(.secondarySystemGroupedBackground))
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isSelected ? Color.accentColor : Color(.separator), lineWidth: isSelected ? 2 : 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -421,20 +512,39 @@ private enum DentalPreviewScene {
 
     private static func addArch(to scene: SCNScene, y: Float, stage: Double, isUpper: Bool) {
         let progress = Float(stage / 12.0)
-        for index in 0..<8 {
-            let centered = Float(index) - 3.5
-            let tooth = SCNSphere(radius: 0.22)
-            tooth.segmentCount = 18
-            tooth.firstMaterial?.diffuse.contents = UIColor.systemTeal.withAlphaComponent(isUpper ? 0.95 : 0.75)
+        for index in 0..<14 {
+            let centered = Float(index) - 6.5
+            let normalized = abs(centered) / 6.5
+            let crown = sampleToothGeometry(index: index)
+            crown.firstMaterial?.diffuse.contents = UIColor(red: 0.94, green: 0.88, blue: 0.74, alpha: isUpper ? 1.0 : 0.82)
+            crown.firstMaterial?.specular.contents = UIColor.white
 
-            let node = SCNNode(geometry: tooth)
-            let curve = sin((Float(index) / 7.0) * .pi) * 0.65
-            let direction: Float = centered >= 0 ? 1 : -1
-            let xOffset = (isUpper ? 0.12 : -0.12) * progress * direction
-            node.position = SCNVector3(centered * 0.48 + xOffset, y + curve * (isUpper ? 1 : -1), 0)
-            node.scale = SCNVector3(1.0, 1.25, 0.75)
+            let node = SCNNode(geometry: crown)
+            let archDepth = (1 - normalized * normalized) * 1.05
+            let lateralExpansion = (centered >= 0 ? 1 : -1) * progress * 0.14
+            node.position = SCNVector3(
+                centered * 0.34 + lateralExpansion,
+                y + archDepth * (isUpper ? 1 : -1),
+                0
+            )
+            node.eulerAngles.z = -centered * 0.055
+            node.scale = SCNVector3(1.0 + normalized * 0.32, 1.0, 0.78 + normalized * 0.2)
             scene.rootNode.addChildNode(node)
         }
+    }
+
+    private static func sampleToothGeometry(index: Int) -> SCNGeometry {
+        let distanceFromMidline = abs(index - 6)
+        if distanceFromMidline <= 1 {
+            return SCNBox(width: 0.28, height: 0.52, length: 0.32, chamferRadius: 0.08)
+        }
+        if distanceFromMidline == 2 {
+            return SCNPyramid(width: 0.34, height: 0.58, length: 0.36)
+        }
+        if distanceFromMidline <= 4 {
+            return SCNBox(width: 0.38, height: 0.44, length: 0.42, chamferRadius: 0.1)
+        }
+        return SCNBox(width: 0.48, height: 0.42, length: 0.5, chamferRadius: 0.12)
     }
 }
 
@@ -498,6 +608,7 @@ private enum STLSceneMesh {
 }
 
 struct GlossaryView: View {
+    @State private var query = ""
     // BEGIN GENERATED GLOSSARY TERMS
     private let terms = [
         ("Arch", "One jaw's row of teeth: maxillary (upper) or mandibular (lower)."),
@@ -539,13 +650,22 @@ struct GlossaryView: View {
     // END GENERATED GLOSSARY TERMS
 
     var body: some View {
-        List(terms, id: \.0) { term, definition in
+        List(filteredTerms, id: \.0) { term, definition in
             VStack(alignment: .leading, spacing: 4) {
                 Text(term).font(.headline)
                 Text(definition).font(.subheadline).foregroundStyle(.secondary)
             }
         }
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search glossary")
         .navigationTitle("Glossary")
+    }
+
+    private var filteredTerms: [(String, String)] {
+        let needle = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !needle.isEmpty else { return terms }
+        return terms.filter { term, definition in
+            term.lowercased().contains(needle) || definition.lowercased().contains(needle)
+        }
     }
 }
 
@@ -649,43 +769,41 @@ private struct ToothMapDiagram: View {
                     .foregroundStyle(.secondary)
                     .position(x: size.width - 70, y: centerY)
 
-                ForEach(Array(upperRight.enumerated()), id: \.element) { offset, label in
-                    ToothBadge(label: label, point: upperPoint(index: offset, side: -1, centerX: centerX, y: upperY, radiusX: radiusX), kind: toothKind(index: offset), isUpper: true)
+                ForEach(upperRight, id: \.self) { label in
+                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: true)
                 }
-                ForEach(Array(upperLeft.enumerated()), id: \.element) { offset, label in
-                    ToothBadge(label: label, point: upperPoint(index: offset, side: 1, centerX: centerX, y: upperY, radiusX: radiusX), kind: toothKind(index: offset), isUpper: true)
+                ForEach(upperLeft, id: \.self) { label in
+                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: true)
                 }
-                ForEach(Array(lowerLeft.enumerated()), id: \.element) { offset, label in
-                    ToothBadge(label: label, point: lowerPoint(index: offset, side: 1, centerX: centerX, y: lowerY, radiusX: radiusX), kind: toothKind(index: offset), isUpper: false)
+                ForEach(lowerLeft, id: \.self) { label in
+                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: false)
                 }
-                ForEach(Array(lowerRight.enumerated()), id: \.element) { offset, label in
-                    ToothBadge(label: label, point: lowerPoint(index: offset, side: -1, centerX: centerX, y: lowerY, radiusX: radiusX), kind: toothKind(index: offset), isUpper: false)
+                ForEach(lowerRight, id: \.self) { label in
+                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: false)
                 }
             }
             .accessibilityLabel("FDI teeth map drawn as an open mouth with upper and lower dental arches")
         }
     }
 
-    private func upperPoint(index: Int, side: CGFloat, centerX: CGFloat, y: CGFloat, radiusX: CGFloat) -> CGPoint {
-        let t = CGFloat(index) / 7
-        let distance = 16 + t * (radiusX - 34)
-        let archLift = sin(t * .pi) * 66
-        return CGPoint(x: centerX + side * distance, y: y + archLift)
+    private func toothPoint(label: String, centerX: CGFloat, upperY: CGFloat, lowerY: CGFloat, radiusX: CGFloat) -> CGPoint {
+        let quadrant = Int(label.prefix(1)) ?? 1
+        let digit = CGFloat(Int(label.suffix(1)) ?? 1)
+        let side: CGFloat = (quadrant == 1 || quadrant == 4) ? -1 : 1
+        let isUpper = quadrant == 1 || quadrant == 2
+        let t = (digit - 1) / 7
+        let distance = 18 + t * (radiusX - 54)
+        let posteriorCurve = sin(t * .pi / 2) * 74
+        let y = isUpper ? upperY + posteriorCurve : lowerY - posteriorCurve
+        return CGPoint(x: centerX + side * distance, y: y)
     }
 
-    private func lowerPoint(index: Int, side: CGFloat, centerX: CGFloat, y: CGFloat, radiusX: CGFloat) -> CGPoint {
-        let t = CGFloat(index) / 7
-        let distance = 16 + t * (radiusX - 34)
-        let archDrop = sin(t * .pi) * 66
-        return CGPoint(x: centerX + side * distance, y: y - archDrop)
-    }
-
-    private func toothKind(index: Int) -> ToothKind {
-        switch index {
-        case 0, 1: return .molar
-        case 2, 3: return .premolar
-        case 4: return .canine
-        default: return .incisor
+    private func toothKind(label: String) -> ToothKind {
+        switch Int(label.suffix(1)) ?? 1 {
+        case 1, 2: return .incisor
+        case 3: return .canine
+        case 4, 5: return .premolar
+        default: return .molar
         }
     }
 }

@@ -71,7 +71,6 @@ final class LiteFlowViewModel: ObservableObject {
     func addDevSampleSTL() {
         let url = Bundle.main.url(forResource: "dev-sample-incisor", withExtension: "stl")
         let byteCount = url.flatMap { try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize } ?? 0
-        let previewData = url.flatMap { try? Data(contentsOf: $0) }
         addScan(
             SelectedScan(
                 fileName: "dev-sample-incisor.stl",
@@ -80,9 +79,6 @@ final class LiteFlowViewModel: ObservableObject {
                 modality: "stl"
             )
         )
-        if let previewData {
-            previewScans.append(PreviewScan(fileName: "dev-sample-incisor.stl", modality: "stl", data: previewData))
-        }
     }
 
     /// Posts selected records to the engine and advances to Review.

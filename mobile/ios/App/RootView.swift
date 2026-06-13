@@ -17,6 +17,8 @@ struct RootView: View {
                 } else {
                     stepContent
                 }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 Divider()
                 BottomNavigationBar(
                     selectedStep: model.step,
@@ -112,15 +114,39 @@ private struct BottomNavigationButton: View {
     }
 }
 
-/// Non-dismissible disclaimer, wording sourced from the kit (kept in sync with
-/// the engine `caveat`). Required by the project safety boundary.
 struct SafetyBanner: View {
+    @AppStorage("liteSafetyBannerDismissed") private var dismissed = false
+    @AppStorage("liteSafetyBannerCollapsed") private var collapsed = true
+
     var body: some View {
-        Text(SafetyText.disclaimer)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+        if !dismissed {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 10) {
+                    Button {
+                        withAnimation(.snappy) { collapsed.toggle() }
+                    } label: {
+                        Image(systemName: collapsed ? "chevron.right" : "chevron.down")
+                            .font(.caption.bold())
+                    }
+                    .buttonStyle(.plain)
+                    Text(collapsed ? SafetyText.shortDisclaimer : SafetyText.disclaimer)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 8)
+                    Button {
+                        withAnimation(.snappy) { dismissed = true }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.bold())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss safety summary")
+                }
+            }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.yellow.opacity(0.12))
+        }
     }
 }

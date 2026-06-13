@@ -4,6 +4,10 @@ import Foundation
 /// `caveat` field and ../../API_CONTRACT.md. The lite app must never present a
 /// plan as safe, approved, cleared, or ready for treatment.
 public enum SafetyText {
+    public static let shortDisclaimer = """
+    OpenSource Ortho is a planning research toolkit, not clinical approval.
+    """
+
     public static let disclaimer = """
     OpenSource Ortho is a clear-aligner planning safety playground and research \
     toolkit. The current build is not distributed as a medical device, is not \

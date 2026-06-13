@@ -31,12 +31,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -70,6 +74,7 @@ import kotlin.math.sin
 fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
     val context = LocalContext.current
     var pendingModality by remember { mutableStateOf("stl") }
+    var selectedImport by remember { mutableStateOf(importOptions.first()) }
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
     ) { uris ->
@@ -96,26 +101,32 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
-        Button(onClick = {
-            pendingModality = "stl"
-            picker.launch(arrayOf("model/stl", "application/sla", "application/octet-stream", "*/*"))
-        }) { Text("Add STL scan") }
-        Button(onClick = {
-            pendingModality = "cbct"
-            picker.launch(arrayOf("application/zip", "application/dicom", "application/octet-stream", "*/*"))
-        }) { Text("Add CBCT / DICOM") }
-        Button(onClick = {
-            pendingModality = "photo"
-            picker.launch(arrayOf("image/*"))
-        }) { Text("Add photos from device") }
-        Button(onClick = {
-            pendingModality = "photo"
-            picker.launch(arrayOf("image/*", "application/octet-stream", "*/*"))
-        }) { Text("Browse photos in Files or Drive") }
-        Button(onClick = {
-            pendingModality = "browser-review"
-            picker.launch(arrayOf("application/json", "text/json", "text/plain", "*/*"))
-        }) { Text("Import browser review") }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("Choose what to add", style = MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    importOptions.take(2).forEach { option ->
+                        ImportOptionCard(option, selectedImport == option, Modifier.weight(1f)) {
+                            selectedImport = option
+                        }
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    importOptions.drop(2).forEach { option ->
+                        ImportOptionCard(option, selectedImport == option, Modifier.weight(1f)) {
+                            selectedImport = option
+                        }
+                    }
+                }
+                Button(onClick = {
+                    pendingModality = selectedImport.modality
+                    picker.launch(selectedImport.mimeTypes)
+                }, modifier = Modifier.fillMaxWidth()) { Text(selectedImport.actionTitle) }
+            }
+        }
         Button(onClick = {
             model.addDevSample(context.devSampleByteCount())
         }) { Text("Use dev sample STL") }
@@ -138,6 +149,39 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                 }
             }
         }
+    }
+}
+
+private data class ImportOption(
+    val title: String,
+    val subtitle: String,
+    val actionTitle: String,
+    val modality: String,
+    val mimeTypes: Array<String>,
+)
+
+private val importOptions = listOf(
+    ImportOption("STL scans", "3D surface files", "Choose STL scans", "stl", arrayOf("model/stl", "application/sla", "application/octet-stream", "*/*")),
+    ImportOption("CBCT / DICOM", "Attach for handoff", "Choose CBCT / DICOM", "cbct", arrayOf("application/zip", "application/dicom", "application/octet-stream", "*/*")),
+    ImportOption("Photos", "Images from device", "Choose photos", "photo", arrayOf("image/*", "application/octet-stream", "*/*")),
+    ImportOption("Browser review", "Case JSON", "Import review JSON", "browser-review", arrayOf("application/json", "text/json", "text/plain", "*/*")),
+)
+
+@Composable
+private fun ImportOptionCard(option: ImportOption, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
+        modifier = modifier
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(10.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(option.title, style = MaterialTheme.typography.bodyMedium)
+        Text(option.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -365,6 +409,17 @@ fun PrintAndSendScreen(model: LiteFlowViewModel) {
 
 @Composable
 fun SettingsScreen() {
+    var glossaryQuery by remember { mutableStateOf("") }
+    val filteredGlossary = remember(glossaryQuery) {
+        val needle = glossaryQuery.trim().lowercase()
+        if (needle.isEmpty()) {
+            fullGlossaryTerms
+        } else {
+            fullGlossaryTerms.filter { (term, definition) ->
+                term.lowercase().contains(needle) || definition.lowercase().contains(needle)
+            }
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -394,8 +449,18 @@ fun SettingsScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Glossary", style = MaterialTheme.typography.labelMedium)
-                fullGlossaryTerms.forEach { (term, definition) ->
+                OutlinedTextField(
+                    value = glossaryQuery,
+                    onValueChange = { glossaryQuery = it },
+                    label = { Text("Search glossary") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                filteredGlossary.forEach { (term, definition) ->
                     GlossaryRow(term, definition)
+                }
+                if (filteredGlossary.isEmpty()) {
+                    Text("No matching terms.", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -668,15 +733,17 @@ private class DentalPreview3dView(context: Context) : View(context) {
         val progress = stage / 12f
         paint.color = if (isUpper) AndroidColor.rgb(20, 184, 166) else AndroidColor.rgb(45, 212, 191)
 
-        for (index in 0 until 8) {
-            val normalized = index / 7f
-            val centered = index - 3.5f
-            val curve = sin(normalized * Math.PI).toFloat() * 54f
-            val rotated = centered * cos(rotation) * 46f
-            val stageOffset = if (centered >= 0f) progress * 14f else -progress * 14f
+        for (index in 0 until 14) {
+            val centered = index - 6.5f
+            val normalized = kotlin.math.abs(centered) / 6.5f
+            val curve = (1f - normalized * normalized) * 78f
+            val rotated = centered * cos(rotation) * 28f
+            val stageOffset = if (centered >= 0f) progress * 12f else -progress * 12f
             val x = centerX + rotated + stageOffset
             val y = centerY + curve * if (isUpper) 1f else -1f
-            canvas.drawOval(RectF(x - 18f, y - 26f, x + 18f, y + 26f), paint)
+            val halfWidth = 13f + normalized * 7f
+            val halfHeight = 24f - normalized * 4f
+            canvas.drawRoundRect(RectF(x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight), 10f, 10f, paint)
         }
     }
 
@@ -835,28 +902,22 @@ private class TeethMapView(context: Context) : View(context) {
         canvas.drawText("Patient right", 82f, centerY, paint)
         canvas.drawText("Patient left", width - 82f, centerY, paint)
 
-        drawQuadrant(canvas, upperRight, -1f, upperY, radiusX, upper = true)
-        drawQuadrant(canvas, upperLeft, 1f, upperY, radiusX, upper = true)
-        drawQuadrant(canvas, lowerLeft, 1f, lowerY, radiusX, upper = false)
-        drawQuadrant(canvas, lowerRight, -1f, lowerY, radiusX, upper = false)
+        (upperRight + upperLeft + lowerLeft + lowerRight).forEach { label ->
+            val point = toothPoint(label, centerX, upperY, lowerY, radiusX)
+            drawTooth(canvas, label, point[0], point[1], toothKind(label), label.first() == '1' || label.first() == '2')
+        }
     }
 
-    private fun drawQuadrant(
-        canvas: Canvas,
-        labels: List<String>,
-        side: Float,
-        archY: Float,
-        radiusX: Float,
-        upper: Boolean,
-    ) {
-        labels.forEachIndexed { index, label ->
-            val t = index / 7f
-            val distance = 16f + t * (radiusX - 34f)
-            val curve = sin(t * Math.PI).toFloat() * 66f
-            val x = width / 2f + side * distance
-            val y = if (upper) archY + curve else archY - curve
-            drawTooth(canvas, label, x, y, toothKind(index), upper)
-        }
+    private fun toothPoint(label: String, centerX: Float, upperY: Float, lowerY: Float, radiusX: Float): FloatArray {
+        val quadrant = label.firstOrNull()?.digitToIntOrNull() ?: 1
+        val digit = label.lastOrNull()?.digitToIntOrNull()?.toFloat() ?: 1f
+        val side = if (quadrant == 1 || quadrant == 4) -1f else 1f
+        val isUpper = quadrant == 1 || quadrant == 2
+        val t = (digit - 1f) / 7f
+        val distance = 18f + t * (radiusX - 54f)
+        val posteriorCurve = sin(t * Math.PI / 2.0).toFloat() * 74f
+        val y = if (isUpper) upperY + posteriorCurve else lowerY - posteriorCurve
+        return floatArrayOf(centerX + side * distance, y)
     }
 
     private fun drawTooth(canvas: Canvas, label: String, x: Float, y: Float, kind: ToothKind, upper: Boolean) {
@@ -882,12 +943,12 @@ private class TeethMapView(context: Context) : View(context) {
         paint.isFakeBoldText = false
     }
 
-    private fun toothKind(index: Int): ToothKind =
-        when (index) {
-            0, 1 -> ToothKind.MOLAR
-            2, 3 -> ToothKind.PREMOLAR
-            4 -> ToothKind.CANINE
-            else -> ToothKind.INCISOR
+    private fun toothKind(label: String): ToothKind =
+        when (label.lastOrNull()?.digitToIntOrNull() ?: 1) {
+            1, 2 -> ToothKind.INCISOR
+            3 -> ToothKind.CANINE
+            4, 5 -> ToothKind.PREMOLAR
+            else -> ToothKind.MOLAR
         }
 
     private fun toothRect(kind: ToothKind, x: Float, y: Float): RectF {

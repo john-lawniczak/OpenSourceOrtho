@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -126,9 +128,20 @@ fun BottomNavigationBar(
  *  engine caveat). Required by the project safety boundary. */
 @Composable
 fun SafetyBanner() {
+    var dismissed by rememberSaveable { mutableStateOf(false) }
+    var collapsed by rememberSaveable { mutableStateOf(true) }
+    if (dismissed) return
     Text(
-        text = stringResource(R.string.safety_disclaimer),
+        text = stringResource(if (collapsed) R.string.safety_disclaimer_short else R.string.safety_disclaimer),
         style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(12.dp),
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
     )
+    androidx.compose.foundation.layout.Row(modifier = Modifier.padding(horizontal = 4.dp)) {
+        IconButton(onClick = { collapsed = !collapsed }) {
+            Text(if (collapsed) "More" else "Less")
+        }
+        IconButton(onClick = { dismissed = true }) {
+            Text("Dismiss")
+        }
+    }
 }
