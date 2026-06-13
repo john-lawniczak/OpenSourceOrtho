@@ -9,9 +9,11 @@
 /* Begin PBXBuildFile section */
 		13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */; };
 		16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */ = {isa = PBXBuildFile; fileRef = 4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */; };
+		2D1B68E5297E4A8B9C1D2F31 /* dev-sample-upper.stl in Resources */ = {isa = PBXBuildFile; fileRef = 62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */; };
 		37A52C95416DB193C1647EB4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3EC22871DE3570233EAFD /* RootView.swift */; };
 		4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FEC8D213B7576DB4208180A /* Assets.xcassets */; };
 		74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8589067755F44462FE798BC8 /* SettingsView.swift */; };
+		8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */; };
 		7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */; };
 		BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A1C676D724465EA395DAFA /* AppIdentity.swift */; };
 		DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919681E695F14AC323DB1F57 /* Screens.swift */; };
@@ -23,6 +25,7 @@
 		0FEC8D213B7576DB4208180A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceOrthoLiteApp.swift; sourceTree = "<group>"; };
 		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
+		62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */ = {isa = PBXFileReference; path = "dev-sample-upper.stl"; sourceTree = "<group>"; };
 		8589067755F44462FE798BC8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		888F68B82367F953AA8FC715 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = .; sourceTree = SOURCE_ROOT; };
 		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -30,6 +33,7 @@
 		919681E695F14AC323DB1F57 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
 		94A1C676D724465EA395DAFA /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
 		9BB3EC22871DE3570233EAFD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */ = {isa = PBXFileReference; path = "dev-sample-lower.stl"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +77,8 @@
 			isa = PBXGroup;
 			children = (
 				4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */,
+				C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */,
+				62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -160,6 +166,8 @@
 			files = (
 				4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */,
 				16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */,
+				8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */,
+				2D1B68E5297E4A8B9C1D2F31 /* dev-sample-upper.stl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

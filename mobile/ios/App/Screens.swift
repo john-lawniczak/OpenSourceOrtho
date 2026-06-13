@@ -132,10 +132,6 @@ struct UploadView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 }
-                Button("Use dev sample STL") {
-                    model.addDevSampleSTL()
-                }
-                .buttonStyle(.bordered)
             }
             .padding(12)
             .background(.thinMaterial)
@@ -235,6 +231,11 @@ private struct ImportOptionCard: View {
 struct TeethAndTimeView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
     @State private var stage = 0.0
+    @State private var showDemoSample = false
+
+    private var hasSelectedStl: Bool {
+        model.scans.contains { $0.modality.lowercased() == "stl" }
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -243,10 +244,38 @@ struct TeethAndTimeView: View {
             DentalScenePreview(
                 stage: stage,
                 scans: model.previewScans,
-                hasSelectedStl: model.scans.contains { $0.modality.lowercased() == "stl" }
+                hasSelectedStl: hasSelectedStl
             )
                 .frame(height: 340)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+            if !hasSelectedStl {
+                VStack(spacing: 8) {
+                    Button {
+                        withAnimation(.snappy) {
+                            showDemoSample.toggle()
+                        }
+                    } label: {
+                        Label("Demo sample", systemImage: showDemoSample ? "chevron.up.circle" : "chevron.down.circle")
+                    }
+                    .buttonStyle(.bordered)
+                    if showDemoSample {
+                        Button {
+                            model.addDevSampleSTL()
+                            withAnimation(.snappy) {
+                                showDemoSample = false
+                            }
+                        } label: {
+                            Label("Use full-arch dev sample", systemImage: "cube.transparent")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        Text("Loads bundled upper and lower STL scans for a full mobile rendering preview.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
             Slider(value: $stage, in: 0...12, step: 1)
             Text("Stage \(Int(stage)) of 12")
                 .font(.subheadline)
@@ -509,8 +538,7 @@ private enum DentalPreviewScene {
             .prefix(2)
             .compactMap { STLSceneMesh.node(from: $0.data) }
         if stlNodes.isEmpty {
-            addArch(to: scene, y: 0.85, stage: stage, isUpper: true)
-            addArch(to: scene, y: -0.85, stage: stage, isUpper: false)
+            addSampleDentalCast(to: scene, stage: stage)
         } else {
             let parent = SCNNode()
             for (index, node) in stlNodes.enumerated() {
@@ -535,45 +563,88 @@ private enum DentalPreviewScene {
         node.eulerAngles.x = -.pi / 2
     }
 
-    private static func addArch(to scene: SCNScene, y: Float, stage: Double, isUpper: Bool) {
+    private static func addSampleDentalCast(to scene: SCNScene, stage: Double) {
+        let parent = SCNNode()
+        parent.eulerAngles.x = -0.08
+        parent.eulerAngles.y = 0.12
+        scene.rootNode.addChildNode(parent)
+
+        addScanBase(to: parent, y: 0.76, isUpper: true)
+        addScanBase(to: parent, y: -0.72, isUpper: false)
+        addArch(to: parent, y: 0.28, stage: stage, isUpper: true)
+        addArch(to: parent, y: -0.28, stage: stage, isUpper: false)
+
+        let grid = SCNFloor()
+        grid.reflectivity = 0
+        grid.firstMaterial?.diffuse.contents = UIColor.systemGray5
+        let gridNode = SCNNode(geometry: grid)
+        gridNode.position = SCNVector3(0, -1.72, -0.92)
+        scene.rootNode.addChildNode(gridNode)
+    }
+
+    private static func addScanBase(to parent: SCNNode, y: Float, isUpper: Bool) {
+        let base = SCNBox(width: 5.4, height: 0.52, length: 1.2, chamferRadius: 0.18)
+        base.firstMaterial?.diffuse.contents = UIColor(red: 0.77, green: 0.75, blue: 0.66, alpha: 1)
+        base.firstMaterial?.specular.contents = UIColor.white
+        let baseNode = SCNNode(geometry: base)
+        baseNode.position = SCNVector3(0, y, -0.32)
+        baseNode.scale.y = isUpper ? 0.72 : 0.64
+        parent.addChildNode(baseNode)
+
+        for index in 0..<11 {
+            let centered = Float(index) - 5
+            let ridge = SCNSphere(radius: 0.16 + CGFloat(abs(centered)) * 0.006)
+            ridge.segmentCount = 12
+            ridge.firstMaterial?.diffuse.contents = UIColor(red: 0.82, green: 0.80, blue: 0.72, alpha: 1)
+            let ridgeNode = SCNNode(geometry: ridge)
+            ridgeNode.scale = SCNVector3(1.8, isUpper ? 0.54 : 0.48, 0.34)
+            ridgeNode.position = SCNVector3(centered * 0.5, y + (isUpper ? -0.08 : 0.08), -0.14 - abs(centered) * 0.012)
+            parent.addChildNode(ridgeNode)
+        }
+    }
+
+    private static func addArch(to parent: SCNNode, y: Float, stage: Double, isUpper: Bool) {
         let progress = Float(stage / 12.0)
-        for index in 0..<14 {
-            let centered = Float(index) - 6.5
+        for index in 0..<16 {
+            let centered = Float(index) - 7.5
             let normalized = abs(centered) / 6.5
             let crown = sampleToothGeometry(index: index)
-            crown.firstMaterial?.diffuse.contents = UIColor(red: 0.94, green: 0.88, blue: 0.74, alpha: isUpper ? 1.0 : 0.82)
+            crown.firstMaterial?.diffuse.contents = UIColor(red: 0.91, green: 0.89, blue: 0.80, alpha: 1)
             crown.firstMaterial?.specular.contents = UIColor.white
 
             let node = SCNNode(geometry: crown)
-            let archDepth = (1 - normalized * normalized) * 1.05
+            let archDepth = (1 - min(normalized, 1) * min(normalized, 1)) * 0.36
             let lateralExpansion = (centered >= 0 ? 1 : -1) * progress * 0.14
             node.position = SCNVector3(
-                centered * 0.34 + lateralExpansion,
+                centered * 0.3 + lateralExpansion,
                 y + archDepth * (isUpper ? 1 : -1),
-                0
+                0.14 - normalized * 0.08
             )
-            node.eulerAngles.z = -centered * 0.055
-            node.scale = SCNVector3(1.0 + normalized * 0.32, 1.0, 0.78 + normalized * 0.2)
-            scene.rootNode.addChildNode(node)
+            node.eulerAngles.z = -centered * 0.035
+            node.eulerAngles.x = isUpper ? 0.02 : -0.02
+            node.scale = SCNVector3(1.0 + normalized * 0.22, isUpper ? 1.04 : 0.98, 0.82 + normalized * 0.14)
+            parent.addChildNode(node)
         }
     }
 
     private static func sampleToothGeometry(index: Int) -> SCNGeometry {
-        let distanceFromMidline = abs(index - 6)
+        let distanceFromMidline = abs(index - 7)
         if distanceFromMidline <= 1 {
-            return SCNBox(width: 0.28, height: 0.52, length: 0.32, chamferRadius: 0.08)
+            return SCNBox(width: 0.34, height: 0.74, length: 0.34, chamferRadius: 0.1)
         }
         if distanceFromMidline == 2 {
-            return SCNPyramid(width: 0.34, height: 0.58, length: 0.36)
+            return SCNPyramid(width: 0.4, height: 0.78, length: 0.4)
         }
         if distanceFromMidline <= 4 {
-            return SCNBox(width: 0.38, height: 0.44, length: 0.42, chamferRadius: 0.1)
+            return SCNBox(width: 0.42, height: 0.58, length: 0.44, chamferRadius: 0.12)
         }
-        return SCNBox(width: 0.48, height: 0.42, length: 0.5, chamferRadius: 0.12)
+        return SCNBox(width: 0.52, height: 0.48, length: 0.52, chamferRadius: 0.13)
     }
 }
 
 private enum STLSceneMesh {
+    private static let trianglePreviewLimit = 220_000
+
     static func node(from data: Data) -> SCNNode? {
         let triangles = parseTriangles(from: data)
         guard !triangles.isEmpty else { return nil }
@@ -595,7 +666,7 @@ private enum STLSceneMesh {
     }
 
     private static func parseTriangles(from data: Data) -> [[SCNVector3]] {
-        if let ascii = String(data: data.prefix(1024 * 1024), encoding: .utf8), ascii.contains("vertex") {
+        if let ascii = String(data: data.prefix(4 * 1024 * 1024), encoding: .utf8), ascii.contains("vertex") {
             let vertices = ascii
                 .split(separator: "\n")
                 .compactMap { line -> SCNVector3? in
@@ -613,9 +684,9 @@ private enum STLSceneMesh {
         guard data.count >= 84 else { return [] }
         let triangleCount = Int(data.withUnsafeBytes { $0.load(fromByteOffset: 80, as: UInt32.self) })
         var triangles: [[SCNVector3]] = []
-        triangles.reserveCapacity(min(triangleCount, 120_000))
+        triangles.reserveCapacity(min(triangleCount, trianglePreviewLimit))
         var offset = 84
-        for _ in 0..<min(triangleCount, 120_000) where offset + 50 <= data.count {
+        for _ in 0..<min(triangleCount, trianglePreviewLimit) where offset + 50 <= data.count {
             offset += 12
             var triangle: [SCNVector3] = []
             for _ in 0..<3 {
@@ -710,38 +781,106 @@ struct GlossaryView: View {
 }
 
 struct TeethMapView: View {
+    @State private var numberingSystem: ToothNumberingSystem = .fdi
+
     var body: some View {
         List {
-            Section("FDI mouth map") {
-                ToothMapDiagram()
-                    .frame(height: 360)
+            Section {
+                Picker("Numbering", selection: $numberingSystem) {
+                    ForEach(ToothNumberingSystem.allCases, id: \.self) { system in
+                        Text(system.shortTitle).tag(system)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Text(numberingSystem.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                ToothMapDiagram(numberingSystem: numberingSystem)
+                    .frame(height: 390)
                     .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
+            } header: {
+                Text(numberingSystem.sectionTitle)
             }
             Section("Quadrants") {
-                LabeledContent("Upper right") { Text("18 17 16 15 14 13 12 11") }
-                LabeledContent("Upper left") { Text("21 22 23 24 25 26 27 28") }
-                LabeledContent("Lower left") { Text("31 32 33 34 35 36 37 38") }
-                LabeledContent("Lower right") { Text("48 47 46 45 44 43 42 41") }
+                LabeledContent("Upper right") { Text(numberingSystem.upperRight.joined(separator: " ")) }
+                LabeledContent("Upper left") { Text(numberingSystem.upperLeft.joined(separator: " ")) }
+                LabeledContent("Lower left") { Text(numberingSystem.lowerLeft.joined(separator: " ")) }
+                LabeledContent("Lower right") { Text(numberingSystem.lowerRight.joined(separator: " ")) }
             }
         }
         .navigationTitle("Teeth Map")
     }
 }
 
+private enum ToothNumberingSystem: CaseIterable {
+    case fdi
+    case universal
+
+    var shortTitle: String {
+        switch self {
+        case .fdi: return "FDI"
+        case .universal: return "Universal"
+        }
+    }
+
+    var sectionTitle: String {
+        switch self {
+        case .fdi: return "Federation Dentaire Internationale (FDI) mouth map"
+        case .universal: return "Universal numbering mouth map"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .fdi:
+            return "Federation Dentaire Internationale (FDI) uses a two-digit number: quadrant first, then tooth position from the midline."
+        case .universal:
+            return "Universal numbering labels permanent teeth 1 through 32, starting at the upper right third molar."
+        }
+    }
+
+    var upperRight: [String] {
+        switch self {
+        case .fdi: return ["18", "17", "16", "15", "14", "13", "12", "11"]
+        case .universal: return ["1", "2", "3", "4", "5", "6", "7", "8"]
+        }
+    }
+
+    var upperLeft: [String] {
+        switch self {
+        case .fdi: return ["21", "22", "23", "24", "25", "26", "27", "28"]
+        case .universal: return ["9", "10", "11", "12", "13", "14", "15", "16"]
+        }
+    }
+
+    var lowerLeft: [String] {
+        switch self {
+        case .fdi: return ["31", "32", "33", "34", "35", "36", "37", "38"]
+        case .universal: return ["24", "23", "22", "21", "20", "19", "18", "17"]
+        }
+    }
+
+    var lowerRight: [String] {
+        switch self {
+        case .fdi: return ["48", "47", "46", "45", "44", "43", "42", "41"]
+        case .universal: return ["32", "31", "30", "29", "28", "27", "26", "25"]
+        }
+    }
+}
+
 private struct ToothMapDiagram: View {
-    private let upperRight = ["18", "17", "16", "15", "14", "13", "12", "11"]
-    private let upperLeft = ["21", "22", "23", "24", "25", "26", "27", "28"]
-    private let lowerLeft = ["31", "32", "33", "34", "35", "36", "37", "38"]
-    private let lowerRight = ["48", "47", "46", "45", "44", "43", "42", "41"]
+    var numberingSystem: ToothNumberingSystem
 
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
             let centerX = size.width / 2
             let centerY = size.height / 2
-            let radiusX = min(size.width * 0.41, 150)
-            let upperY = centerY - 112
-            let lowerY = centerY + 112
+            let radiusX = min(size.width * 0.37, 132)
+            let upperY = centerY - 104
+            let lowerY = centerY + 104
 
             ZStack {
                 RoundedRectangle(cornerRadius: 18)
@@ -752,10 +891,10 @@ private struct ToothMapDiagram: View {
                     context.stroke(upperGum, with: .color(.pink.opacity(0.34)), lineWidth: 28)
                     context.stroke(lowerGum, with: .color(.pink.opacity(0.34)), lineWidth: 28)
 
-                    let palate = Path(ellipseIn: CGRect(x: centerX - 86, y: upperY + 12, width: 172, height: 86))
+                    let palate = Path(ellipseIn: CGRect(x: centerX - 74, y: upperY + 14, width: 148, height: 74))
                     context.fill(palate, with: .color(.pink.opacity(0.12)))
 
-                    let tongue = Path(ellipseIn: CGRect(x: centerX - 92, y: lowerY - 98, width: 184, height: 92))
+                    let tongue = Path(ellipseIn: CGRect(x: centerX - 80, y: lowerY - 88, width: 160, height: 82))
                     context.fill(tongue, with: .color(.red.opacity(0.08)))
 
                     var occlusalGap = Path()
@@ -789,20 +928,49 @@ private struct ToothMapDiagram: View {
                     .foregroundStyle(.secondary)
                     .position(x: size.width - 70, y: centerY)
 
-                ForEach(upperRight, id: \.self) { label in
-                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: true)
+                ForEach(teeth(for: .upperRight), id: \.fdi) { tooth in
+                    NumberedToothBadge(tooth: tooth, point: toothPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), labelPoint: labelPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), numberingSystem: numberingSystem, kind: toothKind(label: tooth.fdi), isUpper: true)
                 }
-                ForEach(upperLeft, id: \.self) { label in
-                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: true)
+                ForEach(teeth(for: .upperLeft), id: \.fdi) { tooth in
+                    NumberedToothBadge(tooth: tooth, point: toothPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), labelPoint: labelPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), numberingSystem: numberingSystem, kind: toothKind(label: tooth.fdi), isUpper: true)
                 }
-                ForEach(lowerLeft, id: \.self) { label in
-                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: false)
+                ForEach(teeth(for: .lowerLeft), id: \.fdi) { tooth in
+                    NumberedToothBadge(tooth: tooth, point: toothPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), labelPoint: labelPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), numberingSystem: numberingSystem, kind: toothKind(label: tooth.fdi), isUpper: false)
                 }
-                ForEach(lowerRight, id: \.self) { label in
-                    ToothBadge(label: label, point: toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), kind: toothKind(label: label), isUpper: false)
+                ForEach(teeth(for: .lowerRight), id: \.fdi) { tooth in
+                    NumberedToothBadge(tooth: tooth, point: toothPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), labelPoint: labelPoint(label: tooth.fdi, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX), numberingSystem: numberingSystem, kind: toothKind(label: tooth.fdi), isUpper: false)
                 }
             }
-            .accessibilityLabel("FDI teeth map drawn as an open mouth with upper and lower dental arches")
+            .accessibilityLabel("\(numberingSystem.sectionTitle) drawn as an open mouth with upper and lower dental arches")
+        }
+    }
+
+    private enum Quadrant {
+        case upperRight
+        case upperLeft
+        case lowerLeft
+        case lowerRight
+    }
+
+    struct ToothNumber {
+        let fdi: String
+        let universal: String
+
+        func label(for numberingSystem: ToothNumberingSystem) -> String {
+            numberingSystem == .fdi ? fdi : universal
+        }
+    }
+
+    private func teeth(for quadrant: Quadrant) -> [ToothNumber] {
+        switch quadrant {
+        case .upperRight:
+            return zip(["18", "17", "16", "15", "14", "13", "12", "11"], ["1", "2", "3", "4", "5", "6", "7", "8"]).map(ToothNumber.init)
+        case .upperLeft:
+            return zip(["21", "22", "23", "24", "25", "26", "27", "28"], ["9", "10", "11", "12", "13", "14", "15", "16"]).map(ToothNumber.init)
+        case .lowerLeft:
+            return zip(["31", "32", "33", "34", "35", "36", "37", "38"], ["24", "23", "22", "21", "20", "19", "18", "17"]).map(ToothNumber.init)
+        case .lowerRight:
+            return zip(["48", "47", "46", "45", "44", "43", "42", "41"], ["32", "31", "30", "29", "28", "27", "26", "25"]).map(ToothNumber.init)
         }
     }
 
@@ -839,6 +1007,18 @@ private struct ToothMapDiagram: View {
         return CGPoint(x: centerX + side * distance, y: y)
     }
 
+    private func labelPoint(label: String, centerX: CGFloat, upperY: CGFloat, lowerY: CGFloat, radiusX: CGFloat) -> CGPoint {
+        let tooth = toothPoint(label: label, centerX: centerX, upperY: upperY, lowerY: lowerY, radiusX: radiusX)
+        let quadrant = Int(label.prefix(1)) ?? 1
+        let digit = CGFloat(Int(label.suffix(1)) ?? 1)
+        let side: CGFloat = (quadrant == 1 || quadrant == 4) ? -1 : 1
+        let isUpper = quadrant == 1 || quadrant == 2
+        let t = (digit - 1) / 7
+        let xOffset = side * (10 + t * 16)
+        let yOffset = (isUpper ? -1 : 1) * (22 - t * 7)
+        return CGPoint(x: tooth.x + xOffset, y: tooth.y + yOffset)
+    }
+
     private func toothKind(label: String) -> ToothKind {
         switch Int(label.suffix(1)) ?? 1 {
         case 1, 2: return .incisor
@@ -856,9 +1036,11 @@ private enum ToothKind {
     case molar
 }
 
-private struct ToothBadge: View {
-    var label: String
+private struct NumberedToothBadge: View {
+    var tooth: ToothMapDiagram.ToothNumber
     var point: CGPoint
+    var labelPoint: CGPoint
+    var numberingSystem: ToothNumberingSystem
     var kind: ToothKind
     var isUpper: Bool
 
@@ -871,23 +1053,25 @@ private struct ToothBadge: View {
                     ToothShape(kind: kind, isUpper: isUpper)
                         .stroke(Color(.separator).opacity(0.7), lineWidth: 1)
                 }
-            Text(label)
-                .font(.caption2.bold())
-                .monospacedDigit()
-                .foregroundStyle(.primary)
-                .padding(.top, kind == .canine && !isUpper ? 3 : 0)
-                .padding(.bottom, kind == .canine && isUpper ? 3 : 0)
         }
         .frame(width: toothSize.width, height: toothSize.height)
         .position(point)
+        Text(tooth.label(for: numberingSystem))
+            .font(.system(size: 10, weight: .semibold, design: .rounded))
+            .monospacedDigit()
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
+            .background(.thinMaterial, in: Capsule())
+            .position(labelPoint)
     }
 
     private var toothSize: CGSize {
         switch kind {
-        case .incisor: return CGSize(width: 30, height: 38)
-        case .canine: return CGSize(width: 32, height: 42)
-        case .premolar: return CGSize(width: 35, height: 36)
-        case .molar: return CGSize(width: 39, height: 36)
+        case .incisor: return CGSize(width: 24, height: 32)
+        case .canine: return CGSize(width: 26, height: 35)
+        case .premolar: return CGSize(width: 29, height: 30)
+        case .molar: return CGSize(width: 32, height: 30)
         }
     }
 }

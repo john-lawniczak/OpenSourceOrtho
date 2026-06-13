@@ -127,9 +127,6 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                 }, modifier = Modifier.fillMaxWidth()) { Text(selectedImport.actionTitle) }
             }
         }
-        Button(onClick = {
-            model.addDevSample(context.devSampleByteCount())
-        }) { Text("Use dev sample STL") }
         if (state.storedReviews.isNotEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -188,7 +185,10 @@ private fun ImportOptionCard(option: ImportOption, selected: Boolean, modifier: 
 /** Step 2: staged teeth preview and timeline controls. */
 @Composable
 fun TeethAndTimeScreen(state: LiteUiState, model: LiteFlowViewModel) {
+    val context = LocalContext.current
     var stage by remember { mutableFloatStateOf(0f) }
+    var showDemoSample by remember { mutableStateOf(false) }
+    val hasSelectedStl = state.scans.any { it.isStl }
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -203,6 +203,29 @@ fun TeethAndTimeScreen(state: LiteUiState, model: LiteFlowViewModel) {
             },
             modifier = Modifier.fillMaxWidth().height(340.dp),
         )
+        if (!hasSelectedStl) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Button(onClick = { showDemoSample = !showDemoSample }) {
+                    Text(if (showDemoSample) "Hide demo sample" else "Demo sample")
+                }
+                if (showDemoSample) {
+                    Button(onClick = {
+                        model.addDevSample(context.devSampleScans())
+                        showDemoSample = false
+                    }) { Text("Use full-arch dev sample") }
+                    Text(
+                        "Loads bundled upper and lower STL scans for a full mobile rendering preview.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
         Slider(value = stage, onValueChange = { stage = it }, valueRange = 0f..12f, steps = 11)
         Text("Stage ${stage.toInt()} of 12", style = MaterialTheme.typography.bodyMedium)
         Text("${state.scans.size} file(s) selected", style = MaterialTheme.typography.titleMedium)
@@ -435,6 +458,7 @@ fun PrintAndSendScreen(model: LiteFlowViewModel) {
 fun SettingsScreen() {
     var glossaryQuery by remember { mutableStateOf("") }
     var showAboutDetails by remember { mutableStateOf(false) }
+    var numberingSystem by remember { mutableStateOf(ToothNumberingSystem.FDI) }
     val filteredGlossary = remember(glossaryQuery) {
         val needle = glossaryQuery.trim().lowercase()
         if (needle.isEmpty()) {
@@ -528,14 +552,24 @@ fun SettingsScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Teeth map", style = MaterialTheme.typography.labelMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { numberingSystem = ToothNumberingSystem.FDI }) {
+                        Text("FDI")
+                    }
+                    Button(onClick = { numberingSystem = ToothNumberingSystem.UNIVERSAL }) {
+                        Text("Universal")
+                    }
+                }
+                Text(numberingSystem.detail, style = MaterialTheme.typography.bodySmall)
                 AndroidView(
                     factory = { TeethMapView(it) },
-                    modifier = Modifier.fillMaxWidth().height(360.dp),
+                    update = { it.numberingSystem = numberingSystem },
+                    modifier = Modifier.fillMaxWidth().height(390.dp),
                 )
-                Text("Upper right: 18 17 16 15 14 13 12 11")
-                Text("Upper left: 21 22 23 24 25 26 27 28")
-                Text("Lower left: 31 32 33 34 35 36 37 38")
-                Text("Lower right: 48 47 46 45 44 43 42 41")
+                Text("Upper right: ${numberingSystem.upperRight.joinToString(" ")}")
+                Text("Upper left: ${numberingSystem.upperLeft.joinToString(" ")}")
+                Text("Lower left: ${numberingSystem.lowerLeft.joinToString(" ")}")
+                Text("Lower right: ${numberingSystem.lowerRight.joinToString(" ")}")
             }
         }
     }
@@ -586,8 +620,31 @@ private fun Context.openHandoff(target: String) {
     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
 }
 
-private fun Context.devSampleByteCount(): Int =
-    resources.openRawResourceFd(R.raw.dev_sample_incisor)?.use { descriptor ->
+private fun Context.devSampleScans(): List<SelectedScan> =
+    listOf(
+        devSampleScan(
+            fileName = "dev-sample-upper.stl",
+            arch = "upper",
+            resourceId = R.raw.dev_sample_upper,
+        ),
+        devSampleScan(
+            fileName = "dev-sample-lower.stl",
+            arch = "lower",
+            resourceId = R.raw.dev_sample_lower,
+        ),
+    )
+
+private fun Context.devSampleScan(fileName: String, arch: String, resourceId: Int): SelectedScan =
+    SelectedScan(
+        fileName = fileName,
+        arch = arch,
+        byteCount = rawResourceByteCount(resourceId),
+        modality = "stl",
+        localUri = "android.resource://$packageName/$resourceId",
+    )
+
+private fun Context.rawResourceByteCount(resourceId: Int): Int =
+    resources.openRawResourceFd(resourceId)?.use { descriptor ->
         descriptor.length.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     } ?: 0
 
@@ -696,14 +753,14 @@ private class DentalPreview3dView(context: Context) : View(context) {
         set(value) {
             if (field == value) return
             field = value
-            meshPoints = loadFirstStlMesh(value)
+            meshTriangles = loadFirstStlMesh(value)
             invalidate()
         }
 
     private var rotation = 0f
     private var lastX = 0f
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private var meshPoints: List<FloatArray> = emptyList()
+    private var meshTriangles: List<StlTriangle> = emptyList()
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
@@ -725,14 +782,13 @@ private class DentalPreview3dView(context: Context) : View(context) {
         paint.color = AndroidColor.rgb(30, 41, 59)
         canvas.drawText("Drag to rotate. Scrub stages below.", width / 2f, 46f, paint)
 
-        if (meshPoints.isNotEmpty()) {
-            drawMesh(canvas, meshPoints)
+        if (meshTriangles.isNotEmpty()) {
+            drawMesh(canvas, meshTriangles)
             paint.textSize = 24f
             paint.color = AndroidColor.rgb(71, 85, 105)
-            canvas.drawText("Rendering selected STL geometry", width / 2f, height - 22f, paint)
+            canvas.drawText("Rendering selected STL surface", width / 2f, height - 22f, paint)
         } else {
-            drawArch(canvas, isUpper = true)
-            drawArch(canvas, isUpper = false)
+            drawSampleDentalCast(canvas)
             paint.textSize = 24f
             paint.color = AndroidColor.rgb(71, 85, 105)
             val caption = if (scans.any { it.modality == "cbct" }) {
@@ -746,15 +802,18 @@ private class DentalPreview3dView(context: Context) : View(context) {
         }
     }
 
-    private fun loadFirstStlMesh(scans: List<SelectedScan>): List<FloatArray> {
-        val scan = scans.firstOrNull { it.isStl && it.localUri != null } ?: return emptyList()
-        val bytes = context.contentResolver.openInputStream(Uri.parse(scan.localUri))?.use { it.readBytes() }
-            ?: return emptyList()
-        return parseStlPoints(bytes).take(18000)
+    private fun loadFirstStlMesh(scans: List<SelectedScan>): List<StlTriangle> {
+        val triangles = ArrayList<StlTriangle>()
+        scans.filter { it.isStl && it.localUri != null }.forEach { scan ->
+            val bytes = context.contentResolver.openInputStream(Uri.parse(scan.localUri))?.use { it.readBytes() }
+                ?: return@forEach
+            triangles += parseStlTriangles(bytes).take(14000)
+        }
+        return triangles.take(28000)
     }
 
-    private fun drawMesh(canvas: Canvas, points: List<FloatArray>) {
-        val bounds = meshBounds(points)
+    private fun drawMesh(canvas: Canvas, triangles: List<StlTriangle>) {
+        val bounds = meshBounds(triangles)
         val span = max(bounds[3] - bounds[0], max(bounds[4] - bounds[1], bounds[5] - bounds[2])).coerceAtLeast(1f)
         val scale = min(width, height) * 0.62f / span
         val cx = (bounds[0] + bounds[3]) / 2f
@@ -763,18 +822,38 @@ private class DentalPreview3dView(context: Context) : View(context) {
         val centerX = width / 2f
         val centerY = height / 2f
 
+        val projected = triangles.mapNotNull { triangle ->
+            val a = project(triangle.a, cx, cy, cz, scale, centerX, centerY)
+            val b = project(triangle.b, cx, cy, cz, scale, centerX, centerY)
+            val c = project(triangle.c, cx, cy, cz, scale, centerX, centerY)
+            val light = (kotlin.math.abs(screenNormalZ(a, b, c)) / 1800f).coerceIn(0.18f, 1f)
+            ProjectedTriangle(a, b, c, (a[2] + b[2] + c[2]) / 3f, light)
+        }.sortedBy { it.depth }
+
+        paint.style = Paint.Style.FILL
+        projected.forEach { triangle ->
+            val shade = (196 + (triangle.light * 48f).toInt()).coerceIn(170, 244)
+            paint.color = AndroidColor.rgb(shade, shade - 4, shade - 18)
+            val path = Path().apply {
+                moveTo(triangle.a[0], triangle.a[1])
+                lineTo(triangle.b[0], triangle.b[1])
+                lineTo(triangle.c[0], triangle.c[1])
+                close()
+            }
+            canvas.drawPath(path, paint)
+        }
+
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 1.2f
-        paint.color = AndroidColor.rgb(196, 176, 129)
-        var index = 0
-        while (index + 2 < points.size) {
-            val a = project(points[index], cx, cy, cz, scale, centerX, centerY)
-            val b = project(points[index + 1], cx, cy, cz, scale, centerX, centerY)
-            val c = project(points[index + 2], cx, cy, cz, scale, centerX, centerY)
-            canvas.drawLine(a[0], a[1], b[0], b[1], paint)
-            canvas.drawLine(b[0], b[1], c[0], c[1], paint)
-            canvas.drawLine(c[0], c[1], a[0], a[1], paint)
-            index += 3
+        paint.strokeWidth = 0.45f
+        paint.color = AndroidColor.argb(56, 99, 90, 70)
+        projected.take(6000).forEach { triangle ->
+            val path = Path().apply {
+                moveTo(triangle.a[0], triangle.a[1])
+                lineTo(triangle.b[0], triangle.b[1])
+                lineTo(triangle.c[0], triangle.c[1])
+                close()
+            }
+            canvas.drawPath(path, paint)
         }
     }
 
@@ -784,47 +863,120 @@ private class DentalPreview3dView(context: Context) : View(context) {
         val z = point[2] - cz
         val rotatedX = x * cos(rotation) - z * sin(rotation)
         val rotatedZ = x * sin(rotation) + z * cos(rotation)
-        return floatArrayOf(centerX + rotatedX * scale, centerY - (y * 0.72f + rotatedZ * 0.18f) * scale)
+        val tiltedY = y * 0.72f + rotatedZ * 0.18f
+        return floatArrayOf(centerX + rotatedX * scale, centerY - tiltedY * scale, rotatedZ)
     }
 
-    private fun meshBounds(points: List<FloatArray>): FloatArray {
+    private fun screenNormalZ(a: FloatArray, b: FloatArray, c: FloatArray): Float {
+        val abX = b[0] - a[0]
+        val abY = b[1] - a[1]
+        val acX = c[0] - a[0]
+        val acY = c[1] - a[1]
+        return abX * acY - abY * acX
+    }
+
+    private fun meshBounds(triangles: List<StlTriangle>): FloatArray {
         var minX = Float.POSITIVE_INFINITY
         var minY = Float.POSITIVE_INFINITY
         var minZ = Float.POSITIVE_INFINITY
         var maxX = Float.NEGATIVE_INFINITY
         var maxY = Float.NEGATIVE_INFINITY
         var maxZ = Float.NEGATIVE_INFINITY
-        points.forEach {
-            minX = min(minX, it[0]); minY = min(minY, it[1]); minZ = min(minZ, it[2])
-            maxX = max(maxX, it[0]); maxY = max(maxY, it[1]); maxZ = max(maxZ, it[2])
+        triangles.forEach { triangle ->
+            listOf(triangle.a, triangle.b, triangle.c).forEach {
+                minX = min(minX, it[0]); minY = min(minY, it[1]); minZ = min(minZ, it[2])
+                maxX = max(maxX, it[0]); maxY = max(maxY, it[1]); maxZ = max(maxZ, it[2])
+            }
         }
         return floatArrayOf(minX, minY, minZ, maxX, maxY, maxZ)
     }
 
-    private fun drawArch(canvas: Canvas, isUpper: Boolean) {
+    private fun drawSampleDentalCast(canvas: Canvas) {
         val centerX = width / 2f
-        val centerY = height / 2f + if (isUpper) -54f else 54f
-        val progress = stage / 12f
-        paint.color = if (isUpper) AndroidColor.rgb(20, 184, 166) else AndroidColor.rgb(45, 212, 191)
+        val centerY = height / 2f - 8f
+        drawCastBase(canvas, centerX, centerY - 66f, upper = true)
+        drawCastBase(canvas, centerX, centerY + 66f, upper = false)
+        drawBiteArch(canvas, centerX, centerY - 16f, upper = true)
+        drawBiteArch(canvas, centerX, centerY + 16f, upper = false)
+    }
 
-        for (index in 0 until 14) {
-            val centered = index - 6.5f
-            val normalized = kotlin.math.abs(centered) / 6.5f
-            val curve = (1f - normalized * normalized) * 78f
-            val rotated = centered * cos(rotation) * 28f
+    private fun drawCastBase(canvas: Canvas, centerX: Float, baseY: Float, upper: Boolean) {
+        paint.style = Paint.Style.FILL
+        paint.color = AndroidColor.rgb(205, 200, 181)
+        val band = RectF(centerX - 244f, baseY - 44f, centerX + 244f, baseY + 44f)
+        canvas.drawRoundRect(band, 26f, 26f, paint)
+
+        paint.color = AndroidColor.rgb(228, 224, 208)
+        for (index in 0..10) {
+            val centered = index - 5f
+            val ridgeWidth = 76f - kotlin.math.abs(centered) * 4f
+            val ridgeHeight = 34f - kotlin.math.abs(centered) * 1.4f
+            val x = centerX + centered * 44f
+            val y = baseY + if (upper) 18f else -18f
+            canvas.drawOval(RectF(x - ridgeWidth / 2f, y - ridgeHeight / 2f, x + ridgeWidth / 2f, y + ridgeHeight / 2f), paint)
+        }
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1.2f
+        paint.color = AndroidColor.argb(120, 148, 139, 112)
+        canvas.drawRoundRect(band, 26f, 26f, paint)
+    }
+
+    private fun drawBiteArch(canvas: Canvas, centerX: Float, centerY: Float, upper: Boolean) {
+        val progress = stage / 12f
+        for (index in 0 until 16) {
+            val centered = index - 7.5f
+            val normalized = kotlin.math.abs(centered) / 7.5f
+            val curve = (1f - normalized * normalized) * 42f
+            val rotated = centered * cos(rotation) * 30f
             val stageOffset = if (centered >= 0f) progress * 12f else -progress * 12f
             val x = centerX + rotated + stageOffset
-            val y = centerY + curve * if (isUpper) 1f else -1f
-            val halfWidth = 13f + normalized * 7f
-            val halfHeight = 24f - normalized * 4f
-            canvas.drawRoundRect(RectF(x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight), 10f, 10f, paint)
+            val y = centerY + curve * if (upper) 1f else -1f
+            val halfWidth = 15f + normalized * 9f
+            val halfHeight = 32f - normalized * 9f
+            drawSampleTooth(canvas, x, y, halfWidth, halfHeight, upper, normalized)
         }
     }
 
-    private fun parseStlPoints(bytes: ByteArray): List<FloatArray> {
-        val text = bytes.decodeToString(endIndex = min(bytes.size, 1024 * 1024))
+    private fun drawSampleTooth(canvas: Canvas, x: Float, y: Float, halfWidth: Float, halfHeight: Float, upper: Boolean, normalized: Float) {
+        val rect = RectF(x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight)
+        paint.style = Paint.Style.FILL
+        paint.color = AndroidColor.rgb(232, 228, 210)
+        canvas.drawRoundRect(rect, 10f + normalized * 6f, 10f + normalized * 6f, paint)
+
+        paint.color = AndroidColor.argb(110, 255, 255, 255)
+        val shineX = x - halfWidth * 0.35f
+        canvas.drawRoundRect(
+            RectF(shineX - 3f, y - halfHeight * 0.55f, shineX + 3f, y + halfHeight * 0.08f),
+            3f,
+            3f,
+            paint,
+        )
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1.4f
+        paint.color = AndroidColor.argb(150, 133, 124, 95)
+        canvas.drawRoundRect(rect, 10f + normalized * 6f, 10f + normalized * 6f, paint)
+
+        if (normalized < 0.34f) {
+            paint.style = Paint.Style.FILL
+            paint.color = AndroidColor.rgb(202, 194, 168)
+            val rootY = if (upper) rect.top - 18f else rect.bottom + 18f
+            val tipY = if (upper) rect.top else rect.bottom
+            val path = Path().apply {
+                moveTo(x - halfWidth * 0.34f, tipY)
+                lineTo(x, rootY)
+                lineTo(x + halfWidth * 0.34f, tipY)
+                close()
+            }
+            canvas.drawPath(path, paint)
+        }
+    }
+
+    private fun parseStlTriangles(bytes: ByteArray): List<StlTriangle> {
+        val text = bytes.decodeToString(endIndex = min(bytes.size, 4 * 1024 * 1024))
         if (text.contains("vertex")) {
-            return text.lineSequence()
+            val vertices = text.lineSequence()
                 .mapNotNull { line ->
                     val parts = line.trim().split(Regex("\\s+"))
                     if (parts.size >= 4 && parts[0] == "vertex") {
@@ -837,15 +989,20 @@ private class DentalPreview3dView(context: Context) : View(context) {
                     }
                 }
                 .toList()
+            return vertices
+                .chunked(3)
+                .filter { it.size == 3 }
+                .map { StlTriangle(it[0], it[1], it[2]) }
         }
         if (bytes.size < 84) return emptyList()
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
         val triangleCount = buffer.getInt(80).coerceAtLeast(0)
-        val points = ArrayList<FloatArray>(min(triangleCount * 3, 18000))
+        val triangles = ArrayList<StlTriangle>(min(triangleCount, 20000))
         var offset = 84
-        repeat(min(triangleCount, 6000)) {
+        repeat(min(triangleCount, 20000)) {
             if (offset + 50 > bytes.size) return@repeat
             offset += 12
+            val points = ArrayList<FloatArray>(3)
             repeat(3) {
                 val x = buffer.getFloat(offset)
                 val y = buffer.getFloat(offset + 4)
@@ -853,10 +1010,25 @@ private class DentalPreview3dView(context: Context) : View(context) {
                 points.add(floatArrayOf(x, y, z))
                 offset += 12
             }
+            triangles.add(StlTriangle(points[0], points[1], points[2]))
             offset += 2
         }
-        return points
+        return triangles
     }
+
+    private data class StlTriangle(
+        val a: FloatArray,
+        val b: FloatArray,
+        val c: FloatArray,
+    )
+
+    private data class ProjectedTriangle(
+        val a: FloatArray,
+        val b: FloatArray,
+        val c: FloatArray,
+        val depth: Float,
+        val light: Float,
+    )
 }
 
 // BEGIN GENERATED GLOSSARY TERMS
@@ -899,20 +1071,63 @@ private val fullGlossaryTerms = listOf(
 )
 // END GENERATED GLOSSARY TERMS
 
+private enum class ToothNumberingSystem(
+    val detail: String,
+    val upperRight: List<String>,
+    val upperLeft: List<String>,
+    val lowerLeft: List<String>,
+    val lowerRight: List<String>,
+) {
+    FDI(
+        detail = "Federation Dentaire Internationale (FDI) uses two digits: quadrant first, then tooth position from the midline.",
+        upperRight = listOf("18", "17", "16", "15", "14", "13", "12", "11"),
+        upperLeft = listOf("21", "22", "23", "24", "25", "26", "27", "28"),
+        lowerLeft = listOf("31", "32", "33", "34", "35", "36", "37", "38"),
+        lowerRight = listOf("48", "47", "46", "45", "44", "43", "42", "41"),
+    ),
+    UNIVERSAL(
+        detail = "Universal numbering labels permanent teeth 1 through 32, starting at the upper right third molar.",
+        upperRight = listOf("1", "2", "3", "4", "5", "6", "7", "8"),
+        upperLeft = listOf("9", "10", "11", "12", "13", "14", "15", "16"),
+        lowerLeft = listOf("24", "23", "22", "21", "20", "19", "18", "17"),
+        lowerRight = listOf("32", "31", "30", "29", "28", "27", "26", "25"),
+    );
+}
+
+private data class ToothNumber(val fdi: String, val universal: String)
+
 private class TeethMapView(context: Context) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val upperRight = listOf("18", "17", "16", "15", "14", "13", "12", "11")
-    private val upperLeft = listOf("21", "22", "23", "24", "25", "26", "27", "28")
-    private val lowerLeft = listOf("31", "32", "33", "34", "35", "36", "37", "38")
-    private val lowerRight = listOf("48", "47", "46", "45", "44", "43", "42", "41")
+    var numberingSystem: ToothNumberingSystem = ToothNumberingSystem.FDI
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
+    private val upperRight = listOf(
+        ToothNumber("18", "1"), ToothNumber("17", "2"), ToothNumber("16", "3"), ToothNumber("15", "4"),
+        ToothNumber("14", "5"), ToothNumber("13", "6"), ToothNumber("12", "7"), ToothNumber("11", "8"),
+    )
+    private val upperLeft = listOf(
+        ToothNumber("21", "9"), ToothNumber("22", "10"), ToothNumber("23", "11"), ToothNumber("24", "12"),
+        ToothNumber("25", "13"), ToothNumber("26", "14"), ToothNumber("27", "15"), ToothNumber("28", "16"),
+    )
+    private val lowerLeft = listOf(
+        ToothNumber("31", "24"), ToothNumber("32", "23"), ToothNumber("33", "22"), ToothNumber("34", "21"),
+        ToothNumber("35", "20"), ToothNumber("36", "19"), ToothNumber("37", "18"), ToothNumber("38", "17"),
+    )
+    private val lowerRight = listOf(
+        ToothNumber("48", "32"), ToothNumber("47", "31"), ToothNumber("46", "30"), ToothNumber("45", "29"),
+        ToothNumber("44", "28"), ToothNumber("43", "27"), ToothNumber("42", "26"), ToothNumber("41", "25"),
+    )
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val centerX = width / 2f
         val centerY = height / 2f
-        val radiusX = minOf(width * 0.41f, 150f)
-        val upperY = centerY - 112f
-        val lowerY = centerY + 112f
+        val radiusX = minOf(width * 0.37f, 132f)
+        val upperY = centerY - 104f
+        val lowerY = centerY + 104f
 
         paint.style = Paint.Style.FILL
         paint.color = AndroidColor.rgb(248, 250, 252)
@@ -920,9 +1135,9 @@ private class TeethMapView(context: Context) : View(context) {
 
         paint.style = Paint.Style.FILL
         paint.color = AndroidColor.argb(45, 244, 114, 182)
-        canvas.drawOval(RectF(centerX - 86f, upperY + 12f, centerX + 86f, upperY + 98f), paint)
+        canvas.drawOval(RectF(centerX - 74f, upperY + 14f, centerX + 74f, upperY + 88f), paint)
         paint.color = AndroidColor.argb(32, 239, 68, 68)
-        canvas.drawOval(RectF(centerX - 92f, lowerY - 98f, centerX + 92f, lowerY - 6f), paint)
+        canvas.drawOval(RectF(centerX - 80f, lowerY - 88f, centerX + 80f, lowerY - 6f), paint)
 
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 28f
@@ -956,9 +1171,11 @@ private class TeethMapView(context: Context) : View(context) {
         canvas.drawText("Patient right", 82f, centerY, paint)
         canvas.drawText("Patient left", width - 82f, centerY, paint)
 
-        (upperRight + upperLeft + lowerLeft + lowerRight).forEach { label ->
-            val point = toothPoint(label, centerX, upperY, lowerY, radiusX)
-            drawTooth(canvas, label, point[0], point[1], toothKind(label), label.first() == '1' || label.first() == '2')
+        (upperRight + upperLeft + lowerLeft + lowerRight).forEach { tooth ->
+            val point = toothPoint(tooth.fdi, centerX, upperY, lowerY, radiusX)
+            val labelPoint = labelPoint(tooth.fdi, centerX, upperY, lowerY, radiusX)
+            drawTooth(canvas, point[0], point[1], toothKind(tooth.fdi), tooth.fdi.first() == '1' || tooth.fdi.first() == '2')
+            drawToothLabel(canvas, tooth, labelPoint[0], labelPoint[1])
         }
     }
 
@@ -972,6 +1189,18 @@ private class TeethMapView(context: Context) : View(context) {
         val posteriorCurve = t * t * 96f
         val y = if (isUpper) upperY + posteriorCurve else lowerY - posteriorCurve
         return floatArrayOf(centerX + side * distance, y)
+    }
+
+    private fun labelPoint(label: String, centerX: Float, upperY: Float, lowerY: Float, radiusX: Float): FloatArray {
+        val point = toothPoint(label, centerX, upperY, lowerY, radiusX)
+        val quadrant = label.firstOrNull()?.digitToIntOrNull() ?: 1
+        val digit = label.lastOrNull()?.digitToIntOrNull()?.toFloat() ?: 1f
+        val side = if (quadrant == 1 || quadrant == 4) -1f else 1f
+        val isUpper = quadrant == 1 || quadrant == 2
+        val t = (digit - 1f) / 7f
+        val xOffset = side * (10f + t * 16f)
+        val yOffset = (if (isUpper) -1f else 1f) * (22f - t * 7f)
+        return floatArrayOf(point[0] + xOffset, point[1] + yOffset)
     }
 
     private fun gumPath(centerX: Float, baseY: Float, radiusX: Float, upper: Boolean): Path {
@@ -1005,7 +1234,7 @@ private class TeethMapView(context: Context) : View(context) {
         }
     }
 
-    private fun drawTooth(canvas: Canvas, label: String, x: Float, y: Float, kind: ToothKind, upper: Boolean) {
+    private fun drawTooth(canvas: Canvas, x: Float, y: Float, kind: ToothKind, upper: Boolean) {
         val toothRect = toothRect(kind, x, y)
         val toothPath = toothPath(kind, toothRect, upper)
 
@@ -1018,13 +1247,20 @@ private class TeethMapView(context: Context) : View(context) {
         paint.color = AndroidColor.rgb(203, 213, 225)
         canvas.drawPath(toothPath, paint)
 
+    }
+
+    private fun drawToothLabel(canvas: Canvas, tooth: ToothNumber, x: Float, y: Float) {
+        val label = if (numberingSystem == ToothNumberingSystem.FDI) tooth.fdi else tooth.universal
         paint.style = Paint.Style.FILL
+        paint.color = AndroidColor.argb(232, 255, 255, 255)
+        val labelWidth = paint.measureText(label).coerceAtLeast(18f) + 12f
+        canvas.drawRoundRect(RectF(x - labelWidth / 2f, y - 13f, x + labelWidth / 2f, y + 11f), 12f, 12f, paint)
+
         paint.textAlign = Paint.Align.CENTER
-        paint.textSize = 24f
+        paint.textSize = 20f
         paint.isFakeBoldText = true
         paint.color = AndroidColor.rgb(15, 23, 42)
-        val baseline = y + 8f + if (kind == ToothKind.CANINE && !upper) 3f else if (kind == ToothKind.CANINE) -3f else 0f
-        canvas.drawText(label, x, baseline, paint)
+        canvas.drawText(label, x, y + 7f, paint)
         paint.isFakeBoldText = false
     }
 
@@ -1038,16 +1274,16 @@ private class TeethMapView(context: Context) : View(context) {
 
     private fun toothRect(kind: ToothKind, x: Float, y: Float): RectF {
         val width = when (kind) {
-            ToothKind.INCISOR -> 30f
-            ToothKind.CANINE -> 32f
-            ToothKind.PREMOLAR -> 35f
-            ToothKind.MOLAR -> 39f
+            ToothKind.INCISOR -> 24f
+            ToothKind.CANINE -> 26f
+            ToothKind.PREMOLAR -> 29f
+            ToothKind.MOLAR -> 32f
         }
         val height = when (kind) {
-            ToothKind.INCISOR -> 38f
-            ToothKind.CANINE -> 42f
-            ToothKind.PREMOLAR -> 36f
-            ToothKind.MOLAR -> 36f
+            ToothKind.INCISOR -> 32f
+            ToothKind.CANINE -> 35f
+            ToothKind.PREMOLAR -> 30f
+            ToothKind.MOLAR -> 30f
         }
         return RectF(x - width / 2f, y - height / 2f, x + width / 2f, y + height / 2f)
     }
