@@ -54,6 +54,7 @@ function guidedStageIndex(step, result) {
   if (step === "details") {
     return Math.min(Number(el("guidedStagePreview")?.value || 0), lastStage);
   }
+  if (step === "plan") return 0;
   return lastStage;
 }
 
@@ -160,12 +161,13 @@ function updateViewer(result) {
     ? state.files.map((file) => ({ name: file.name, file, arch: inferArchFromName(file.name) }))
     : state.scanSources;
   const scanSources = filterScanSources(allScanSources);
-  if (scanSources.length) {
-    v.loadScanSources(scanSources).then(({ loaded, count }) => {
+  v.setVisibleArchFilter(state.scanArchFilter);
+  if (allScanSources.length) {
+    v.loadScanSources(allScanSources).then(({ loaded }) => {
       const movingFragments = Boolean(
         result.render_meshes?.some((item) => item.source === "model-generated" && toothMatchesArch(item.tooth)),
       );
-      state.scanRenderStatus = scanStatusText(count, movingFragments);
+      state.scanRenderStatus = scanStatusText(scanSources.length, movingFragments);
       renderScanStatus();
       if (loaded && state.lastEval === result) updateViewer(result);
     }).catch(() => {
@@ -221,7 +223,7 @@ function updateViewer(result) {
       ? guidedStageIndex(guidedSelect, visibleResult)
       : Number(el("stageSlider").value || 0),
     view: guidedSelect ? "overlay" : state.view,
-    exaggeration: guidedSelect === "details" ? 1 : (numberValue("exaggeration") || 1),
+    exaggeration: guidedSelect ? 1 : (numberValue("exaggeration") || 1),
     showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
     showScale: state.showScale,
     unitsConfirmed: scaleConfirmed(state.scanUnits),
@@ -231,12 +233,14 @@ function updateViewer(result) {
   // by map reference, so calling it every render is cheap when the map is unchanged.
   v.loadProximity(state.proximity.map);
   v.setProximityVisible(
-    Boolean(state.proximity.enabled && state.proximity.map?.aligned_to_scan),
+    Boolean(state.scanArchFilter === "both" && state.proximity.enabled && state.proximity.map?.aligned_to_scan),
   );
   // Registered-bite view: move the lower arch into the estimated occlusal frame.
   // null for an as-scanned export (already occluding) or when the view is off.
   v.setArchRegistration(
-    state.proximity.registeredView ? registeredOffsetForViewer(state.proximity.registration) : null,
+    state.scanArchFilter === "both" && state.proximity.registeredView
+      ? registeredOffsetForViewer(state.proximity.registration)
+      : null,
   );
   // True-scale reference status (with the loaded scan's measured extent, if shown).
   const unitsConfirmed = scaleConfirmed(state.scanUnits);

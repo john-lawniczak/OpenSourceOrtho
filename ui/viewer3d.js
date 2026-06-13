@@ -326,6 +326,7 @@ export function createViewer(container) {
   // (stage scrub, view toggle) must not yank a camera the user has panned or
   // zoomed; an explicit recenter() re-frames on demand.
   let fitted = false;
+  let visibleArchFilter = "both";
 
   function resize() {
     const w = container.clientWidth || 1;
@@ -361,7 +362,8 @@ export function createViewer(container) {
     updateScaleBar(showScale, unitsConfirmed);
     const frame = frames && frames[stageIndex];
     if (!frame) return;
-    const hasExactScan = uploadedScans.visible && uploadedScans.children.length > 0;
+    const visibleScanCount = visibleScanChildren().length;
+    const hasExactScan = visibleScanCount > 0;
     // The scan itself is the baseline, so the translucent "current" ghost layer
     // is only the schematic fallback shown when there is no exact scan. The
     // planned proxies are anchored onto the scan (see computeScanAnchors), so
@@ -373,14 +375,14 @@ export function createViewer(container) {
     // loaded. Draw THOSE moving at their true scan positions instead of schematic
     // proxies. The whole-arch shell stays as the static baseline (shown in
     // current/overlay, hidden in planned by the visibility rule above).
-    const fragmentMode = fragmentCache.size > 0 && uploadedScans.children.length > 0;
+    const fragmentMode = fragmentCache.size > 0 && visibleScanCount > 0;
     const scanBase = uploadedScans.position;
     // Arrow mode: a scan is loaded but NOT segmented, so there are no real crowns
     // to move. Rather than float synthetic peg crowns (which read as "the anchors
     // move, not the teeth"), mark each tooth on the scan and draw an arrow showing
     // its planned movement. Segmented scans use real crowns (fragmentMode); a
     // scan-less demo keeps the schematic proxies below.
-    const arrowMode = !fragmentMode && scanAnchors.size > 0 && uploadedScans.children.length > 0;
+    const arrowMode = !fragmentMode && scanAnchors.size > 0 && visibleScanCount > 0;
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
       .map((item) => item.tooth?.value));
@@ -519,18 +521,17 @@ export function createViewer(container) {
   }
 
   function fitCameraToScene() {
-    const box = new THREE.Box3();
+    let box = visibleScanBox();
     // When a scan is visible, frame the scan geometry itself. Movement overlays
     // can be intentionally exaggerated or stage-shifted; using them as the fit
     // target makes a selected upper/lower STL feel off-center when the user zooms.
-    if (uploadedScans.visible && uploadedScans.children.length) {
-      box.setFromObject(uploadedScans);
-    } else if (proxies.children.length) {
+    if (!box && proxies.children.length) {
+      box = new THREE.Box3();
       box.setFromObject(proxies);
-    } else {
+    }
+    if (!box || box.isEmpty()) {
       return;
     }
-    if (box.isEmpty()) return;
     // Fit a bounding sphere using the limiting (narrower) of the vertical and
     // horizontal field of view so a wide dental arch is fully framed and
     // centered regardless of the viewport aspect ratio.
@@ -552,8 +553,23 @@ export function createViewer(container) {
   }
 
   function positionArchLabels() {
+    upperLabel.visible = visibleArchFilter === "both" || visibleArchFilter === "upper";
+    lowerLabel.visible = visibleArchFilter === "both" || visibleArchFilter === "lower";
     upperLabel.position.copy(archLabelPos.upper || UPPER_LABEL_POS);
     lowerLabel.position.copy(archLabelPos.lower || LOWER_LABEL_POS);
+  }
+
+  function visibleScanChildren() {
+    if (!uploadedScans.visible) return [];
+    return uploadedScans.children.filter((child) => child.visible !== false);
+  }
+
+  function visibleScanBox() {
+    const visible = visibleScanChildren();
+    if (!visible.length) return null;
+    const box = new THREE.Box3();
+    for (const child of visible) box.expandByObject(child);
+    return box.isEmpty() ? null : box;
   }
 
   // A blue shaft + cone arrowhead from `origin` along `delta` (movement vector).
@@ -579,12 +595,12 @@ export function createViewer(container) {
   function computeScanAnchors() {
     const anchors = new Map();
     archLabelPos = {};
-    if (!uploadedScans.children.length) return anchors;
+    if (!visibleScanChildren().length) return anchors;
     uploadedScans.updateMatrixWorld(true);
     const ray = new THREE.Raycaster();
     for (const arch of ["upper", "lower"]) {
       const mesh = uploadedScans.children.find(
-        (m) => (m.userData.arch || normalizeArch(m.name)) === arch,
+        (m) => m.visible !== false && (m.userData.arch || normalizeArch(m.name)) === arch,
       );
       if (!mesh) continue;
       anchorArchTeeth(arch, mesh, ray, anchors);
@@ -725,6 +741,7 @@ export function createViewer(container) {
       const mesh = new THREE.Mesh(geometry, SCAN);
       mesh.name = source.name;
       mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
+      mesh.visible = archVisible(mesh.userData.arch);
       uploadedScans.add(mesh);
     }
 
@@ -739,6 +756,22 @@ export function createViewer(container) {
     scanAnchors = computeScanAnchors();
     fitted = false;
     return { loaded: true, count: uploadedScans.children.length };
+  }
+
+  function setVisibleArchFilter(filter) {
+    const next = normalizeArch(filter) || "both";
+    const changed = next !== visibleArchFilter;
+    visibleArchFilter = next;
+    for (const mesh of uploadedScans.children) {
+      mesh.visible = archVisible(mesh.userData.arch || normalizeArch(mesh.name));
+    }
+    scanAnchors = computeScanAnchors();
+    positionArchLabels();
+    if (changed) fitted = false;
+  }
+
+  function archVisible(arch) {
+    return visibleArchFilter === "both" || arch === visibleArchFilter;
   }
 
   function loadUploadedScans(files = []) {
@@ -836,9 +869,7 @@ export function createViewer(container) {
   }
 
   function scanWorldBox() {
-    if (!(uploadedScans.visible && uploadedScans.children.length)) return null;
-    const box = new THREE.Box3().setFromObject(uploadedScans);
-    return box.isEmpty() ? null : box;
+    return visibleScanBox();
   }
 
   // Draw a labelled scale bar of SCALE_BAR_MM along the front-bottom edge of the
@@ -924,7 +955,7 @@ export function createViewer(container) {
   window.addEventListener("resize", resize);
   return {
     update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
-    loadProximity, setProximityVisible, scanExtentMm, setArchRegistration,
+    loadProximity, setProximityVisible, scanExtentMm, setArchRegistration, setVisibleArchFilter,
     zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
 }
