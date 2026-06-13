@@ -19,6 +19,7 @@ from orthoplan.validation.benchmark_models import (
     BenchmarkMetric,
     BenchmarkReport,
 )
+from orthoplan.validation.longitudinal_benchmark import longitudinal_case_metrics
 from orthoplan.validation.segmentation_benchmark import segmentation_maturity_metrics
 from orthoplan.validation.segmentation_truth import full_arch_truth, score_segmentation
 from orthoplan.validation.shell_backend import shell_backend_comparison_metrics
@@ -38,6 +39,7 @@ def run_validation_benchmarks() -> BenchmarkReport:
     metrics.extend(_messy_shell_metrics())
     metrics.extend(_shell_backend_metrics())
     metrics.extend(volume_proposal_metrics())
+    metrics.extend(longitudinal_case_metrics())
     corpus_cases = reviewed_benchmark_corpus()
     metrics.extend(_corpus_metrics(corpus_cases))
     return BenchmarkReport(metrics=_with_baseline_deltas(metrics), corpus_cases=corpus_cases)

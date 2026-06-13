@@ -92,6 +92,13 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   labels (`initial`/`progress`/`refinement`/`final`), per-file arch inference
   from standard filenames, validated `plan-summary.json` sidecars, outcome-notes
   hashing, and CLI/tests for privacy-safe case bundles.
+- Phase 19 benchmark layer: `validation-benchmark` now emits a
+  `longitudinal-data` component for target-setup readiness, tracking-error
+  readiness, refinement-prediction readiness, and plan-context coverage from
+  consented/non-PHI case-bundle manifests.
+- Phase 17 first slice: deterministic setup comparison and live-restage preview
+  contracts now report side-by-side plan diffs, movement/control deltas, timeline
+  changes, JSON payloads, and CLI output without overwriting either setup.
 
 ## Honest effectiveness snapshot
 
@@ -143,7 +150,8 @@ and the treatment-system parity layers below. The geometry tracks still
 intentionally stop short of physical-use/material/fit guarantees.
 
 1. **Phase 17** (Track 2/UI): setup comparison + live restaging workbench.
-   Add side-by-side comparisons for current/generated/edited/saved-version
+   Backend comparison/restage contracts and CLI output are in place. Next, add
+   the browser side-by-side workspace for current/generated/edited/saved-version
    setups; show per-tooth and per-stage diffs; after every accepted edit, rerun
    staging optimization, deterministic checks, collision/IPR review, timeline,
    and print-readiness without overwriting the previous setup.
@@ -154,10 +162,10 @@ intentionally stop short of physical-use/material/fit guarantees.
    response proposals that preserve contacts/spacing when possible, with
    provenance and review gates.
 3. **Phase 19** (Track 2/data): longitudinal case-bundle benchmarks.
-   The manifest/schema/CLI side is implemented for initial, final, progress, and
-   refinement scan bundles plus intended movement/context sidecars. Remaining
-   work is benchmark reports for target setup, tracking error, and refinement
-   prediction using only consented/non-PHI data.
+   Complete for the current corpus-readiness scope: manifests, CLI registration,
+   validated sidecars, and benchmark coverage metrics exist for target setup,
+   tracking error, and refinement-prediction readiness. Deeper numeric outcome
+   errors can be added once consented before/after/refinement scan bundles exist.
 
 ### Recently Completed Reference
 

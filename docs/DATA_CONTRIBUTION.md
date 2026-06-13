@@ -223,3 +223,17 @@ Before opening a pull request or sending a data drop, check:
   names, chart numbers, or other identifiers.
 - You have the right to share the files under the repository's contribution
   terms.
+
+## Benchmark Use
+
+The validation benchmark reads these manifests and reports a `longitudinal-data`
+component with readiness metrics for:
+
+- target setup benchmarks: initial upper/lower scan pairs
+- tracking-error benchmarks: initial plus final upper/lower scan pairs
+- refinement-prediction benchmarks: progress/refinement scans or a nonzero
+  `refinement_count` in `plan-summary.json`
+
+These are readiness and corpus-coverage metrics, not clinical performance
+claims. They tell contributors whether the open dataset is becoming useful for
+future target setup, tracking, and refinement studies.

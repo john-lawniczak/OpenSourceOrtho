@@ -29,7 +29,7 @@ def add_measurement_lab_parser(subparsers: Any) -> None:
 def add_validation_benchmark_parser(subparsers: Any) -> None:
     parser = subparsers.add_parser(
         "validation-benchmark",
-        help="emit tracked synthetic accuracy benchmark metrics",
+        help="emit tracked geometry, corpus, and longitudinal data benchmark metrics",
     )
     parser.add_argument("--json", action="store_true", help="emit benchmark report as JSON")
 

@@ -18,6 +18,7 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
     assert "benchmark-corpus" in components
     assert "segmentation-learned" in components
     assert "cbct-volume" in components
+    assert "longitudinal-data" in components
     assert {"segmentation_dice", "segmentation_iou"} <= names
     assert "movement_translation_error" in names
     assert {"collision_ipr_precision", "collision_ipr_recall"} <= names
@@ -42,6 +43,12 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
         "raw_volume_boundary_truncation_flags",
     } <= names
     assert "reviewed_non_phi_corpus_cases" in names
+    assert {
+        "longitudinal_manifest_cases",
+        "target_setup_ready_cases",
+        "tracking_error_ready_cases",
+        "refinement_prediction_ready_cases",
+    } <= names
 
     trusted = next(m for m in report.metrics if m.name == "raw_volume_proposal_trusted_objects")
     fail_closed = next(

@@ -6,6 +6,7 @@ import sys
 
 from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.cli_compare import add_compare_parser, cmd_compare_setups
 from orthoplan.cli_cases import (
     add_case_parsers,
     cmd_case_list,
@@ -73,6 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
     acquisition.add_argument("path")
     acquisition.add_argument("--json", action="store_true", help="emit acquisition advice as JSON")
 
+    add_compare_parser(sub)
     add_case_parsers(sub)
     add_landmarks_parser(sub)
     add_print_package_parser(sub)
@@ -237,6 +239,7 @@ _COMMANDS = {
     "advise": _cmd_advise,
     "report": _cmd_report,
     "acquisition": _cmd_acquisition,
+    "compare-setups": cmd_compare_setups,
     "case-save": cmd_case_save,
     "case-list": cmd_case_list,
     "case-versions": cmd_case_versions,
