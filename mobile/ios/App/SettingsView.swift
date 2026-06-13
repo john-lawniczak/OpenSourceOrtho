@@ -1,6 +1,32 @@
 import SwiftUI
 
+enum AppTheme: String, CaseIterable, Identifiable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+}
+
 struct SettingsView: View {
+    @AppStorage("liteAppearanceTheme") private var themeRawValue = AppTheme.system.rawValue
+
     var body: some View {
         List {
             Section("About") {
@@ -12,6 +38,16 @@ struct SettingsView: View {
                 }
                 .accessibilityElement(children: .combine)
                 NavigationLink("Mobile app and browser accuracy", destination: MobileAppInfoView())
+            }
+            Section("Appearance") {
+                Picker("Theme", selection: $themeRawValue) {
+                    ForEach(AppTheme.allCases) { theme in
+                        Text(theme.title).tag(theme.rawValue)
+                    }
+                }
+                Text("Dark mode can increase contrast for the mobile STL teeth preview.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Section("Reference") {
                 NavigationLink("Glossary", destination: GlossaryView())

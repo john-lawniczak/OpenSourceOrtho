@@ -5,6 +5,7 @@ import OpenSourceOrthoLiteKit
 /// Screens are intentionally thin - they render engine output, never compute it.
 struct RootView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
+    @AppStorage("liteAppearanceTheme") private var themeRawValue = AppTheme.system.rawValue
     @State private var isShowingSettings = false
 
     var body: some View {
@@ -35,6 +36,7 @@ struct RootView: View {
             .navigationTitle("OpenSource Ortho")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .preferredColorScheme(AppTheme(rawValue: themeRawValue)?.colorScheme)
     }
 
     @ViewBuilder
