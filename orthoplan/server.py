@@ -24,6 +24,7 @@ from orthoplan.model.assets import MeshProvenance, redact_reference
 from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.record_workspace import MAX_RECORD_BYTES, register_case_record
 from orthoplan.segmentation_api import segment_payload
+from orthoplan.setup_compare import compare_setups_payload, live_restage_comparison_payload
 
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
 MAX_BODY_BYTES = 5 * 1024 * 1024
@@ -35,6 +36,13 @@ _CONTENT_TYPES = {
     ".json": "application/json; charset=utf-8",
     ".svg": "image/svg+xml",
     ".stl": "model/stl",
+}
+
+JSON_POST_ENDPOINTS = {
+    "/api/evaluate", "/api/chat", "/api/chat/stream", "/api/generate-plan",
+    "/api/plan/version", "/api/print-package", "/api/case-review",
+    "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
+    "/api/segment", "/api/occlusion",
 }
 
 
@@ -131,19 +139,7 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/upload/record":
                 _handle_case_record_upload(self)
                 return
-            if path not in {
-                "/api/evaluate",
-                "/api/chat",
-                "/api/chat/stream",
-                "/api/generate-plan",
-                "/api/plan/version",
-                "/api/print-package",
-                "/api/case-review",
-                "/api/cbct/propose-anatomy",
-                "/api/cbct/review-anatomy",
-                "/api/segment",
-                "/api/occlusion",
-            }:
+            if path not in JSON_POST_ENDPOINTS:
                 self._send_json(404, {"ok": False, "errors": ["unknown endpoint"]})
                 return
             length = self._content_length()
@@ -184,6 +180,10 @@ def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
         return print_package_payload(payload, workspace=handler._mesh_workspace())
     if path == "/api/case-review":
         return case_review_payload(payload)
+    if path == "/api/setup-compare":
+        if payload.get("live_restage"):
+            return live_restage_comparison_payload(payload)
+        return compare_setups_payload(payload)
     if path == "/api/cbct/propose-anatomy":
         return cbct_proposal_payload(payload)
     if path == "/api/cbct/review-anatomy":

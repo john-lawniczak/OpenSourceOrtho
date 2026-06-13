@@ -24,6 +24,7 @@ import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 import { parseMissingTeeth } from "./segment.js";
 import { formatScaleStatus } from "./scale.js";
 import { registeredOffsetForViewer } from "./proximity.js";
+import { renderSetupCompare, scheduleSetupCompare } from "./setup_compare.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -314,9 +315,12 @@ export function renderAll() {
   renderSegmentation();
   renderManualEdit();
   renderDownloadActions();
-  el("planJson").value = JSON.stringify(planJson(), null, 2);
+  const currentPlan = planJson();
+  el("planJson").value = JSON.stringify(currentPlan, null, 2);
   updateStagePhase();
   scheduleEvaluate();
+  renderSetupCompare();
+  scheduleSetupCompare(currentPlan);
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
 }

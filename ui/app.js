@@ -25,6 +25,12 @@ import { enterSample, exitSample, prepareSampleSegmentation, sampleActive } from
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { registrationActionable, requestProximity } from "./proximity.js";
 import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
+import {
+  captureSetupBaseline,
+  clearSetupBaseline,
+  scheduleSetupCompare,
+  useLatestVersionBaseline,
+} from "./setup_compare.js";
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -262,6 +268,12 @@ document.body.addEventListener("input", (event) => {
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
   if (target.id === "generationAck") state.generation.acknowledged = target.checked;
   if (target.id === "generationNotes") state.generation.notes = target.value;
+  if (target.id === "setupLiveRestage") {
+    state.setupCompare.liveRestage = target.checked;
+    state.setupCompare.latestKey = "";
+    scheduleSetupCompare();
+    return;
+  }
   if (target.id === "scanArchFilter") state.scanArchFilter = target.value;
   if (target.id === "stageSlider") {
     renderStagePreview();
@@ -508,6 +520,17 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "saveVersion") {
     saveVersion();
+  }
+  if (button?.id === "captureSetupBaseline") {
+    captureSetupBaseline();
+    scheduleSetupCompare();
+  }
+  if (button?.id === "useLatestVersionBaseline") {
+    useLatestVersionBaseline();
+    scheduleSetupCompare();
+  }
+  if (button?.id === "clearSetupBaseline") {
+    clearSetupBaseline();
   }
   if (restoreVersionTarget) {
     const version = state.versions.list[Number(restoreVersionTarget.dataset.restoreVersion)];

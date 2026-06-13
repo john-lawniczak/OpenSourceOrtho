@@ -636,6 +636,24 @@
                 <button class="primary-action" id="saveVersion" type="button">Save Version</button>
                 <ul id="versionList" class="version-list"></ul>
               </section>
+              <section class="generate-panel" aria-label="Setup comparison">
+                <div class="ai-chat-heading">
+                  <h2>Setup Compare</h2>
+                  <span id="setupCompareStatus"></span>
+                </div>
+                <p class="viewer-caveat">Compare a saved or captured setup against the current editor. Live restage rebuilds the edited setup for preview only.</p>
+                <div class="setup-compare-actions">
+                  <button id="captureSetupBaseline" type="button">Capture Current</button>
+                  <button id="useLatestVersionBaseline" type="button">Use Latest Saved</button>
+                  <button id="clearSetupBaseline" type="button" disabled>Clear</button>
+                </div>
+                <label class="toggle">
+                  <span>Live restage edited setup before comparing</span>
+                  <input id="setupLiveRestage" type="checkbox" checked />
+                </label>
+                <p class="viewer-caveat">Baseline: <strong id="setupCompareBaseline">No baseline selected</strong></p>
+                <div id="setupCompareReport" class="setup-compare-report"></div>
+              </section>
               <section class="download-actions" aria-label="Downloads">
                 <h2>Downloads</h2>
                 <div id="movementReadinessChecklist" class="movement-readiness"></div>

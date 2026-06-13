@@ -2427,6 +2427,93 @@ td input {
   flex: 0 0 auto;
 }
 
+.setup-compare-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.setup-compare-actions button {
+  min-height: 34px;
+}
+
+.setup-compare-report {
+  display: grid;
+  gap: 8px;
+}
+
+.setup-compare-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.setup-compare-columns h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.setup-compare-columns dl {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.setup-compare-columns div div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 6px;
+  font-size: 12px;
+}
+
+.setup-compare-columns dt,
+.setup-diff-summary {
+  color: var(--muted);
+}
+
+.setup-compare-columns dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.setup-diff-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  font-size: 12px;
+}
+
+.setup-diff-summary span {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px;
+  text-align: center;
+}
+
+.setup-diff-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-diff-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.setup-diff-list span {
+  text-align: right;
+  color: var(--muted);
+}
+
 /* Auto-segmentation proposal (advisory, reviewable, never auto-applied). */
 .segment-findings {
   display: grid;

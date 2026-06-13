@@ -138,6 +138,15 @@ export const state = {
     note: "",
     list: [],
   },
+  setupCompare: {
+    baseline: null,
+    baselineLabel: "",
+    liveRestage: true,
+    busy: false,
+    status: "Capture a baseline or save a version to compare setups.",
+    result: null,
+    latestKey: "",
+  },
   simpleGoal: "general-alignment",
   simpleAcknowledged: false,
   demoInitialOffsets: {},
@@ -297,6 +306,19 @@ export async function requestPlanGeneration(payload) {
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
     throw new Error((detail.errors || ["generation request failed"]).join("; "));
+  }
+  return response.json();
+}
+
+export async function requestSetupComparison(payload) {
+  const response = await fetch("/api/setup-compare", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error((detail.errors || ["setup comparison failed"]).join("; "));
   }
   return response.json();
 }

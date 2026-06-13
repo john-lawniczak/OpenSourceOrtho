@@ -97,8 +97,9 @@ manufacturing-readiness status, and unresolved data gaps clearly labeled.
   readiness, refinement-prediction readiness, and plan-context coverage from
   consented/non-PHI case-bundle manifests.
 - Phase 17 first slice: deterministic setup comparison and live-restage preview
-  contracts now report side-by-side plan diffs, movement/control deltas, timeline
-  changes, JSON payloads, and CLI output without overwriting either setup.
+  contracts now power a Review-side setup comparison panel with saved/captured
+  baselines, live restage updates, movement/control deltas, timeline changes,
+  JSON payloads, and CLI output without overwriting either setup.
 
 ## Honest effectiveness snapshot
 
@@ -150,11 +151,10 @@ and the treatment-system parity layers below. The geometry tracks still
 intentionally stop short of physical-use/material/fit guarantees.
 
 1. **Phase 17** (Track 2/UI): setup comparison + live restaging workbench.
-   Backend comparison/restage contracts and CLI output are in place. Next, add
-   the browser side-by-side workspace for current/generated/edited/saved-version
-   setups; show per-tooth and per-stage diffs; after every accepted edit, rerun
-   staging optimization, deterministic checks, collision/IPR review, timeline,
-   and print-readiness without overwriting the previous setup.
+   Backend comparison/restage contracts, CLI output, and the browser Review-side
+   compare panel are in place. Next, deepen this into a full side-by-side 3D
+   workspace for current/generated/edited/saved-version setups, including
+   per-stage visual diff controls and non-overwriting version promotion.
 2. **Phase 18** (Track 2/planning): richer 3D controls and arch response.
    Expand direct controls for translation, intrusion/extrusion, rotation, crown
    tip, crown torque, arch-form expansion/contraction, attachment/cut metadata,
