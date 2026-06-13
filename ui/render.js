@@ -126,6 +126,18 @@ function demoRenderMeshes() {
   }));
 }
 
+// Status line under the 3D viewer for a loaded scan: which movement layer is
+// active, with an in-progress note while the on-device segmenter is running
+// (e.g. the sample test case preparing its per-tooth teeth).
+function scanStatusText(count, movingFragments) {
+  if (!count) return "Your scan could not be displayed.";
+  if (movingFragments) return "Showing your STL scan with reviewed per-tooth fragments moving in 3D.";
+  if (state.segmentation.busy) {
+    return "Showing your STL scan. Segmenting individual teeth on this machine — movement switches from arrows to real crowns when it is applied.";
+  }
+  return "Showing your STL scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.";
+}
+
 function updateViewer(result) {
   if (state.dim !== "3d") return;
   const v = ensureViewer();
@@ -140,11 +152,7 @@ function updateViewer(result) {
       const movingFragments = Boolean(
         result.render_meshes?.some((item) => item.source === "model-generated" && toothMatchesArch(item.tooth)),
       );
-      state.scanRenderStatus = count
-        ? (movingFragments
-          ? "Showing your STL scan with reviewed per-tooth fragments moving in 3D."
-          : "Showing your STL scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.")
-        : "Your scan could not be displayed.";
+      state.scanRenderStatus = scanStatusText(count, movingFragments);
       renderScanStatus();
       if (loaded && state.lastEval === result) updateViewer(result);
     }).catch(() => {

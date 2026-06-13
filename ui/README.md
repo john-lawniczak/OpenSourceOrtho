@@ -59,9 +59,13 @@ workflows:
   clinical controls, print metadata, optimized staging, and plan JSON.
 
 The Sample Test Case renders the exact bundled STL models
-(`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`); the
-movement layer is explicitly labeled as schematic/marker-based until reviewed
-per-tooth meshes are applied.
+(`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`). On
+entry it also runs the on-device auto-segmenter on those scans and applies the
+per-tooth draft (clearly labeled as sample-only pre-applying), so the 3D preview
+animates the scan's own crowns moving stage by stage. If segmentation fails, the
+movement layer falls back to the labeled marker/arrow display. Outside the
+sample, movement stays schematic/marker-based until the user reviews and applies
+per-tooth meshes themselves.
 
 The 3D viewer, AI box, and upload control are single instances relocated into the
 active surface (delegated events + id-based renders), so there is never a second

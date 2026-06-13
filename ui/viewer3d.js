@@ -394,16 +394,21 @@ export function createViewer(container) {
         const fragment = fragmentCache.get(String(pose.tooth));
         if (!fragment) continue; // no real crown for this tooth; shell covers it
         const fragBase = scanBase.clone();
-        const fragMoved = showPlanned
-          ? fragBase.clone().add(worldDeltaOriented(pose, exaggeration))
-          : fragBase;
+        const delta = showPlanned ? worldDeltaOriented(pose, exaggeration) : new THREE.Vector3();
+        const fragMoved = fragBase.clone().add(delta);
+        // The fragment geometry encodes its true within-scan location, so the
+        // mesh transform is only the scan placement offset (fragBase/fragMoved).
+        // The tooth's VISIBLE location - where labels and movement trace lines
+        // belong - is the fragment's bounding-box centre plus that offset.
+        const toothAt = fragmentCentroid(fragment).add(fragBase);
+        const toothMoved = toothAt.clone().add(delta);
         if (showToothLabels) {
           let label = toothLabelSprites.get(pose.tooth);
           if (!label) {
             label = makeToothNumberSprite(String(pose.tooth));
             toothLabelSprites.set(pose.tooth, label);
           }
-          label.position.copy(fragMoved).add(new THREE.Vector3(0, 2.4, 0));
+          label.position.copy(toothMoved).add(new THREE.Vector3(0, 2.4, 0));
           proxies.add(label);
         }
         if (showPlanned) {
@@ -414,8 +419,8 @@ export function createViewer(container) {
           crown.position.copy(fragMoved);
           crown.userData.tooth = pose.tooth;
           proxies.add(crown);
-          if (fragMoved.distanceTo(fragBase) > 0.2) {
-            const geom = new THREE.BufferGeometry().setFromPoints([fragBase, fragMoved]);
+          if (delta.length() > 0.2) {
+            const geom = new THREE.BufferGeometry().setFromPoints([toothAt, toothMoved]);
             lineGeometries.push(geom);
             proxies.add(new THREE.Line(geom, LINE_MAT));
           }
@@ -916,6 +921,16 @@ export function createViewer(container) {
     loadProximity, setProximityVisible, scanExtentMm, setArchRegistration,
     zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
+}
+
+// Centre of a fragment's bounding box, cached on the geometry: the tooth's
+// location within the scan (fragment vertices stay in scan-oriented space).
+function fragmentCentroid(geometry) {
+  if (!geometry.userData.centroid) {
+    if (!geometry.boundingBox) geometry.computeBoundingBox();
+    geometry.userData.centroid = geometry.boundingBox.getCenter(new THREE.Vector3());
+  }
+  return geometry.userData.centroid.clone();
 }
 
 function orientScanGeometry(geometry) {

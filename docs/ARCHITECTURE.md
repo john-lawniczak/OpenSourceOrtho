@@ -44,7 +44,10 @@ guided, six-step wizard (`ui/guided.js`) for non-technical users; the dense
 Technician workspace is one toggle away. A self-contained **Sample test case**
 (`ui/sample.js`) reuses the guided wizard, pre-loaded with the bundled test-case
 STL scans, and snapshots/restores the user's working state (including any applied
-segmentation) so it stays isolated. The UI mirrors the Python data
+segmentation) so it stays isolated. On entry the sample also runs the on-device
+auto-segmenter on the bundled scans and applies the per-tooth draft (sample-only
+pre-applying, clearly labeled), so its 3D preview animates the scan's own crowns
+moving across stages; a user's own plan still requires explicit review + apply. The UI mirrors the Python data
 contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
