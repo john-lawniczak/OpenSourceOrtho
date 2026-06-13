@@ -232,6 +232,8 @@ struct TeethAndTimeView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
     @State private var stage = 0.0
     @State private var showDemoSample = false
+    @State private var previewArch: DentalPreviewArch = .both
+    @State private var zoom = 1.0
 
     private var hasSelectedStl: Bool {
         model.scans.contains { $0.modality.lowercased() == "stl" }
@@ -244,10 +246,30 @@ struct TeethAndTimeView: View {
             DentalScenePreview(
                 stage: stage,
                 scans: model.previewScans,
+                previewArch: previewArch,
+                zoom: zoom,
                 hasSelectedStl: hasSelectedStl
             )
                 .frame(height: 340)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+            if hasSelectedStl {
+                Picker("Arch", selection: $previewArch) {
+                    ForEach(DentalPreviewArch.allCases, id: \.self) { arch in
+                        Text(arch.title).tag(arch)
+                    }
+                }
+                .pickerStyle(.segmented)
+                HStack(spacing: 12) {
+                    Text("Zoom")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Slider(value: $zoom, in: 0.75...2.4, step: 0.05)
+                    Text(String(format: "%.1fx", zoom))
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 42, alignment: .trailing)
+                }
+            }
             if !hasSelectedStl {
                 VStack(spacing: 8) {
                     Button {
@@ -482,12 +504,14 @@ struct PrintAndSendView: View {
 struct DentalScenePreview: View {
     var stage: Double
     var scans: [PreviewScan]
+    var previewArch: DentalPreviewArch = .both
+    var zoom: Double = 1
     var hasSelectedStl: Bool = false
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             SceneView(
-                scene: DentalPreviewScene.make(stage: stage, scans: scans),
+                scene: DentalPreviewScene.make(stage: stage, scans: scans, previewArch: previewArch, zoom: zoom),
                 options: [.allowsCameraControl, .autoenablesDefaultLighting]
             )
             Text(previewCaption)
@@ -513,30 +537,63 @@ struct DentalScenePreview: View {
     }
 }
 
+enum DentalPreviewArch: CaseIterable {
+    case both
+    case upper
+    case lower
+
+    var title: String {
+        switch self {
+        case .both: return "Both"
+        case .upper: return "Upper"
+        case .lower: return "Lower"
+        }
+    }
+
+    func includes(_ scan: PreviewScan) -> Bool {
+        guard scan.modality.lowercased() == "stl" else { return false }
+        let name = scan.fileName.lowercased()
+        switch self {
+        case .both:
+            return true
+        case .upper:
+            return name.contains("upper") || name.contains("maxillary")
+        case .lower:
+            return name.contains("lower") || name.contains("mandibular")
+        }
+    }
+}
+
 private enum DentalPreviewScene {
-    static func make(stage: Double, scans: [PreviewScan]) -> SCNScene {
+    static func make(stage: Double, scans: [PreviewScan], previewArch: DentalPreviewArch, zoom: Double) -> SCNScene {
         let scene = SCNScene()
         scene.background.contents = UIColor.systemBackground
 
         let camera = SCNCamera()
-        camera.fieldOfView = 45
+        camera.fieldOfView = 36
         let cameraNode = SCNNode()
         cameraNode.camera = camera
-        cameraNode.position = SCNVector3(0, 0, 9)
+        cameraNode.position = SCNVector3(0, 0, Float(7.2 / Swift.max(0.75, zoom)))
         scene.rootNode.addChildNode(cameraNode)
 
+        let ambient = SCNLight()
+        ambient.type = .ambient
+        ambient.intensity = 560
+        let ambientNode = SCNNode()
+        ambientNode.light = ambient
+        scene.rootNode.addChildNode(ambientNode)
+
         let light = SCNLight()
-        light.type = .omni
-        light.intensity = 900
+        light.type = .directional
+        light.intensity = 1_350
         let lightNode = SCNNode()
         lightNode.light = light
-        lightNode.position = SCNVector3(0, 3, 6)
+        lightNode.eulerAngles = SCNVector3(-0.6, 0.25, 0)
+        lightNode.position = SCNVector3(0, 4, 6)
         scene.rootNode.addChildNode(lightNode)
 
-        let stlNodes = scans
-            .filter { $0.modality.lowercased() == "stl" }
-            .prefix(2)
-            .compactMap(STLSceneMesh.node)
+        let selectedScans = selectedScans(from: scans, previewArch: previewArch)
+        let stlNodes = selectedScans.compactMap(STLSceneMesh.node)
         if stlNodes.isEmpty {
             addSampleDentalCast(to: scene, stage: stage)
         } else {
@@ -551,16 +608,64 @@ private enum DentalPreviewScene {
         return scene
     }
 
+    private static func selectedScans(from scans: [PreviewScan], previewArch: DentalPreviewArch) -> [PreviewScan] {
+        let stlScans = Array(scans.filter { $0.modality.lowercased() == "stl" }.prefix(2))
+        guard previewArch != .both else { return stlScans }
+
+        let namedMatches = stlScans.filter(previewArch.includes)
+        if !namedMatches.isEmpty {
+            return namedMatches
+        }
+        guard stlScans.count > 1 else { return stlScans }
+        return previewArch == .upper ? [stlScans[0]] : [stlScans[1]]
+    }
+
     private static func centerAndScale(_ node: SCNNode) {
-        let bounds = node.boundingBox
+        guard let bounds = recursiveBounds(for: node) else { return }
         let min = bounds.min
         let maxPoint = bounds.max
         let center = SCNVector3((min.x + maxPoint.x) / 2, (min.y + maxPoint.y) / 2, (min.z + maxPoint.z) / 2)
         let span = Swift.max(maxPoint.x - min.x, Swift.max(maxPoint.y - min.y, maxPoint.z - min.z))
-        let scale = span > 0 ? 4.8 / span : 1
-        node.position = SCNVector3(-center.x * scale, -center.y * scale, -center.z * scale)
+        let scale = span > 0 ? 6.2 / span : 1
+        for child in node.childNodes {
+            child.position = SCNVector3(
+                child.position.x - center.x,
+                child.position.y - center.y,
+                child.position.z - center.z
+            )
+        }
+        node.position = SCNVector3Zero
         node.scale = SCNVector3(scale, scale, scale)
         node.eulerAngles.x = -.pi / 2
+    }
+
+    private static func recursiveBounds(for node: SCNNode) -> (min: SCNVector3, max: SCNVector3)? {
+        var result: (min: SCNVector3, max: SCNVector3)?
+        for child in node.childNodes {
+            let bounds = child.boundingBox
+            let corners = [
+                SCNVector3(bounds.min.x, bounds.min.y, bounds.min.z),
+                SCNVector3(bounds.min.x, bounds.min.y, bounds.max.z),
+                SCNVector3(bounds.min.x, bounds.max.y, bounds.min.z),
+                SCNVector3(bounds.min.x, bounds.max.y, bounds.max.z),
+                SCNVector3(bounds.max.x, bounds.min.y, bounds.min.z),
+                SCNVector3(bounds.max.x, bounds.min.y, bounds.max.z),
+                SCNVector3(bounds.max.x, bounds.max.y, bounds.min.z),
+                SCNVector3(bounds.max.x, bounds.max.y, bounds.max.z),
+            ]
+            for corner in corners {
+                let converted = child.convertPosition(corner, to: node)
+                if let current = result {
+                    result = (
+                        min: SCNVector3(Swift.min(current.min.x, converted.x), Swift.min(current.min.y, converted.y), Swift.min(current.min.z, converted.z)),
+                        max: SCNVector3(Swift.max(current.max.x, converted.x), Swift.max(current.max.y, converted.y), Swift.max(current.max.z, converted.z))
+                    )
+                } else {
+                    result = (converted, converted)
+                }
+            }
+        }
+        return result
     }
 
     private static func addSampleDentalCast(to scene: SCNScene, stage: Double) {
@@ -643,7 +748,7 @@ private enum DentalPreviewScene {
 }
 
 private enum STLSceneMesh {
-    private static let trianglePreviewLimit = 80_000
+    private static let trianglePreviewLimit = 120_000
     private static var geometryCache: [String: SCNGeometry] = [:]
     private static let cacheLock = NSLock()
 
@@ -666,9 +771,15 @@ private enum STLSceneMesh {
             bytesPerIndex: MemoryLayout<Int32>.size
         )
         let geometry = SCNGeometry(sources: [source], elements: [element])
-        geometry.firstMaterial?.diffuse.contents = UIColor(red: 0.94, green: 0.88, blue: 0.74, alpha: 1.0)
-        geometry.firstMaterial?.specular.contents = UIColor.white
-        geometry.firstMaterial?.isDoubleSided = true
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor(red: 0.99, green: 0.96, blue: 0.82, alpha: 1.0)
+        material.ambient.contents = UIColor(red: 0.62, green: 0.56, blue: 0.36, alpha: 1.0)
+        material.specular.contents = UIColor(white: 0.9, alpha: 1.0)
+        material.emission.contents = UIColor(red: 0.06, green: 0.05, blue: 0.02, alpha: 1.0)
+        material.shininess = 0.45
+        material.lightingModel = .blinn
+        material.isDoubleSided = true
+        geometry.materials = [material]
         storeGeometry(geometry, for: cacheKey)
         return SCNNode(geometry: geometry)
     }
