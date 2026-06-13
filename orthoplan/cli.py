@@ -132,6 +132,12 @@ def _cmd_serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_app_main() -> int:
+    """Console-script alias for launching the local app server."""
+    sys.argv = [sys.argv[0], "serve", *sys.argv[1:]]
+    return main()
+
+
 def _build_provider(name: str, model: str | None):
     if name == "openai":
         from orthoplan.evaluation.providers.openai_provider import OpenAIProvider

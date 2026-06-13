@@ -41,6 +41,33 @@ The UI opens by default into a guided, step-by-step experience; the dense
 technician workspace is one click away via the **Guided / Technician** toggle in
 the left sidebar. A light/dark switch is anchored in the top bar.
 
+## Quick Context For AI Assistants
+
+If you open this repo in an IDE and ask an AI model for help, give it this
+context first:
+
+- This is an open-source clear-aligner planning **research toolkit and safety
+  playground**, not medical-device software and not a treatment recommendation
+  engine.
+- The app's core job is to ingest dental mesh records, build/review staged
+  tooth-movement proposals, visualize them in 3D, expose data gaps, and export
+  reproducible handoff/print artifacts with provenance.
+- The key safety rule is fail-closed honesty: missing roots, bone, occlusion,
+  scale, periodontal status, or reviewed anatomy must stay visible as data gaps;
+  the app must never convert a preview into "safe", "approved", or "complete".
+- Browser UI code lives in [ui/](ui/README.md). Python engine/API/CLI code lives
+  in [orthoplan/](orthoplan). Native lite clients live in [mobile/](mobile/README.md).
+  Architecture, safety, data contribution, AI-chat, and maturity docs live in
+  [docs/](docs/README.md).
+- Active implementation work is tracked only in [TODO.md](TODO.md). Completed
+  history should be read from git history and the feature docs, not treated as
+  unfinished work.
+- The most useful contributions are privacy-safe longitudinal STL
+  (stereolithography) scan bundles, reviewed segmentation/setup improvements,
+  UI tests, safety-boundary hardening, and docs that help non-specialists
+  understand their own data. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and
+  [docs/DATA_CONTRIBUTION.md](docs/DATA_CONTRIBUTION.md).
+
 - **Guided mode (default)**: a six-step wizard for non-technical users -
   **Upload → Teeth & time → Details → Review → 3D preview → Print / send**. It
   explains limits in plain language, lets you choose which teeth move and how
@@ -177,19 +204,25 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system 
 
 The project should stay modular and composable as it grows. Follow [docs/MAINTAINABILITY.md](docs/MAINTAINABILITY.md) for file-size guardrails, directory ownership, review checklist, and the maintainability check script.
 
-## Initial Build Order
+## Repository Map
 
-1. Safety and scope docs.
-2. Core data model: `TreatmentPlan`, `Stage`, `ToothDelta`, `DataAvailability`.
-3. IO and synthetic meshes.
-4. Setup and staging engine with configurable caps.
-5. Deterministic evaluators.
-6. Controlled finding vocabulary.
-7. Model provider adapters: OpenAI first, Claude Code second.
-8. Prompt boundary injection.
-9. Scoped AI chat and MCP connector data model.
-10. Visualization frame contract and UI prototype.
-11. CLI glue.
+- [orthoplan/model/](orthoplan/model) - typed plan, geometry, asset, dataset,
+  review-tier, anatomy, and contribution-manifest models.
+- [orthoplan/planning/](orthoplan/planning) - staging, transforms, timeline, and
+  setup-generation logic.
+- [orthoplan/evaluation/](orthoplan/evaluation) - deterministic rule checks,
+  data-gap logic, acquisition advice, and linted model-advisory boundaries.
+- [orthoplan/segmentation/](orthoplan/segmentation) - local heuristic and
+  optional learned segmentation contracts.
+- [orthoplan/server.py](orthoplan/server.py) and [orthoplan/api.py](orthoplan/api.py)
+  - local HTTP boundary and pure evaluation API used by the browser.
+- [ui/](ui/README.md) - guided and technician browser workspace, 3D viewer, setup
+  comparison, glossary, and local upload handling.
+- [mobile/](mobile/README.md) - iOS and Android lite clients over the same
+  educational review concepts.
+- [shared/glossary.json](shared/glossary.json) - shared glossary source generated
+  into web, iOS, and Android by [tools/sync_glossary.py](tools/sync_glossary.py).
+- [tests/](tests) and [ui/*.test.js](ui) - Python and browser-unit coverage.
 
 ## References
 
@@ -202,6 +235,37 @@ Commercial clear-aligner and dental-planning systems may be studied as workflow 
 Use Python 3.11 or 3.12 if possible. Some fresh Homebrew Python 3.14 builds can fail
 inside `ensurepip`/`pyexpat` on macOS; if that happens, create the venv with a stable
 Python executable such as `python3.11`.
+
+Fast path from the repo root:
+
+```bash
+./happysmile
+```
+
+That script creates `.venv` if needed, installs the editable dev package once,
+and starts the local server at `http://127.0.0.1:8000`. You can pass the same
+server flags through it:
+
+```bash
+./happysmile --host 127.0.0.1 --port 8123
+```
+
+The more literal alias works too:
+
+```bash
+./run-openortho
+```
+
+After an editable install with the virtual environment active, these console
+commands are also available:
+
+```bash
+openortho
+happysmile
+orthoplan serve
+```
+
+Manual setup remains:
 
 ```bash
 python3.11 -m venv .venv

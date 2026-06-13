@@ -519,11 +519,17 @@ export function createViewer(container) {
   }
 
   function fitCameraToScene() {
-    const fitTarget = new THREE.Group();
-    if (uploadedScans.visible && uploadedScans.children.length) fitTarget.add(uploadedScans.clone());
-    if (proxies.children.length) fitTarget.add(proxies.clone());
-    if (!fitTarget.children.length) return;
-    const box = new THREE.Box3().setFromObject(fitTarget);
+    const box = new THREE.Box3();
+    // When a scan is visible, frame the scan geometry itself. Movement overlays
+    // can be intentionally exaggerated or stage-shifted; using them as the fit
+    // target makes a selected upper/lower STL feel off-center when the user zooms.
+    if (uploadedScans.visible && uploadedScans.children.length) {
+      box.setFromObject(uploadedScans);
+    } else if (proxies.children.length) {
+      box.setFromObject(proxies);
+    } else {
+      return;
+    }
     if (box.isEmpty()) return;
     // Fit a bounding sphere using the limiting (narrower) of the vertical and
     // horizontal field of view so a wide dental arch is fully framed and

@@ -41,17 +41,35 @@ export function requestViewerRefit() {
   pendingRefit = true;
 }
 
-// The guided steps that show the 3D viewer for picking teeth (click a tooth to
-// hold it still). Returns the step id, or null when not in that context.
-function guidedSelectionStep() {
+// The guided steps that show the 3D viewer for selecting/holding teeth. Returns
+// the step id, or null when not in that context.
+function guidedViewerStep() {
   if (state.userMode !== "simple") return null;
   const step = state.guided.step;
   return step === "plan" || step === "details" ? step : null;
 }
 
+function guidedStageIndex(step, result) {
+  const lastStage = Math.max(0, (result.frames?.length || 1) - 1);
+  if (step === "details") {
+    return Math.min(Number(el("guidedStagePreview")?.value || 0), lastStage);
+  }
+  return lastStage;
+}
+
 function formatWeek(value) {
   const rounded = Math.round(value * 10) / 10;
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function stagePhaseText(result, stageIndex) {
+  if (!result?.timeline) return `Stage ${stageIndex}`;
+  const totalAligners = Math.max(1, Number(result.timeline.stage_count || result.frames?.length || 1));
+  const alignerNumber = Math.min(totalAligners, stageIndex + 1);
+  const wearDays = Math.max(0, Number(result.timeline.wear_interval_days || 0));
+  const weekStart = (stageIndex * wearDays) / 7;
+  const weekEnd = ((stageIndex + 1) * wearDays) / 7;
+  return `Aligner ${alignerNumber} of ${totalAligners} · Weeks ${formatWeek(weekStart)}-${formatWeek(weekEnd)}`;
 }
 
 function updateStagePhase(result = state.lastEval) {
@@ -62,13 +80,7 @@ function updateStagePhase(result = state.lastEval) {
     el("stagePhase").textContent = "Aligner timeline unavailable";
     return;
   }
-  const totalAligners = Math.max(1, Number(result.timeline.stage_count || result.frames?.length || 1));
-  const alignerNumber = Math.min(totalAligners, stageIndex + 1);
-  const wearDays = Math.max(0, Number(result.timeline.wear_interval_days || 0));
-  const weekStart = (stageIndex * wearDays) / 7;
-  const weekEnd = ((stageIndex + 1) * wearDays) / 7;
-  el("stagePhase").textContent =
-    `Aligner ${alignerNumber} of ${totalAligners} · Weeks ${formatWeek(weekStart)}-${formatWeek(weekEnd)}`;
+  el("stagePhase").textContent = stagePhaseText(result, stageIndex);
 }
 
 function ensureViewer() {
@@ -80,7 +92,7 @@ function ensureViewer() {
     // equivalent of the checkbox list). Everywhere else it selects the tooth for
     // manual target authoring (only honored when scan units are confirmed).
     viewer.setSelectionHandler((tooth) => {
-      if (guidedSelectionStep() === "plan") {
+      if (guidedViewerStep() === "plan") {
         toggleExcludedTooth(tooth);
       } else {
         state.manualEdit.selectedTooth = tooth;
@@ -192,24 +204,24 @@ function updateViewer(result) {
     }
   }
   const visibleResult = filterResultForArch(result);
-  const guidedSelect = guidedSelectionStep();
+  const guidedSelect = guidedViewerStep();
   // Tooth picking is enabled for manual authoring once units are confirmed, and
   // unconditionally in the guided teeth/details steps (there a click just toggles
   // "hold still", which needs no millimetre scale).
   v.setSelectionEnabled(Boolean(guidedSelect) || scaleConfirmed(state.scanUnits));
   v.setSelectedTooth(state.manualEdit.selectedTooth);
-  // In the guided teeth/details steps the viewer is a selection/`preview-scale`
-  // aid, so show the planned movement at the last stage in overlay (the slider
-  // and view toolbar are hidden there); elsewhere honor the live controls.
-  const lastStage = Math.max(0, (visibleResult.frames?.length || 1) - 1);
+  // In guided Plan the viewer shows final movement for hold-still selection. In
+  // guided Details the local stage slider previews real staged movement.
   v.update({
     frames: visibleResult.frames,
     toothFrames: visibleResult.tooth_frames,
     attachments: visibleResult.clinical_controls?.attachments || [],
     initialOffsets: state.demoInitialOffsets,
-    stageIndex: guidedSelect ? lastStage : Number(el("stageSlider").value || 0),
+    stageIndex: guidedSelect
+      ? guidedStageIndex(guidedSelect, visibleResult)
+      : Number(el("stageSlider").value || 0),
     view: guidedSelect ? "overlay" : state.view,
-    exaggeration: numberValue("exaggeration") || 1,
+    exaggeration: guidedSelect === "details" ? 1 : (numberValue("exaggeration") || 1),
     showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
     showScale: state.showScale,
     unitsConfirmed: scaleConfirmed(state.scanUnits),
@@ -327,6 +339,7 @@ export function renderAll() {
 
 export function renderStagePreview() {
   updateStagePhase();
+  renderGuidedStagePreviewControl(Number(el("stageSlider").max || 0));
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
 }
@@ -859,6 +872,7 @@ function renderEvaluation(result) {
   const lastStage = Math.max(0, result.frames.length - 1);
   slider.max = String(lastStage);
   if (Number(slider.value) > lastStage) slider.value = String(lastStage);
+  renderGuidedStagePreviewControl(lastStage);
   updateStagePhase(result);
   drawCanvas();
   updateViewer(result);
@@ -869,6 +883,15 @@ function renderEvaluation(result) {
   renderPrintExport(result.print_export);
   renderOptimizedStaging(result.optimized_staging);
   renderDownloadActions();
+}
+
+function renderGuidedStagePreviewControl(lastStage) {
+  const guidedSlider = el("guidedStagePreview");
+  if (!guidedSlider) return;
+  guidedSlider.max = String(lastStage);
+  if (Number(guidedSlider.value) > lastStage) guidedSlider.value = String(lastStage);
+  el("guidedStagePreviewValue").textContent =
+    stagePhaseText(state.lastEval, Number(guidedSlider.value || 0));
 }
 
 function renderReviewTier(info) {

@@ -718,11 +718,15 @@ private class DentalPreview3dView(context: Context) : View(context) {
     }
 }
 
+// BEGIN GENERATED GLOSSARY TERMS
 private val fullGlossaryTerms = listOf(
     "Arch" to "One jaw's row of teeth: maxillary (upper) or mandibular (lower).",
     "Attachment" to "A small composite bump bonded to a tooth so an aligner can grip it. Planning intent only, not a force model.",
     "Canine" to "The pointed corner tooth, position 3 in FDI notation.",
     "CBCT" to "Cone-beam CT. The higher-fidelity record for roots and bone when ordered and interpreted by a professional.",
+    "Class I bite" to "A common reference bite where the upper and lower first molars fit in the expected front/back relationship. It can still have crowding, spacing, or other issues; the app does not diagnose bite class.",
+    "Class II bite" to "A front/back bite pattern where the lower teeth or jaw sit farther back relative to the upper teeth than in Class I. The app can record geometry, but it does not diagnose or correct this relationship.",
+    "Class III bite" to "A front/back bite pattern where the lower teeth or jaw sit farther forward relative to the upper teeth than in Class I. The app can visualize scans, but it does not diagnose jaw relationships.",
     "Coordinate frame" to "The axis system movements use. scan-local has z as vertical and x/y in the occlusal plane.",
     "Crowding" to "Too little space, so teeth overlap or twist. The app does not diagnose crowding.",
     "Cumulative pose" to "A tooth's total position after summing every stage up to a selected point.",
@@ -734,8 +738,8 @@ private val fullGlossaryTerms = listOf(
     "Incisor" to "A front cutting tooth, positions 1 and 2.",
     "Intrusion" to "Pushing a tooth into the bone.",
     "IPR" to "Interproximal reduction: planned enamel reduction between adjacent teeth to create space.",
-    "Malocclusion" to "A bad bite or misalignment. The app does not diagnose malocclusion.",
-    "Mesh / STL" to "A 3D surface model. STL files carry no units, so units start unverified until confirmed.",
+    "Malocclusion" to "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion.",
+    "Mesh / STL" to "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed.",
     "Molar" to "A large back chewing tooth, positions 6 through 8.",
     "Movement cap" to "A per-stage review threshold for linear, vertical, angular, and rotation movement.",
     "Occlusion" to "How upper and lower teeth meet when biting.",
@@ -752,6 +756,7 @@ private val fullGlossaryTerms = listOf(
     "Units" to "The real-world scale of a scan. Must be confirmed before millimeter checks run.",
     "Wear interval" to "How many days each aligner stage is worn; used for projected duration.",
 )
+// END GENERATED GLOSSARY TERMS
 
 private class TeethMapView(context: Context) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)

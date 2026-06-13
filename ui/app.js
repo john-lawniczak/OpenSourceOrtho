@@ -12,6 +12,7 @@ import {
 } from "./storage.js";
 import { closestDatasetTarget, inferArchFromName, rowsFromPlan } from "./core.js";
 import { generatePlan } from "./generation.js";
+import { glossaryTerms } from "./glossary.js";
 import {
   downloadPrintArtifact,
   goGuided,
@@ -79,7 +80,7 @@ const GUIDED_STAGE_CONTEXT = {
   },
   details: {
     label: "Guided step 3: Details",
-    purpose: "Adjust preview-only movement exaggeration and inspect how movement appears.",
+    purpose: "Inspect stage-by-stage movement and make small reviewed target edits.",
   },
   review: {
     label: "Guided step 4: Review",
@@ -223,11 +224,11 @@ document.body.addEventListener("input", (event) => {
   if (target.dataset.guidedTooth) {
     toggleExcludedTooth(target.dataset.guidedTooth);
   }
-  if (target.id === "guidedExaggeration") {
-    // The guided slider mirrors the technician numeric exaggeration field so the
-    // viewer reads one source of truth.
-    el("exaggeration").value = target.value;
-    el("guidedExaggerationValue").textContent = `×${target.value}`;
+  if (target.id === "guidedStagePreview") {
+    el("stageSlider").value = target.value;
+    el("guidedStagePreviewValue").textContent = `Stage ${target.value}`;
+    renderStagePreview();
+    return;
   }
   if (target.dataset.row) {
     const row = state.rows[Number(target.dataset.row)];
@@ -1164,6 +1165,21 @@ function filterGlossary(query) {
   el("glossaryEmpty").hidden = visible !== 0;
 }
 
+function renderGlossaryTerms() {
+  const list = el("glossaryTerms");
+  if (!list || list.dataset.rendered === "1") return;
+  for (const item of glossaryTerms) {
+    const wrapper = document.createElement("div");
+    const term = document.createElement("dt");
+    const definition = document.createElement("dd");
+    term.textContent = item.term;
+    definition.textContent = item.definition;
+    wrapper.append(term, definition);
+    list.appendChild(wrapper);
+  }
+  list.dataset.rendered = "1";
+}
+
 async function loadVersions() {
   const caseId = el("planId").value.trim();
   if (!caseId) return;
@@ -1239,6 +1255,7 @@ function restorePlan(snapshot) {
   renderAll();
 }
 
+renderGlossaryTerms();
 renderAvailability();
 renderAll();
 restoreStoredUploads();

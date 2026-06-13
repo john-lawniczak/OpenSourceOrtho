@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import types
 from pathlib import Path
 
 from orthoplan import cli
@@ -17,6 +18,19 @@ def test_cli_new_plan_emits_json(monkeypatch, capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert payload["id"] == "cli-test"
     assert payload["settings"]["timeline"]["wear_interval_days"] == 14
+
+
+def test_run_app_alias_launches_serve_command(monkeypatch) -> None:
+    calls = []
+
+    def fake_serve(*, host: str, port: int) -> None:
+        calls.append((host, port))
+
+    monkeypatch.setitem(sys.modules, "orthoplan.server", types.SimpleNamespace(serve=fake_serve))
+    monkeypatch.setattr(sys, "argv", ["happysmile", "--host", "127.0.0.2", "--port", "8123"])
+
+    assert cli.run_app_main() == 0
+    assert calls == [("127.0.0.2", 8123)]
 
 
 def test_cli_landmarks_template_emits_fillable_json(monkeypatch, capsys) -> None:

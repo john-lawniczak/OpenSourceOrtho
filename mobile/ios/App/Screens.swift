@@ -498,11 +498,15 @@ private enum STLSceneMesh {
 }
 
 struct GlossaryView: View {
+    // BEGIN GENERATED GLOSSARY TERMS
     private let terms = [
         ("Arch", "One jaw's row of teeth: maxillary (upper) or mandibular (lower)."),
         ("Attachment", "A small composite bump bonded to a tooth so an aligner can grip it. Planning intent only, not a force model."),
         ("Canine", "The pointed corner tooth, position 3 in FDI notation."),
         ("CBCT", "Cone-beam CT. The higher-fidelity record for roots and bone when ordered and interpreted by a professional."),
+        ("Class I bite", "A common reference bite where the upper and lower first molars fit in the expected front/back relationship. It can still have crowding, spacing, or other issues; the app does not diagnose bite class."),
+        ("Class II bite", "A front/back bite pattern where the lower teeth or jaw sit farther back relative to the upper teeth than in Class I. The app can record geometry, but it does not diagnose or correct this relationship."),
+        ("Class III bite", "A front/back bite pattern where the lower teeth or jaw sit farther forward relative to the upper teeth than in Class I. The app can visualize scans, but it does not diagnose jaw relationships."),
         ("Coordinate frame", "The axis system movements use. scan-local has z as vertical and x/y in the occlusal plane."),
         ("Crowding", "Too little space, so teeth overlap or twist. The app does not diagnose crowding."),
         ("Cumulative pose", "A tooth's total position after summing every stage up to a selected point."),
@@ -514,8 +518,8 @@ struct GlossaryView: View {
         ("Incisor", "A front cutting tooth, positions 1 and 2."),
         ("Intrusion", "Pushing a tooth into the bone."),
         ("IPR", "Interproximal reduction: planned enamel reduction between adjacent teeth to create space."),
-        ("Malocclusion", "A bad bite or misalignment. The app does not diagnose malocclusion."),
-        ("Mesh / STL", "A 3D surface model. STL files carry no units, so units start unverified until confirmed."),
+        ("Malocclusion", "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion."),
+        ("Mesh / STL", "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed."),
         ("Molar", "A large back chewing tooth, positions 6 through 8."),
         ("Movement cap", "A per-stage review threshold for linear, vertical, angular, and rotation movement."),
         ("Occlusion", "How upper and lower teeth meet when biting."),
@@ -532,6 +536,7 @@ struct GlossaryView: View {
         ("Units", "The real-world scale of a scan. Must be confirmed before millimeter checks run."),
         ("Wear interval", "How many days each aligner stage is worn; used for projected duration."),
     ]
+    // END GENERATED GLOSSARY TERMS
 
     var body: some View {
         List(terms, id: \.0) { term, definition in

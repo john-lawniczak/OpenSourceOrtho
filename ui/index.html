@@ -103,7 +103,7 @@
         <nav class="journey-nav" aria-label="Guided workflow">
           <button class="is-active" data-journey-step="upload" type="button">
             <strong>1</strong>
-            <span>Load STL files</span>
+            <span>Load STL scans</span>
           </button>
           <button data-journey-step="review" type="button">
             <strong>2</strong>
@@ -146,7 +146,7 @@
 
           <section class="gstep" data-gstep="upload">
             <h3>1 · Upload your STL files</h3>
-            <p>STL (STereoLithography) files are the detailed 3D scan models of your teeth. Add your upper and/or lower scans.</p>
+            <p>STL (stereolithography) files are the detailed 3D surface scan models of your teeth. Add your upper and/or lower scans.</p>
             <div id="guidedUploadHost">
               <div id="simpleUpload" class="upload-stack">
                 <label class="upload-target" for="simpleStlFile">
@@ -209,9 +209,9 @@
                   <span>Nudge in 0.2 mm steps.</span>
                 </div>
                 <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
-                <label class="guided-range">Preview scale
-                  <input id="guidedExaggeration" type="range" min="1" max="40" step="1" value="12" />
-                  <span id="guidedExaggerationValue">×12</span>
+                <label class="guided-range">Stage preview
+                  <input id="guidedStagePreview" type="range" min="0" max="0" step="1" value="0" />
+                  <span id="guidedStagePreviewValue">Stage 0</span>
                 </label>
               </div>
               <aside class="guided-edit-card" aria-label="Guided tooth edit controls">
@@ -285,13 +285,13 @@
 
         <section class="panel" id="panel-upload">
           <div class="panel-heading">
-            <h2>Upload STL</h2>
-            <p>Add upper, lower, or both STL scans.</p>
+            <h2>Upload STL (stereolithography)</h2>
+            <p>Add upper, lower, or both STL surface scans.</p>
           </div>
           <div class="howto-panel">
             <h2>Getting Started</h2>
             <ol>
-              <li>Upload STL scans here, or use the Sample Test Case button in the sidebar for the built-in example.</li>
+              <li>Upload STL (stereolithography) scans here, or use the Sample Test Case button in the sidebar for the built-in example.</li>
               <li>Confirm units before relying on millimeter movement checks.</li>
               <li>Review findings and data gaps before exporting anything.</li>
             </ol>
@@ -726,25 +726,7 @@
           </div>
           <div class="glossary">
             <h2>Key Terms (A&ndash;Z)</h2>
-            <dl>
-              <div><dt>Arch</dt><dd>One jaw's row of teeth: maxillary (upper) or mandibular (lower).</dd></div>
-              <div><dt>Attachment</dt><dd>A small composite bump bonded to a tooth so an aligner can grip and move it. Planning intent only.</dd></div>
-              <div><dt>Crowding</dt><dd>Too little space, so teeth overlap or twist.</dd></div>
-              <div><dt>Data gap</dt><dd>A missing record (roots, CBCT, occlusion&hellip;) that limits what the engine can assess.</dd></div>
-              <div><dt>Extrusion / Intrusion</dt><dd>Moving a tooth out of (extrusion) or into (intrusion) the bone vertically.</dd></div>
-              <div><dt>Finding</dt><dd>A structured, controlled-vocabulary observation from a rule or a linted advisory. Never an approval.</dd></div>
-              <div><dt>Fixed tooth</dt><dd>A tooth intended to stay still; the generator will not move it.</dd></div>
-              <div><dt>IPR</dt><dd>Interproximal reduction: removing a sliver of enamel between two teeth to create space (in mm).</dd></div>
-              <div><dt>Malocclusion</dt><dd>A "bad bite": teeth that do not meet/align as intended. The app does not diagnose this.</dd></div>
-              <div><dt>Movement cap</dt><dd>The maximum per-stage movement treated as a review threshold (linear, vertical, angular, rotation).</dd></div>
-              <div><dt>Occlusion</dt><dd>How upper and lower teeth meet when biting.</dd></div>
-              <div><dt>Rotation</dt><dd>Turning a tooth around its own long axis.</dd></div>
-              <div><dt>Segmentation</dt><dd>Splitting a whole-arch scan into individual per-tooth meshes. Needed to move teeth individually.</dd></div>
-              <div><dt>Stage</dt><dd>One step of an aligner sequence, holding per-tooth movement values.</dd></div>
-              <div><dt>Tip / Torque</dt><dd>Tip = tilting along the arch; torque = tilting the crown in/out.</dd></div>
-              <div><dt>Units</dt><dd>The real-world scale of a scan (mm, cm&hellip;); confirm before millimeter checks run.</dd></div>
-              <div><dt>Wear interval</dt><dd>How many days each aligner stage is worn; sets the projected (not promised) duration.</dd></div>
-            </dl>
+            <dl id="glossaryTerms"></dl>
             <p class="viewer-caveat">Full glossary, the FDI&harr;Universal&harr;Palmer table, and the tooth-map diagram live in <code>docs/GLOSSARY.md</code>.</p>
           </div>
         </section>
@@ -758,13 +740,13 @@
 
           <div class="workflow-card">
             <h2>What the engine actually uses</h2>
-            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>Stereolithography file format (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement for review. That is the <strong>Surface Review</strong> tier, not a complete treatment plan. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware checks after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>stereolithography (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement for review. That is the <strong>Surface Review</strong> tier, not a complete treatment plan. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware checks after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
           </div>
 
           <div class="workflow-card">
             <h2>What is the &ldquo;Rx&rdquo; file?</h2>
-            <p>A scanner export (for example an iTero <strong>OrthoCAD</strong> zip) usually bundles an <strong>Rx</strong> alongside the meshes &mdash; an HTML, PDF, or XML document. The Rx is the scan&rsquo;s <strong>prescription / order form</strong>: it records the procedure type, the ordering dentist, the scan date, and any clinical notes or requested treatment. It is <strong>not part of the STL</strong> and carries <em>no 3D geometry</em>, so the engine does not plan from it.</p>
-            <p>It is still useful <strong>context</strong>: it tells you what was ordered, by whom, and when, which is worth reading before you trust a plan or compare it against a provider&rsquo;s recommendation. Treat it as paperwork that travels <em>with</em> the scan, not as a measurement input. The intraoral gallery photos in the same export behave like <strong>STL + Photos</strong> above &mdash; bite and soft-tissue context, no new measurements.</p>
+            <p>A scanner export (for example an iTero <strong>OrthoCAD</strong> zip) usually bundles an <strong>Rx</strong> alongside the meshes &mdash; an HTML, PDF, or XML document. The Rx is the scan&rsquo;s <strong>prescription / order form</strong>: it records the procedure type, the ordering dentist, the scan date, and any clinical notes or requested treatment. It is <strong>not part of the stereolithography (STL) mesh</strong> and carries <em>no 3D geometry</em>, so the engine does not plan from it.</p>
+            <p>It is still useful <strong>context</strong>: it tells you what was ordered, by whom, and when, which is worth reading before you trust a plan or compare it against a provider&rsquo;s recommendation. Treat it as paperwork that travels <em>with</em> the scan, not as a measurement input. The intraoral gallery photos in the same export behave like <strong>STL (stereolithography) + Photos</strong> above &mdash; bite and soft-tissue context, no new measurements.</p>
           </div>
 
           <table class="records-table">
@@ -780,25 +762,25 @@
                 <td>~$100&ndash;$400 (often bundled with a consult). Higher radiation; clinician-ordered.</td>
               </tr>
               <tr>
-                <th scope="row">STL + Periapical X-rays</th>
+                <th scope="row">STL (stereolithography) + Periapical X-rays</th>
                 <td><span class="records-score" data-tier="high">8/10</span></td>
                 <td>Crown surface plus close-up 2D views of <strong>specific roots and surrounding bone</strong> &mdash; targeted root context where it matters.</td>
                 <td>STL ~$0&ndash;$150 + ~$25&ndash;$50 per film (full-mouth series ~$100&ndash;$200).</td>
               </tr>
               <tr>
-                <th scope="row">STL + Panoramic X-ray</th>
+                <th scope="row">STL (stereolithography) + Panoramic X-ray</th>
                 <td><span class="records-score" data-tier="high">7/10</span></td>
                 <td>Crown surface plus a single 2D <strong>whole-jaw overview</strong> of roots, eruption, and obvious anomalies.</td>
                 <td>STL ~$0&ndash;$150 + panoramic ~$60&ndash;$150.</td>
               </tr>
               <tr>
-                <th scope="row">STL + Photos</th>
+                <th scope="row">STL (stereolithography) + Photos</th>
                 <td><span class="records-score" data-tier="mid">6/10</span></td>
                 <td>Crown surface plus <strong>bite and soft-tissue context</strong> and a visual baseline to track change against. No new 3D measurements.</td>
                 <td>STL ~$0&ndash;$150 + photos ~$0 (smartphone).</td>
               </tr>
               <tr>
-                <th scope="row">STL only</th>
+                <th scope="row">STL (stereolithography) only</th>
                 <td><span class="records-score" data-tier="mid">5/10</span></td>
                 <td>The <strong>core input</strong>: the crown-surface mesh the engine segments and moves. No roots or bone, so root-dependent limits stay unknown.</td>
                 <td>~$0 with your own scanner; ~$50&ndash;$150 at an office (or from impressions).</td>
@@ -820,7 +802,7 @@
 
           <div class="workflow-card">
             <h2>If you are starting from scratch</h2>
-            <p>An <strong>intraoral STL scan</strong> is the one record that unlocks the planner &mdash; start there. After that:</p>
+            <p>An <strong>intraoral STL (stereolithography) scan</strong> is the one record that unlocks the planner &mdash; start there. After that:</p>
             <ul class="starter-steps">
               <li><strong>Add smartphone photos</strong> for free to capture your bite and a baseline.</li>
               <li><strong>Bring an X-ray or CBCT</strong> only when a licensed professional recommends one; those reveal roots and bone the surface scan cannot, and they involve radiation.</li>

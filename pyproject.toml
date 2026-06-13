@@ -57,6 +57,8 @@ e2e = [
 
 [project.scripts]
 orthoplan = "orthoplan.cli:main"
+openortho = "orthoplan.cli:run_app_main"
+happysmile = "orthoplan.cli:run_app_main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

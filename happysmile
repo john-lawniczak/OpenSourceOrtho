@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT"
+
+if [ ! -x ".venv/bin/python" ]; then
+  if command -v python3.11 >/dev/null 2>&1; then
+    PYTHON_BIN="python3.11"
+  elif command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+  else
+    echo "Could not find python3.11 or python3. Install Python 3.11+ and try again." >&2
+    exit 1
+  fi
+  "$PYTHON_BIN" -m venv .venv
+fi
+
+. ".venv/bin/activate"
+
+INSTALL_STAMP=".venv/.opensource-ortho-dev-installed"
+if [ ! -x ".venv/bin/orthoplan" ] || [ ! -f "$INSTALL_STAMP" ] || [ "pyproject.toml" -nt "$INSTALL_STAMP" ]; then
+  python -m pip install -e ".[dev]"
+  touch "$INSTALL_STAMP"
+fi
+
+exec orthoplan serve "$@"

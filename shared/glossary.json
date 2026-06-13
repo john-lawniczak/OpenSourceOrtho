@@ -1,0 +1,142 @@
+[
+  {
+    "term": "Arch",
+    "definition": "One jaw's row of teeth: maxillary (upper) or mandibular (lower)."
+  },
+  {
+    "term": "Attachment",
+    "definition": "A small composite bump bonded to a tooth so an aligner can grip it. Planning intent only, not a force model."
+  },
+  {
+    "term": "Canine",
+    "definition": "The pointed corner tooth, position 3 in FDI notation."
+  },
+  {
+    "term": "CBCT",
+    "definition": "Cone-beam CT. The higher-fidelity record for roots and bone when ordered and interpreted by a professional."
+  },
+  {
+    "term": "Class I bite",
+    "definition": "A common reference bite where the upper and lower first molars fit in the expected front/back relationship. It can still have crowding, spacing, or other issues; the app does not diagnose bite class."
+  },
+  {
+    "term": "Class II bite",
+    "definition": "A front/back bite pattern where the lower teeth or jaw sit farther back relative to the upper teeth than in Class I. The app can record geometry, but it does not diagnose or correct this relationship."
+  },
+  {
+    "term": "Class III bite",
+    "definition": "A front/back bite pattern where the lower teeth or jaw sit farther forward relative to the upper teeth than in Class I. The app can visualize scans, but it does not diagnose jaw relationships."
+  },
+  {
+    "term": "Coordinate frame",
+    "definition": "The axis system movements use. scan-local has z as vertical and x/y in the occlusal plane."
+  },
+  {
+    "term": "Crowding",
+    "definition": "Too little space, so teeth overlap or twist. The app does not diagnose crowding."
+  },
+  {
+    "term": "Cumulative pose",
+    "definition": "A tooth's total position after summing every stage up to a selected point."
+  },
+  {
+    "term": "Data gap",
+    "definition": "A missing record such as roots, CBCT, occlusion, or periodontal status that limits review."
+  },
+  {
+    "term": "Extrusion",
+    "definition": "Moving a tooth out of the bone, opposite intrusion."
+  },
+  {
+    "term": "FDI notation",
+    "definition": "Two-digit tooth numbering: first digit is quadrant, second digit counts from the midline."
+  },
+  {
+    "term": "Finding",
+    "definition": "A structured observation from a deterministic rule or linted advisory review. Never an approval."
+  },
+  {
+    "term": "Fixed tooth",
+    "definition": "A tooth intended to stay still for part or all of a plan."
+  },
+  {
+    "term": "Incisor",
+    "definition": "A front cutting tooth, positions 1 and 2."
+  },
+  {
+    "term": "Intrusion",
+    "definition": "Pushing a tooth into the bone."
+  },
+  {
+    "term": "IPR",
+    "definition": "Interproximal reduction: planned enamel reduction between adjacent teeth to create space."
+  },
+  {
+    "term": "Malocclusion",
+    "definition": "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion."
+  },
+  {
+    "term": "Mesh / STL",
+    "definition": "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed."
+  },
+  {
+    "term": "Molar",
+    "definition": "A large back chewing tooth, positions 6 through 8."
+  },
+  {
+    "term": "Movement cap",
+    "definition": "A per-stage review threshold for linear, vertical, angular, and rotation movement."
+  },
+  {
+    "term": "Occlusion",
+    "definition": "How upper and lower teeth meet when biting."
+  },
+  {
+    "term": "Premolar",
+    "definition": "A tooth between canine and molars, positions 4 and 5."
+  },
+  {
+    "term": "Provenance",
+    "definition": "Where data came from: patient-derived, imported, manual, model-generated, or synthetic."
+  },
+  {
+    "term": "Quadrant",
+    "definition": "One of the four mouth sections; the first digit in FDI notation."
+  },
+  {
+    "term": "Rotation",
+    "definition": "Turning a tooth around its own long axis."
+  },
+  {
+    "term": "Segmentation",
+    "definition": "Splitting a whole-arch scan into individual per-tooth meshes."
+  },
+  {
+    "term": "Spacing",
+    "definition": "Unwanted gaps between teeth."
+  },
+  {
+    "term": "Stage",
+    "definition": "One aligner-style step containing per-tooth movement values."
+  },
+  {
+    "term": "Tip",
+    "definition": "Mesiodistal angulation: tilting a tooth forward or backward along the arch."
+  },
+  {
+    "term": "Torque",
+    "definition": "Buccolingual inclination: tilting the crown inward or outward."
+  },
+  {
+    "term": "Translation",
+    "definition": "Sliding a tooth in millimeters along x, y, or z."
+  },
+  {
+    "term": "Units",
+    "definition": "The real-world scale of a scan. Must be confirmed before millimeter checks run."
+  },
+  {
+    "term": "Wear interval",
+    "definition": "How many days each aligner stage is worn; used for projected duration."
+  }
+]

@@ -5,6 +5,11 @@ sense. This is **educational only** - it does not diagnose, recommend treatment,
 define clinical thresholds, produce a complete treatment plan, or authorize any
 physical use. See [SAFETY.md](SAFETY.md).
 
+The in-app, iOS, and Android quick glossaries are generated from
+`shared/glossary.json`. Add or edit quick-reference terms there, then run
+`python3 tools/sync_glossary.py`; `tests/test_glossary_sync.py` checks that all
+three UI targets stay in sync.
+
 ## FDI tooth numbering
 
 OpenSource Ortho identifies teeth using the **FDI (FDI World Dental Federation
@@ -77,6 +82,18 @@ charts; it is **not** used by the code.
   grip it and deliver a movement. Recorded as planning intent only
   (`model/clinical.py::Attachment`); it is not a force model.
 - **Canine (cuspid)** - the pointed "corner" tooth (position 3).
+- **Class I bite** - a common reference molar relationship where the upper and
+  lower first molars fit in the expected front/back position. Class I can still
+  have crowding, spacing, rotations, deep bite, open bite, or other issues. The
+  app does not diagnose bite class.
+- **Class II bite** - a broad front/back bite relationship where the lower teeth
+  or jaw sit farther back relative to the upper teeth than in Class I. The app
+  can record and visualize geometry, but it does not diagnose, treat, or correct
+  this relationship.
+- **Class III bite** - a broad front/back bite relationship where the lower
+  teeth or jaw sit farther forward relative to the upper teeth than in Class I.
+  The app can show scans and movement proposals, but it does not diagnose jaw
+  relationships.
 - **Coordinate frame** - the named axis system movements are expressed in. The
   canonical `scan-local` frame has **z** = vertical (occlusogingival) and **x/y**
   spanning the horizontal occlusal plane (`model/geometry.py`).
@@ -101,10 +118,13 @@ charts; it is **not** used by the code.
 - **IPR (interproximal reduction)** - removing a sliver of enamel between two
   adjacent teeth to create space (`model/clinical.py::InterproximalReduction`,
   in millimeters between a tooth pair).
-- **Malocclusion** - a "bad bite": teeth that do not meet/align as intended. The
-  app does **not** diagnose malocclusion.
-- **Mesh / STL** - the 3D surface model of a scan. STL files carry no units, so
-  units start **unverified** until you confirm them (`model/assets.py`).
+- **Malocclusion** - a "bad bite": teeth that do not meet/align as intended.
+  Class I, II, and III are broad bite-relationship categories, not treatment
+  instructions. The app does **not** diagnose malocclusion.
+- **Mesh / STL** - the 3D surface model of a scan. STL stands for
+  **stereolithography**; STL files describe triangle surfaces and carry no
+  units, so units start **unverified** until you confirm them
+  (`model/assets.py`).
 - **Molar** - a large back chewing tooth (positions 6-8).
 - **Movement cap** - the maximum per-stage movement the engine treats as a review
   threshold: linear, vertical, angular (tip/torque), and rotation
