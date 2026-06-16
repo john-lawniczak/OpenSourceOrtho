@@ -109,8 +109,11 @@ What exists:
   production-candidate counts.
 - A manifest-driven labelled real-scan benchmark path exists for external
   non-PHI or consented cases. Cases must declare PHI removal, consent, and
-  commercial-use permission before they are scored, so questionable datasets or
-  weights cannot silently become production evidence.
+  commercial-use permission before they are scored, and
+  `orthoplan segmentation-benchmark --manifest ...` reports local accuracy,
+  region purity, tooth counts, and review-burden delta versus the fallback. This
+  keeps questionable datasets or weights from silently becoming production
+  evidence.
 - One-click plan generation chooses the best available target in this order:
   authored movement, reviewed landmarks/space analysis, segmented per-tooth crown
   geometry, or a clearly labelled educational template when only a raw scan is

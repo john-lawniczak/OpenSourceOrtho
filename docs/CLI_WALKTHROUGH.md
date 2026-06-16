@@ -158,7 +158,45 @@ hash, artifact hashes, and geometry-source metadata. Generated files are informa
 outputs from the supplied plan data and physical use is the user's own responsibility
 and risk.
 
-## 9. Optional model advisory
+## 9. Labelled segmentation benchmark
+
+```bash
+orthoplan segmentation-benchmark --manifest labelled-segmentation/manifest.json
+orthoplan segmentation-benchmark --manifest labelled-segmentation/manifest.json --json
+```
+
+Scores the active local segmenter against external labelled real-scan cases. The
+repo does not ship patient-derived labelled scans; the manifest points to local
+PHI-safe or consented fixtures and must mark each case as PHI-removed,
+consent-acknowledged, and commercial-use-allowed before it is scored.
+
+Minimal manifest shape:
+
+```json
+{
+  "cases": [{
+    "case_id": "non-phi-001",
+    "arch": "maxillary",
+    "scan_path": "case.stl",
+    "labels_path": "triangle-labels.json",
+    "phi_removed": true,
+    "consent_acknowledged": true,
+    "commercial_use_allowed": true
+  }]
+}
+```
+
+`triangle-labels.json` contains one FDI label per STL triangle:
+
+```json
+{ "triangle_labels": ["11", "11", "12"] }
+```
+
+The command reports triangle-label accuracy, region purity, tooth counts, and
+review-burden delta versus the fallback segmenter. It is a software benchmark,
+not clinical clearance.
+
+## 10. Optional model advisory
 
 The advisory layer is **off by default**. It runs only when you ask for it and a
 provider is configured:

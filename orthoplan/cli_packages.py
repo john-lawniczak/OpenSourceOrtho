@@ -34,6 +34,33 @@ def add_validation_benchmark_parser(subparsers: Any) -> None:
     parser.add_argument("--json", action="store_true", help="emit benchmark report as JSON")
 
 
+def add_segmentation_benchmark_parser(subparsers: Any) -> None:
+    parser = subparsers.add_parser(
+        "segmentation-benchmark",
+        help="score local segmentation against a labelled real-scan manifest",
+    )
+    parser.add_argument("--manifest", required=True, help="labelled real-scan corpus manifest")
+    parser.add_argument("--json", action="store_true", help="emit benchmark report as JSON")
+    parser.add_argument(
+        "--min-triangle-label-accuracy",
+        type=float,
+        default=0.95,
+        help="minimum labelled triangle accuracy for each scored case",
+    )
+    parser.add_argument(
+        "--min-region-purity",
+        type=float,
+        default=0.95,
+        help="minimum per-region purity for each scored case",
+    )
+    parser.add_argument(
+        "--min-cases",
+        type=int,
+        default=1,
+        help="minimum license-clear labelled cases required for a passing report",
+    )
+
+
 def cmd_print_package(args: argparse.Namespace) -> int:
     from orthoplan.printing import export_print_package
 
@@ -94,3 +121,48 @@ def cmd_validation_benchmark(args: argparse.Namespace) -> int:
             unit = f" {metric.unit}" if metric.unit else ""
             print(f"  - {metric.name}: {metric.value}{unit} ({metric.case_id})")
     return 0
+
+
+def cmd_segmentation_benchmark(args: argparse.Namespace) -> int:
+    from orthoplan.validation.segmentation_real_report import labelled_real_scan_report
+
+    try:
+        report = labelled_real_scan_report(
+            manifest_path=args.manifest,
+            min_triangle_label_accuracy=args.min_triangle_label_accuracy,
+            min_region_purity=args.min_region_purity,
+            min_cases=args.min_cases,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"segmentation-benchmark error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.json:
+        print(report.model_dump_json(indent=2))
+        return 0 if report.passed else 1
+
+    status = "PASS" if report.passed else "FAIL"
+    print(f"{status} labelled segmentation benchmark")
+    print(f"Candidate: {report.candidate_backend}  Fallback: {report.fallback_backend}")
+    print(f"Scored cases: {report.scored_case_count} / minimum {report.min_cases}")
+    print(report.caveat)
+    for case in report.cases:
+        case_status = "PASS" if case.passed else "SKIP" if case.skipped_reason else "FAIL"
+        print(f"\n{case_status} {case.case_id}")
+        if case.skipped_reason:
+            print(f"  skipped: {case.skipped_reason}")
+            continue
+        print(
+            "  accuracy="
+            f"{case.triangle_label_accuracy:.3f} purity={case.region_purity:.3f} "
+            f"teeth={case.observed_tooth_count}/{case.expected_tooth_count}"
+        )
+        print(
+            "  fallback="
+            f"{case.fallback_triangle_label_accuracy:.3f}/"
+            f"{case.fallback_region_purity:.3f} "
+            f"review_burden_delta={case.review_burden_delta_vs_fallback:.3f}"
+        )
+        for failure in case.failures:
+            print(f"  - {failure}")
+    return 0 if report.passed else 1
