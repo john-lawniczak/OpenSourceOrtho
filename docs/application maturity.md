@@ -88,7 +88,7 @@ What preserving or improving the ≥9/10 target requires:
 
 ## Track 2: Surface-Scan Staging + Honest Review Aid
 
-Current rating: ~8.8/10. Target: ≥9/10.
+Current rating: ~8.85/10. Target: ≥9/10.
 
 What exists:
 
