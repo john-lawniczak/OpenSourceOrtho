@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,8 +13,8 @@
 		37A52C95416DB193C1647EB4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3EC22871DE3570233EAFD /* RootView.swift */; };
 		4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FEC8D213B7576DB4208180A /* Assets.xcassets */; };
 		74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8589067755F44462FE798BC8 /* SettingsView.swift */; };
-		8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */; };
 		7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */; };
+		8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */; };
 		BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A1C676D724465EA395DAFA /* AppIdentity.swift */; };
 		DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919681E695F14AC323DB1F57 /* Screens.swift */; };
 		FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */; };
@@ -24,16 +24,16 @@
 		038A93E4FA3E99A155B4AD33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0FEC8D213B7576DB4208180A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceOrthoLiteApp.swift; sourceTree = "<group>"; };
-		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
-		62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */ = {isa = PBXFileReference; path = "dev-sample-upper.stl"; sourceTree = "<group>"; };
+		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
+		62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-upper.stl"; sourceTree = "<group>"; };
 		8589067755F44462FE798BC8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		888F68B82367F953AA8FC715 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = .; sourceTree = SOURCE_ROOT; };
-		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiteFlowViewModel.swift; sourceTree = "<group>"; };
 		919681E695F14AC323DB1F57 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
 		94A1C676D724465EA395DAFA /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
 		9BB3EC22871DE3570233EAFD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */ = {isa = PBXFileReference; path = "dev-sample-lower.stl"; sourceTree = "<group>"; };
+		C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-lower.stl"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,7 +132,6 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					41985455D915DDEB2015CE48 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -150,7 +149,6 @@
 			packageReferences = (
 				CC2B05072D73BECC81BD9818 /* XCLocalSwiftPackageReference "." */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -316,7 +314,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = T286C8G7T2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -339,7 +337,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = T286C8G7T2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
