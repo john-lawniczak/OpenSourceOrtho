@@ -1,7 +1,7 @@
 # Scope: learned tooth-segmentation backend
 
-> Status: **Phase 1 shipped (contract + fallback + packaging + measurement); no
-> model yet.** The learned ONNX backend (`segmentation/learned.py`) drops into
+> Status: **Phase 1+ shipped (contract + fallback + packaging + measurement +
+> production gates); no model yet.** The learned ONNX backend (`segmentation/learned.py`) drops into
 > `load_local_segmenter()` behind an install/weights check, with the heuristic as
 > the always-on fallback. There are no committed weights and no torch at runtime,
 > so the backend is inert by default and the core install stays light. The model
@@ -141,6 +141,15 @@ The realistic synthetic harness added in this branch is the gate:
   below them — so the case is a LOOSE tracking floor. A small **labelled real-scan
   fixture** (PHI-free or consented, kept out of git or behind a flag) is the honest
   benchmark and remains future work.
+- **Production-candidate gates** (`segmentation/quality.py`, surfaced by
+  `/api/segment` and `orthoplan validation-benchmark`): tooth count,
+  compactness, and confidence are checked separately for "reviewable" vs.
+  "production candidate." The current heuristic clears reviewable gates on the
+  bundled real scans but is intentionally blocked as a production candidate.
+- **Labelled real-scan corpus manifest** (`validation/segmentation_real_corpus.py`):
+  external PHI-free/consented fixtures can be scored without committing patient
+  data. A case must declare PHI removal, consent, and commercial-use permission
+  before the benchmark scores it.
 
 ## Integration points (checklist when building)
 
@@ -164,6 +173,11 @@ Phase 1 (contract + fallback + packaging + measurement) — done:
       hints through `tooth_values`.
 - [x] Crown-compactness metric + `segmentation-crown-compactness` case; all
       existing accuracy / real-scan floors stay green.
+- [x] Hard segmentation quality gates wired into `/api/segment` and validation
+      benchmarks, separating reviewable drafts from production candidates.
+- [x] Manifest-driven labelled real-scan benchmark contract for external
+      license-clear fixtures; no patient scans, labels, or model weights are
+      committed.
 - [x] Docs: status updated here. `docs/OpenAI_Agents.md` is N/A — a local ONNX model
       is not a model PROVIDER (no hosted API), so no provider-behaviour change.
 

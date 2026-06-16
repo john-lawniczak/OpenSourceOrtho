@@ -75,6 +75,9 @@ def test_segment_endpoint_proposes_and_serves_meshes(
     assert payload["ok"] is True
     assert payload["requires_review"] is True
     assert payload["teeth"]
+    quality = payload["quality_gates"]["maxillary"]
+    assert quality["reviewable"] is True
+    assert quality["production_candidate"] is False
     sample_points = payload["plan_fragment"]["tooth_meshes"][0]["surface_sample_points"]
     assert sample_points
     assert len(sample_points) <= 64

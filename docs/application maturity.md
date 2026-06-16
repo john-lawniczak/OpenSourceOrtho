@@ -18,7 +18,7 @@ not model.
 | Surface | Current | Target | What the score means |
 |---------|---------|--------|----------------------|
 | Track 1: upload -> printable aligner artifacts | ~9.0/10 | ≥9/10 | Strong within the software-only scope: reviewed real geometry exports reproducible model/shell packages with real shell QA, robust-backend validation hooks, messy fixtures, and independent full-arch fixtures; physical fit/material/printer validation remains out of scope. |
-| Track 2: surface-scan staging + honest review aid | ~8.8/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, guided review UX, real-scan smoke coverage, and learned-vs-heuristic benchmark hooks are in place; the remaining weakness is broader labelled real-case validation and production learned weights. |
+| Track 2: surface-scan staging + honest review aid | ~8.85/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, guided review UX, real-scan smoke coverage, learned-vs-heuristic benchmark hooks, and hard segmentation quality gates are in place; the remaining weakness is broader labelled real-case validation and production learned weights. |
 | Track 3: CBCT root/bone-aware planning from raw volume | ~8.4/10 | ≥9/10 | Phase 12 is implemented as a safety-gated proposal workflow: raw-volume sparse-mask proposals, auto-registration proposals, fail-closed tests, and benchmark metrics exist, but maturity is held back by caller-supplied masks, no bundled clinical-grade volume segmenter, and limited open-volume validation. |
 | Track 4: in-app AI assistant (chat) | ~8.5/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors now have bounded memory, incremental rendering, provider/model selection, PHI-share gating, and SSE streaming with fallback; provider-native stream adapters and action tooling remain. |
 
@@ -102,6 +102,15 @@ What exists:
   crown tip, crown torque, crown angulation, and same-arch response proposals
   while failing closed without confirmed units and reviewed segmentation.
 - Auto-segmentation proposal path with human review and per-tooth mesh exports.
+- Hard segmentation quality gates now distinguish a reviewable draft from a
+  production-candidate segmentation using tooth-count, compactness, and
+  confidence checks. The `/api/segment` response exposes per-arch gate reports,
+  and the validation benchmark tracks bundled real-scan reviewable vs.
+  production-candidate counts.
+- A manifest-driven labelled real-scan benchmark path exists for external
+  non-PHI or consented cases. Cases must declare PHI removal, consent, and
+  commercial-use permission before they are scored, so questionable datasets or
+  weights cannot silently become production evidence.
 - One-click plan generation chooses the best available target in this order:
   authored movement, reviewed landmarks/space analysis, segmented per-tooth crown
   geometry, or a clearly labelled educational template when only a raw scan is
@@ -133,6 +142,9 @@ Why it is not higher:
   real-scan crown-count smoke tests, but it is not a production-quality automatic
   tooth-path system: clean per-tooth crown boundaries and target setup still
   depend on review, landmarks, or stronger optional segmentation.
+- No license-clear production weights or labelled real-scan corpus are bundled.
+  The new gates therefore block the current heuristic from being treated as a
+  production candidate on real scans.
 - Occlusion dynamics, bite force, periodontal status, and biological response are
   intentionally not inferred from STL surfaces.
 
@@ -141,6 +153,9 @@ What reaching the ≥9/10 target requires:
 - Reviewed open-dataset benchmarks with clear provenance and no PHI.
 - Stronger segmentation backend or supplied weights with measurable improvement
   on labelled crowded/contacting real arches.
+- A labelled, license-clear real-scan corpus large enough to make the production
+  gate meaningful across scanner brands, arch shapes, restorations, crowding, and
+  missing-tooth cases.
 - Full-geometry collision/IPR already exists for reviewed workspace assets; the
   next lift is stronger segmentation so more cases need less manual cleanup.
 - Regression dashboards that track metric deltas across benchmark releases.
@@ -244,9 +259,11 @@ geometry, run deterministic checks, and export models/shells with manifest and
 shell QA.
 
 The weakest link in the full "teeth scan -> automatically suggest tooth path ->
-print aligners" ambition is the middle: automatic path suggestion from a raw
-scan is not yet a production-grade, case-specific setup engine. The code has a
-clear generation hierarchy and a learned-segmentation seam, but production
-learned weights, labelled real-case validation, and longitudinal outcome data
-are not bundled. Until those exist, automatically generated plans remain
-reviewable proposals, and raw-scan-only generation is explicitly educational.
+print aligners" ambition is still the middle: automatic path suggestion from a
+raw scan is not yet a production-grade, case-specific setup engine. The code has
+a clear generation hierarchy, a learned-segmentation seam, hard segmentation
+quality gates, and a manifest path for labelled real-scan validation, but
+production learned weights, a sizeable labelled real-case corpus, and
+longitudinal outcome data are not bundled. Until those exist, automatically
+generated plans remain reviewable proposals, and raw-scan-only generation is
+explicitly educational.

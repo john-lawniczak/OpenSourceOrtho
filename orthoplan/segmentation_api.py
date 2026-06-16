@@ -35,6 +35,10 @@ from orthoplan.segmentation.cbct_prior import (
 )
 from orthoplan.segmentation.hybrid import CrossModalReport
 from orthoplan.segmentation.mesh_export import export_proposal_rows
+from orthoplan.segmentation.quality import (
+    SegmentationQualityReport,
+    evaluate_segmentation_quality,
+)
 
 
 def _resolve_scan_path(
@@ -110,22 +114,17 @@ def _segment_one_scan(
     priors_by_arch: dict[ArchName, CbctBoundaryPriors] | None = None,
 ) -> tuple[
     list[ProposedTooth], list[MeshAsset], list[SegmentedToothMesh], str | None,
-    ArchName | None, list[Vec3], CrossModalReport | None,
+    ArchName | None, list[Vec3], CrossModalReport | None, SegmentationQualityReport | None,
 ]:
-    """Segment a single scan dict. Returns (proposed, assets, links, error, arch,
-    vertices, cross_modal).
-
-    ``arch`` and ``vertices`` are surfaced so the caller can register the bite across
-    a resolved upper/lower pair without re-reading the STLs.
-    """
+    """Segment one scan and surface enough context for bite registration."""
 
     reference = scan.get("reference") or scan.get("url")
     path = _resolve_scan_path(reference, ui_dir=ui_root, workspace=workspace)
     if path is None:
-        return [], [], [], f"could not resolve scan: {reference!r}", None, [], None
+        return [], [], [], f"could not resolve scan: {reference!r}", None, [], None, None
     arch = _scan_arch(scan, path)
     if arch is None:
-        return [], [], [], f"could not determine arch for scan: {reference!r}", None, [], None
+        return [], [], [], f"could not determine arch for scan: {reference!r}", None, [], None, None
 
     _asset, vertices = read_stl_geometry(path)
     # User-marked gaps anchor the FDI labels for this arch; None lets the segmenter
@@ -138,8 +137,14 @@ def _segment_one_scan(
         tooth_values=tooth_values,
         priors=(priors_by_arch or {}).get(arch),
     )
+    expected_count = len(tooth_values) if tooth_values is not None else None
+    quality = evaluate_segmentation_quality(
+        segments,
+        arch=arch,
+        expected_tooth_count=expected_count,
+    )
     proposed, assets, links = export_proposal_rows(segments, arch=arch, workspace=workspace)
-    return proposed, assets, links, None, arch, vertices, cross_modal
+    return proposed, assets, links, None, arch, vertices, cross_modal, quality
 
 
 def _collect_segments(
@@ -153,6 +158,7 @@ def _collect_segments(
 ) -> tuple[
     list[ProposedTooth], dict[str, MeshAsset], list[SegmentedToothMesh],
     list[str], dict[ArchName, list[Vec3]], bool, dict[ArchName, CrossModalReport],
+    dict[ArchName, SegmentationQualityReport],
 ]:
     """Segment every scan, collecting proposals, assets, errors, and per-arch vertices."""
 
@@ -162,9 +168,10 @@ def _collect_segments(
     errors: list[str] = []
     arch_vertices: dict[ArchName, list[Vec3]] = {}
     cross_modal_by_arch: dict[ArchName, CrossModalReport] = {}
+    quality_by_arch: dict[ArchName, SegmentationQualityReport] = {}
     resolved_any = False
     for scan in scans:
-        rows, assets, scan_links, error, arch, vertices, cross_modal = _segment_one_scan(
+        rows, assets, scan_links, error, arch, vertices, cross_modal, quality = _segment_one_scan(
             scan, segmenter, ui_root=ui_root, workspace=workspace,
             missing_teeth=missing_teeth, priors_by_arch=priors_by_arch,
         )
@@ -180,7 +187,12 @@ def _collect_segments(
             arch_vertices[arch] = vertices
         if arch is not None and cross_modal is not None:
             cross_modal_by_arch[arch] = cross_modal
-    return proposed, assets_by_id, links, errors, arch_vertices, resolved_any, cross_modal_by_arch
+        if arch is not None and quality is not None:
+            quality_by_arch[arch] = quality
+    return (
+        proposed, assets_by_id, links, errors, arch_vertices, resolved_any,
+        cross_modal_by_arch, quality_by_arch,
+    )
 
 
 def segment_payload(
@@ -196,7 +208,7 @@ def segment_payload(
 
         segmenter = load_local_segmenter()
         priors_by_arch, prior_status = priors_from_plan_payload(payload.get("plan"))
-        proposed, assets_by_id, links, errors, arch_vertices, resolved_any, cross_modal = (
+        proposed, assets_by_id, links, errors, arch_vertices, resolved_any, cross_modal, quality = (
             _collect_segments(
                 scans, segmenter, ui_root=ui_root, workspace=workspace,
                 missing_teeth=_missing_teeth(payload), priors_by_arch=priors_by_arch,
@@ -223,13 +235,11 @@ def segment_payload(
             ],
             "teeth": [tooth.model_dump(mode="json") for tooth in proposed],
             "overall_confidence": overall,
-            # Bite registration across the two arches when BOTH were segmented in this
-            # request; null when only one arch is present. Geometric review metrics
-            # only - never a measured bite, occlusal force, or diagnosis.
             "occlusion": _occlusion_block(arch_vertices, payload),
-            # CBCT boundary-prior usage: whether registered, reviewed volume
-            # anatomy biased the cuts, and how well surface cuts agreed with it.
             "cbct_prior": prior_response_block(priors_by_arch, cross_modal, prior_status),
+            "quality_gates": {
+                arch: report.model_dump(mode="json") for arch, report in quality.items()
+            },
             "warnings": errors,
             "plan_fragment": {
                 "mesh_assets": [asset.model_dump(mode="json") for asset in assets_by_id.values()],

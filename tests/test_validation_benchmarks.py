@@ -17,6 +17,8 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
     assert "messy-shell" in components
     assert "benchmark-corpus" in components
     assert "segmentation-learned" in components
+    assert "segmentation-quality-gates" in components
+    assert "labelled-real-scan-corpus" in components
     assert "cbct-volume" in components
     assert "longitudinal-data" in components
     assert {"segmentation_dice", "segmentation_iou"} <= names
@@ -34,6 +36,10 @@ def test_validation_benchmark_harness_emits_component_metrics() -> None:
         "heuristic_segmentation_dice",
         "heuristic_manual_review_burden_proxy",
         "learned_backend_available",
+        "real_scan_reviewable_segmentation_arches",
+        "real_scan_production_candidate_arches",
+        "labelled_real_scan_cases",
+        "license_clear_labelled_real_scan_cases",
     } <= names
     assert {
         "raw_volume_proposal_roots",

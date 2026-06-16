@@ -21,6 +21,8 @@ from orthoplan.validation.benchmark_models import (
 )
 from orthoplan.validation.longitudinal_benchmark import longitudinal_case_metrics
 from orthoplan.validation.segmentation_benchmark import segmentation_maturity_metrics
+from orthoplan.validation.segmentation_quality_benchmark import segmentation_quality_gate_metrics
+from orthoplan.validation.segmentation_real_corpus import labelled_real_scan_metrics
 from orthoplan.validation.segmentation_truth import full_arch_truth, score_segmentation
 from orthoplan.validation.shell_backend import shell_backend_comparison_metrics
 from orthoplan.validation.synthetic_arch import build_synthetic_arch, realistic_widths
@@ -31,10 +33,12 @@ from orthoplan.viz.progress import build_stage_progress_frames
 def run_validation_benchmarks() -> BenchmarkReport:
     metrics: list[BenchmarkMetric] = []
     metrics.extend(_segmentation_metrics())
+    metrics.extend(segmentation_quality_gate_metrics())
     metrics.extend(_movement_metrics())
     metrics.extend(_collision_metrics())
     metrics.extend(triangle_collision_metrics())
     metrics.extend(segmentation_maturity_metrics())
+    metrics.extend(labelled_real_scan_metrics())
     metrics.extend(_shell_metrics())
     metrics.extend(_messy_shell_metrics())
     metrics.extend(_shell_backend_metrics())
