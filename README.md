@@ -177,7 +177,10 @@ CBCT/DICOM support is tiered: local record metadata intake, on-device viewing
 handoff, STL-to-CBCT registration records, reviewed anatomy representation,
 root/bone-aware checks when trusted anatomy exists, and manufacturing manifests
 that label the review tier, unresolved data gaps, and user responsibility for any
-physical use. Automated raw-volume root/bone segmentation remains future work.
+physical use. Local raw-volume sparse-mask root/bone proposals and automatic
+STL-to-CBCT registration proposals exist, but they remain untrusted until
+explicit human review/acceptance; a bundled clinical-grade CBCT segmentation
+model remains out of scope for the core install.
 
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled

@@ -5,25 +5,29 @@ Scores are engineering maturity ratings for this research toolkit, not clinical
 clearance, treatment approval, or a statement that physical use is safe.
 
 **All four surfaces below are active focus areas with a committed target of
-≥9/10.** The ordered work to reach each target lives in `TODO.md` (the
-"Order of operations to ≥9/10" section). A 10/10 is intentionally NOT a target for the geometry
-tracks: it would require material deformation, thermoforming fit, printer
-calibration, and physical validation, which this safety-boundary-first toolkit
-deliberately does not model.
+≥9/10.** `TODO.md` is the active backlog and currently has no phase-sized
+implementation item open; the remaining gap is mainly validation depth,
+production-strength optional backends, audit trails, and real-world operating
+evidence. A 10/10 is intentionally NOT a target for the geometry tracks: it would
+require material deformation, thermoforming fit, printer calibration, and
+physical validation, which this safety-boundary-first toolkit deliberately does
+not model.
 
 ## Summary
 
 | Surface | Current | Target | What the score means |
 |---------|---------|--------|----------------------|
 | Track 1: upload -> printable aligner artifacts | ~9.0/10 | ≥9/10 | Strong within the software-only scope: reviewed real geometry exports reproducible model/shell packages with real shell QA, robust-backend validation hooks, messy fixtures, and independent full-arch fixtures; physical fit/material/printer validation remains out of scope. |
-| Track 2: surface-scan staging + honest review aid | ~8.7/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, guided review UX, real-scan smoke coverage, and learned-vs-heuristic benchmark hooks are in place; the remaining weakness is broader labelled real-case validation and production learned weights. |
+| Track 2: surface-scan staging + honest review aid | ~8.8/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, guided review UX, real-scan smoke coverage, and learned-vs-heuristic benchmark hooks are in place; the remaining weakness is broader labelled real-case validation and production learned weights. |
 | Track 3: CBCT root/bone-aware planning from raw volume | ~8.4/10 | ≥9/10 | Phase 12 is implemented as a safety-gated proposal workflow: raw-volume sparse-mask proposals, auto-registration proposals, fail-closed tests, and benchmark metrics exist, but maturity is held back by caller-supplied masks, no bundled clinical-grade volume segmenter, and limited open-volume validation. |
 | Track 4: in-app AI assistant (chat) | ~8.5/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors now have bounded memory, incremental rendering, provider/model selection, PHI-share gating, and SSE streaming with fallback; provider-native stream adapters and action tooling remain. |
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
-Current rating: ~9.0/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Phase 9.1 through Phase 9.4).
+Current rating: ~9.0/10. Target: ≥9/10. The software-only target is reached for
+the implemented scope, with the important caveat that physical fit, validated
+materials, printer calibration, and clinical authorization are deliberately out
+of scope.
 
 What exists:
 
@@ -74,7 +78,7 @@ Why it is not higher:
 - Material deformation, thermoforming fit, printer calibration, support strategy,
   and physical validation remain outside the software.
 
-What reaching the ≥9/10 target requires:
+What preserving or improving the ≥9/10 target requires:
 
 - Keep the robust backend and benchmark corpus green as new shell features land.
 - Expand reviewed non-PHI real-scan validation where contributors can supply
@@ -98,6 +102,10 @@ What exists:
   crown tip, crown torque, crown angulation, and same-arch response proposals
   while failing closed without confirmed units and reviewed segmentation.
 - Auto-segmentation proposal path with human review and per-tooth mesh exports.
+- One-click plan generation chooses the best available target in this order:
+  authored movement, reviewed landmarks/space analysis, segmented per-tooth crown
+  geometry, or a clearly labelled educational template when only a raw scan is
+  loaded. The raw-scan fallback is not a tooth-specific path proposal.
 - Adjacent same-arch collision/IPR review using reviewed full-triangle geometry
   from the mesh workspace when available, with capped samples and bbox fallback.
 - Synthetic benchmarks for segmentation, movement, collision/IPR, shell
@@ -121,6 +129,10 @@ Why it is not higher:
   scanners, arch shapes, crowding patterns, and restorations.
 - Learned ONNX segmentation is wired and benchmarked, but production-quality
   weights and real-case benchmark deltas are still optional/offline expansion.
+- The current no-dependency segmenter is useful for review proposals and bundled
+  real-scan crown-count smoke tests, but it is not a production-quality automatic
+  tooth-path system: clean per-tooth crown boundaries and target setup still
+  depend on review, landmarks, or stronger optional segmentation.
 - Occlusion dynamics, bite force, periodontal status, and biological response are
   intentionally not inferred from STL surfaces.
 
@@ -135,11 +147,10 @@ What reaching the ≥9/10 target requires:
 
 ## Track 3: CBCT Root/Bone-Aware Planning From Raw Volume
 
-Current rating: ~8.4/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", Phase 12a -> 12b -> 12c). Phase 12 is implemented for the intended
+Current rating: ~8.4/10. Target: ≥9/10. Phase 12 is implemented for the intended
 safety-gated scope: raw-volume and automatic-registration outputs are proposals
 only until reviewed and explicitly accepted. The lower score reflects true layer
-maturity beyond the Phase 12 checklist: sparse masks are caller-supplied, and
+maturity beyond that shipped checklist: sparse masks are caller-supplied, and
 open-volume validation is still thin.
 
 What exists:
@@ -175,8 +186,8 @@ Why it is not higher:
 
 What reaching the ≥9/10 target requires:
 
-- No remaining Phase 12 implementation item is tracked in `TODO.md`; Phase 12a,
-  12b, and 12c are complete as the safety-gated proposal workflow.
+- No remaining Phase 12 implementation item is tracked in `TODO.md`; the
+  safety-gated proposal workflow is complete for the current scope.
 - Keep raw-volume proposal, auto-registration, and fail-closed benchmark tests
   green as the model contracts evolve.
 - Expand reviewed non-PHI/open-volume benchmark cases with clear provenance.
@@ -188,8 +199,7 @@ What reaching the ≥9/10 target requires:
 
 ## Track 4: In-App AI Assistant (Chat)
 
-Current rating: ~8.5/10. Target: ≥9/10 (ordered path: `TODO.md` "Order of
-operations", future provider/action tooling).
+Current rating: ~8.5/10. Target: ≥9/10.
 
 What exists:
 
@@ -224,3 +234,19 @@ What reaching the ≥9/10 target requires:
 - Better transcript/export audit views for provider, model, PHI-share scope, and
   request timing.
 - All safety constraints above preserved unchanged.
+
+## End-To-End Reality Check
+
+The current flow is strongest from reviewed geometry to reproducible print
+artifacts. It can ingest surface scans, propose/review segmentation, generate a
+cap-respecting staged plan from authored movement, landmarks, or reviewed crown
+geometry, run deterministic checks, and export models/shells with manifest and
+shell QA.
+
+The weakest link in the full "teeth scan -> automatically suggest tooth path ->
+print aligners" ambition is the middle: automatic path suggestion from a raw
+scan is not yet a production-grade, case-specific setup engine. The code has a
+clear generation hierarchy and a learned-segmentation seam, but production
+learned weights, labelled real-case validation, and longitudinal outcome data
+are not bundled. Until those exist, automatically generated plans remain
+reviewable proposals, and raw-scan-only generation is explicitly educational.

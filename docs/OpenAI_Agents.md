@@ -59,7 +59,8 @@ The adapter is intentionally narrow:
 
 Default model: `gpt-5.5`, based on current OpenAI model guidance checked during
 the initial scaffold on 2026-06-03 and rechecked during the 2026-06-04
-post-implementation audit.
+post-implementation audit, then spot-checked against the official OpenAI models
+docs on 2026-06-16.
 
 ## Chat Connector Use
 

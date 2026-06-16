@@ -69,8 +69,10 @@ complete.
 CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
 root/bone-aware checks once the app can ingest local DICOM metadata, record
 registration to STL, represent reviewed anatomy, and expose deterministic
-root/bone-aware findings. Automated raw-volume anatomy proposal remains a future
-optional-extra path. See [cbct-evaluation.md](cbct-evaluation.md).
+root/bone-aware findings. Local raw-volume sparse-mask anatomy proposals and
+automatic STL-to-CBCT registration proposals exist as safety-gated review packets;
+they are never trusted until deterministic checks and explicit human
+review/acceptance succeed. See [cbct-evaluation.md](cbct-evaluation.md).
 
 ## Language and Stack
 
