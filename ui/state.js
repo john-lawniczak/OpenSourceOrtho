@@ -30,6 +30,7 @@ export const state = {
   uploadStorageStatus: "",
   recordUploadStatus: "",
   caseRecords: [],
+  fixtureMeshAssets: [],
   // CBCT registration transforms and reviewed CBCT-derived anatomy. Usually
   // empty (the browser has no CBCT processing flow); populated when an imported
   // plan carries them, and mutated by the anatomy review controls.

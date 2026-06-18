@@ -22,7 +22,13 @@ import {
   setWearInterval,
   toggleExcludedTooth,
 } from "./guided.js";
-import { enterSample, exitSample, prepareSampleSegmentation, sampleActive } from "./sample.js";
+import {
+  applySampleRootBoneFixture,
+  enterSample,
+  exitSample,
+  prepareSampleSegmentation,
+  sampleActive,
+} from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { registrationActionable, requestProximity } from "./proximity.js";
 import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
@@ -362,9 +368,12 @@ document.body.addEventListener("click", (event) => {
     } else {
       enterSample();
       requestViewerRefit();
-      // Segment the bundled scans in the background so the 3D preview animates
-      // real per-tooth crowns; re-render when the draft is applied (or fails).
-      prepareSampleSegmentation().then(() => renderAll());
+      // Load the root/bone fixture first so segmentation can use CBCT boundary
+      // priors, then segment the bundled scans in the background so the preview
+      // animates real per-tooth crowns.
+      applySampleRootBoneFixture()
+        .then(() => prepareSampleSegmentation())
+        .then(() => renderAll());
     }
     renderAll();
   }

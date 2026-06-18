@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { prepareSampleSegmentation } from "./sample.js";
+import { applySampleRootBoneFixture, prepareSampleSegmentation } from "./sample.js";
 import { state } from "./state.js";
 
 // A minimal /api/segment proposal: two anterior teeth with included edits, the
@@ -33,6 +33,10 @@ function enterFakeSample() {
   state.view = "overlay";
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
   state.availability = { ...state.availability, segmented_teeth: false };
+  state.fixtureMeshAssets = [];
+  state.caseRecords = [];
+  state.registrations = [];
+  state.derivedAnatomy = null;
 }
 
 function stubFetch(payload) {
@@ -50,6 +54,31 @@ test("prepareSampleSegmentation applies the draft so per-tooth movement renders"
   assert.equal(state.availability.segmented_teeth, true);
   assert.match(state.sampleStatus, /stage slider/);
   assert.match(state.segmentation.status, /applied for you/);
+});
+
+test("applySampleRootBoneFixture loads CBCT registration and anatomy into isolated sample state", async () => {
+  enterFakeSample();
+  globalThis.fetch = async () => ({
+    ok: true,
+    json: async () => ({
+      case_records: [{ id: "cb", kind: "cbct" }],
+      mesh_assets: [{ id: "bone" }],
+      registrations: [{ id: "reg" }],
+      derived_anatomy: { roots: [{ tooth: { system: "FDI", value: "11" } }] },
+      availability_patch: { cbct: true, roots: true },
+    }),
+  });
+
+  const loaded = await applySampleRootBoneFixture();
+
+  assert.equal(loaded, true);
+  assert.equal(state.caseRecords.length, 1);
+  assert.equal(state.fixtureMeshAssets.length, 1);
+  assert.equal(state.registrations.length, 1);
+  assert.equal(state.derivedAnatomy.roots.length, 1);
+  assert.equal(state.availability.cbct, true);
+  assert.equal(state.availability.roots, true);
+  assert.match(state.recordUploadStatus, /root\/bone fixture loaded/);
 });
 
 test("prepareSampleSegmentation never applies after the sample exits mid-run", async () => {

@@ -11,6 +11,9 @@ Files:
   surfaces, with no separate bite STL present in the local export
 - `cbct-metadata.redacted.json`: redacted structural CBCT companion metadata for
   the same sample case; raw DICOM bytes are intentionally not tracked
+- `root-bone-fixture.json`: safe derived anterior root/axis landmarks, fixture
+  STL-to-CBCT registrations, and an alveolar-bounds record used to exercise the
+  root/bone-aware sample workflow without committing raw DICOM bytes
 
 These STLs are whole-arch scan shells, not segmented per-tooth meshes. They are
 the exact models used by the in-app **Sample Test Case** (and named to match it).
@@ -27,6 +30,11 @@ one secondary CT object that is not part of the primary stack. Keep the raw DICO
 series outside git unless it has been explicitly de-identified and redistribution
 rights are confirmed; this repository's plan fixtures should carry only redacted
 metadata or reviewed derived anatomy.
+
+The root/bone fixture is a deterministic engineering fixture. It is accepted by
+the app so the Sample Test Case can demonstrate the full registration,
+anatomical-frame, root/bone-review, and CBCT-boundary-prior pipeline. It is not a
+clinical segmentation, diagnosis, clearance, or treatment approval.
 
 The reference video is retained only as comparison material for the sample case.
 It is not an outcome record, not a treatment approval, and not evidence that the

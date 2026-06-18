@@ -21,7 +21,10 @@ export function planJson() {
     // Per-tooth meshes only appear once the user has reviewed and explicitly
     // applied an auto-segmentation proposal (see segment.js). Drafts are never
     // merged automatically.
-    mesh_assets: state.segmentation.applied?.mesh_assets || [],
+    mesh_assets: [
+      ...(state.fixtureMeshAssets || []),
+      ...(state.segmentation.applied?.mesh_assets || []),
+    ],
     tooth_meshes: state.segmentation.applied?.tooth_meshes || [],
     // CBCT registration + reviewed anatomy round-trip when present (e.g. an
     // imported plan/case version). The browser has no CBCT processing flow yet,

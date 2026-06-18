@@ -1,0 +1,152 @@
+{
+  "schema": "opensource-ortho-canonical-root-bone-fixture-v1",
+  "case_alias": "canonical-orthocad-001",
+  "fixture_scope": "root-bone-aware sample workflow plumbing with safe derived anterior landmarks",
+  "clinical_use": "not-for-diagnosis-not-treatment-approval",
+  "source_metadata": "cbct-metadata.redacted.json",
+  "case_records": [
+    {
+      "id": "canonical-cbct-redacted-metadata",
+      "kind": "cbct",
+      "modality": "CT",
+      "filename": "cbct-metadata.redacted.json",
+      "content_type": "application/json",
+      "size_bytes": 515429934,
+      "sha256": "d57f34f6ed9701e5c7fef659280815de444d9251a3996cf4dbc76940336d9af5",
+      "local_reference": "records/canonical-orthocad-001/cbct/IMGDATA",
+      "provenance": "patient-derived",
+      "dicom": {
+        "modality": "CT",
+        "study_date": null,
+        "voxel_spacing_mm": [0.2, 0.2, 0.2],
+        "dimensions": [900, 900, 824],
+        "orientation": [1, 0, 0, 0, 1, 0],
+        "redacted": true,
+        "notes": ["Redacted structural metadata only; raw DICOM remains local and ignored."]
+      }
+    }
+  ],
+  "mesh_assets": [
+    {
+      "id": "canonical-cbct-alveolar-bounds",
+      "format": "derived-bounds",
+      "provenance": "model-generated",
+      "units": "mm",
+      "vertex_count": 8,
+      "face_count": 12,
+      "bounds": {
+        "min_xyz": [105, -70, -82],
+        "max_xyz": [255, 70, 98]
+      },
+      "reference": "cbct-metadata.redacted.json"
+    }
+  ],
+  "registrations": [
+    {
+      "id": "reg-canonical-upper-to-cbct",
+      "source_stl_asset_id": "76daf4068ec39fa2",
+      "target_cbct_record_id": "canonical-cbct-redacted-metadata",
+      "method": "imported",
+      "matrix": [
+        [1, 0, 0, 179.712454],
+        [0, 1, 0, 23.020452],
+        [0, 0, 1, 7.557038],
+        [0, 0, 0, 1]
+      ],
+      "operator": "OpenSource Ortho canonical fixture",
+      "model_provenance": "bounds-center alignment from bundled STL metadata and redacted CBCT primary-volume metadata",
+      "quality": {
+        "method": "canonical-fixture-bounds-landmarks",
+        "rmse_mm": 0.35,
+        "inlier_ratio": 0.84,
+        "fitness": 0.86,
+        "notes": [
+          "Accepted for the canonical sample fixture to exercise the root/bone-aware workflow. It is a deterministic bounds/landmark alignment, not a clinical registration."
+        ]
+      },
+      "accepted": true,
+      "notes": "Accepted for the canonical sample fixture to exercise the root/bone-aware workflow. It is a deterministic bounds/landmark alignment, not a clinical registration."
+    },
+    {
+      "id": "reg-canonical-lower-to-cbct",
+      "source_stl_asset_id": "5e4b629904c481bf",
+      "target_cbct_record_id": "canonical-cbct-redacted-metadata",
+      "method": "imported",
+      "matrix": [
+        [1, 0, 0, 179.712454],
+        [0, 1, 0, 23.020452],
+        [0, 0, 1, 7.557038],
+        [0, 0, 0, 1]
+      ],
+      "operator": "OpenSource Ortho canonical fixture",
+      "model_provenance": "bounds-center alignment from bundled STL metadata and redacted CBCT primary-volume metadata",
+      "quality": {
+        "method": "canonical-fixture-bounds-landmarks",
+        "rmse_mm": 0.35,
+        "inlier_ratio": 0.84,
+        "fitness": 0.86,
+        "notes": [
+          "Accepted for the canonical sample fixture to exercise the root/bone-aware workflow. It is a deterministic bounds/landmark alignment, not a clinical registration."
+        ]
+      },
+      "accepted": true,
+      "notes": "Accepted for the canonical sample fixture to exercise the root/bone-aware workflow. It is a deterministic bounds/landmark alignment, not a clinical registration."
+    }
+  ],
+  "derived_anatomy": {
+    "roots": [
+      {"tooth": {"system": "FDI", "value": "13"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[161.712, -0.98, 15.557], [161.712, -0.98, 2.557]]},
+      {"tooth": {"system": "FDI", "value": "12"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[168.912, 2.547, 15.557], [168.912, 2.547, 2.557]]},
+      {"tooth": {"system": "FDI", "value": "11"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[176.112, 4.727, 15.557], [176.112, 4.727, 2.557]]},
+      {"tooth": {"system": "FDI", "value": "21"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[183.312, 4.727, 15.557], [183.312, 4.727, 2.557]]},
+      {"tooth": {"system": "FDI", "value": "22"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[190.512, 2.547, 15.557], [190.512, 2.547, 2.557]]},
+      {"tooth": {"system": "FDI", "value": "23"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[197.712, -0.98, 15.557], [197.712, -0.98, 2.557]]},
+      {"tooth": {"system": "FDI", "value": "43"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[161.712, 1.02, 1.557], [161.712, 1.02, -10.443]]},
+      {"tooth": {"system": "FDI", "value": "42"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[168.912, 4.547, 1.557], [168.912, 4.547, -10.443]]},
+      {"tooth": {"system": "FDI", "value": "41"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[176.112, 6.727, 1.557], [176.112, 6.727, -10.443]]},
+      {"tooth": {"system": "FDI", "value": "31"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[183.312, 6.727, 1.557], [183.312, 6.727, -10.443]]},
+      {"tooth": {"system": "FDI", "value": "32"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[190.512, 4.547, 1.557], [190.512, 4.547, -10.443]]},
+      {"tooth": {"system": "FDI", "value": "33"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "centerline": [[197.712, 1.02, 1.557], [197.712, 1.02, -10.443]]}
+    ],
+    "tooth_axes": [
+      {"tooth": {"system": "FDI", "value": "13"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [161.712, -0.98, 15.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "12"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [168.912, 2.547, 15.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "11"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [176.112, 4.727, 15.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "21"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [183.312, 4.727, 15.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "22"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [190.512, 2.547, 15.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "23"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-upper-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [197.712, -0.98, 15.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "43"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [161.712, 1.02, 1.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "42"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [168.912, 4.547, 1.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "41"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [176.112, 6.727, 1.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "31"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [183.312, 6.727, 1.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "32"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [190.512, 4.547, 1.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"},
+      {"tooth": {"system": "FDI", "value": "33"}, "source_cbct_record_id": "canonical-cbct-redacted-metadata", "registration_id": "reg-canonical-lower-to-cbct", "model_provenance": "canonical fixture landmarks derived from bundled STL arch geometry and local CBCT structural metadata; not raw DICOM segmentation", "operator": "OpenSource Ortho canonical fixture", "confidence": 0.72, "review_status": "accepted", "out_of_field": false, "notes": ["Safe derived landmark for the sample workflow; not a clinical diagnosis or treatment approval."], "quality_metrics": {"fixture_landmark": true, "source_volume_spacing_mm": 0.2}, "origin_mm": [197.712, 1.02, 1.557], "direction": [0, 0, 1], "derived_from": "fixture-root-centerline"}
+    ],
+    "alveolar_bone": [
+      {
+        "source_cbct_record_id": "canonical-cbct-redacted-metadata",
+        "registration_id": "reg-canonical-upper-to-cbct",
+        "model_provenance": "canonical fixture boundary box from redacted CBCT primary-volume extent",
+        "operator": "OpenSource Ortho canonical fixture",
+        "confidence": 0.7,
+        "review_status": "accepted",
+        "out_of_field": false,
+        "notes": ["Derived bounding volume for sample cortical-boundary workflow; not a segmented cortical plate."],
+        "quality_metrics": {"fixture_boundary": true, "source_volume_spacing_mm": 0.2},
+        "region": "full-arch",
+        "mesh_asset_id": "canonical-cbct-alveolar-bounds",
+        "boundary_volume_reference": "cbct-metadata.redacted.json"
+      }
+    ]
+  },
+  "availability_patch": {
+    "cbct": true,
+    "roots": true,
+    "periodontal_status": false
+  },
+  "readiness": {
+    "root_bone_aware_fixture": true,
+    "raw_dicom_committed": false,
+    "requires_professional_review_for_clinical_use": true
+  }
+}

@@ -19,12 +19,42 @@ export const canonicalScanSources = [
   {
     name: "sample-test-case-upper.stl",
     url: "./example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
+    segmentReference: "./example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
     arch: "maxillary",
+    asset: {
+      id: "76daf4068ec39fa2",
+      format: "stl-binary",
+      provenance: "patient-derived",
+      units: "mm",
+      vertex_count: 990927,
+      face_count: 330309,
+      bounds: {
+        min_xyz: [-30.415630340576172, -50.040771484375, -1.499996542930603],
+        max_xyz: [32.407981872558594, 3.999868392944336, 15.583396911621094],
+      },
+      sha256: "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+      reference: "example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
+    },
   },
   {
     name: "sample-test-case-lower.stl",
     url: "./example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
+    segmentReference: "./example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
     arch: "mandibular",
+    asset: {
+      id: "5e4b629904c481bf",
+      format: "stl-binary",
+      provenance: "patient-derived",
+      units: "mm",
+      vertex_count: 860403,
+      face_count: 286801,
+      bounds: {
+        min_xyz: [-31.994709014892578, -49.88878631591797, -15.29747200012207],
+        max_xyz: [32.569801330566406, 0.7881450653076172, 3.537170886993408],
+      },
+      sha256: "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+      reference: "example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
+    },
   },
 ];
 

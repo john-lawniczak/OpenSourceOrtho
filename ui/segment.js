@@ -33,7 +33,7 @@ export async function proposeSegmentation() {
   const seg = state.segmentation;
   if (seg.busy) return;
   const scans = state.scanSources.map((source) => ({
-    reference: source.asset?.id || source.url || source.name,
+    reference: source.segmentReference || source.asset?.id || source.url || source.name,
     arch: state.scanArch || source.arch,
   }));
   if (!scans.length) {

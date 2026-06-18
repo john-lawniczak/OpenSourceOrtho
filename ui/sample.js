@@ -21,10 +21,13 @@ import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from 
 
 // State keys the sample overwrites and therefore must save/restore.
 const SNAPSHOT_STATE_KEYS = [
-  "rows", "files", "file", "scanSources", "caseRecords", "recordUploadStatus", "useDemoMeshes", "demoInitialOffsets",
+  "rows", "files", "file", "scanSources", "caseRecords", "fixtureMeshAssets", "registrations", "derivedAnatomy",
+  "recordUploadStatus", "useDemoMeshes", "demoInitialOffsets",
   "view", "activeStep", "userMode", "scanArchFilter", "simpleGoal",
   "simpleAcknowledged", "dim", "sampleStatus", "scanRenderStatus", "availability",
 ];
+
+const ROOT_BONE_FIXTURE_URL = "./example-scans/canonical-orthocad-001/root-bone-fixture.json";
 // DOM field values the sample overwrites and must restore.
 const SNAPSHOT_FIELDS = ["planTitle", "planId", "wearInterval", "exaggeration", "scanUnits", "scanArch", "simpleGoal"];
 
@@ -74,6 +77,9 @@ export function enterSample() {
   state.useDemoMeshes = false;
   state.scanSources = canonicalScanSources;
   state.caseRecords = [];
+  state.fixtureMeshAssets = [];
+  state.registrations = [];
+  state.derivedAnatomy = null;
   state.recordUploadStatus = "";
   state.files = [];
   state.file = null;
@@ -92,8 +98,9 @@ export function enterSample() {
   state.guided.step = "upload";
   state.simpleAcknowledged = true;
   state.sampleStatus =
-    "A simulated walkthrough so you can see how a plan animates. Segmenting the bundled scans into "
-    + "individual 3D teeth on this machine (a few seconds)... Not a real patient and not a medical device.";
+    "Loading the root/bone-aware sample fixture, then segmenting the bundled scans into "
+    + "individual 3D teeth on this machine (a few seconds)... "
+    + "Not a real patient and not a medical device.";
   el("planTitle").value = "Sample test case";
   el("planId").value = "sample-test-case";
   el("wearInterval").value = "10";
@@ -103,6 +110,27 @@ export function enterSample() {
   el("exaggeration").value = "8";
   el("scanUnits").value = "mm";
   el("simpleAcknowledged").checked = true;
+}
+
+export async function applySampleRootBoneFixture() {
+  if (!state.sample.active) return false;
+  try {
+    const response = await fetch(ROOT_BONE_FIXTURE_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const fixture = await response.json();
+    if (!state.sample.active) return false;
+    state.caseRecords = fixture.case_records || [];
+    state.fixtureMeshAssets = fixture.mesh_assets || [];
+    state.registrations = fixture.registrations || [];
+    state.derivedAnatomy = fixture.derived_anatomy || null;
+    state.availability = { ...state.availability, ...(fixture.availability_patch || {}) };
+    state.recordUploadStatus =
+      "Sample root/bone fixture loaded: redacted CBCT metadata, accepted fixture registration, and safe derived landmarks.";
+    return true;
+  } catch (error) {
+    state.recordUploadStatus = `Sample root/bone fixture unavailable: ${error.message}`;
+    return false;
+  }
 }
 
 // Prepare the sample's moving teeth: run the on-device auto-segmenter on the two
@@ -134,8 +162,9 @@ export async function prepareSampleSegmentation() {
     "Sample: an auto-segmentation draft was applied for you so the 3D preview can move each tooth. "
     + "In your own plan you review and apply segmentation yourself.";
   state.sampleStatus =
-    "A simulated walkthrough: each tooth is segmented from the bundled scans, and the 3D preview "
-    + "animates the planned movement — drag the stage slider or press Play. "
+    "A simulated root/bone-aware walkthrough: each tooth is segmented from the bundled scans, "
+    + "trusted fixture axes make rotation/anatomical-frame review available, and CBCT boundary priors "
+    + "can inform segmentation. Drag the stage slider or press Play. "
     + "Not a real patient and not a medical device.";
   return true;
 }
