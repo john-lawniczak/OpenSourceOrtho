@@ -45,10 +45,14 @@ the top bar):
 
 To see a complete, isolated example, click **Sample Test Case** in the left
 sidebar: it runs the guided wizard pre-loaded with the two bundled test-case STL
-scans and a Balanced 10-day pace, starting at step 1 so you can walk the whole
-flow. The 3D preview shows the real scans with a simulated movement layer (drag
-the stage slider). It snapshots and restores your own work, so nothing leaks into
-your editors; use **Exit Sample Test Case** to return.
+scans, redacted CBCT metadata, a safe root/bone engineering fixture, and a
+Balanced 10-day pace, starting at step 1 so you can walk the whole flow. The 3D
+preview shows the real scans with sample-only per-tooth segmentation and the
+root/bone-aware fixture path: accepted fixture STL-to-CBCT registration, trusted
+derived root/axis landmarks, anatomical frames, root/bone context, and CBCT
+boundary priors. This is a workflow fixture, not clinical interpretation of raw
+CBCT. It snapshots and restores your own work, so nothing leaks into your
+editors; use **Exit Sample Test Case** to return.
 
 The Technician workflow:
 
@@ -84,6 +88,9 @@ changes. It runs on this machine (scans are PHI; nothing is sent off-device).
 The result is a **draft**: review the per-tooth confidence, correct each FDI number, include/exclude teeth, then
 **Apply accepted segmentation to plan** - nothing is auto-applied. It is not a
 diagnosis and does not indicate whether treatment is needed or possible.
+When a plan carries trusted, gate-passing CBCT-derived anatomy, the segmenter may
+also report `cbct_prior` boundary priors. These bias and score the draft cuts;
+they do not replace review.
 
 ### Generating a plan
 
@@ -94,6 +101,10 @@ plan from the best target available, in this order:
 - **Geometry-derived** - if segmented per-tooth crowns are linked, a straightening
   target is fit from their visible positions (a geometric arch-form heuristic in
   scan-local axes; not a clinical goal and not root/bone aware).
+- **Root/bone-aware context** - when registered, reviewed CBCT-derived anatomy is
+  present, evaluation adds root/bone context, anatomical frames, and proximity
+  checks. Generation still remains a proposal and never becomes clinical
+  approval.
 - **Educational template** - if only a raw scan is loaded, a generic crowding
   template is used. This is **not** derived from your teeth; tick the
   acknowledgement to confirm you understand, then generate.

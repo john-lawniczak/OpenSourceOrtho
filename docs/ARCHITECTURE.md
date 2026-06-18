@@ -67,12 +67,14 @@ complete.
 9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
 
 CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
-root/bone-aware checks once the app can ingest local DICOM metadata, record
-registration to STL, represent reviewed anatomy, and expose deterministic
-root/bone-aware findings. Local raw-volume sparse-mask anatomy proposals and
-automatic STL-to-CBCT registration proposals exist as safety-gated review packets;
-they are never trusted until deterministic checks and explicit human
-review/acceptance succeed. See [cbct-evaluation.md](cbct-evaluation.md).
+root/bone-aware checks when the app has local DICOM metadata, STL-to-CBCT
+registration, reviewed anatomy, and deterministic root/bone-aware findings.
+Local raw-volume sparse-mask anatomy proposals and automatic STL-to-CBCT
+registration proposals exist as safety-gated review packets; they are never
+trusted until deterministic checks and explicit human review/acceptance succeed.
+The canonical sample also includes a redacted CBCT metadata artifact and a safe
+root/bone engineering fixture so the UI/API can exercise the full gate sequence
+without committing raw DICOM bytes. See [cbct-evaluation.md](cbct-evaluation.md).
 
 ## Language and Stack
 
@@ -97,12 +99,15 @@ The UI is a static browser workspace under `ui/`. It opens by default into a
 guided, six-step wizard (`ui/guided.js`) for non-technical users; the dense
 Technician workspace is one toggle away. A self-contained **Sample test case**
 (`ui/sample.js`) reuses the guided wizard, pre-loaded with the bundled test-case
-STL scans, and snapshots/restores the user's working state (including any applied
-segmentation) so it stays isolated. On entry the sample also runs the on-device
-auto-segmenter on the bundled scans and applies the per-tooth draft (sample-only
-pre-applying, clearly labeled), so its 3D preview animates the scan's own crowns
-moving across stages; a user's own plan still requires explicit review + apply. The UI mirrors the Python data
-contract but does not run backend STL inspection itself.
+STL scans and the canonical root/bone fixture, and snapshots/restores the user's
+working state (including any applied segmentation) so it stays isolated. On entry
+the sample loads accepted fixture registrations and reviewed derived landmarks,
+then runs the on-device auto-segmenter on the bundled scans and applies the
+per-tooth draft (sample-only pre-applying, clearly labeled). The sample therefore
+demonstrates the scan's own crowns moving across stages plus root/bone-aware
+review tier state, anatomical frames, root/bone context, and CBCT boundary priors;
+a user's own plan still requires explicit review + apply. The UI mirrors the
+Python data contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
 local mesh workspace. Plan JSON still does not contain mesh bytes; it contains

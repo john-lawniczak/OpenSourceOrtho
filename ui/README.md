@@ -36,9 +36,10 @@ Then open `http://127.0.0.1:8000`.
 The app opens in Guided mode by default. A light/dark switch is anchored at the
 top-right of the window in every mode. The sidebar **Sample Test Case** button
 opens an isolated walkthrough that reuses the guided wizard, pre-loaded with the
-two bundled test-case STL scans; it snapshots and restores the user's working
-state, so it never replaces the normal Guided or Technician flows. The same button
-becomes **Exit Sample Test Case** while the sample is active, and the
+two bundled test-case STL scans plus the canonical redacted CBCT/root-bone
+fixture; it snapshots and restores the user's working state, so it never replaces
+the normal Guided or Technician flows. The same button becomes **Exit Sample Test
+Case** while the sample is active, and the
 Guided/Technician toggle stays available throughout so the sample can be viewed in
 either mode.
 
@@ -60,12 +61,18 @@ workflows:
 
 The Sample Test Case renders the exact bundled STL models
 (`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`). On
-entry it also runs the on-device auto-segmenter on those scans and applies the
-per-tooth draft (clearly labeled as sample-only pre-applying), so the 3D preview
-animates the scan's own crowns moving stage by stage. If segmentation fails, the
-movement layer falls back to the labeled marker/arrow display. Outside the
-sample, movement stays schematic/marker-based until the user reviews and applies
-per-tooth meshes themselves.
+entry it loads `root-bone-fixture.json` (redacted CBCT record metadata, accepted
+fixture STL-to-CBCT registrations, safe derived anterior root centerlines,
+trusted tooth axes, and an alveolar-bounds record), then runs the on-device
+auto-segmenter on those scans and applies the per-tooth draft (clearly labeled as
+sample-only pre-applying). That lets the 3D preview animate the scan's own crowns
+moving stage by stage while the engine exposes root/bone-aware review tier state,
+registration gates, trusted anatomical frames, root/bone context, and CBCT
+boundary priors. The fixture is an engineering/demo artifact, not raw CBCT
+segmentation or treatment approval. If segmentation fails, the movement layer
+falls back to the labeled marker/arrow display. Outside the sample, movement
+stays schematic/marker-based until the user reviews and applies per-tooth meshes
+themselves.
 
 The 3D viewer, AI box, and upload control are single instances relocated into the
 active surface (delegated events + id-based renders), so there is never a second
@@ -124,6 +131,17 @@ contribution). You can load them via the normal upload control to see exact
 whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
 STLs as its already-present records and renders them in an overlay view, with a
 clearly labeled tooth-movement layer animating across stages.
+
+The same folder now also contains:
+
+- `cbct-metadata.redacted.json`: structural CBCT metadata only; no raw DICOM
+  bytes, identifier values, UID values, absolute paths, or full study date.
+- `root-bone-fixture.json`: accepted fixture registrations and safe derived
+  anterior root/axis landmarks that exercise the root/bone-aware workflow.
+
+Raw CBCT/DICOM remains local-only and ignored. The root/bone fixture exists so
+tests and the UI can exercise registration, anatomical frames, root/bone review,
+and CBCT boundary priors without checking PHI-bearing DICOM into git.
 
 ## 3D viewer
 
@@ -194,6 +212,11 @@ planning needs segmentation. The Technician Review side panel **Auto-Segmentatio
   `lint_finding`), and a ready-to-merge plan fragment (`mesh_assets` +
   `tooth_meshes`). Each proposed tooth mesh is written into the local mesh
   workspace and served by `/api/mesh/<id>`.
+- When the request includes a plan with accepted, gate-passing registration and
+  trusted CBCT-derived roots/axes (as the Sample Test Case fixture does), the
+  response includes a `cbct_prior` block. These priors bias boundary placement
+  and calibrate confidence; they do not replace human review or turn a proposal
+  into a clinical segmentation.
 - The UI lets the user correct each tooth number and include/exclude teeth, then
   **explicitly** apply the accepted set; only then does `plan.js` merge it into the
   plan. It only operates on server-local scans (the Sample Test Case / example

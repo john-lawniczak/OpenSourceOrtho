@@ -187,6 +187,10 @@ What exists:
 - Synthetic volume benchmarks and fail-closed tests proving unaccepted
   registration, proposed anatomy, optional-extra absence, and rejected anatomy do
   not promote a plan to trusted root/bone-aware behavior.
+- Canonical `canonical-orthocad-001` redacted CBCT metadata and root/bone
+  engineering fixture exercise accepted registrations, trusted derived landmarks,
+  anatomical frames, root/bone review, and CBCT boundary priors without
+  committing raw DICOM bytes.
 - Proposal quality aids including connected-component cleanup, dropped-noise
   counts, field-boundary truncation flags, centerline metrics, and confidence
   notes for reviewer attention.
@@ -198,7 +202,9 @@ Why it is not higher:
 - Auto-registration remains a proposal workflow and never becomes trusted without
   explicit human acceptance.
 - Benchmarks are synthetic/open and fail-closed oriented; broader reviewed
-  open-volume cases and real-world validation remain future work.
+  open-volume cases and real-world validation remain future work. The canonical
+  root/bone fixture is a product/test harness, not clinical segmentation
+  validation.
 - Volume viewing, clinical fit guarantees, diagnosis, material response, and
   physical-use validation remain outside the core software target.
 

@@ -59,6 +59,11 @@ Each contributed dataset gets a stable, non-identifying **specimen id** of the
 form `spec-<uuid4 hex>`. This is how data is tracked and deduplicated as the
 collection grows. The first tracked specimen is the bundled OrthoCAD example at
 [`ui/example-scans/canonical-orthocad-001/manifest.json`](../ui/example-scans/canonical-orthocad-001/manifest.json).
+That same sample folder also contains tracked redacted CBCT metadata and a safe
+root/bone engineering fixture. Those companion files are not a substitute for
+contributed raw DICOM; they show the preferred public-repo pattern: keep raw
+DICOM local/ignored unless it is explicitly de-identified and shareable, and
+commit only redacted metadata or reviewed/safe derived anatomy.
 
 Use the CLI to create the id. Do not invent an id from a name, initials, email,
 birth date, appointment date, chart number, or scanner-office label. Once a case
@@ -85,6 +90,8 @@ datasets/
     final-lower.stl
     plan-summary.json             # optional but strongly preferred
     outcome-notes.md              # optional, no PHI
+    cbct-metadata.redacted.json    # optional, no raw DICOM or identifiers
+    root-bone-fixture.json         # optional reviewed/safe derived anatomy
 ```
 
 Use these filename labels so future tooling can parse the case consistently:
@@ -98,6 +105,8 @@ Use these filename labels so future tooling can parse the case consistently:
 | `final-upper.stl` / `final-lower.stl` | Post-treatment or latest available result scan pair. |
 | `plan-summary.json` | Non-proprietary summary of intended movement and controls. |
 | `outcome-notes.md` | Plain-language, non-identifying notes about tracking/refinements/results. |
+| `cbct-metadata.redacted.json` | Optional structural CBCT metadata only; no pixel bytes, identifier values, absolute paths, UID values, or full dates. |
+| `root-bone-fixture.json` | Optional reviewed or safe derived anatomy and registration records; not raw DICOM. |
 
 If you only have one scan pair, use `initial-upper.stl` and `initial-lower.stl`.
 If you only have one arch, keep the same label style (`initial-upper.stl`, for

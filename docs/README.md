@@ -8,7 +8,7 @@ This directory holds the project docs that should evolve with the product.
 - [application maturity.md](application%20maturity.md) - 10-point maturity tracking for the four application surfaces
 - [ARCHITECTURE.md](ARCHITECTURE.md) - plain-language system flow and technical layout
 - [MOBILE.md](MOBILE.md) - mobile architecture, STL-only fallback, and browser handoff progress
-- [cbct-evaluation.md](cbct-evaluation.md) - CBCT/DICOM safety-review tiers and roadmap
+- [cbct-evaluation.md](cbct-evaluation.md) - CBCT/DICOM safety-review tiers, shipped gates, and remaining roadmap
 - [UI_DESIGN.md](UI_DESIGN.md) - visualization and interface accuracy contract
 - [MAINTAINABILITY.md](MAINTAINABILITY.md) - composability, code hygiene, and file-size guardrails
 - [OPEN_SOURCE_REFERENCES.md](OPEN_SOURCE_REFERENCES.md) - open-source dependencies and proprietary reference boundaries

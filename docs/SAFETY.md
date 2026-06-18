@@ -37,6 +37,12 @@ as reviewed anatomy, and accepted by the relevant feature gate, root/bone-aware
 checks must remain unavailable or explicitly marked as unassessed. CBCT presence
 alone does not mean the volume was interpreted or that a plan is suitable.
 
+The bundled `canonical-orthocad-001` root/bone fixture is an engineering fixture
+used to exercise this gate sequence in the UI and tests. It uses redacted CBCT
+metadata and safe derived anterior landmarks; it is not a clinical CBCT
+segmentation, diagnosis, clearance, treatment approval, or evidence that raw
+DICOM can be committed.
+
 Per-tooth local frames (`ToothLocalFrame`) derived from crown-surface PCA are approximate
 metadata only: their axes are ordered by geometric variance, not anatomy, and they do not
 represent mesiodistal/buccolingual/long axes or root direction. PCA frames do not authorize
@@ -51,7 +57,9 @@ Intraoral STL scans and CBCT/DICOM volumes are patient-derived data. The toolkit
 - strips directory structure and rejects absolute paths and parent-directory traversal,
   because export paths can embed patient names or DOB
 - treats scan units as unverified until the user confirms them
-- should treat DICOM metadata as PHI-bearing when CBCT ingestion is added
+- treats DICOM metadata as PHI-bearing; the canonical CBCT source files are kept
+  local/ignored because identifier tags are present, while tracked fixtures carry
+  only redacted structural metadata or safe derived landmarks
 
 Retention and deletion guarantees are out of scope for Phase 1 and are the responsibility of
 the deploying party; this is noted here so it is not mistaken for a solved problem.

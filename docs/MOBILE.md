@@ -32,7 +32,8 @@ The browser/Python workspace remains the source of truth for high-fidelity work:
 
 - STL registration into the mesh workspace
 - auto/manual segmentation into per-tooth meshes
-- CBCT/DICOM ingestion and registration once that roadmap ships
+- CBCT/DICOM ingestion, registration, reviewed anatomy, and root/bone-aware
+  checks
 - deterministic generation and correctness checks
 - print package generation from engine outputs
 - versioned case review and plan changes
@@ -66,12 +67,15 @@ Both native apps share the same policy:
 - Done: iOS and Android scan-backed STL preview in the Generate/Teeth step.
 - Done: expanded mobile glossary and browser-style mouth map work.
 - Done: shared docs and API contract language for the mobile boundary.
+- Done: browser/full-engine canonical root/bone fixture for the Sample Test Case
+  (mobile may import its review JSON, but does not synthesize that workflow).
 - Next: durable on-device review library with rename/delete.
 - Next: engine-backed STL byte registration from mobile.
 - Next: case handoff link/QR/deep-link between browser workspace and device.
 - Next: per-tooth mesh preview using `GET /api/mesh/<id>` after segmentation.
-- Later: CBCT/DICOM display or annotation only after the engine contracts for
-  ingestion, registration, reviewed anatomy, and quality metrics exist.
+- Later: CBCT/DICOM display or annotation in mobile only after it can preserve
+  the browser/full-engine registration, reviewed-anatomy, quality, and privacy
+  contracts.
 
 ## Safety Rule
 

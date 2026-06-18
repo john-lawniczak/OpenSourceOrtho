@@ -4,8 +4,12 @@
 > review-gated registration proposals, and local sparse-mask root/bone proposals
 > are shipped. Raw-volume proposals now include connected-component cleanup,
 > field-boundary truncation flags, centerline/voxel quality metrics, and
-> synthetic fail-closed benchmarks. A full clinical-grade segmentation model and
-> volume viewer remain out of scope for the core install.
+> synthetic fail-closed benchmarks. The canonical sample now includes redacted
+> CBCT structural metadata plus an engineering root/bone fixture that exercises
+> accepted STL-to-CBCT registrations, trusted derived landmarks, anatomical
+> frames, root/bone review, and CBCT boundary priors without committing raw
+> DICOM bytes. A full clinical-grade segmentation model and volume viewer remain
+> out of scope for the core install.
 
 ## Local DICOM metadata intake (shipped)
 
@@ -28,6 +32,19 @@ CBCT lifecycle status (`unavailable` -> `attached` -> `registered` ->
 `anatomy-reviewed`) is fail-closed: an attachment stays `attached` until accepted
 registration and reviewed anatomy exist, and a CBCT attachment never changes
 movement generation on its own.
+
+The bundled `canonical-orthocad-001` sample carries two CBCT companion artifacts:
+
+- `cbct-metadata.redacted.json`: structural metadata for a local 824-slice
+  primary CT stack plus one documented secondary CT object. It records counts,
+  hashes, spacing, dimensions, orientation, and source identifier-tag presence,
+  but not raw DICOM bytes, identifier values, absolute paths, DICOM UID values,
+  or a full study date.
+- `root-bone-fixture.json`: a deterministic engineering fixture with accepted
+  sample STL-to-CBCT registrations, PASS quality metrics, safe derived anterior
+  root centerlines, trusted tooth axes, and an alveolar-bounds record. It is
+  accepted by the app to exercise the root/bone-aware workflow and test gates,
+  not to claim clinical interpretation of the local CBCT.
 
 OpenSource Ortho's product direction is a safety-boundary-first clear-aligner
 planning playground and research toolkit. It can model staged geometry and
@@ -139,6 +156,12 @@ Verdicts are surfaced per registration in the evaluate payload
 (`registration.gate`) and the CBCT workflow panel. Thresholds are geometric
 review heuristics, never clinical acceptance criteria.
 
+Canonical fixture: `ui/example-scans/canonical-orthocad-001/root-bone-fixture.json`
+contains accepted imported registrations for the bundled upper/lower STLs. The
+fixture metrics PASS the numeric gate so the sample and tests can exercise the
+root/bone-aware pipeline. The transform is documented as deterministic
+bounds/landmark alignment, not clinical ICP or professional registration.
+
 ## Phase 4: Reviewable Anatomy Segmentation
 
 Goal: represent CBCT-derived anatomy as explicit, editable objects.
@@ -165,6 +188,11 @@ touch the CBCT field boundary as out-of-field, and recording quality metrics suc
 as voxel counts, component counts, retained/dropped components, centerline length,
 and boundary voxel counts. These metrics are review aids only; they do not make
 raw-volume anatomy trusted without human acceptance/correction.
+
+The canonical root/bone fixture uses the same reviewed-anatomy contract, but its
+landmarks are safe derived engineering records, not raw DICOM segmentation. This
+keeps the public sample useful for UI/API validation while preserving the
+privacy boundary around the local CBCT files.
 
 Segmentation models, weights, and datasets require the same license discipline as
 the learned crown segmenter: code license, weight license, and dataset license are

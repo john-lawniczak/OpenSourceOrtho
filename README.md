@@ -143,7 +143,8 @@ The software may:
 
 - represent proposed tooth movements and staged aligner-style plans
 - import, export, and visualize dental mesh data
-- attach and visualize CBCT/DICOM records when that roadmap phase ships
+- attach CBCT/DICOM records as local context and consume reviewed, registered
+  CBCT-derived anatomy through explicit safety gates
 - check internal consistency against user-configured movement caps
 - surface observational findings, data gaps, and handoff questions
 - rank missing data by deterministic acquisition impact
@@ -184,13 +185,18 @@ model remains out of scope for the core install.
 
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
-test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), and starts at
-step 1 so you can walk the whole flow. The 3D preview renders the real scans and
-clearly labels whether staged movement is schematic/marker-based or backed by
-reviewed per-tooth STL fragments. Drag the stage slider, or use **Play**, to watch
-the planned movement across stages. Use the on-screen **＋ / ⌂ / −** controls (or
-scroll/drag) to zoom and orbit, the **Tooth #** toggle to label teeth, and **Exit
-Sample Test Case** to return - your own work is untouched.
+test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), the redacted
+CBCT companion metadata, and a safe root/bone engineering fixture. It starts at
+step 1 so you can walk the whole flow. The 3D preview renders the real scans,
+pre-applies a sample-only segmentation draft, and demonstrates what changes when
+a plan carries accepted fixture STL-to-CBCT registrations, trusted derived root
+centerlines/tooth axes, an alveolar-bounds record, and CBCT boundary priors. The
+fixture is for workflow validation only: raw DICOM bytes are not committed, and
+the derived landmarks are not a clinical segmentation, diagnosis, clearance, or
+treatment approval. Drag the stage slider, or use **Play**, to watch the planned
+movement across stages. Use the on-screen **＋ / ⌂ / −** controls (or scroll/drag)
+to zoom and orbit, the **Tooth #** toggle to label teeth, and **Exit Sample Test
+Case** to return - your own work is untouched.
 
 In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
 ask educational questions about the active plan. The default local helper stays on

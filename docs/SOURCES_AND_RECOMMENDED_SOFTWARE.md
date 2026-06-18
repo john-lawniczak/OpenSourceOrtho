@@ -25,7 +25,7 @@ Last recorded source review: 2026-06-13.
 | Open3D MIT note | https://www.open3d.org/ | Optional `mesh-processing` dependency for local geometry/segmentation experiments. | License, Python API changes, mesh registration and visualization features. |
 | PyVista MIT note | https://pyvista.org/ | Candidate Python visualization layer. | License, VTK compatibility, web/desktop rendering options. |
 | VTK BSD-3-Clause note | https://github.com/Kitware/VTK | Mature scientific visualization backend reference/dependency. | License, Python packaging, rendering features. |
-| pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Candidate optional dependency for planned CBCT/DICOM ingestion. | License, API changes, DICOM parsing/security guidance. |
+| pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Optional `dicom` extra for local CBCT/DICOM structural metadata parsing. | License, API changes, DICOM parsing/security guidance. |
 | Clear aligner staging reference | https://pmc.ncbi.nlm.nih.gov/articles/PMC8388591/ | Literature reference for conservative movement-cap heuristics. | Updated literature, movement efficacy estimates, limitations. |
 | Clear aligner staging reference | https://www.mdpi.com/2076-3417/14/15/6690 | Literature reference for movement planning and aligner biomechanics. | Updated review data, staging recommendations, limitations. |
 
@@ -62,8 +62,10 @@ SlicerCMF
 
 pydicom
 
-- Use when DICOM/CBCT import enters the contract-and-ingestion milestone.
-- Keep DICOM IO in `orthoplan/io`.
+- Use for local DICOM/CBCT structural metadata parsing only; keep pixel bytes out
+  of plan JSON.
+- Keep DICOM IO in `orthoplan/io` / `orthoplan.dicom_intake` and preserve the
+  `stop_before_pixels=True` pattern.
 
 ### Commercial Workflow References
 

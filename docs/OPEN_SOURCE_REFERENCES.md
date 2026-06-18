@@ -41,7 +41,8 @@ PyVista / VTK
 pydicom
 
 - MIT-licensed Python DICOM library
-- candidate optional dependency for the planned CBCT/DICOM ingestion milestone
+- optional `dicom` extra used for local CBCT/DICOM structural metadata intake
+  with `stop_before_pixels=True`
 
 Three.js
 
@@ -79,7 +80,10 @@ MeshLab / CloudCompare
 - **Trademarks**: "Invisalign", "ClinCheck", and "SmartTrack" are trademarks. Use them only as
   nominative references in prose, never in code identifiers, UI labels, or product naming.
 - **Sample datasets**: STL/CBCT sample scans often carry patient-consent or dataset licenses.
-  Phase 1 uses synthetic fixtures only; do not check in third-party patient scans.
+  The canonical sample tracks STL shells plus redacted CBCT metadata and safe
+  derived root/bone landmarks; raw DICOM remains local/ignored because source
+  identifier tags are present. Do not check in third-party or PHI-bearing patient
+  scans without de-identification and redistribution rights.
 
 ## Source Links To Recheck During Implementation
 
