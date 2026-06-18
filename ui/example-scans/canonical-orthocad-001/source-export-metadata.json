@@ -1,0 +1,36 @@
+{
+  "schema": "opensource-ortho-source-export-metadata-v1",
+  "source": {
+    "export_format": "iTeroExport",
+    "export_versions_seen": ["3.0", "5.0"],
+    "case_type_seen": "Invisalign + iRecord",
+    "procedure_seen": "Study Model / iRecord",
+    "phi_redacted": true
+  },
+  "exported_surfaces": [
+    {
+      "source_filename": "308806025_shell_occlusion_u.stl",
+      "repo_filename": "sample-test-case-upper.stl",
+      "object_type": "Surface",
+      "sub_type": "Jaw",
+      "jaw_id": "Upper",
+      "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166"
+    },
+    {
+      "source_filename": "308806025_shell_occlusion_l.stl",
+      "repo_filename": "sample-test-case-lower.stl",
+      "object_type": "Surface",
+      "sub_type": "Jaw",
+      "jaw_id": "Lower",
+      "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72"
+    }
+  ],
+  "occlusion_registration": {
+    "separate_bite_or_registration_stl_present": false,
+    "note": "The local iTero export lists only upper and lower jaw surface STLs with shell_occlusion filenames. No distinct bite/occlusion-registration mesh file was present in the export folder.",
+    "actual_used_transforms": [
+      [-1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+      [-1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    ]
+  }
+}

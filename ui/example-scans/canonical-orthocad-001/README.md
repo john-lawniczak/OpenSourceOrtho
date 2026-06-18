@@ -6,6 +6,9 @@ Files:
 - `sample-test-case-cliniccheck-reference.mp4`: cropped/debranded reference
   simulation associated with the same source STL pair
 - `reference-media.json`: non-clinical metadata for the reference video
+- `source-export-metadata.json`: redacted source-export metadata showing that
+  the sample STLs correspond to the iTero `shell_occlusion` upper/lower jaw
+  surfaces, with no separate bite STL present in the local export
 
 These STLs are whole-arch scan shells, not segmented per-tooth meshes. They are
 the exact models used by the in-app **Sample Test Case** (and named to match it).
