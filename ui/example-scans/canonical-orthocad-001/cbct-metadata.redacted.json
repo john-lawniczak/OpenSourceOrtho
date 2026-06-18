@@ -1,0 +1,101 @@
+{
+  "schema": "opensource-ortho-redacted-cbct-metadata-v1",
+  "case_alias": "canonical-orthocad-001",
+  "purpose": "Gold-standard local CBCT companion metadata for the bundled canonical sample case.",
+  "raw_dicom_policy": {
+    "raw_dicom_committed": false,
+    "reason": "The source DICOM series is large and contains patient/study identifier tags. Only redacted structural metadata belongs in tracked fixtures unless the raw data is separately de-identified and redistribution rights are confirmed.",
+    "identifier_values_retained": false,
+    "absolute_local_paths_retained": false,
+    "dicom_uid_values_retained": false,
+    "full_study_date_retained": false
+  },
+  "source_inventory": {
+    "dicom_file_count": 825,
+    "total_size_bytes": 515429934,
+    "series_count": 2,
+    "series_tree_sha256": "d57f34f6ed9701e5c7fef659280815de444d9251a3996cf4dbc76940336d9af5",
+    "first_file_sha256": "4a06176b4b53afd10d6dc4f2bfc146ab7c229bf872f09b8f2527502fb9d7c361"
+  },
+  "primary_volume": {
+    "series_label": "primary-volume",
+    "dicom_file_count": 824,
+    "modality": "CT",
+    "sop_class": "ct-image-storage",
+    "rows": 900,
+    "columns": 900,
+    "frames_per_file": 1,
+    "pixel_spacing_mm": [
+      0.2,
+      0.2
+    ],
+    "slice_thickness_mm": 0.2,
+    "orientation": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    "image_position_bounds": {
+      "min_xyz": [
+        90.0,
+        -90.0,
+        -74.6
+      ],
+      "max_xyz": [
+        90.0,
+        -90.0,
+        90.0
+      ]
+    },
+    "instance_number_min_max": [
+      1,
+      824
+    ],
+    "missing_instance_count": 0,
+    "z_step_mm_values": [
+      0.2
+    ],
+    "completeness": "contiguous-axial-stack"
+  },
+  "secondary_objects": [
+    {
+      "series_label": "secondary-ct-object",
+      "dicom_file_count": 1,
+      "modality": "CT",
+      "sop_class": "ct-image-storage",
+      "rows": 256,
+      "columns": 256,
+      "frames_per_file": 1,
+      "pixel_spacing_mm": [
+        0.0,
+        0.0
+      ],
+      "slice_thickness_mm": 0.2,
+      "orientation": null,
+      "instance_number_min_max": [
+        1,
+        1
+      ],
+      "notes": "Single secondary CT object with zero pixel spacing and no orientation; do not treat as part of the primary contiguous volume."
+    }
+  ],
+  "source_identifier_tag_presence_counts": {
+    "AccessionNumber": 824,
+    "PatientBirthDate": 824,
+    "PatientID": 825,
+    "PatientName": 825
+  },
+  "readiness": {
+    "enough_for_local_volume_loading": true,
+    "enough_for_registered_root_bone_gold_standard": false,
+    "missing_for_root_bone_gold_standard": [
+      "de-identified or redistributable volume bytes",
+      "accepted STL-to-CBCT registration transform and quality gate",
+      "reviewed derived tooth/root/bone anatomy",
+      "professional review attestation for any anatomy used by tests"
+    ]
+  }
+}

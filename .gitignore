@@ -9,6 +9,8 @@ build/
 *.egg-info/
 .orthoplan-meshes/
 .orthoplan-cases.json
+ui/example-scans/canonical-orthocad-001/local-cbct-record.json
+ui/example-scans/canonical-orthocad-001/records/
 
 # Local working notes and personal dev workflow - kept out of the public repo.
 TODO.md
