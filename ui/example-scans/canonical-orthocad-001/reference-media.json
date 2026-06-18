@@ -1,0 +1,33 @@
+{
+  "schema": "opensource-ortho-reference-media-v1",
+  "media": [
+    {
+      "filename": "sample-test-case-cliniccheck-reference.mp4",
+      "sha256": "98827b46e66131f6d1cfa9e5745461d78b233ccb2f3549c5187b958334db8d57",
+      "role": "external-treatment-simulation-reference",
+      "source_note": "Debranded/cropped local ClinCheck-style simulation matching the canonical sample STLs by source STL hash.",
+      "processing": {
+        "trimmed_intro_seconds": 1,
+        "crop": "1280:650:0:0",
+        "visible_brand_footer_removed": true
+      },
+      "video": {
+        "duration_seconds": 19.5,
+        "width": 1280,
+        "height": 650,
+        "fps": 2,
+        "stage_count_observed": 38
+      },
+      "observations": [
+        "Frontal-only staged simulation.",
+        "Shows anterior crowding/rotation correction with attachments and visible IPR labels.",
+        "Useful for sample-case comparison and model-development notes, not a clinical approval or outcome record."
+      ],
+      "limitations": [
+        "No side or occlusal views retained in this media file.",
+        "No root, bone, periodontal, radiographic, or outcome-scan evidence.",
+        "Third-party treatment-planning simulation; redistribution rights must be confirmed before public data sharing."
+      ]
+    }
+  ]
+}
