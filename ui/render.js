@@ -9,8 +9,6 @@ import {
 } from "./state.js";
 import {
   archFromTooth,
-  confidenceTier,
-  countNoteMarkup,
   createLatest,
   escapeHtml,
   framePoseTotals,
@@ -22,10 +20,13 @@ import { planJson } from "./plan.js";
 import { renderGuided, toggleExcludedTooth } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 import { CONTROL_AXES, CONTROL_STEPS, controlGate } from "./direct_controls.js";
-import { parseMissingTeeth } from "./segment.js";
 import { formatScaleStatus } from "./scale.js";
 import { registeredOffsetForViewer } from "./proximity.js";
 import { renderSetupCompare, scheduleSetupCompare } from "./setup_compare.js";
+import { renderSegmentation } from "./segmentation_render.js";
+import { renderPrintExport } from "./print_export.js";
+import { renderTrustStatus } from "./trust_status.js";
+import { renderAnatomyReview } from "./anatomy_render.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -327,6 +328,7 @@ export function renderAll() {
   renderScale();
   renderCbctWorkflow();
   renderMovementFidelity();
+  renderTrustStatus(el("trustStatusStrip"), state);
   renderStagePlayback();
   renderSampleStatus();
   renderSegmentation();
@@ -886,7 +888,7 @@ function renderEvaluation(result) {
     pendingRefit = false;
     ensureViewer()?.recenter();
   }
-  renderPrintExport(result.print_export);
+  renderPrintExport(el("printExportStatus"), result.print_export);
   renderOptimizedStaging(result.optimized_staging);
   renderDownloadActions();
 }
@@ -968,51 +970,6 @@ function registrationMarkup(registration) {
     <p class="review-tier-note">Registration${registration.ready ? " (accepted, quality-backed)" : " (not yet usable)"}:</p>
     <ul>${rows}</ul>
   `;
-}
-
-const ANATOMY_GROUP_LABELS = {
-  roots: "Root geometry",
-  tooth_axes: "Tooth axis",
-  alveolar_bone: "Alveolar bone",
-};
-
-function renderAnatomyReview(anatomy) {
-  const panel = el("anatomyPanel");
-  const list = el("anatomyReviewList");
-  if (!panel || !list) return;
-  const groups = ["roots", "tooth_axes", "alveolar_bone"];
-  const total = anatomy ? groups.reduce((n, g) => n + (anatomy[g]?.length || 0), 0) : 0;
-  if (!anatomy || total === 0) {
-    panel.hidden = true;
-    list.innerHTML = "";
-    return;
-  }
-  panel.hidden = false;
-  const sections = groups.map((group) => {
-    const items = anatomy[group] || [];
-    return items.map((item, index) => anatomyRowMarkup(group, index, item)).join("");
-  }).join("");
-  const trustNote = anatomy.has_trusted
-    ? "At least one object is trusted (reviewed and in field)."
-    : "No object is trusted yet - root/bone-aware checks stay unavailable (fail-closed).";
-  list.innerHTML = `<p class="review-tier-note">${escapeHtml(trustNote)}</p>${sections}`;
-}
-
-function anatomyRowMarkup(group, index, item) {
-  const label = ANATOMY_GROUP_LABELS[group] || group;
-  const tooth = item.tooth?.value ? ` ${item.tooth.value}` : "";
-  const conf = item.confidence != null ? ` · conf ${Number(item.confidence).toFixed(2)}` : "";
-  const flags = [
-    item.trusted ? "trusted" : "not trusted",
-    item.out_of_field ? "out of field" : null,
-  ].filter(Boolean).join(" · ");
-  const btn = (status, text) => `<button data-anatomy-review="${status}" data-anatomy-group="${group}" data-anatomy-index="${index}" type="button">${text}</button>`;
-  return `
-    <div class="segment-row anatomy-row" data-status="${escapeHtml(item.review_status)}">
-      <span><strong>${escapeHtml(label)}${escapeHtml(tooth)}</strong> · ${escapeHtml(item.review_status)}${escapeHtml(conf)}</span>
-      <small>${escapeHtml(flags)}</small>
-      <span class="anatomy-actions">${btn("accepted", "Accept")}${btn("corrected", "Correct")}${btn("rejected", "Reject")}</span>
-    </div>`;
 }
 
 function dataGapMarkup(result) {
@@ -1148,59 +1105,6 @@ function renderSampleStatus() {
     launch.textContent = state.sample.active ? "Exit Sample Test Case" : "Sample Test Case";
     launch.classList.toggle("is-active-sample", state.sample.active);
   }
-}
-
-function renderSegmentation() {
-  const seg = state.segmentation;
-  const status = el("segmentStatus");
-  if (!status) return; // segment panel not present (e.g. trimmed markup)
-  status.textContent = seg.busy ? "Working..." : "";
-  el("proposeSegment").disabled = seg.busy;
-
-  const proposal = seg.proposal;
-  el("segmentFindings").innerHTML = proposal?.advisory_findings?.length
-    ? proposal.advisory_findings
-        .map((f) => `<li>${escapeHtml(f.title)}: ${escapeHtml(f.message)}</li>`)
-        .join("")
-    : "";
-
-  const reanchor = el("reanchorSegment");
-  const list = el("segmentList");
-  if (!proposal?.teeth?.length) {
-    list.innerHTML = seg.status ? `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` : "";
-    el("applySegment").hidden = true;
-    el("segmentApplied").textContent = "";
-    if (reanchor) reanchor.hidden = true;
-    return;
-  }
-  if (reanchor) {
-    reanchor.hidden = false;
-    reanchor.disabled = seg.busy;
-  }
-  const markedGapCount = parseMissingTeeth(seg.missingTeeth).length;
-  list.innerHTML =
-    `<p class="viewer-caveat">${escapeHtml(seg.status)}</p>` +
-    countNoteMarkup(proposal.teeth, markedGapCount) +
-    proposal.teeth.map(segmentRowMarkup).join("");
-  el("applySegment").hidden = false;
-  el("segmentApplied").textContent = seg.applied
-    ? `Applied: ${seg.applied.tooth_meshes.length} tooth mesh(es) merged into the plan (draft).`
-    : "Not applied yet.";
-}
-
-function segmentRowMarkup(tooth) {
-  const edit = state.segmentation.edits[tooth.mesh_asset_id] || { tooth: tooth.tooth, included: true };
-  const pct = Math.round((tooth.confidence || 0) * 100);
-  const tier = confidenceTier(pct);
-  const review = tier === "low" ? "Review" : "";
-  return `
-    <div class="segment-row">
-      <input type="checkbox" data-segment-include="${escapeHtml(tooth.mesh_asset_id)}" ${edit.included ? "checked" : ""} aria-label="Include this tooth" />
-      <input class="segment-tooth" data-segment-tooth="${escapeHtml(tooth.mesh_asset_id)}" value="${escapeHtml(edit.tooth)}" maxlength="2" aria-label="FDI tooth number" />
-      <span class="segment-arch">${escapeHtml(tooth.arch)}</span>
-      <span class="segment-conf" data-tier="${tier}"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
-      <span class="segment-conf-num" data-tier="${tier}">${pct}%${review ? ` · ${review}` : ""}</span>
-    </div>`;
 }
 
 // Manual target authoring panel. The user clicks a tooth in the 3D preview and
@@ -1346,60 +1250,6 @@ function renderMovementReadiness() {
       ${items.map(([label, ok]) => `<li data-ok="${ok ? "1" : "0"}">${ok ? "✓" : "○"} ${escapeHtml(label)}</li>`).join("")}
     </ul>
   `;
-}
-
-function renderPrintExport(status) {
-  if (!status) {
-    el("printExportStatus").innerHTML = "";
-    return;
-  }
-  const blockers = status.blockers?.length
-    ? `<ul>${status.blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : "<p>Print package inputs are complete for export.</p>";
-  const artifacts = status.artifacts?.length
-    ? `<p>${escapeHtml(status.artifacts.map((item) => item.filename).join(", "))}</p>`
-    : "";
-  el("printExportStatus").innerHTML = `
-    <p><strong>${status.ready ? "Inputs complete" : "Inputs incomplete"}</strong></p>
-    ${blockers}
-    ${printReadiness(status.manufacturing_readiness)}
-    ${printShellQa(status.shell_qa_findings)}
-    ${printTolerances(status.printer_tolerances)}
-    ${artifacts}
-    <p>${escapeHtml(status.model_material)}</p>
-    <p>${escapeHtml(status.thermoforming_material)}</p>
-    <p>${escapeHtml(status.caveat)}</p>
-  `;
-}
-
-function printVerdictClass(verdict) {
-  if (verdict === "CONSISTENT") return "qa-ok";
-  if (verdict === "ISSUES") return "qa-issue";
-  return "qa-na";
-}
-
-function printReadiness(readiness) {
-  if (!readiness?.verdict) return "";
-  const reason = readiness.reason ? ` — ${escapeHtml(readiness.reason)}` : "";
-  return `<p class="print-qa-readiness ${printVerdictClass(readiness.verdict)}">`
-    + `<strong>Manufacturing readiness: ${escapeHtml(readiness.verdict)}</strong>${reason}</p>`;
-}
-
-function printShellQa(findings) {
-  if (!Array.isArray(findings) || findings.length === 0) return "";
-  const items = findings
-    .map((finding) => `<li class="${printVerdictClass(finding.verdict)}">`
-      + `${escapeHtml(finding.verdict)}: ${escapeHtml(finding.message)}</li>`)
-    .join("");
-  return `<ul class="print-qa-findings">${items}</ul>`;
-}
-
-function printTolerances(tolerances) {
-  if (!tolerances) return "";
-  const fmt = (value) => (Number.isFinite(Number(value)) ? Number(value).toFixed(2) : "—");
-  return `<p class="print-qa-tolerances">Printer compensation: `
-    + `XY ${fmt(tolerances.xy_compensation_mm)} mm, Z ${fmt(tolerances.z_compensation_mm)} mm · `
-    + `min feature ${fmt(tolerances.minimum_printable_feature_mm)} mm.</p>`;
 }
 
 function renderOptimizedStaging(status) {

@@ -30,12 +30,14 @@ test("guidedReviewDashboard surfaces edit diffs and warnings", () => {
     [{ stage: 1, tooth: "11", x: 0.4, y: 0.3, z: 0, tip: 0, torque: 0, rotation: 0 }],
   );
 
-  assert.equal(dashboard.verdict, "cannot-assess");
+  assert.equal(dashboard.verdict, "needs-review");
   assert.equal(dashboard.cards[0].value, "1 tooth change(s)");
   assert.match(dashboard.cards[0].detail[0], /Tooth 11: 0\.5 mm/);
   assert.equal(dashboard.cards[1].status, "needs-review");
+  assert.deepEqual(dashboard.cards[1].detail, ["Movement caps: 1"]);
   assert.ok(dashboard.highlights.includes("Movement cap markers"));
   assert.ok(dashboard.highlights.includes("Root/bone unavailable badge"));
+  assert.ok(!dashboard.highlights.includes("Print readiness badge"));
 });
 
 test("guidedReviewDashboard does not count info/notice findings as warnings", () => {
@@ -114,4 +116,27 @@ test("guidedReviewDashboard reports ready when checks and print readiness pass",
   assert.equal(dashboard.cards[1].value, "No findings");
   assert.equal(dashboard.cards[2].value, "Trusted anatomy");
   assert.equal(dashboard.cards[3].status, "ready");
+});
+
+test("disabled print export does not downgrade plan-review verdict", () => {
+  const dashboard = guidedReviewDashboard(
+    {
+      scale_confirmed: true,
+      timeline: { stage_count: 2 },
+      review_tier: { label: "Root/bone-aware review", root_bone_aware: true },
+      root_bone_review: { verdict: "CONSISTENT" },
+      findings: [],
+      print_export: {
+        ready: false,
+        blockers: ["print export is disabled"],
+        manufacturing_readiness: { verdict: "NOT_APPLICABLE", reason: "disabled" },
+      },
+    },
+    [],
+  );
+
+  assert.equal(dashboard.verdict, "ready");
+  assert.equal(dashboard.label, "Plan checks reviewed");
+  assert.match(dashboard.summary, /Print readiness is reported separately/);
+  assert.equal(dashboard.cards[3].value, "NOT_APPLICABLE");
 });

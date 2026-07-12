@@ -34,6 +34,12 @@ body[data-theme="dark"] {
   box-sizing: border-box;
 }
 
+/* Author display rules must never override the semantic hidden state. This is
+   especially important for generated download actions and collapsed controls. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -306,6 +312,10 @@ body[data-mode="simple"] .advanced-only {
    is the default, primary experience; the technician panels/nav are hidden. */
 #guided {
   display: none;
+}
+
+#guided .gstep {
+  scroll-margin-top: 76px;
 }
 
 body[data-mode="simple"] #guided {
@@ -582,6 +592,13 @@ body[data-theme="dark"] .sample-banner {
 .guided-viewer-host .viewer-toolbar,
 .guided-viewer-host .manual-edit,
 .guided-viewer-host .viewer-caveat {
+  display: none;
+}
+
+/* Step 5 is inspection-only: its Before/After/Overlay control owns the view
+   state, while target authoring remains in Step 3. */
+#guidedPreviewHost .viewer-toolbar > button.mode,
+#guidedPreviewHost .manual-edit {
   display: none;
 }
 
@@ -1182,6 +1199,27 @@ body[data-theme="dark"] .sample-banner {
 .anatomy-actions button {
   font-size: 11px;
   padding: 2px 6px;
+}
+
+.anatomy-summary-list {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0;
+}
+
+.anatomy-detail-action {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid #5a7d8c;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+#guidedBuild[data-preloaded="1"] {
+  border: 1px solid var(--accent);
+  background: var(--field);
+  color: var(--accent);
 }
 
 .anatomy-row[data-status="rejected"] {
@@ -1919,6 +1957,84 @@ td input {
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 12px;
+}
+
+.trust-status-strip {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  margin: 0 0 12px;
+  overflow: hidden;
+}
+
+.trust-strip-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-alt);
+}
+
+.trust-strip-heading strong {
+  font-size: 13px;
+}
+
+.trust-strip-heading span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.trust-strip-items {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(100px, 1fr));
+  overflow-x: auto;
+}
+
+.trust-status-item {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  min-width: 100px;
+  padding: 9px 10px 9px 14px;
+  border-right: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.trust-status-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #78909c;
+}
+
+.trust-status-item[data-tone="known"]::before {
+  background: var(--accent);
+}
+
+.trust-status-item[data-tone="attention"]::before {
+  background: var(--warn);
+}
+
+.trust-status-item:hover,
+.trust-status-item:focus-visible {
+  background: color-mix(in srgb, var(--blue) 8%, var(--panel));
+  outline: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  outline-offset: -2px;
+}
+
+.trust-status-item span {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trust-status-item strong {
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 .scan-status {

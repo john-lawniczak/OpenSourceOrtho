@@ -113,7 +113,7 @@ export const state = {
     messages: [],
     status: "Ask about this plan. The local helper stays on this machine.",
     busy: false,
-    collapsed: false,
+    collapsed: true,
     apiKeyPresent: false,
     agentAccessEnabled: false,
     agentEndpoint: "",

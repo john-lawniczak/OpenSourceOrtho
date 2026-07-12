@@ -67,11 +67,11 @@ el("themeToggle").addEventListener("click", () => {
 
 function setUserMode(mode) {
   state.userMode = mode;
+  state.chat.collapsed = mode === "simple";
   if (mode === "simple" && !state.guided.step) state.guided.step = "upload";
   renderAll();
   maybeRecenterPreview();
 }
-
 // The 3D viewer may be sized while its host is hidden (1x1) or framed for a
 // previous scene. When it becomes visible - or moves between guided step hosts
 // (teeth, details, preview all now embed it) - request a one-shot re-frame that

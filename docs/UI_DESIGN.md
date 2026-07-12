@@ -30,7 +30,10 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
 	  animates the plan in 3D, and exports printable files. The heavy singletons (3D
 	  viewer, AI box, upload control) are single instances relocated into the active
 	  step, so there is never a second WebGL context. It must never imply printable
-	  output is safe, validated, or ready for treatment.
+  output is safe, validated, or ready for treatment.
+  Step changes return focus and scroll to the new heading; advanced anatomy is
+  summarized with a Technician-mode handoff; AI connector controls start
+  collapsed; plan findings and print readiness remain separate verdicts.
 - **Technician review** for professional users: staged movement authoring, records,
   clinical controls, mesh rendering, rule findings, optimized staging, print
   metadata, plan JSON, and the experimental on-device auto-segmentation panel
@@ -96,6 +99,9 @@ The first production-grade clinician UI should include:
 - exportable visual report with the same safety boundary language
 - auditable chat panel with local default behavior and explicit external
   connector/context selection
+- persistent **What can I trust here?** status above the shared 3D workspace,
+  linking review tier, units, geometry source, segmentation state, root/bone
+  availability, plan provenance, and print readiness to their detail regions
 - light and dark themes with equal readability for controls, findings, and the
   3D viewer
 
