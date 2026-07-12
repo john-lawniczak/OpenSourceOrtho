@@ -5,10 +5,15 @@ Scores are engineering maturity ratings for this research toolkit, not clinical
 clearance, treatment approval, or a statement that physical use is safe.
 
 **All four surfaces below are active focus areas with a committed target of
-≥9/10.** `TODO.md` is the active backlog and currently has no phase-sized
-implementation item open; the remaining gap is mainly validation depth,
-production-strength optional backends, audit trails, and real-world operating
-evidence. A 10/10 is intentionally NOT a target for the geometry tracks: it would
+≥9/10.** These component scores do not mean that the complete first-time-user
+journey is equally mature. The end-to-end workflow is approximately **6.5/10**
+because arbitrary-record intake, segmentation correction, practical CBCT
+handoff, structured AI actions, case recovery, and nondeveloper distribution
+remain weaker than the individual engine surfaces. See
+[NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md) and the active phases in
+`TODO.md`.
+
+A 10/10 is intentionally NOT a target for the geometry tracks: it would
 require material deformation, thermoforming fit, printer calibration, and
 physical validation, which this safety-boundary-first toolkit deliberately does
 not model.
@@ -21,6 +26,24 @@ not model.
 | Track 2: surface-scan staging + honest review aid | ~8.85/10 | ≥9/10 | Surface planning, movement caps, reviewed full-geometry collision/IPR, segmentation review, guided review UX, real-scan smoke coverage, learned-vs-heuristic benchmark hooks, and hard segmentation quality gates are in place; the remaining weakness is broader labelled real-case validation and production learned weights. |
 | Track 3: CBCT root/bone-aware planning from raw volume | ~8.4/10 | ≥9/10 | Phase 12 is implemented as a safety-gated proposal workflow: raw-volume sparse-mask proposals, auto-registration proposals, fail-closed tests, and benchmark metrics exist, but maturity is held back by caller-supplied masks, no bundled clinical-grade volume segmenter, and limited open-volume validation. |
 | Track 4: in-app AI assistant (chat) | ~8.5/10 | ≥9/10 | Plan-scoped, auditable, fail-closed connectors now have bounded memory, incremental rendering, provider/model selection, PHI-share gating, and SSE streaming with fallback; provider-native stream adapters and action tooling remain. |
+
+## Cross-Cutting New-User Workflow
+
+The component ratings above measure implemented engineering surfaces. A new user
+trying to bring their own STL or CBCT/DICOM records through the entire workflow
+still encounters material gaps:
+
+- no single intake-readiness report spanning all records and downstream gates
+- limited interactive correction for merged or noisy segmentation proposals
+- no complete browser-native CBCT volume/segmentation workflow; reviewed local
+  viewer handoff and manifest import need to become a first-class path
+- AI is primarily explanatory rather than a structured, diffable proposal tool
+- case persistence, recovery, audit history, and portable backup are fragmented
+- stage-model and shell geometry maturity must not be confused with physical fit
+- installation remains oriented toward developers
+
+These are active implementation areas, not evidence that the existing safety
+boundaries should be relaxed. The prioritized plan is maintained in `TODO.md`.
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 

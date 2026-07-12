@@ -6,6 +6,7 @@ This directory holds the project docs that should evolve with the product.
 
 - [SAFETY.md](SAFETY.md) - capability boundary and safety language
 - [application maturity.md](application%20maturity.md) - 10-point maturity tracking for the four application surfaces
+- [NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md) - end-to-end first-time-user scorecard, weak areas, and prioritized improvement path
 - [ARCHITECTURE.md](ARCHITECTURE.md) - plain-language system flow and technical layout
 - [MOBILE.md](MOBILE.md) - mobile architecture, STL-only fallback, and browser handoff progress
 - [cbct-evaluation.md](cbct-evaluation.md) - CBCT/DICOM safety-review tiers, shipped gates, and remaining roadmap
