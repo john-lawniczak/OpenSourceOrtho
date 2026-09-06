@@ -110,6 +110,11 @@ context first:
   higher-fidelity path toward **Root/Bone-Aware Review** when the record is
   locally ingested, registered to the STL, segmented/reviewed, and validated. See
   [docs/cbct-evaluation.md](docs/cbct-evaluation.md).
+- **Record and workflow readiness**: expand the report in the Review workspace's
+  trust strip to inspect scan metadata, segmentation review, bite context, CBCT
+  registrations, and reviewed anatomy. It separates record evidence, plan checks,
+  export prerequisites, and physical validation, with links to the corresponding
+  Technician controls. See [the report contract and limits](docs/INTAKE_READINESS.md).
 - **Plan versions and setup comparison**: save named snapshots of a plan, restore
   any version back into the editor, compare captured/saved/current/generated
   setups side by side, live-restage an edited candidate, and promote a compared

@@ -378,3 +378,14 @@ hash. Invalid JSON, unreadable storage, or a hash mismatch returns a structured
 case API error, and saving refuses to overwrite damaged history. Keep the damaged
 file for recovery from a known backup. The hashes detect accidental content
 changes; they do not authenticate the source or constitute a review decision.
+
+
+### Shared intake readiness
+
+Evaluation now composes a typed [intake-readiness report](INTAKE_READINESS.md)
+from record metadata, the existing registration gates, deterministic findings,
+and export prerequisites. Domain contracts live in `model/readiness.py`; the
+surface, CBCT, and workflow derivations live in focused evaluation modules. The
+UI maps stable action identifiers to controls and does not derive evidence gates.
+The evaluation scheduler invalidates older requests when an edit is queued, and
+refreshes the trust strip on success or failure to avoid stale readiness claims.

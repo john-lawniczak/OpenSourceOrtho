@@ -1,4 +1,5 @@
 import { escapeHtml } from "./core.js";
+import { intakeReadinessMarkup, navigateReadinessAction } from "./intake_readiness.js";
 
 function item(label, value, target, tone = "unknown") {
   return { label, value, target, tone };
@@ -66,7 +67,14 @@ export function trustStatusMarkup(items) {
     </div>`;
 }
 
-export function renderTrustStatus(host, state) {
+export function renderTrustStatus(host, state, render = () => {}, pending = false) {
   if (!host) return;
-  host.innerHTML = trustStatusMarkup(trustStatusItems(state));
+  const open = host.querySelector("#intakeReadinessDetails")?.open ?? (host.dataset.readinessOpen === "true");
+  host.dataset.readinessOpen = String(open);
+  host.innerHTML = trustStatusMarkup(trustStatusItems(pending ? { ...state, lastEval: null } : state)) +
+    intakeReadinessMarkup(state.lastEval?.intake_readiness, { pending, open });
+  host.onclick = (event) => {
+    const link = event.target.closest?.("[data-readiness-action]");
+    if (link && navigateReadinessAction(link.dataset.readinessAction, state, render)) event.preventDefault();
+  };
 }
