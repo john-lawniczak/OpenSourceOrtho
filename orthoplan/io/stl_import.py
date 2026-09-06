@@ -8,6 +8,7 @@ units (STL has none), so units are reported as ``UNVERIFIED``.
 from __future__ import annotations
 
 import hashlib
+import math
 import struct
 from pathlib import Path
 
@@ -53,11 +54,12 @@ def _read_ascii(raw: bytes) -> tuple[int, list[Vec3]]:
             facets += 1
         elif stripped.startswith("vertex"):
             parts = stripped.split()
-            if len(parts) >= 4:
-                try:
-                    vertices.append((float(parts[1]), float(parts[2]), float(parts[3])))
-                except ValueError as exc:
-                    raise ValueError(f"invalid STL vertex on line {line_number}") from exc
+            if len(parts) != 4 or parts[0] != "vertex":
+                raise ValueError(f"invalid STL vertex on line {line_number}")
+            try:
+                vertices.append((float(parts[1]), float(parts[2]), float(parts[3])))
+            except ValueError as exc:
+                raise ValueError(f"invalid STL vertex on line {line_number}") from exc
     return facets, vertices
 
 
@@ -149,8 +151,10 @@ def read_stl_geometry(
 
     if face_count <= 0 or not vertices:
         raise ValueError("STL contains no readable facets or vertices")
-    if len(vertices) < face_count * 3:
+    if len(vertices) != face_count * 3:
         raise ValueError("STL facet and vertex counts are inconsistent")
+    if not all(math.isfinite(value) for vertex in vertices for value in vertex):
+        raise ValueError("STL vertex coordinates must be finite")
 
     quality = _trimesh_quality(path, _internal_quality(face_count, vertices))
     asset = MeshAsset(

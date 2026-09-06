@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from orthoplan import __version__
 from orthoplan.hashing import canonical_json, sha256_text
+from orthoplan.io.atomic import atomic_write_text
 from orthoplan.io.serialization import plan_to_json
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.model.review_tier import review_tier
@@ -118,10 +119,13 @@ def read_case_store(path: str | Path) -> CaseStore:
     target = Path(path)
     if not target.exists():
         return CaseStore()
-    return CaseStore.model_validate_json(target.read_text(encoding="utf-8"))
+    store = CaseStore.model_validate_json(target.read_text(encoding="utf-8"))
+    for case in store.cases.values():
+        for version in case.versions:
+            if sha256_text(canonical_json(version.snapshot)) != version.plan_hash:
+                raise ValueError("case snapshot does not match its recorded plan hash")
+    return store
 
 
 def write_case_store(store: CaseStore, path: str | Path) -> None:
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(store.model_dump_json(indent=2), encoding="utf-8")
+    atomic_write_text(path, store.model_dump_json(indent=2))

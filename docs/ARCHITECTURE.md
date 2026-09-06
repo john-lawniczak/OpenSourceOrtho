@@ -359,3 +359,22 @@ Initial heuristic defaults (`AxisCaps`):
 These defaults are based on commonly cited clear-aligner staging ranges and should be treated as starting points for research tooling only. The software must never claim that a movement within these values is safe.
 
 Timeline is an arithmetic projection, not an outcome estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, pauses, and user-directed changes.
+
+### Local intake and case recovery boundaries
+
+STL intake rejects non-finite vertex coordinates, malformed vertex records, and
+facet/vertex count mismatches before computing quality or bounds. Accepted STL
+metadata still has unverified units; parsing does not establish scale or record
+readiness.
+
+Case history and the mesh registry are saved through flushed sibling temporary
+files and atomic replacement. A failed write or replacement preserves the prior
+JSON document and removes the temporary file. This protects individual saves
+from partial writes; it does not coordinate concurrent read/modify/write clients
+or provide portable case backups.
+
+Reading case history verifies each snapshot against its stored canonical plan
+hash. Invalid JSON, unreadable storage, or a hash mismatch returns a structured
+case API error, and saving refuses to overwrite damaged history. Keep the damaged
+file for recovery from a known backup. The hashes detect accidental content
+changes; they do not authenticate the source or constitute a review decision.
