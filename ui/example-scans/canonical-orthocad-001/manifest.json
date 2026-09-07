@@ -52,7 +52,15 @@
     "schema": "opensource-ortho-plan-summary-v1",
     "stage_count": 38,
     "tracking_notes": "User reports tray 5; observation date, wear interval, and days in that tray are unspecified.",
-    "notes": "User confirms attachments are present and actual locations match the reference video. A reviewed tooth-number list and placement timing are not recorded. See treatment-context.json for user-reported case history."
+    "notes": "User confirms actual attachment locations match the video. The attachments list is a partial model visual transcription of six identifiable teeth, assuming a non-mirrored frontal view; additional upper posterior locations are unresolved. See attachment-transcription.json for evidence and limitations. Placement timing is unspecified.",
+    "attachments": [
+      "11",
+      "12",
+      "33",
+      "34",
+      "43",
+      "44"
+    ]
   },
   "consent_acknowledged": true,
   "phi_removed": true,

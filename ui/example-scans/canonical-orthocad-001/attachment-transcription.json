@@ -1,0 +1,124 @@
+{
+  "schema": "opensource-ortho-attachment-transcription-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "reference_media": "sample-test-case-cliniccheck-reference.mp4",
+  "reference_sha256": "98827b46e66131f6d1cfa9e5745461d78b233ccb2f3549c5187b958334db8d57",
+  "numbering_system": "FDI permanent dentition",
+  "orientation_assumption": "Standard non-mirrored frontal view: viewer left is patient right.",
+  "actual_placement_matches_video_user_confirmed": true,
+  "transcription_provenance": "MODEL",
+  "independent_tooth_number_review": false,
+  "complete_attachment_inventory": false,
+  "evidence": {
+    "frame_times_seconds": [
+      2,
+      18
+    ],
+    "frame_size_pixels": [
+      1280,
+      650
+    ],
+    "pixel_origin": "top-left",
+    "marker_scope": "Raised red markers only; cyan bars are excluded from the attachment transcription."
+  },
+  "transcribed_locations": [
+    {
+      "tooth_id": "11",
+      "tooth_name": "upper right central incisor",
+      "universal_tooth_number": "8",
+      "surface": "facial",
+      "marker_center_pixels_at_18_seconds": [
+        535,
+        350
+      ]
+    },
+    {
+      "tooth_id": "12",
+      "tooth_name": "upper right lateral incisor",
+      "universal_tooth_number": "7",
+      "surface": "facial",
+      "marker_center_pixels_at_18_seconds": [
+        389,
+        342
+      ]
+    },
+    {
+      "tooth_id": "33",
+      "tooth_name": "lower left canine",
+      "universal_tooth_number": "22",
+      "surface": "facial",
+      "marker_center_pixels_at_18_seconds": [
+        783,
+        424
+      ]
+    },
+    {
+      "tooth_id": "34",
+      "tooth_name": "lower left first premolar",
+      "universal_tooth_number": "21",
+      "surface": "facial",
+      "marker_center_pixels_at_18_seconds": [
+        883,
+        419
+      ]
+    },
+    {
+      "tooth_id": "43",
+      "tooth_name": "lower right canine",
+      "universal_tooth_number": "27",
+      "surface": "facial",
+      "marker_center_pixels_at_18_seconds": [
+        409,
+        426
+      ]
+    },
+    {
+      "tooth_id": "44",
+      "tooth_name": "lower right first premolar",
+      "universal_tooth_number": "28",
+      "surface": "facial",
+      "marker_center_pixels_at_18_seconds": [
+        337,
+        398
+      ]
+    }
+  ],
+  "unresolved_regions": [
+    {
+      "region": "upper right posterior, behind the canine",
+      "approximate_pixel_bounds_at_18_seconds": [
+        280,
+        280,
+        350,
+        370
+      ],
+      "reason": "Multiple red projections and overlapping crowns prevent reliable assignment of all markers to individual teeth."
+    },
+    {
+      "region": "upper left canine/premolar/molar boundary region",
+      "approximate_pixel_bounds_at_18_seconds": [
+        865,
+        285,
+        990,
+        370
+      ],
+      "reason": "Three red projections are visible, but the frontal view obscures crown boundaries and marker attachment surfaces."
+    }
+  ],
+  "limitations": [
+    "This list records identifiable locations, not the total attachment count.",
+    "Tooth-level locations do not establish millimeter coordinates, attachment dimensions, or placement date.",
+    "User confirmation concerns matching the video; it is not an independent review of this numeric transcription."
+  ],
+  "finding": {
+    "severity": "notice",
+    "category": "education",
+    "provenance": "MODEL",
+    "title": "Attachment tooth-number transcription",
+    "message": "Visible red attachment markers map to FDI 11, 12, 33, 34, 43, and 44 in the frontal reference, assuming standard non-mirrored orientation. Additional upper posterior markers are visible, but their exact tooth numbers remain unresolved. The user confirms physical placement matches the video; tooth numbering is a model visual transcription.",
+    "code": null,
+    "data_gap": "No labeled side or occlusal views; no independent tooth-number review.",
+    "clinician_question": null,
+    "reference": "sample-test-case-cliniccheck-reference.mp4 at 2 and 18 seconds"
+  }
+}

@@ -23,6 +23,17 @@
     "actual_locations_match_reference_user_confirmed": true,
     "location_confirmation_source": "User explicitly confirms that the actual attachments are placed at the locations shown in the reference video.",
     "reviewed_tooth_ids": null,
-    "note": "Actual attachment locations match the reference video according to the user. The simulation alone does not independently verify physical placement. A complete tooth-number list has not been transcribed and reviewed, and placement timing remains unspecified; null does not mean no attachments."
+    "note": "The user confirms actual locations match the video. Six identifiable tooth locations are transcribed in attachment-transcription.json; upper posterior markers remain unresolved. The numeric transcription has not received independent review, so reviewed_tooth_ids remains null. Placement timing is unspecified.",
+    "transcribed_tooth_ids": [
+      "11",
+      "12",
+      "33",
+      "34",
+      "43",
+      "44"
+    ],
+    "transcription_reference": "attachment-transcription.json",
+    "transcription_provenance": "MODEL",
+    "complete_attachment_inventory": false
   }
 }

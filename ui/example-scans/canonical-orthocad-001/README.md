@@ -20,12 +20,23 @@ The user reports a **38-tray plan**, **tray 5 at the time of the report**, and
 attachments present. **The user confirms that actual attachment locations match
 the reference video.** This is user-confirmed placement correspondence; the
 simulation alone does not independently verify physical placement. The progress
-observation date, wear interval, attachment placement
-date, and reviewed tooth-level attachment list are not yet recorded. Tray 5 is a
+observation date, wear interval, and attachment placement date are not yet recorded.
+`attachment-transcription.json` records a partial model visual transcription of
+the red attachment markers using FDI numbering: **11, 12, 33, 34, 43, 44**.
+It includes tooth names, Universal numbering equivalents, video timestamps, and
+pixel locations. This assumes a standard non-mirrored frontal view. Additional
+upper posterior markers cannot be assigned reliably from this view and are
+recorded as unresolved regions; the six teeth are not a complete inventory.
+The model finding passed `lint_finding()` before export; this checks finding
+language, not anatomical correctness. Independent tooth-number review remains
+outstanding. Your confirmation that placement matches the video is retained
+separately from the model's numeric transcription. Tray 5 is a
 historical user report, not live status. `treatment-context.json` preserves these
 facts and unknowns; the manifest includes the confirmed plan stage count.
 
 Files:
+- `attachment-transcription.json`: partial tooth-number transcription with
+  frame evidence, a linted model finding, and unresolved posterior regions
 - `treatment-context.json`: user-reported treatment dates, plan count, progress,
   IPR history, and attachment context; exact dates retained at the user's request
 - `sample-test-case-upper.stl`: maxillary occlusion shell
