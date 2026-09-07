@@ -17,8 +17,10 @@ Same-person provenance does not
 establish same-session acquisition or a validated STL-to-CBCT registration.
 
 The user reports a **38-tray plan**, **tray 5 at the time of the report**, and
-attachments present, with the reference simulation identifying planned attachment
-locations. The progress observation date, wear interval, attachment placement
+attachments present. **The user confirms that actual attachment locations match
+the reference video.** This is user-confirmed placement correspondence; the
+simulation alone does not independently verify physical placement. The progress
+observation date, wear interval, attachment placement
 date, and reviewed tooth-level attachment list are not yet recorded. Tray 5 is a
 historical user report, not live status. `treatment-context.json` preserves these
 facts and unknowns; the manifest includes the confirmed plan stage count.

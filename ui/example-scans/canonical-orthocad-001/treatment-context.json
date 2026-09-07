@@ -20,7 +20,9 @@
     "present_user_reported": true,
     "placement_date": null,
     "reference_media": "sample-test-case-cliniccheck-reference.mp4",
+    "actual_locations_match_reference_user_confirmed": true,
+    "location_confirmation_source": "User explicitly confirms that the actual attachments are placed at the locations shown in the reference video.",
     "reviewed_tooth_ids": null,
-    "note": "The user identifies the simulation as the reference for attachment locations. A complete tooth-level attachment list and actual placement timing have not been verified; null does not mean no attachments. The video represents the plan, not a placement record."
+    "note": "Actual attachment locations match the reference video according to the user. The simulation alone does not independently verify physical placement. A complete tooth-number list has not been transcribed and reviewed, and placement timing remains unspecified; null does not mean no attachments."
   }
 }

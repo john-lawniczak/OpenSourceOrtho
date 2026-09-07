@@ -52,7 +52,7 @@
     "schema": "opensource-ortho-plan-summary-v1",
     "stage_count": 38,
     "tracking_notes": "User reports tray 5; observation date, wear interval, and days in that tray are unspecified.",
-    "notes": "User confirms attachments are present; tooth-level list and placement timing are unverified. See treatment-context.json for user-reported case history."
+    "notes": "User confirms attachments are present and actual locations match the reference video. A reviewed tooth-number list and placement timing are not recorded. See treatment-context.json for user-reported case history."
   },
   "consent_acknowledged": true,
   "phi_removed": true,
