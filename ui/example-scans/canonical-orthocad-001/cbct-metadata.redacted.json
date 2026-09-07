@@ -1,11 +1,17 @@
 {
   "schema": "opensource-ortho-redacted-cbct-metadata-v1",
   "case_alias": "canonical-orthocad-001",
+  "scan_acquisition": {
+    "date": "2026-06-18",
+    "provenance": "User-confirmed CBCT acquisition date; not independently verified against DICOM tags.",
+    "date_retention": "Exact CBCT acquisition date retained at the user's explicit request."
+  },
   "case_relationship": {
     "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
     "same_person_as_stl_pair": true,
     "provenance": "User confirmed that the CBCT and bundled STL pair are from the same person.",
-    "timing_relative_to_stl": "unknown"
+    "timing_relative_to_stl": "13 days after the pretreatment STL pair acquired on 2026-06-05",
+    "treatment_phase_at_cbct": "unknown"
   },
   "purpose": "Gold-standard local CBCT companion metadata for the bundled canonical sample case.",
   "raw_dicom_policy": {
@@ -14,7 +20,7 @@
     "identifier_values_retained": false,
     "absolute_local_paths_retained": false,
     "dicom_uid_values_retained": false,
-    "full_study_date_retained": false
+    "full_study_date_retained": true
   },
   "source_inventory": {
     "dicom_file_count": 825,

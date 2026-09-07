@@ -4,13 +4,15 @@ The user confirmed that the upper/lower STL pair was acquired on **June 5, 2026*
 **before treatment**, and that the companion CBCT is from the **same person**.
 The manifest labels both STLs as `initial`; `source-export-metadata.json` records
 the user-confirmed acquisition date and pretreatment status. This acquisition
-date is distinct from the manifest creation timestamp. The exact STL date is
+date is distinct from the manifest creation timestamp. The exact STL and CBCT dates are
 retained at the user's explicit request; it is an exception to the usual
 date-redaction guidance for contributed records.
 
-The CBCT acquisition date and its timing relative to the STLs have not been
-confirmed. Same-person provenance does not establish same-session acquisition
-or a validated STL-to-CBCT registration.
+The user confirmed that the CBCT was acquired on **June 18, 2026**, **13 days
+after the STL pair**. `cbct-metadata.redacted.json` records this user-confirmed
+date; it has not been independently verified against DICOM tags. Treatment status
+at CBCT acquisition has not been confirmed. Same-person provenance does not
+establish same-session acquisition or a validated STL-to-CBCT registration.
 
 Files:
 - `sample-test-case-upper.stl`: maxillary occlusion shell
