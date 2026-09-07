@@ -1,6 +1,12 @@
 {
   "schema": "opensource-ortho-redacted-cbct-metadata-v1",
   "case_alias": "canonical-orthocad-001",
+  "case_relationship": {
+    "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+    "same_person_as_stl_pair": true,
+    "provenance": "User confirmed that the CBCT and bundled STL pair are from the same person.",
+    "timing_relative_to_stl": "unknown"
+  },
   "purpose": "Gold-standard local CBCT companion metadata for the bundled canonical sample case.",
   "raw_dicom_policy": {
     "raw_dicom_committed": false,

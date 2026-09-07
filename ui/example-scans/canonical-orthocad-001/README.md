@@ -1,5 +1,17 @@
 Canonical OrthoCAD scan fixture used by the browser UI.
 
+The user confirmed that the upper/lower STL pair was acquired on **June 5, 2026**,
+**before treatment**, and that the companion CBCT is from the **same person**.
+The manifest labels both STLs as `initial`; `source-export-metadata.json` records
+the user-confirmed acquisition date and pretreatment status. This acquisition
+date is distinct from the manifest creation timestamp. The exact STL date is
+retained at the user's explicit request; it is an exception to the usual
+date-redaction guidance for contributed records.
+
+The CBCT acquisition date and its timing relative to the STLs have not been
+confirmed. Same-person provenance does not establish same-session acquisition
+or a validated STL-to-CBCT registration.
+
 Files:
 - `sample-test-case-upper.stl`: maxillary occlusion shell
 - `sample-test-case-lower.stl`: mandibular occlusion shell
