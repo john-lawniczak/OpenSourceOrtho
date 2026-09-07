@@ -10,11 +10,22 @@ date-redaction guidance for contributed records.
 
 The user confirmed that the CBCT was acquired on **June 18, 2026**, **13 days
 after the STL pair**. `cbct-metadata.redacted.json` records this user-confirmed
-date; it has not been independently verified against DICOM tags. Treatment status
-at CBCT acquisition has not been confirmed. Same-person provenance does not
+date; it has not been independently verified against DICOM tags. Treatment began
+on **August 18, 2026**, so both scan acquisitions precede treatment. The user
+confirmed that **no IPR had occurred as of June 18**; later IPR status is unknown.
+Same-person provenance does not
 establish same-session acquisition or a validated STL-to-CBCT registration.
 
+The user reports a **38-tray plan**, **tray 5 at the time of the report**, and
+attachments present, with the reference simulation identifying planned attachment
+locations. The progress observation date, wear interval, attachment placement
+date, and reviewed tooth-level attachment list are not yet recorded. Tray 5 is a
+historical user report, not live status. `treatment-context.json` preserves these
+facts and unknowns; the manifest includes the confirmed plan stage count.
+
 Files:
+- `treatment-context.json`: user-reported treatment dates, plan count, progress,
+  IPR history, and attachment context; exact dates retained at the user's request
 - `sample-test-case-upper.stl`: maxillary occlusion shell
 - `sample-test-case-lower.stl`: mandibular occlusion shell
 - `sample-test-case-cliniccheck-reference.mp4`: cropped/debranded reference

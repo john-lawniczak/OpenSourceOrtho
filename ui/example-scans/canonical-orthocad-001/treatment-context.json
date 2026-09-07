@@ -1,0 +1,26 @@
+{
+  "schema": "opensource-ortho-sample-treatment-context-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "provenance": "User-reported case history; not independently verified against clinical records.",
+  "treatment_start_date": "2026-08-18",
+  "date_retention": "Exact case dates retained as supplied by the user for this sample metadata update.",
+  "planned_tray_count": 38,
+  "reported_progress": {
+    "tray_number": 5,
+    "observation_date": null,
+    "wear_interval_days": null,
+    "days_in_current_tray": null,
+    "note": "Tray 5 at the time of the user's report; observation date and per-arch tray numbers were not separately supplied. This is a historical report, not automatically updated live status."
+  },
+  "ipr": {
+    "none_performed_as_of": "2026-06-18",
+    "subsequent_status": "unknown"
+  },
+  "attachments": {
+    "present_user_reported": true,
+    "placement_date": null,
+    "reference_media": "sample-test-case-cliniccheck-reference.mp4",
+    "reviewed_tooth_ids": null,
+    "note": "The user identifies the simulation as the reference for attachment locations. A complete tooth-level attachment list and actual placement timing have not been verified; null does not mean no attachments. The video represents the plan, not a placement record."
+  }
+}

@@ -11,7 +11,8 @@
     "same_person_as_stl_pair": true,
     "provenance": "User confirmed that the CBCT and bundled STL pair are from the same person.",
     "timing_relative_to_stl": "13 days after the pretreatment STL pair acquired on 2026-06-05",
-    "treatment_phase_at_cbct": "unknown"
+    "treatment_phase_at_cbct": "pretreatment",
+    "treatment_phase_provenance": "Derived from the user-reported treatment start date of 2026-08-18; user also confirms no IPR had occurred as of CBCT acquisition on 2026-06-18."
   },
   "purpose": "Gold-standard local CBCT companion metadata for the bundled canonical sample case.",
   "raw_dicom_policy": {
