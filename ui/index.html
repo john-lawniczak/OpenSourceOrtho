@@ -9,6 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="apple-touch-icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./tooth_explorer.css" />
     <script type="importmap">
       { "imports": { "three": "./vendor/three.module.js" } }
     </script>
@@ -706,6 +707,35 @@
             <h2>Tooth Map &amp; Numbering</h2>
             <p>How teeth are numbered here. Educational only; not a diagnosis.</p>
           </div>
+          <section id="toothExplorer" class="workflow-card tooth-explorer" aria-labelledby="toothExplorerTitle">
+            <h2 id="toothExplorerTitle">Find teeth in 3D</h2>
+            <p>Type FDI numbers, choose numbered buttons, or click teeth in the model. Choose a color to highlight your selection.</p>
+            <form id="toothExplorerForm" class="tooth-explorer-form">
+              <label for="toothExplorerInput">FDI tooth numbers
+                <input id="toothExplorerInput" placeholder="11 12 33 34 43 44" autocomplete="off" aria-describedby="toothExplorerHint toothExplorerError" />
+              </label>
+              <button type="submit" class="primary-action">Highlight teeth</button>
+              <button id="toothExplorerClear" type="button">Clear</button>
+            </form>
+            <p id="toothExplorerHint" class="viewer-caveat">Separate numbers with spaces, commas, or semicolons. Permanent teeth: 11–18, 21–28, 31–38, 41–48.</p>
+            <p id="toothExplorerError" class="tooth-explorer-error" role="alert"></p>
+            <div class="tooth-explorer-colors" role="group" aria-label="Tooth highlight color">
+              <span>Highlight color</span>
+              <button type="button" data-highlight-color="#2563eb" aria-pressed="true">Blue</button>
+              <button type="button" data-highlight-color="#dc2626" aria-pressed="false">Red</button>
+              <button type="button" data-highlight-color="#facc15" aria-pressed="false">Yellow</button>
+              <label for="toothExplorerColor">Custom <input id="toothExplorerColor" type="color" value="#2563eb" /></label>
+            </div>
+            <div class="tooth-explorer-actions">
+              <button id="toothExplorerExample" type="button">Try 11, 12, 33, 34, 43, 44</button>
+              <button id="toothExplorerResetView" type="button">Reset view</button>
+            </div>
+            <div id="toothExplorerViewer" class="tooth-explorer-viewer" role="img" aria-label="Interactive schematic 3D permanent teeth; numbered buttons below provide keyboard selection"></div>
+            <p class="viewer-caveat">Schematic tooth map, not your scan. Right and left refer to the person’s own sides. Drag to rotate; scroll or pinch to zoom. Selected teeth show FDI number badges.</p>
+            <p id="toothExplorerSummary" role="status" aria-live="polite"></p>
+            <div id="toothExplorerGrid" class="tooth-explorer-grid" aria-label="Select permanent teeth by FDI number"></div>
+            <ul id="toothExplorerList" class="tooth-explorer-list" aria-label="Selected tooth names"></ul>
+          </section>
           <div class="workflow-card">
             <h2>Two ways to number teeth</h2>
             <p>Adults have 32 teeth, and dentists give each one a number so everyone is talking about the same tooth. There are two common numbering systems, so the chart below shows both:</p>
@@ -884,5 +914,6 @@
       </aside>
     </main>
     <script type="module" src="./app.js"></script>
+    <script type="module" src="./tooth_explorer.js"></script>
   </body>
 </html>

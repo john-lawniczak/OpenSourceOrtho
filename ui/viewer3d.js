@@ -10,6 +10,7 @@ import { displacement, rotationApplications, toothKind } from "./core.js";
 import { toothPositions } from "./state.js";
 import { parseStlGeometry } from "./stl.js";
 import { SCALE_BAR_MM, scaleBarLabel } from "./scale.js";
+import { makeTextSprite, makeToothNumberSprite } from "./viewer_labels.js";
 
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
@@ -113,55 +114,6 @@ function normalizeArch(arch = "") {
   return null;
 }
 
-// A small billboarded text label rendered from a 2D canvas texture.
-function makeTextSprite(text) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  ctx.font = "bold 34px system-ui, sans-serif";
-  ctx.fillStyle = "#8a99a3";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, 128, 34);
-  const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(9, 2.25, 1);
-  return sprite;
-}
-
-// A readable FDI tooth-number badge: white text on an accent pill, drawn from a
-// 2D canvas texture and billboarded. depthTest off keeps it legible through the
-// teeth/scan. Reused per update (cleared with the proxies group).
-function makeToothNumberSprite(text) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 72;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "rgba(15,118,110,0.94)";
-  const w = canvas.width;
-  const h = canvas.height;
-  const r = 22;
-  if (ctx.roundRect) {
-    ctx.beginPath();
-    ctx.roundRect(8, 8, w - 16, h - 16, r);
-    ctx.fill();
-  } else {
-    ctx.fillRect(8, 8, w - 16, h - 16);
-  }
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 44px system-ui, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, w / 2, h / 2 + 2);
-  const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(3.4, 1.9, 1);
-  return sprite;
-}
-
 // pose translation (x mesiodistal-ish, y front-back, z occlusogingival/vertical)
 // -> world (x, up=z, depth=y), times exaggeration.
 function worldDelta(pose, exaggeration) {
@@ -196,7 +148,9 @@ function plannedQuaternion(pose, frame) {
   return quat;
 }
 
-export function createViewer(container) {
+export function createViewer(container, { schematicOnly = false } = {}) {
+  const highlightMaterial = new THREE.MeshStandardMaterial({ roughness: 0.55 });
+  const toothGeometry = (tooth) => (!schematicOnly && meshGeometryCache.get(tooth)) || syntheticToothGeometry(tooth);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -268,12 +222,13 @@ export function createViewer(container) {
   const grid = new THREE.GridHelper(90, 18, 0xd5dde2, 0xe8edf0);
   grid.material.transparent = true;
   grid.material.opacity = 0.52;
+  grid.visible = !schematicOnly;
   scene.add(grid);
 
   // Persistent arch labels so the stacked maxillary/mandibular arches are
   // unambiguous (depthTest off keeps them readable through the teeth).
-  const UPPER_LABEL_POS = new THREE.Vector3(0, ARCH.gapY + 5, 7);
-  const LOWER_LABEL_POS = new THREE.Vector3(0, -ARCH.gapY - 5, 7);
+  const UPPER_LABEL_POS = new THREE.Vector3(0, ARCH.gapY + (schematicOnly ? 12 : 5), 7);
+  const LOWER_LABEL_POS = new THREE.Vector3(0, -ARCH.gapY - (schematicOnly ? 12 : 5), 7);
   const upperLabel = makeTextSprite("Upper arch");
   upperLabel.position.copy(UPPER_LABEL_POS);
   scene.add(upperLabel);
@@ -350,7 +305,12 @@ export function createViewer(container) {
     requestAnimationFrame(loop);
   })();
 
-  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, showScale, unitsConfirmed, excluded }) {
+  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, showScale, unitsConfirmed, excluded, highlightTeeth = [], highlightColor = "#2563eb", labelTeeth = null }) {
+    const highlighted = new Set(highlightTeeth.map(String));
+    const labels = labelTeeth === null ? null : new Set(labelTeeth.map(String));
+    const showLabel = (tooth) => showToothLabels && (!labels || labels.has(String(tooth)));
+    highlightMaterial.color.set(highlightColor);
+    const withHighlight = (tooth, material) => highlighted.has(String(tooth)) ? highlightMaterial : material;
     scene.background = new THREE.Color(document.body.dataset.theme === "dark" ? 0x111a1f : 0xfbfdfe);
     uploadedScans.visible = view === "current" || view === "overlay";
     for (const geom of lineGeometries) geom.dispose();
@@ -404,7 +364,7 @@ export function createViewer(container) {
         // belong - is the fragment's bounding-box centre plus that offset.
         const toothAt = fragmentCentroid(fragment).add(fragBase);
         const toothMoved = toothAt.clone().add(delta);
-        if (showToothLabels) {
+        if (showLabel(pose.tooth)) {
           let label = toothLabelSprites.get(pose.tooth);
           if (!label) {
             label = makeToothNumberSprite(String(pose.tooth));
@@ -417,7 +377,7 @@ export function createViewer(container) {
           const material = excludedSet.has(String(pose.tooth))
             ? HELD
             : (selectedTooth === pose.tooth ? SELECTED : PLANNED);
-          const crown = new THREE.Mesh(fragment, material);
+          const crown = new THREE.Mesh(fragment, withHighlight(pose.tooth, material));
           crown.position.copy(fragMoved);
           crown.userData.tooth = pose.tooth;
           proxies.add(crown);
@@ -436,13 +396,13 @@ export function createViewer(container) {
         if (!spot) continue;
         const held = excludedSet.has(String(pose.tooth));
         const markerMat = held ? HELD : (selectedTooth === pose.tooth ? SELECTED : MARKER);
-        const marker = new THREE.Mesh(MARKER_GEO, markerMat);
+        const marker = new THREE.Mesh(MARKER_GEO, withHighlight(pose.tooth, markerMat));
         marker.position.copy(spot.pos);
         marker.scale.set(spot.scale, spot.scale * 0.5, spot.scale);
         marker.userData.tooth = pose.tooth;
         proxies.add(marker);
         const delta = showPlanned && !held ? worldDeltaOriented(pose, exaggeration) : new THREE.Vector3();
-        if (showToothLabels) {
+        if (showLabel(pose.tooth)) {
           let label = toothLabelSprites.get(pose.tooth);
           if (!label) {
             label = makeToothNumberSprite(String(pose.tooth));
@@ -458,6 +418,7 @@ export function createViewer(container) {
       const anchor = scanAnchors.get(String(pose.tooth));
       const ideal = anchor ? anchor.pos.clone() : basePosition(pose.tooth);
       if (!ideal) continue;
+      if (schematicOnly) ideal.y += archOf(pose.tooth) === "upper" ? 6 : -6;
       const proxyScale = anchor ? anchor.scale : 1;
       // The anchor (or schematic position) is the tooth's aligned/ideal spot; a
       // demo crowding offset shifts the start away from it, and the per-stage
@@ -466,8 +427,8 @@ export function createViewer(container) {
       const base = ideal.clone().add(worldOffset(initialOffsets?.[pose.tooth], exaggeration));
 
       if (showCurrent) {
-        const ghostGeometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
-        const ghost = new THREE.Mesh(ghostGeometry, GHOST);
+        const ghostGeometry = toothGeometry(pose.tooth);
+        const ghost = new THREE.Mesh(ghostGeometry, withHighlight(pose.tooth, GHOST));
         ghost.position.copy(base);
         ghost.scale.setScalar(proxyScale);
         ghost.quaternion.copy(archQuaternion(pose.tooth));
@@ -476,7 +437,7 @@ export function createViewer(container) {
       }
       // Optional FDI tooth-number label, floating above the tooth at its
       // currently-displayed position, so a user can see which tooth is which.
-      if (showToothLabels) {
+      if (showLabel(pose.tooth)) {
         const labelAt = showPlanned ? base.clone().add(worldDelta(pose, exaggeration)) : base;
         let label = toothLabelSprites.get(pose.tooth);
         if (!label) {
@@ -489,11 +450,11 @@ export function createViewer(container) {
 
       if (showPlanned) {
         const moved = base.clone().add(worldDelta(pose, exaggeration));
-        const geometry = meshGeometryCache.get(pose.tooth) || syntheticToothGeometry(pose.tooth);
+        const geometry = toothGeometry(pose.tooth);
         const material = excludedSet.has(String(pose.tooth))
           ? HELD
           : (selectedTooth === pose.tooth ? SELECTED : PLANNED);
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, withHighlight(pose.tooth, material));
         mesh.position.copy(moved);
         mesh.scale.setScalar(proxyScale);
         mesh.quaternion.copy(archQuaternion(pose.tooth).multiply(plannedQuaternion(pose, toothFrames?.[pose.tooth])));
@@ -541,10 +502,17 @@ export function createViewer(container) {
     const radius = Math.max(sphere.radius, 4);
     const fovV = THREE.MathUtils.degToRad(camera.fov);
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * Math.max(camera.aspect, 0.0001));
-    const distance = Math.max(24, (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.1);
+    let distance = Math.max(24, (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.1);
+    if (schematicOnly) {
+      const size = box.getSize(new THREE.Vector3());
+      const height = size.y * 0.968 + size.z * 0.25;
+      distance = (Math.max(size.x / (2 * Math.tan(fovH / 2)), height / (2 * Math.tan(fovV / 2)))
+        + (size.z * 0.968 + size.y * 0.25) / 2) * 1.15;
+    }
     // ~42 deg elevation: high enough to read the arch horseshoe, low enough to
     // still face the crowns.
-    camera.position.set(center.x, center.y + distance * 0.7, center.z + distance * 0.74);
+    camera.position.set(center.x, center.y + distance * (schematicOnly ? 0.25 : 0.7),
+      center.z + distance * (schematicOnly ? 0.968 : 0.74));
     controls.target.copy(center);
     camera.near = Math.max(0.1, distance / 100);
     camera.far = distance * 100;
@@ -929,6 +897,11 @@ export function createViewer(container) {
 
   function dispose() {
     running = false;
+    highlightMaterial.dispose();
+    for (const label of [upperLabel, lowerLabel]) {
+      label.material.map?.dispose();
+      label.material.dispose();
+    }
     renderer.domElement.removeEventListener("pointerdown", onPointerDown);
     renderer.domElement.removeEventListener("pointerup", onPointerUp);
     for (const geom of lineGeometries) geom.dispose();
