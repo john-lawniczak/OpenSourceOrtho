@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from orthoplan.watermark import DataWatermark, new_watermark
+
 # Tags we will never copy out of a DICOM file, documented so the redaction
 # intent is explicit and reviewable.
 PHI_TAGS_EXCLUDED = (
@@ -40,6 +42,10 @@ class DicomMetadata(BaseModel):
     orientation: tuple[float, float, float, float, float, float] | None = None
     redacted: bool = True
     notes: list[str] = Field(default_factory=list)
+    # Traceable license-bound marker (see orthoplan/watermark.py). Carries no
+    # patient data - only a random watermark id, the repo's constant canary
+    # token, and a data-usage notice.
+    watermark: DataWatermark | None = None
 
 
 def _f(value) -> float | None:
@@ -100,4 +106,5 @@ def extract_dicom_metadata(ds) -> DicomMetadata:
         dimensions=_dimensions(ds),
         orientation=_orientation(ds),
         notes=notes,
+        watermark=new_watermark(),
     )

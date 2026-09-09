@@ -37,6 +37,7 @@ from orthoplan.model.assets import (
     MeshUnits,
     redact_reference,
 )
+from orthoplan.watermark import DataWatermark
 
 SPECIMEN_ID_PREFIX = "spec-"
 
@@ -201,6 +202,10 @@ class DatasetManifest(BaseModel):
     consent_acknowledged: bool = False
     phi_removed: bool = False
     notes: str | None = None
+    # Traceable license-bound marker (see orthoplan/watermark.py). Not identity -
+    # it never carries patient data, only a random watermark id, the repo's
+    # constant canary token, and a data-usage notice.
+    watermark: DataWatermark | None = None
 
     @field_validator("specimen_id")
     @classmethod

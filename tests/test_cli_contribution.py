@@ -61,6 +61,10 @@ def _assert_manifest_labels(manifest_path: Path) -> None:
     assert manifest["plan_summary_filename"] == "plan-summary.json"
     assert manifest["outcome_notes_filename"] == "outcome-notes.md"
     assert len(manifest["outcome_notes_sha256"]) == 64
+    from orthoplan.watermark import CANARY_TOKEN
+
+    assert manifest["watermark"]["canary"] == CANARY_TOKEN
+    assert manifest["watermark"]["watermark_id"]
 
 
 def test_cli_register_contribution_labels_longitudinal_bundle(

@@ -77,6 +77,20 @@ def test_specimen_id_must_be_prefixed() -> None:
         DatasetManifest(specimen_id="12345")
 
 
+def test_manifest_carries_watermark_when_provided(tmp_path: Path) -> None:
+    from orthoplan.watermark import CANARY_TOKEN, new_watermark
+
+    manifest = DatasetManifest(
+        scans=[_scan()], consent_acknowledged=True, phi_removed=True, watermark=new_watermark()
+    )
+    target = tmp_path / "manifest.json"
+    write_manifest(manifest, target)
+    loaded = read_manifest(target)
+    assert loaded.watermark is not None
+    assert loaded.watermark.canary == CANARY_TOKEN
+    assert loaded.watermark.watermark_id == manifest.watermark.watermark_id
+
+
 def test_manifest_has_no_phi_fields_by_construction() -> None:
     # Lock the schema: none of these protected fields may exist on the model.
     fields = set(DatasetManifest.model_fields) | set(ContributedScan.model_fields)

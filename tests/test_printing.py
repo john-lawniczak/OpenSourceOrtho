@@ -124,6 +124,17 @@ def test_export_print_package_writes_stl_manifest_zip_and_email(tmp_path) -> Non
     assert result.zip_sha256 and len(result.zip_sha256) == 64
     assert result.email_draft_path and Path(result.email_draft_path).is_file()
 
+    # Watermark: present on the result, in the STL solid name, and in the manifest.
+    from orthoplan.watermark import CANARY_TOKEN
+
+    assert result.watermark_id
+    stl_text = Path(result.artifact_paths[0]).read_text(encoding="utf-8")
+    assert result.watermark_id in stl_text
+    assert CANARY_TOKEN in stl_text
+    manifest = json.loads(Path(result.manifest_path).read_text(encoding="utf-8"))
+    assert manifest["watermark"]["watermark_id"] == result.watermark_id
+    assert manifest["watermark"]["canary"] == CANARY_TOKEN
+
 
 def test_solid_stl_writes_real_unit_facet_normals() -> None:
     from orthoplan.print_stl import solid_stl

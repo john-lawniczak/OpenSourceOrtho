@@ -14,6 +14,7 @@ from orthoplan.io.stl_import import Vec3
 from orthoplan.mesh_geometry import reviewed_fragment_triangles
 from orthoplan.model.assets import BoundingBox
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.watermark import DataWatermark, stamp_solid_name
 
 
 def build_tooth_geometry(
@@ -67,6 +68,7 @@ def frame_to_stl(
     stage_index: int,
     poses: list,
     tooth_geometry: dict,
+    watermark: DataWatermark | None = None,
 ) -> tuple[str, list[dict]]:
     triangles: list[tuple[tuple[float, float, float], ...]] = []
     geometry_sources: list[dict] = []
@@ -96,7 +98,7 @@ def frame_to_stl(
                 "size_xyz_mm": list(size),
             }
         )
-    return _stl_text(plan_id, stage_index, triangles), geometry_sources
+    return _stl_text(plan_id, stage_index, triangles, watermark), geometry_sources
 
 
 def stage_real_triangles(poses: list, tooth_geometry: dict) -> list[tuple[Vec3, Vec3, Vec3]]:
@@ -126,11 +128,13 @@ def _translate_triangles(
     ]
 
 
-def _stl_text(plan_id: str, stage_index: int, triangles: list) -> str:
-    return solid_stl(f"{plan_id}_stage_{stage_index:02d}", triangles)
+def _stl_text(
+    plan_id: str, stage_index: int, triangles: list, watermark: DataWatermark | None = None
+) -> str:
+    return solid_stl(f"{plan_id}_stage_{stage_index:02d}", triangles, watermark)
 
 
-def solid_stl(name: str, triangles: list) -> str:
+def solid_stl(name: str, triangles: list, watermark: DataWatermark | None = None) -> str:
     """ASCII STL for a named solid from a triangle list.
 
     Each facet carries its real unit outward normal computed from the triangle
@@ -138,9 +142,14 @@ def solid_stl(name: str, triangles: list) -> str:
     the normal from winding, but strict CAD/validation tools treat zero-length
     facet normals as malformed, so emitting the true normal keeps the export
     spec-correct and unambiguous.
+
+    When ``watermark`` is given, the solid name carries a traceable marker (see
+    ``orthoplan.watermark``) - this repo's own STL reader never parses the
+    solid-name text, so it round-trips safely.
     """
 
-    lines = [f"solid {name}"]
+    solid_name = stamp_solid_name(name, watermark) if watermark else name
+    lines = [f"solid {solid_name}"]
     for tri in triangles:
         nx, ny, nz = _facet_normal(tri)
         lines.extend(
@@ -154,7 +163,7 @@ def solid_stl(name: str, triangles: list) -> str:
                 "  endfacet",
             ]
         )
-    lines.append(f"endsolid {name}")
+    lines.append(f"endsolid {solid_name}")
     return "\n".join(lines) + "\n"
 
 

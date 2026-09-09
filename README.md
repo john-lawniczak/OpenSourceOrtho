@@ -357,6 +357,12 @@ user, the most helpful contributions are, from most to least useful:
 6. **Optional imaging-derived anatomy**: reviewed CBCT/DICOM-derived root/bone
    records only when you have the right to share them and PHI has been removed.
 
+Every contributed dataset, exported STL, and CBCT-derived metadata record is
+stamped with a traceable, license-bound watermark before it is written to
+disk - see [docs/DATA_LICENSE.md](docs/DATA_LICENSE.md) for the usage terms it
+backs (no resale, no use as AI/ML training data without a separate written
+license) and what the watermark can and cannot actually do.
+
 Privacy is enforced in code, not just requested. The manifest model
 (`orthoplan/model/dataset.py`) stores redacted metadata only (never mesh bytes),
 reduces filenames to a basename, forbids unknown fields, and has **no** name,

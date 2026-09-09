@@ -47,6 +47,11 @@ def test_extract_keeps_structural_metadata_and_drops_phi() -> None:
     assert "MRN-12345" not in dumped and "19900101" not in dumped
     # But the redaction is recorded as a note.
     assert any("identifier" in note for note in meta.notes)
+    # And a traceable, license-bound watermark is attached (see watermark.py).
+    from orthoplan.watermark import CANARY_TOKEN
+
+    assert meta.watermark is not None
+    assert meta.watermark.canary == CANARY_TOKEN
 
 
 def test_extract_handles_missing_fields() -> None:

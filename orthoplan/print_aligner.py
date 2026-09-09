@@ -17,6 +17,7 @@ from orthoplan.aligner_shell_robust import build_robust_shell, robust_shell_avai
 from orthoplan.hashing import sha256_bytes
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.print_stl import solid_stl, stage_real_triangles
+from orthoplan.watermark import DataWatermark
 
 Vec3 = tuple[float, float, float]
 
@@ -49,6 +50,7 @@ def write_aligner_shells(
     frames: list,
     stem: str,
     tooth_geometry: dict,
+    watermark: DataWatermark | None = None,
 ) -> tuple[list[str], list[dict], list[dict], dict]:
     """Write shell STLs; return (paths, artifact records, stage QA reports, backend)."""
 
@@ -78,7 +80,9 @@ def write_aligner_shells(
             continue
         path = output / f"{stem}-stage-{frame.stage_index:02d}-aligner-shell.stl"
         path.write_text(
-            solid_stl(f"{stem}_stage_{frame.stage_index:02d}_aligner", shell.triangles),
+            solid_stl(
+                f"{stem}_stage_{frame.stage_index:02d}_aligner", shell.triangles, watermark
+            ),
             encoding="utf-8",
         )
         paths.append(str(path))

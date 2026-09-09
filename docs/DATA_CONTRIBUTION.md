@@ -10,6 +10,12 @@ that are enforced in code.**
 > share, and only after removing patient-identifying information. See
 > [SAFETY.md](SAFETY.md).
 
+> Every registered contribution is stamped with a traceable, license-bound
+> watermark record before the manifest is written - see
+> [DATA_LICENSE.md](DATA_LICENSE.md) for what it does, what it does not do, and
+> the usage terms it backs (no resale, no use as AI/ML training data without a
+> separate written license).
+
 ## What Helps
 
 For a general user, the most helpful contributions are, from most to least useful:
@@ -204,6 +210,7 @@ orthoplan register-contribution \
 | `consent_acknowledged` | you confirmed you may share this data |
 | `phi_removed` | you confirmed PHI was removed |
 | `notes` | optional, non-identifying notes |
+| `watermark` | traceable license-bound marker; see [DATA_LICENSE.md](DATA_LICENSE.md) |
 
 ## Directory Convention
 

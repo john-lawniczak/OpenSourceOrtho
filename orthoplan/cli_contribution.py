@@ -25,6 +25,7 @@ from orthoplan.model.dataset import (
     text_has_phi_marker,
     write_manifest,
 )
+from orthoplan.watermark import new_watermark
 
 
 def add_contribution_parser(subparsers: Any) -> None:
@@ -152,6 +153,7 @@ def cmd_register_contribution(args: argparse.Namespace) -> int:
             consent_acknowledged=True,
             phi_removed=True,
             notes=args.notes,
+            watermark=new_watermark(),
         )
     except ValueError as exc:
         print(f"register-contribution error: {exc}", file=sys.stderr)

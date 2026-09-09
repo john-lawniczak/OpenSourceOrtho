@@ -7,16 +7,16 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from orthoplan import __version__
-from orthoplan.evaluation.engine import run_rules
 from orthoplan.hashing import canonical_json, sha256_bytes, sha256_text
 from orthoplan.io.serialization import plan_to_json
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.model.review_tier import review_tier_info
 from orthoplan.print_aligner import write_aligner_shells
+from orthoplan.print_manifest import write_manifest
 from orthoplan.print_stl import build_tooth_geometry, frame_to_stl
 from orthoplan.printing import PRINT_EXPORT_CAVEAT, build_print_export_status
 from orthoplan.viz.progress import build_stage_progress_frames
+from orthoplan.watermark import DataWatermark, content_bound_watermark
 
 
 class PrintPackageResult(BaseModel):
@@ -28,6 +28,7 @@ class PrintPackageResult(BaseModel):
     aligner_shell_reports: list[dict] = Field(default_factory=list)
     aligner_shell_backend: dict = Field(default_factory=dict)
     manifest_sha256: str
+    watermark_id: str
     review_tier: str = "stl-only"
     uses_real_mesh_geometry: bool = False
     zip_path: str | None = None
@@ -57,14 +58,50 @@ def export_print_package(
     status = build_print_export_status(plan)
     frames = build_stage_progress_frames(plan)
     tooth_geometry = build_tooth_geometry(plan, workspace)
-    artifacts, records = _write_stage_artifacts(output, frames, stem, tooth_geometry)
+    plan_sha256, watermark = _plan_watermark(plan)
+    artifacts, records = _write_stage_artifacts(output, frames, stem, tooth_geometry, watermark)
     shell_paths, shell_records, shell_reports, shell_backend = _export_shells(
-        plan, output, frames, stem, tooth_geometry
+        plan, output, frames, stem, tooth_geometry, watermark
     )
-    manifest_path = _write_manifest(
+    manifest_path = write_manifest(
         plan, output, status, records, frames, stem, tooth_geometry,
-        shell_records, shell_reports, shell_backend,
+        shell_records, shell_reports, shell_backend, watermark, plan_sha256,
     )
+    zip_path, email_path = _bundle(
+        plan, output, stem, status, manifest_path, artifacts, shell_paths,
+        make_zip, make_email_draft,
+    )
+    return PrintPackageResult(
+        output_dir=str(output),
+        manifest_path=str(manifest_path),
+        artifact_paths=artifacts,
+        artifact_sha256={
+            record["filename"]: record["sha256"] for record in (*records, *shell_records)
+        },
+        aligner_shell_paths=shell_paths,
+        aligner_shell_reports=shell_reports,
+        aligner_shell_backend=shell_backend,
+        manifest_sha256=sha256_bytes(manifest_path.read_bytes()),
+        watermark_id=watermark.watermark_id,
+        review_tier=review_tier_info(plan).tier.value,
+        uses_real_mesh_geometry=any(g["mode"] == "mesh-vertices" for g in tooth_geometry.values()),
+        zip_path=str(zip_path) if zip_path else None,
+        zip_sha256=sha256_bytes(zip_path.read_bytes()) if zip_path else None,
+        email_draft_path=str(email_path) if email_path else None,
+    )
+
+
+def _bundle(
+    plan: TreatmentPlan,
+    output: Path,
+    stem: str,
+    status,
+    manifest_path: Path,
+    artifacts: list[str],
+    shell_paths: list[str],
+    make_zip: bool,
+    make_email_draft: bool,
+) -> tuple[Path | None, Path | None]:
     zip_path = (
         _write_zip(
             stem, output,
@@ -78,31 +115,33 @@ def export_print_package(
         if make_email_draft
         else None
     )
-    return PrintPackageResult(
-        output_dir=str(output),
-        manifest_path=str(manifest_path),
-        artifact_paths=artifacts,
-        artifact_sha256={
-            record["filename"]: record["sha256"] for record in (*records, *shell_records)
-        },
-        aligner_shell_paths=shell_paths,
-        aligner_shell_reports=shell_reports,
-        aligner_shell_backend=shell_backend,
-        manifest_sha256=sha256_bytes(manifest_path.read_bytes()),
-        review_tier=review_tier_info(plan).tier.value,
-        uses_real_mesh_geometry=any(g["mode"] == "mesh-vertices" for g in tooth_geometry.values()),
-        zip_path=str(zip_path) if zip_path else None,
-        zip_sha256=sha256_bytes(zip_path.read_bytes()) if zip_path else None,
-        email_draft_path=str(email_path) if email_path else None,
-    )
+    return zip_path, email_path
+
+
+def _plan_watermark(plan: TreatmentPlan) -> tuple[str, DataWatermark]:
+    """Plan content hash plus a watermark derived from it.
+
+    Deterministic, not random: re-exporting an unchanged plan must produce
+    byte-identical artifacts, so the watermark id is derived from plan content
+    rather than freshly randomized on every call.
+    """
+
+    plan_payload = json.loads(plan_to_json(plan, indent=None))
+    plan_sha256 = sha256_text(canonical_json(plan_payload))
+    return plan_sha256, content_bound_watermark(f"{plan.id}:{plan_sha256}")
 
 
 def _export_shells(
-    plan: TreatmentPlan, output: Path, frames: list, stem: str, tooth_geometry: dict
+    plan: TreatmentPlan,
+    output: Path,
+    frames: list,
+    stem: str,
+    tooth_geometry: dict,
+    watermark: DataWatermark,
 ) -> tuple[list[str], list[dict], list[dict], dict]:
     if not plan.settings.print_export.aligner_shell_enabled:
         return [], [], [], {}
-    return write_aligner_shells(plan, output, frames, stem, tooth_geometry)
+    return write_aligner_shells(plan, output, frames, stem, tooth_geometry, watermark)
 
 
 def _write_stage_artifacts(
@@ -110,6 +149,7 @@ def _write_stage_artifacts(
     frames: list,
     stem: str,
     tooth_geometry: dict,
+    watermark: DataWatermark,
 ) -> tuple[list[str], list[dict]]:
     artifacts: list[str] = []
     records: list[dict] = []
@@ -120,6 +160,7 @@ def _write_stage_artifacts(
             frame.stage_index,
             frame.poses,
             tooth_geometry,
+            watermark,
         )
         path.write_text(stl, encoding="utf-8")
         artifacts.append(str(path))
@@ -135,116 +176,6 @@ def _artifact_record(path: Path, stage_index: int, geometry_sources: list[dict])
         "sha256": sha256_bytes(path.read_bytes()),
         "byte_size": path.stat().st_size,
         "geometry_sources": geometry_sources,
-    }
-
-
-def _write_manifest(
-    plan: TreatmentPlan,
-    output: Path,
-    status,
-    artifacts: list[dict],
-    frames: list,
-    stem: str,
-    tooth_geometry: dict,
-    shell_records: list[dict],
-    shell_reports: list[dict],
-    shell_backend: dict,
-) -> Path:
-    plan_payload = json.loads(plan_to_json(plan, indent=None))
-    findings = run_rules(plan)
-    settings = plan.settings.print_export
-    manifest = {
-        "schema": "orthoplan-print-package-v2",
-        "engine": {"name": "orthoplan", "version": __version__},
-        "plan_id": plan.id,
-        "title": plan.title,
-        "review_tier": review_tier_info(plan).model_dump(mode="json"),
-        "uses_real_mesh_geometry": any(
-            g["mode"] == "mesh-vertices" for g in tooth_geometry.values()
-        ),
-        "aligner_shells": _aligner_shell_block(
-            settings, shell_records, shell_reports, shell_backend
-        ),
-        "hashes": _hashes_block(plan, plan_payload, frames, findings, tooth_geometry, shell_records),
-        "ready": status.ready,
-        "blockers": status.blockers,
-        "artifacts": artifacts,
-        "delivery_email": status.delivery_email,
-        "model_material": status.model_material,
-        "thermoforming_material": status.thermoforming_material,
-        "post_processing_notes": status.post_processing_notes,
-        "printer_tolerances": status.printer_tolerances,
-        "caveat": status.caveat,
-    }
-    path = output / f"{stem}-print-manifest.json"
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return path
-
-
-def _aligner_shell_block(
-    settings, shell_records: list[dict], shell_reports: list[dict], shell_backend: dict
-) -> dict:
-    return {
-        "enabled": settings.aligner_shell_enabled,
-        "backend": shell_backend,
-        "sheet_thickness_mm": settings.sheet_thickness_mm,
-        "gingival_trim_margin_mm": settings.gingival_trim_margin_mm,
-        "xy_compensation_mm": settings.xy_compensation_mm,
-        "z_compensation_mm": settings.z_compensation_mm,
-        "minimum_printable_feature_mm": settings.minimum_printable_feature_mm,
-        "manufacturing_readiness": _manufacturing_readiness(
-            settings.aligner_shell_enabled, shell_reports
-        ),
-        "artifacts": shell_records,
-        "stage_reports": shell_reports,
-    }
-
-
-def _hashes_block(
-    plan: TreatmentPlan,
-    plan_payload: dict,
-    frames: list,
-    findings: list,
-    tooth_geometry: dict,
-    shell_records: list[dict],
-) -> dict:
-    return {
-        "plan_sha256": sha256_text(canonical_json(plan_payload)),
-        "stage_frames_sha256": sha256_text(canonical_json([f.model_dump() for f in frames])),
-        "findings_sha256": sha256_text(canonical_json([f.model_dump(mode="json") for f in findings])),
-        "scan_sha256": {scan.asset.id: scan.asset.sha256 for scan in plan.scans if scan.asset.sha256},
-        "segmentation_fragment_sha256": _fragment_hashes(tooth_geometry),
-        "aligner_shell_sha256": {record["filename"]: record["sha256"] for record in shell_records},
-    }
-
-
-def _fragment_hashes(tooth_geometry: dict) -> dict:
-    return {
-        geom["asset_id"]: geom["sha256"]
-        for geom in tooth_geometry.values()
-        if geom["mode"] == "mesh-vertices" and geom["sha256"]
-    }
-
-
-def _manufacturing_readiness(enabled: bool, reports: list[dict]) -> dict:
-    if not enabled:
-        return {
-            "verdict": "NOT_APPLICABLE",
-            "reason": "Aligner-shell export is disabled.",
-        }
-    if not reports or any(report["verdict"] == "ISSUES" for report in reports):
-        return {
-            "verdict": "ISSUES",
-            "reason": "One or more shell stages could not produce consistent shell QA.",
-        }
-    if all(report["verdict"] == "NOT_APPLICABLE" for report in reports):
-        return {
-            "verdict": "NOT_APPLICABLE",
-            "reason": "No reviewed real geometry was available for shell generation.",
-        }
-    return {
-        "verdict": "CONSISTENT",
-        "reason": "Generated shell artifacts passed available deterministic shell QA checks.",
     }
 
 
