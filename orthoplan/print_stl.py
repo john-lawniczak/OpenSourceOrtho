@@ -14,7 +14,7 @@ from orthoplan.io.stl_import import Vec3
 from orthoplan.mesh_geometry import reviewed_fragment_triangles
 from orthoplan.model.assets import BoundingBox
 from orthoplan.model.plan import TreatmentPlan
-from orthoplan.watermark import DataWatermark, stamp_solid_name
+from orthoplan.watermark import DataWatermark, embed_geometry_signature, stamp_solid_name
 
 
 def build_tooth_geometry(
@@ -143,14 +143,18 @@ def solid_stl(name: str, triangles: list, watermark: DataWatermark | None = None
     facet normals as malformed, so emitting the true normal keeps the export
     spec-correct and unambiguous.
 
-    When ``watermark`` is given, the solid name carries a traceable marker (see
-    ``orthoplan.watermark``) - this repo's own STL reader never parses the
-    solid-name text, so it round-trips safely.
+    When ``watermark`` is given, two independent traceable markers are applied
+    (see ``orthoplan.watermark``): the solid name carries a visible one (this
+    repo's own STL reader never parses the solid-name text, so it round-trips
+    safely), and vertex coordinates carry a second, hidden one - a sub-micron
+    nudge invisible to a text editor, a slicer, or dimensional inspection,
+    kept as a fallback in case the visible marker is stripped.
     """
 
     solid_name = stamp_solid_name(name, watermark) if watermark else name
+    signed_triangles = embed_geometry_signature(triangles, watermark) if watermark else triangles
     lines = [f"solid {solid_name}"]
-    for tri in triangles:
+    for tri in signed_triangles:
         nx, ny, nz = _facet_normal(tri)
         lines.extend(
             [

@@ -53,7 +53,7 @@ Where the watermark lives, per data type:
 
 | Data type | Where the watermark is embedded |
 |-----------|----------------------------------|
-| Exported STL (`print_stl.solid_stl`) | `solid`/`endsolid` name line (`__oso-wm:<id>__<canary>`) |
+| Exported STL (`print_stl.solid_stl`) | `solid`/`endsolid` name line (`__oso-wm:<id>__<canary>`), plus a hidden sub-micron geometry signature (see below) |
 | Print-package manifest (`*-print-manifest.json`) | top-level `"watermark"` block |
 | Contributed dataset manifest (`register-contribution`) | `"watermark"` field on `DatasetManifest` |
 | CBCT/DICOM-derived metadata (`extract_dicom_metadata`) | `"watermark"` field on `DicomMetadata` |
@@ -61,6 +61,36 @@ Where the watermark lives, per data type:
 `orthoplan.watermark.contains_canary(text)` scans arbitrary text for the
 canary token - useful for checking a model's output or a redistributed
 dataset for evidence of contamination.
+
+## A Second, Hidden Layer for STL Geometry
+
+The marker above is plain text - visible in a text editor, and trivial to
+remove by renaming the `solid` line or deleting a JSON field. For STL exports,
+there is a second, independent layer that does not depend on that text
+surviving: `embed_geometry_signature` / `detect_geometry_signature`
+(`orthoplan/watermark.py`), applied automatically wherever `solid_stl` is
+given a watermark.
+
+It works by nudging each vertex's coordinates by an amount derived from a
+SHA-256 hash of the vertex's own position and the watermark id - deterministic
+and reproducible, but only up to ±0.0003mm (0.3 micron). For scale: the
+print export's default minimum printable feature is 0.3mm, about 1000x
+larger, and no clinical measurement in this project's scope approaches that
+precision either. The mesh looks, prints, and measures identically; nothing
+about it changes except digits an editor or a caliper would never surface.
+Vertices shared between adjacent triangles get an identical offset (STL
+stores vertices per-triangle, not deduplicated), so the mesh stays watertight
+- signing does not introduce seams or gaps.
+
+This is a **verification** mechanism, not a **discovery** one: given a file
+and a specific candidate watermark id (one already logged as issued by this
+project), `detect_geometry_signature` reports how strongly the geometry
+matches that id - it cannot scan an arbitrary, unknown file and extract "the"
+id from it blindly. That is an intentional trade-off, and it is also fragile
+in a way the visible marker is not: re-meshing, decimation, or any tool that
+re-quantizes coordinates to fewer than 3 decimal places erases it. Treat it as
+a fallback that can corroborate provenance when the visible marker has been
+stripped, not as a stronger claim than that.
 
 ## What This Does and Does Not Do
 

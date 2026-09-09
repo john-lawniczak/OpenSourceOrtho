@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from orthoplan.watermark import (
     CANARY_TOKEN,
+    GEOMETRY_SIGNATURE_MAGNITUDE_MM,
     WATERMARK_SCHEMA,
     DataWatermark,
     contains_canary,
     content_bound_watermark,
+    detect_geometry_signature,
+    embed_geometry_signature,
     new_watermark,
     stamp_solid_name,
     watermark_block,
@@ -72,3 +75,86 @@ def test_contains_canary_detects_exact_token_only() -> None:
     assert contains_canary(f"some model output containing {CANARY_TOKEN} verbatim")
     assert not contains_canary("ordinary text with no marker at all")
     assert not contains_canary(CANARY_TOKEN.lower())
+
+
+_TRIANGLE = (
+    (0.0, 0.0, 0.0),
+    (10.0, 0.0, 0.0),
+    (0.0, 10.0, 0.0),
+)
+_ADJACENT_TRIANGLE = (
+    (10.0, 0.0, 0.0),
+    (10.0, 10.0, 0.0),
+    (0.0, 10.0, 0.0),
+)
+
+
+def test_embed_geometry_signature_nudges_vertices_imperceptibly() -> None:
+    mark = new_watermark()
+    signed = embed_geometry_signature([_TRIANGLE], mark)
+    for original, moved in zip(_TRIANGLE, signed[0]):
+        for a, b in zip(original, moved):
+            assert 0 < abs(a - b) <= GEOMETRY_SIGNATURE_MAGNITUDE_MM
+
+
+def test_embed_geometry_signature_keeps_shared_edges_watertight() -> None:
+    # The shared edge (10,0,0)-(0,10,0) must stay bit-identical across both
+    # triangles after signing, or the mesh would gain a seam.
+    mark = new_watermark()
+    signed = embed_geometry_signature([_TRIANGLE, _ADJACENT_TRIANGLE], mark)
+    tri_a, tri_b = signed
+    assert tri_a[1] == tri_b[0]  # (10,0,0) in both
+    assert tri_a[2] == tri_b[2]  # (0,10,0) in both
+
+
+def test_embed_geometry_signature_is_deterministic() -> None:
+    mark = new_watermark()
+    first = embed_geometry_signature([_TRIANGLE], mark)
+    second = embed_geometry_signature([_TRIANGLE], mark)
+    assert first == second
+
+
+def test_detect_geometry_signature_confirms_matching_id() -> None:
+    mark = new_watermark()
+    signed = embed_geometry_signature([_TRIANGLE, _ADJACENT_TRIANGLE], mark)
+    assert detect_geometry_signature(signed, mark.watermark_id) == 1.0
+
+
+def test_detect_geometry_signature_rejects_wrong_id() -> None:
+    mark = new_watermark()
+    other = new_watermark()
+    signed = embed_geometry_signature([_TRIANGLE, _ADJACENT_TRIANGLE], mark)
+    assert detect_geometry_signature(signed, other.watermark_id) == 0.0
+
+
+def test_detect_geometry_signature_on_unsigned_mesh_is_zero() -> None:
+    mark = new_watermark()
+    assert detect_geometry_signature([_TRIANGLE], mark.watermark_id) == 0.0
+
+
+def _parse_ascii_vertex_triangles(text: str) -> list[tuple]:
+    vertices = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("vertex"):
+            _, x, y, z = stripped.split()
+            vertices.append((float(x), float(y), float(z)))
+    return [tuple(vertices[i : i + 3]) for i in range(0, len(vertices), 3)]
+
+
+def test_solid_stl_hidden_geometry_signature_survives_text_round_trip() -> None:
+    from orthoplan.print_stl import solid_stl
+
+    mark = new_watermark()
+    triangle = ((0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (0.0, 10.0, 0.0))
+    text = solid_stl("part", [triangle], mark)
+
+    triangles = _parse_ascii_vertex_triangles(text)
+    # Strong match for the id that signed it, no match for an unrelated one.
+    assert detect_geometry_signature(triangles, mark.watermark_id) == 1.0
+    other = new_watermark()
+    assert detect_geometry_signature(triangles, other.watermark_id) == 0.0
+    # Confirms this is a genuinely separate, non-textual layer: the id string
+    # itself never appears anywhere in the vertex/facet body of the file.
+    vertex_lines = "\n".join(line for line in text.splitlines() if "vertex" in line)
+    assert mark.watermark_id not in vertex_lines

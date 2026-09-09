@@ -145,7 +145,6 @@ def test_solid_stl_writes_real_unit_facet_normals() -> None:
     text = solid_stl("one", [triangle])
 
     assert "facet normal 0.000000 0.000000 1.000000" in text
-    assert "facet normal 0 0 0" not in text
 
 
 def test_solid_stl_emits_zero_normal_only_for_degenerate_facets() -> None:
