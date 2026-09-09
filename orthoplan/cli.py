@@ -15,6 +15,7 @@ from orthoplan.cli_cases import (
 )
 from orthoplan.cli_contribution import add_contribution_parser, cmd_register_contribution
 from orthoplan.cli_landmarks import add_landmarks_parser, cmd_landmarks_template
+from orthoplan.cli_watermark import add_watermark_parser, cmd_verify_watermark
 from orthoplan.cli_mesh import add_mesh_parsers, cmd_inspect_stl, cmd_register_mesh
 from orthoplan.cli_packages import (
     add_measurement_lab_parser,
@@ -49,6 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_mesh_parsers(sub)
     add_contribution_parser(sub)
+    add_watermark_parser(sub)
 
     summary = sub.add_parser("plan-summary", help="summarize a serialized plan")
     summary.add_argument("path")
@@ -243,6 +245,7 @@ _COMMANDS = {
     "inspect-stl": cmd_inspect_stl,
     "register-mesh": cmd_register_mesh,
     "register-contribution": cmd_register_contribution,
+    "verify-watermark": cmd_verify_watermark,
     "plan-summary": _cmd_plan_summary,
     "serve": _cmd_serve,
     "advise": _cmd_advise,

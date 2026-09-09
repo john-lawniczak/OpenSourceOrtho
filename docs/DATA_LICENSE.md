@@ -62,6 +62,21 @@ Where the watermark lives, per data type:
 canary token - useful for checking a model's output or a redistributed
 dataset for evidence of contamination.
 
+### Checking a File
+
+```bash
+orthoplan verify-watermark path/to/export.stl
+orthoplan verify-watermark path/to/manifest.json
+orthoplan verify-watermark path/to/any-text-or-model-output.txt
+```
+
+For an STL it reports the visible marker (if present) and, using the id it
+found (or one passed via `--id <watermark_id>`), checks the hidden geometry
+signature and reports a match percentage. For a JSON manifest it reads the
+`"watermark"` block. For anything else it scans for the canary token. Exit
+code is `0` when a watermark is confirmed, `1` when it is not found or does
+not match.
+
 ## A Second, Hidden Layer for STL Geometry
 
 The marker above is plain text - visible in a text editor, and trivial to
