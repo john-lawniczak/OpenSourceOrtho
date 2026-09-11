@@ -1,26 +1,57 @@
 # Getting 3D scans of your own teeth
 
-Start by asking your dentist or orthodontist for **existing upper and lower
-3D scan files**. Before buying a scanner, confirm that you can obtain usable
-exports. For a budget under $100, existing records, a quoted one-time scan, or
-digitizing an existing cast are the first options to investigate.
+**Already have a 3D scan? Upload your STL files in OpenSource Ortho's Upload
+step.** If you run the app locally, [open OpenSource Ortho](http://127.0.0.1:8000).
+If it is not running yet, follow the [setup instructions](HOW_TO.md#1-start-the-app).
 
-This guide supports OpenSource Ortho, a clear-aligner planning safety playground
-and research toolkit. It helps you acquire and evaluate data; scan quality does
-not establish treatment suitability or make a generated appliance safe.
+The goal is to give the software an accurate starting model of your teeth.
+From there, you can review individual teeth, define proposed corrected
+positions, preview movement in stages, and export staged model files. Better
+input data makes those models and comparisons more useful. The resulting
+positions and files still need professional review before treatment or appliance use.
+
+## Have scans? Start here
+
+1. **Upload separate upper and lower STL files**, ideally from the same visit.
+   You can start with one arch and add the other when available.
+2. **Confirm millimeters and upper/lower labels.** Keep the original files and
+   their recorded bite alignment; do not resize or independently reposition them.
+3. **Check the 3D preview for missing or distorted teeth.** Review the individual
+   tooth segmentation before using it to define proposed corrected positions.
+4. **Continue through Review → 3D preview → Print / send** to inspect the
+   proposed setup and export model files. Check the reported data gaps and
+   whether the output uses actual tooth meshes or schematic proxy geometry.
+
+Photos, viewer links, and PDFs are useful supporting records, but the tooth
+mesh upload requires STL files. Preserve other original formats and ask for an
+STL export if necessary.
+
+## Need scans? Try the cheaper options first
+
+1. **Ask your dentist or orthodontist for scans they already have.** Request
+   downloadable upper and lower STL files; use the request template below.
+2. **Get a quote for one scan session or digitizing an existing dental cast.**
+   Compare that total with buying equipment, materials, and repeat captures.
+3. **If you need frequent captures, compare borrowed scanners and cast scanning
+   with owning equipment.** Test a sample file before committing to a pipeline.
+4. **Use phone photos for visual records while arranging usable mesh data.**
+   A phone-generated 3D model needs dimensional validation before measurements.
+
+For a budget under $100, investigate the first two options before buying a
+scanner. The table below covers the alternatives and what each can contribute.
 
 **Source check: September 10, 2026.** Costs below are USD budgeting assumptions,
 not verified shopping quotes, except where explicitly identified. Taxes,
 shipping, professional fees, and replacement equipment are extra. Product links
 are non-affiliate starting points; confirm availability, export access, and
 total cost locally before buying. Software cost and data-acquisition cost are
-separate: an inexpensive app cannot guarantee an accurate sub-$100 home pipeline.
+separate, so budget for both.
 
 ## Choose by the data you need
 
 - **A visual diary:** consistent ordinary photographs can document appearance.
   Keep original photos; a reconstructed 3D model is optional and experimental.
-- **Surface geometry for research:** request full-arch intraoral scans, or explore
+- **A starting model for proposed corrected positions:** request full-arch intraoral scans, or explore
   a professionally made cast digitized by a dental laboratory. Compare a sample
   export before committing to a recurring service or equipment purchase.
 - **Changes over time:** prioritize comparable records and measured repeatability
@@ -34,12 +65,10 @@ separate: an inexpensive app cannot guarantee an accurate sub-$100 home pipeline
 
 ## Options and costs
 
-Roughly ordered by initial expense, with variable-price services and add-ons
-identified separately. All nine commonly proposed routes appear below, plus
-existing-record and existing-cast options. There is no defensible universal
-“effectiveness /10” score: performance depends on the complete capture process,
-operator, geometry, and intended measurement. These are practical judgments,
-not results of a repository benchmark.
+Compare initial expense, repeat costs, and the kind of data you get. Prices
+overlap, especially for quoted services. Accuracy depends on the entire capture
+process, so the table describes useful data and limits instead of assigning
+unsupported scores out of ten.
 
 | Route | Initial budget or quote basis | Recurring expense | Useful data and principal limit |
 |---|---|---|---|
@@ -75,14 +104,14 @@ is **$1,120**, before validation, fees, and failures. At 38 captures it is
 **$2,120**. A 38-week observation period does not specify the capture count, and
 one “kit” does not necessarily cover both arches. Compare this with quoted
 service costs before deciding that ownership is cheaper. Capture timing should
-serve the research question and existing care, not dictate treatment or wear.
+match the comparisons you need and your existing care schedule.
 
 ## What to request from an office or lab
 
 Copy and adapt this request:
 
 > I would like copies of my existing 3D dental surface records for personal
-> review and research. Can you provide separate upper and lower full-arch STL
+> use in OpenSource Ortho. Can you provide separate upper and lower full-arch STL
 > files, with units confirmed in millimeters, and preserve their recorded bite
 > alignment? Please include the bite scan or registration information if
 > available, capture date, scanner model, and any known missing areas or edits.
@@ -155,7 +184,8 @@ worn again. Coating thickness and cast removal can also alter measured geometry.
 
 ## Check the data before collecting more
 
-This is a research quality-control checklist, not a clinical acceptance test.
+Use these checks to decide whether your files support the measurements and
+model comparisons you want to make.
 
 1. **Keep the source.** Preserve untouched exports and make edits on copies.
    Record arch, capture time, method, operator, scanner/software version, and
@@ -222,7 +252,7 @@ Copy this alongside your actual acquisition log:
 
 > Read GETTING_YOUR_TEETH_SCANNED.md and docs/INTAKE_READINESS.md first.
 > Help me identify the least expensive way to acquire the data needed for my
-> stated research question. Ask what records I already have, my budget/location,
+> intended model or comparison in OpenSource Ortho. Ask what records I already have, my budget/location,
 > export availability, and whether I need visual context or measurements.
 > Distinguish measured intraoral surfaces, cast-derived surfaces, tray proxies,
 > simulated setups, and inferred geometry. Do not assign unsupported accuracy
