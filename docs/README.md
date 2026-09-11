@@ -4,6 +4,8 @@ This directory holds the project docs that should evolve with the product.
 
 ## Core Docs
 
+- [Getting 3D scans of your teeth](../GETTING_YOUR_TEETH_SCANNED.md) - acquisition options, costs, export request template, quality checks, and LLM guidance
+
 - [SAFETY.md](SAFETY.md) - capability boundary and safety language
 - [application maturity.md](application%20maturity.md) - 10-point maturity tracking for the four application surfaces
 - [NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md) - end-to-end first-time-user scorecard, weak areas, and prioritized improvement path

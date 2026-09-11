@@ -32,6 +32,9 @@ current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
 
+Need your own dental data? Start with [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
+for acquisition options, cost tradeoffs, export requests, and quality checks.
+
 The first static UI prototype lives in [ui/](ui/README.md).
 
 Scaffolding for the **lite** iOS and Android apps - thin native clients over the
@@ -45,6 +48,10 @@ the left sidebar. A light/dark switch is anchored in the top bar.
 
 If you open this repo in an IDE and ask an AI model for help, give it this
 context first:
+
+- For questions about acquiring dental scans, read
+  [GETTING_YOUR_TEETH_SCANNED.md](GETTING_YOUR_TEETH_SCANNED.md), including its
+  evidence limits and copyable LLM context.
 
 - This is an open-source clear-aligner planning **research toolkit and safety
   playground**, not medical-device software and not a treatment recommendation

@@ -15,6 +15,9 @@ scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md
 
 ## 1. Start The App
 
+Before buying scanning equipment, read [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
+for existing-record requests, budget comparisons, and checks for usable STL data.
+
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
