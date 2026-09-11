@@ -1,14 +1,7 @@
-"""Headless-browser smoke test for the 3D progress viewer.
+"""Browser smoke checks for the 3D viewer and evaluation workflow.
 
-Skips entirely when Playwright is not installed (so the default `pytest` run
-stays green without it). Run the full thing with:
-
-    pip install -e ".[e2e]" && python -m playwright install chromium
-    pytest tests/e2e -q
-
-It serves the real dev server, loads the page in headless Chromium, and asserts
-the engine responded and the Three.js viewer mounted a sized WebGL canvas with
-no uncaught page errors.
+Requires the optional Playwright dependency and installed Chromium.
+Run with `pytest tests/e2e -q`.
 """
 
 from __future__ import annotations
@@ -22,7 +15,7 @@ import pytest
 
 pytest.importorskip("playwright.sync_api")
 
-from playwright.sync_api import sync_playwright  # noqa: E402
+from playwright.sync_api import expect, sync_playwright  # noqa: E402
 
 from orthoplan.server import Handler  # noqa: E402
 
@@ -53,6 +46,7 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             # Go to the Review step so the viewer container is visible and sized.
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#viewer3d canvas", state="attached", timeout=15000)
@@ -81,20 +75,21 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             page.wait_for_selector("#panel-upload.is-active", timeout=15000)
             assert "Open sample" not in page.locator(".journey-nav").inner_text()
             page.click(".sample-launch")
+            page.click('[data-user-mode="advanced"]')
+            page.click('button.step[data-step="review"]')
             page.wait_for_selector("#panel-review.is-active", timeout=15000)
             page.wait_for_selector("#findingList li", timeout=15000)
 
-            chip = page.locator("#sampleStatusChip").inner_text()
-            assert "Sample test case" in chip
-            assert "real upper/lower OrthoCAD STL scan layer" in chip
-            assert "simulated 4-month tooth movement" in chip
-
-            assert page.locator("#planTitle").input_value() == (
-                "Canonical OrthoCAD simulated 4-month progression"
+            page.wait_for_function(
+                "() => document.querySelector('#sampleStatusChip')?.innerText.includes('walkthrough')"
             )
+            chip = page.locator("#sampleStatusChip").inner_text()
+            assert "walkthrough" in chip.lower()
+            assert page.locator("#planTitle").input_value() == "Sample test case"
             assert page.locator("#scanUnits").input_value() == "mm"
 
             max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")
@@ -129,6 +124,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             page.click(".sample-launch")
             page.wait_for_selector('#guided .gstep[data-gstep="upload"].is-active', timeout=15000)
 
@@ -177,6 +173,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#findingList li", timeout=15000)
 
@@ -198,6 +195,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
             assert non_background > 1000
 
             page.click('button.step[data-step="stages"]')
+            page.click("#addStage")
             page.fill('input[data-row="0"][data-field="tooth"]', "99")
             page.click('button.step[data-step="review"]')
             page.wait_for_function(
@@ -224,12 +222,15 @@ def test_acquisition_print_export_and_visual_screenshots(
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
 
             page.click('button.step[data-step="availability"]')
             page.check('input[data-availability="segmented_teeth"]')
             page.click('button.step[data-step="settings"]')
             page.check("#printEnabled")
             page.check("#printSafety")
+            page.click('button.step[data-step="stages"]')
+            page.click("#addStage")
 
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#findingList li", timeout=15000)
@@ -237,8 +238,8 @@ def test_acquisition_print_export_and_visual_screenshots(
             acquisition = page.locator("#acquisitionList").inner_text()
             assert "Treatment notes" in acquisition or "CBCT" in acquisition
 
+            expect(page.locator("#printExportStatus")).to_contain_text("Inputs complete")
             print_status = page.locator("#printExportStatus").inner_text()
-            assert "Inputs complete" in print_status
             assert "user's own responsibility" in print_status
 
             viewer_path = tmp_path / "viewer3d.png"
@@ -267,6 +268,7 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             response = page.evaluate(
                 """async () => {
                   const res = await fetch('/api/evaluate', {
@@ -284,6 +286,7 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
             assert any("FDI quadrant" in item for item in response["errors"])
 
             page.click('button.step[data-step="stages"]')
+            page.click("#addStage")
             page.fill('input[data-row="0"][data-field="tooth"]', "99")
             page.click('button.step[data-step="review"]')
             page.wait_for_function(

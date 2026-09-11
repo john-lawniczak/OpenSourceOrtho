@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
 import shutil
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from orthoplan.io.atomic import atomic_write_text
 from orthoplan.io.stl_import import inspect_stl
 from orthoplan.model.assets import MeshAsset, MeshProvenance
 
@@ -37,8 +37,7 @@ def read_registry(workspace: str | Path | None = None) -> MeshRegistry:
 
 def write_registry(registry: MeshRegistry, workspace: str | Path | None = None) -> None:
     root = Path(workspace) if workspace else default_mesh_workspace()
-    root.mkdir(parents=True, exist_ok=True)
-    (root / REGISTRY_FILENAME).write_text(registry.model_dump_json(indent=2), encoding="utf-8")
+    atomic_write_text(root / REGISTRY_FILENAME, registry.model_dump_json(indent=2))
 
 
 def register_stl_mesh(

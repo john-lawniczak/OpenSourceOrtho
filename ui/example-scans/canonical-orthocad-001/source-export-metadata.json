@@ -1,5 +1,12 @@
 {
   "schema": "opensource-ortho-source-export-metadata-v1",
+  "scan_acquisition": {
+    "date": "2026-06-05",
+    "treatment_phase": "pretreatment",
+    "applies_to": ["sample-test-case-upper.stl", "sample-test-case-lower.stl"],
+    "provenance": "User-confirmed acquisition date and pretreatment status; not inferred from export or registration timestamps.",
+    "date_retention": "Exact STL acquisition date retained at the user's explicit request."
+  },
   "source": {
     "export_format": "iTeroExport",
     "export_versions_seen": ["3.0", "5.0"],

@@ -27,16 +27,14 @@ assessment.
 
 ### Phase 13: Unified Intake Readiness
 
-- Add a typed readiness contract covering each STL, bite record, CBCT/DICOM
-  record, segmentation, registration, and reviewed-anatomy dependency.
-- Separate record readiness, plan consistency, artifact readiness, and physical
-  validation in the API and UI.
-- Show actionable blockers with direct links to the control that resolves each
-  one.
-- Add fixtures for complete, partial, mislabeled, wrong-scale, noisy, and
-  conflicting record sets.
-- Add an end-to-end test for a user's own uploaded records, not only the bundled
-  sample.
+- Extend the [intake-readiness contract](docs/INTAKE_READINESS.md) with local
+  file/hash verification, scan orientation, persisted bite-registration evidence,
+  and persisted segmentation quality-gate results.
+- Connect readiness evidence to capability-specific planning/review/export gates
+  and richer correction controls.
+- Expand complete reviewed-record fixtures and multi-scanner validation coverage.
+- Extend the own-upload browser regression through segmentation review, plan
+  generation, and artifact export.
 
 ### Phase 14: Segmentation Correction Workspace
 

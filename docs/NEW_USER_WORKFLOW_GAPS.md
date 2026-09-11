@@ -15,7 +15,7 @@ the ordinary-user journey with arbitrary real-world records.
 | Journey area | Current | Main limitation |
 |---|---:|---|
 | Install and launch | ~6.5/10 | Comfortable for developers; no polished desktop installer or guided dependency repair for nontechnical users. |
-| Upload STL records | ~8.0/10 | Strong local upload and unit checks, but no single intake-readiness report covering every record and downstream gate. |
+| Upload STL records | ~8.0/10 | Shared metadata readiness report and action links exist; file verification, persisted quality evidence, and capability-specific gates remain incomplete. |
 | Segment and review teeth | ~6.5/10 | Reviewable proposals exist; difficult real scans can still require substantial correction without brush/split/merge tools. |
 | Attach and use CBCT/DICOM | ~5.0/10 | Metadata, registration, anatomy contracts, and gates exist; there is no complete drop-in volume-viewing and reviewed-segmentation workflow. |
 | Build staged movement proposals | ~7.0/10 | Deterministic staging is substantial, but target quality depends heavily on reviewed inputs and does not establish biological suitability. |
@@ -33,14 +33,17 @@ safe, suitable, correctly manufactured, or authorized for use.
 
 ### 1. Unified Intake Readiness
 
-Record state is currently distributed across upload metadata, the trust strip,
-review tiers, segmentation state, findings, and export blockers. A new user needs
-one authoritative intake report showing:
+The [initial shared readiness report](INTAKE_READINESS.md) now consolidates scan
+metadata, segmentation links, bite declarations, CBCT attachments, registration
+gates, and reviewed anatomy in the evaluation API and Review workspace. It
+separates record evidence, plan checks, export prerequisites, and physical
+validation, with links to the corresponding controls. The remaining work is to
+extend that report beyond declared/persisted metadata to cover:
 
-- which upper/lower STL records loaded successfully
+- which upper/lower STL files remain locally available and match their hashes
 - units, orientation, scale plausibility, and arch identity
 - whether a bite relationship is present or missing
-- segmentation state and quality-gate result
+- persisted segmentation quality-gate results alongside the existing review state
 - CBCT/DICOM attachment, registration, and reviewed-anatomy state
 - which planning, review, and export operations are currently unlocked
 - the exact next action for every blocker

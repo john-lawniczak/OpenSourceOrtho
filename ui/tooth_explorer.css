@@ -1,0 +1,58 @@
+.tooth-explorer { --tooth-highlight: #2563eb; --tooth-highlight-text: #fff; }
+.tooth-explorer-form, .tooth-explorer-colors, .tooth-explorer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-block: 12px;
+}
+.tooth-explorer-form { align-items: end; }
+.tooth-explorer-form label { flex: 1 1 260px; display: grid; gap: 6px; }
+.tooth-explorer-form input { width: 100%; }
+.tooth-explorer button { min-height: 40px; }
+.tooth-explorer button:focus-visible, .tooth-explorer input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.tooth-explorer [aria-pressed="true"] {
+  background: var(--tooth-highlight);
+  color: var(--tooth-highlight-text);
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  font-weight: 750;
+}
+.tooth-explorer-colors label { display: inline-flex; align-items: center; gap: 8px; }
+.tooth-explorer-colors input[type="color"] { width: 48px; height: 40px; padding: 3px; cursor: pointer; }
+.tooth-explorer-error { color: var(--warn); }
+.tooth-explorer-error:empty { display: none; }
+.tooth-explorer-viewer {
+  height: 430px;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--canvas);
+  touch-action: none;
+}
+.tooth-explorer-viewer canvas { display: block; }
+.tooth-explorer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tooth-explorer-grid fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+.tooth-explorer-grid legend { padding-inline: 4px; color: var(--muted); }
+.tooth-explorer-grid button { padding: 4px; min-width: 0; }
+.tooth-explorer-list { display: flex; flex-wrap: wrap; gap: 8px 20px; padding-left: 20px; }
+@media (max-width: 1100px) {
+  .tooth-explorer-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .tooth-explorer-viewer { height: 320px; }
+  .tooth-explorer-grid fieldset { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

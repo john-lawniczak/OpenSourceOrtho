@@ -63,7 +63,10 @@ def save_plan_version_payload(payload: dict[str, Any], *, store_path: str | Path
 
 
 def list_cases_payload(*, store_path: str | Path) -> dict[str, Any]:
-    store = read_case_store(store_path)
+    try:
+        store = read_case_store(store_path)
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "errors": [f"case store read failed: {exc}"]}
     return {
         "ok": True,
         "cases": [
@@ -82,7 +85,10 @@ def list_cases_payload(*, store_path: str | Path) -> dict[str, Any]:
 def case_versions_payload(case_id: str, *, store_path: str | Path) -> dict[str, Any]:
     """Return a case's versions WITH snapshots so a client can restore directly."""
 
-    store = read_case_store(store_path)
+    try:
+        store = read_case_store(store_path)
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "errors": [f"case store read failed: {exc}"]}
     case = store.cases.get(case_id)
     if case is None:
         return {"ok": False, "errors": [f"unknown case {case_id!r}"]}

@@ -145,6 +145,19 @@ and CBCT boundary priors without checking PHI-bearing DICOM into git.
 
 ## 3D viewer
 
+The sidebar **Tooth Map** opens **Find teeth in 3D**, an independent schematic
+permanent-tooth explorer available in either workflow without uploading scans.
+Enter multiple FDI numbers (for example `11 12 33 34 43 44`), select the numbered
+buttons, or click teeth directly in the 3D model. Blue, red, yellow, and a custom
+color picker recolor the selected teeth; FDI badges and a tooth-name list identify
+the selection. Invalid numbers leave the previous selection unchanged. Clear and
+Reset view controls let users start over or restore the camera.
+
+The explorer uses schematic teeth even when patient meshes are loaded elsewhere.
+It does not edit movement rows, clinical controls, or the current plan. Selection
+and color remain while navigating within the page session. Keyboard-accessible
+number buttons and the tooth-name list remain usable when WebGL is unavailable.
+
 The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
 toggle (2D canvas is the fallback when WebGL is unavailable). Important honesty
 constraints, surfaced in the on-screen caveat:
