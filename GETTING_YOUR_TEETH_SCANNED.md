@@ -89,6 +89,29 @@ cast-digitization services; availability and whether a patient can commission a
 lab directly vary. iTero is one option, not a repo requirement: ask any provider
 whether its system can supply the files below.
 
+### Where to buy materials and scanners
+
+These links are shopping starting points, with no affiliate tags. Amazon links
+open searches so you can compare sellers and pack sizes; individual listings,
+stock, and prices have not been verified. Manufacturer links identify the
+product or provide a direct store. Match impression materials to your dental
+professional's requirements and check expiry dates and included quantities.
+
+| Item | Shopping links | What to check |
+|---|---|---|
+| **Alginate dental impression material** | [Amazon: dental alginate](https://www.amazon.com/s?k=dental+alginate+impression+material) · [Zhermack Hydrogum 5](https://www.zhermack.com/en/product/hydrogum-5/) | Dental impression material, pack quantity, storage and pouring instructions; avoid confusing it with craft/lifecasting alginate. |
+| **PVS dental impression material** | [Amazon: dental PVS impression material](https://www.amazon.com/s?k=dental+PVS+impression+material) · [Zhermack Elite HD+](https://www.zhermack.com/en/product/elite-hd-tray-material/) | Confirm the required material consistency and whether trays, dispenser, and mixing tips are included or sold separately. |
+| **Dental impression trays** | [Amazon: upper and lower dental impression trays](https://www.amazon.com/s?k=upper+lower+dental+impression+trays) | Have your dental professional select the appropriate size and material-compatible tray. |
+| **Dental model stone** | [Amazon: Type III dental stone](https://www.amazon.com/s?k=type+III+dental+stone) · [Whip Mix model stones and supplier options](https://whipmix.com/our-products/gypsum/) | Dental model stone with published mixing and expansion specifications; check bag weight and shipping cost. |
+| **Cast-making accessories** | [Amazon: dental mixing bowl and spatula](https://www.amazon.com/s?k=dental+mixing+bowl+spatula) · [Amazon: digital gram scale](https://www.amazon.com/s?k=digital+gram+scale) | Buy only what your cast-making setup needs; follow the stone manufacturer's measuring requirements. |
+| **POP 3 / POP 3 Plus scanner** | [Buy POP 3 Plus from Revopoint](https://www.revopoint3d.com/products/portable-3d-scanner-pop3) · [Amazon: Revopoint POP 3](https://www.amazon.com/s?k=Revopoint+POP+3) | The official linked store page sells **POP 3 Plus**. Check the exact model, seller, bundle, and warranty when comparing original POP 3 listings. |
+| **MINI 2 scanner** | [Buy MINI 2 from Revopoint](https://global.revopoint3d.com/products/industry-3d-scanner-mini?variant=43464479834347) | Confirm regional availability, computer compatibility, and included turntable/calibration accessories. |
+| **Scanning spray for bench specimens** *(optional)* | [Amazon: AESUB blue](https://www.amazon.com/s?k=AESUB+blue+scanning+spray) · [AESUB product and safety information](https://aesub.com/prod/aesub-blue-2/) | Only for bench objects that will not return to the mouth; see the tray limits below. An opaque stone cast may not need spray. |
+
+For a first cast-scanning session, price the impression material, required trays
+and accessories, dental stone, and borrowed or paid scanning together. Buy a
+scanner only after checking that a sample cast produces usable STL data.
+
 ### Budget a series, not just a scanner
 
 Use this worksheet with actual quotes:
