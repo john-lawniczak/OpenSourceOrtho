@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from orthoplan.arch_contract import infer_arch_from_name, normalize_arch_label
-from orthoplan.io.stl_import import read_stl_geometry
+from orthoplan.io.mesh_import import is_supported_scan, read_mesh_geometry
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.assets import ArchName, MeshAsset
 from orthoplan.model.geometry import Vec3
@@ -56,7 +56,7 @@ def _resolve_scan_path(
     if (
         candidate.is_relative_to(ui_dir)
         and candidate.is_file()
-        and candidate.suffix.lower() == ".stl"
+        and is_supported_scan(candidate)
     ):
         return candidate
     return None
@@ -126,7 +126,7 @@ def _segment_one_scan(
     if arch is None:
         return [], [], [], f"could not determine arch for scan: {reference!r}", None, [], None, None
 
-    _asset, vertices = read_stl_geometry(path)
+    _asset, vertices = read_mesh_geometry(path)
     # User-marked gaps anchor the FDI labels for this arch; None lets the segmenter
     # detect the tooth count itself.
     tooth_values = tooth_values_for_arch(arch, missing_teeth)

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from orthoplan.io.stl_import import Vec3
+from orthoplan.io.mesh_import import Vec3
 from orthoplan.mesh_geometry import reviewed_fragment_triangles
 from orthoplan.model.assets import BoundingBox
 from orthoplan.model.plan import TreatmentPlan

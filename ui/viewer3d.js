@@ -8,7 +8,7 @@ import * as THREE from "three";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { displacement, rotationApplications, toothKind } from "./core.js";
 import { toothPositions } from "./state.js";
-import { parseStlGeometry } from "./stl.js";
+import { buildScanObject, isSupportedScanName, parseScanGeometry } from "./scan_geometry.js";
 import { SCALE_BAR_MM, scaleBarLabel } from "./scale.js";
 import { makeTextSprite, makeToothNumberSprite } from "./viewer_labels.js";
 
@@ -646,7 +646,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       if (!geometry) {
         const response = await fetch(item.url);
         if (!response.ok) return;
-        geometry = parseStlGeometry(await response.arrayBuffer());
+        geometry = parseScanGeometry(await response.arrayBuffer());
         centerGeometry(geometry);
         meshUrlCache.set(item.url, geometry);
       }
@@ -671,7 +671,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       try {
         const response = await fetch(item.url);
         if (!response.ok) return;
-        const geometry = parseStlGeometry(await response.arrayBuffer());
+        const geometry = parseScanGeometry(await response.arrayBuffer());
         orientScanGeometry(geometry);
         fragmentCache.set(tooth, geometry);
         loaded = true;
@@ -683,7 +683,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   }
 
   async function loadScanSources(sources = []) {
-    const scanSources = sources.filter((source) => source?.name?.toLowerCase().endsWith(".stl"));
+    const scanSources = sources.filter((source) => isSupportedScanName(source?.name));
     const key = scanSources.map(sourceKey).join("|");
     if (uploadedScans.userData.key === key) return { loaded: false, count: uploadedScans.children.length };
     uploadedScans.userData.key = key;
@@ -691,7 +691,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     // a new scan never renders stale crowns.
     fragmentCache.clear();
     uploadedScans.traverse((child) => {
-      if (child.isMesh) child.geometry.dispose();
+      if (child.geometry) child.geometry.dispose();
     });
     uploadedScans.clear();
     // The proximity overlay belongs to the previous scan pair; drop it so a new
@@ -704,9 +704,9 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     }
 
     for (const source of scanSources) {
-      const geometry = parseStlGeometry(await sourceBuffer(source));
+      const geometry = parseScanGeometry(await sourceBuffer(source));
       orientScanGeometry(geometry);
-      const mesh = new THREE.Mesh(geometry, SCAN);
+      const mesh = buildScanObject(geometry, SCAN);
       mesh.name = source.name;
       mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
       mesh.visible = archVisible(mesh.userData.arch);
@@ -816,7 +816,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     const y = offset?.y || 0;
     const z = offset?.z || 0;
     for (const mesh of uploadedScans.children) {
-      if (mesh.isMesh && mesh.userData.arch === "lower") {
+      if (mesh.userData.arch === "lower") {
         mesh.position.set(x, y, z);
       }
     }
@@ -916,7 +916,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     for (const geometry of fragmentCache.values()) geometry.dispose();
     fragmentCache.clear();
     uploadedScans.traverse((child) => {
-      if (child.isMesh) child.geometry.dispose();
+      if (child.geometry) child.geometry.dispose();
     });
     clearProximity();
     clearScaleBar();

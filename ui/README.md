@@ -117,10 +117,13 @@ If the engine is unreachable (e.g. the page was opened via `file://`), the UI
 shows an "engine offline" message instead of silently falling back to a second,
 divergent implementation.
 
-Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
-remains the source of truth for mesh inspection. Uploaded STL files are stored
-locally in IndexedDB so a small upper/lower scan set survives reloads on the
-same browser; they are not uploaded to a server database.
+Browser scan metadata is approximate; `orthoplan.io.mesh_import.inspect_mesh()`
+remains the source of truth for mesh inspection, and it is the only parser for
+the non-STL formats - the engine stores a canonical copy (binary STL, or XYZ for
+a point cloud) that the viewer reads back, so the browser never reimplements
+PLY/OBJ/3MF/glTF/FBX. Uploaded scan files are stored locally in IndexedDB so a
+small upper/lower scan set survives reloads on the same browser; they are not
+uploaded to a server database.
 
 ## Canonical scan fixture
 

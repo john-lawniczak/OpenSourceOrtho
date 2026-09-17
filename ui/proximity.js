@@ -64,7 +64,7 @@ export async function requestProximity() {
     prox.map = null;
     prox.registration = null;
     prox.status =
-      "Load both an upper and a lower scan first. Uploaded STLs must be registered with the local engine.";
+      "Load both an upper and a lower scan first. Uploaded scans must be registered with the local engine.";
     return;
   }
   prox.busy = true;

@@ -1052,7 +1052,7 @@ private val fullGlossaryTerms = listOf(
     "Intrusion" to "Pushing a tooth into the bone.",
     "IPR" to "Interproximal reduction: planned enamel reduction between adjacent teeth to create space.",
     "Malocclusion" to "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion.",
-    "Mesh / STL" to "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed.",
+    "Mesh / scan file" to "A 3D model of your teeth from a scanner. STL, PLY, OBJ, 3MF, glTF/GLB and FBX describe triangle surfaces; ASC, XYZ and PTS hold bare points with no surface. Most carry no units - a few declare one, which still needs confirming - so units start unverified.",
     "Molar" to "A large back chewing tooth, positions 6 through 8.",
     "Movement cap" to "A per-stage review threshold for linear, vertical, angular, and rotation movement.",
     "Occlusion" to "How upper and lower teeth meet when biting.",

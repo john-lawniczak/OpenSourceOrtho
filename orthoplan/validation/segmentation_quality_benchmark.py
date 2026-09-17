@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from orthoplan.io.stl_import import read_stl_geometry
+from orthoplan.io.mesh_import import read_mesh_geometry
 from orthoplan.segmentation.auto import load_local_segmenter
 from orthoplan.segmentation.quality import evaluate_segmentation_quality
 from orthoplan.validation.benchmark_models import BenchmarkMetric
@@ -20,7 +20,7 @@ def segmentation_quality_gate_metrics() -> list[BenchmarkMetric]:
     production = 0
     metrics: list[BenchmarkMetric] = []
     for filename, arch in scans:
-        _asset, vertices = read_stl_geometry(scan_dir / filename)
+        _asset, vertices = read_mesh_geometry(scan_dir / filename)
         segments = load_local_segmenter().segment(vertices, arch=arch)  # type: ignore[arg-type]
         report = evaluate_segmentation_quality(segments, arch=arch)  # type: ignore[arg-type]
         reviewable += int(report.reviewable)

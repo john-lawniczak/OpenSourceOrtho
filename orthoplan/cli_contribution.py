@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from orthoplan.io.stl_import import inspect_stl
+from orthoplan.io.mesh_import import inspect_mesh
 from orthoplan.model.assets import MeshProvenance, MeshUnits
 from orthoplan.model.dataset import (
     ContributedScan,
@@ -84,7 +84,7 @@ def _sha256_file(path: str) -> str:
 
 
 def _scan_from_path(path: str, args: argparse.Namespace) -> ContributedScan:
-    asset = inspect_stl(path, provenance=MeshProvenance(args.provenance))
+    asset = inspect_mesh(path, provenance=MeshProvenance(args.provenance))
     inferred_role, inferred_arch, sequence_index = infer_scan_labels(path)
     role: ScanRole = args.role or inferred_role
     arch = args.arch or inferred_arch

@@ -875,7 +875,7 @@ struct GlossaryView: View {
         ("Intrusion", "Pushing a tooth into the bone."),
         ("IPR", "Interproximal reduction: planned enamel reduction between adjacent teeth to create space."),
         ("Malocclusion", "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion."),
-        ("Mesh / STL", "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed."),
+        ("Mesh / scan file", "A 3D model of your teeth from a scanner. STL, PLY, OBJ, 3MF, glTF/GLB and FBX describe triangle surfaces; ASC, XYZ and PTS hold bare points with no surface. Most carry no units - a few declare one, which still needs confirming - so units start unverified."),
         ("Molar", "A large back chewing tooth, positions 6 through 8."),
         ("Movement cap", "A per-stage review threshold for linear, vertical, angular, and rotation movement."),
         ("Occlusion", "How upper and lower teeth meet when biting."),

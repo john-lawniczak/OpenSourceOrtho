@@ -37,14 +37,17 @@ explicit, typed `coordinate_frame` and the `movement_caps.default` heuristics:
 }
 ```
 
-## 2. Inspect an STL (metadata only)
+## 2. Inspect a Scan (metadata only)
 
 ```bash
-orthoplan inspect-stl scan.stl
+orthoplan inspect-scan scan.stl
+orthoplan inspect-scan scan.ply      # or .obj .asc .xyz .pts .3mf .gltf .glb .fbx
 ```
 
-STL bytes are never stored - only redacted metadata. Units cannot be inferred
-from STL, so they are `unverified` until a user confirms them:
+Scan bytes are never stored - only redacted metadata. Most formats carry no
+unit, and a declaration from one that does (3MF, glTF, FBX) is reported as
+`declared_units` rather than applied, so `units` stays `unverified` until a user
+confirms them:
 
 ```json
 {

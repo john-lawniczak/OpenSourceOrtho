@@ -1,7 +1,9 @@
 # Getting 3D scans of your own teeth
 
-**Already have a 3D scan? Upload your STL files in OpenSource Ortho's Upload
-step.** If you run the app locally, [open OpenSource Ortho](http://127.0.0.1:8000).
+**Already have a 3D scan? Upload it in OpenSource Ortho's Upload step** - STL,
+PLY, OBJ, 3MF, glTF/GLB, FBX, or an ASC/XYZ/PTS point cloud all work, so export
+whatever your scanner offers. If you run the app locally,
+[open OpenSource Ortho](http://127.0.0.1:8000).
 If it is not running yet, follow the [setup instructions](HOW_TO.md#1-start-the-app).
 
 The goal is to give the software an accurate starting model of your teeth.
@@ -12,7 +14,7 @@ positions and files still need professional review before treatment or appliance
 
 ## Have scans? Start here
 
-1. **Upload separate upper and lower STL files**, ideally from the same visit.
+1. **Upload separate upper and lower scan files**, ideally from the same visit.
    You can start with one arch and add the other when available.
 2. **Confirm millimeters and upper/lower labels.** Keep the original files and
    their recorded bite alignment; do not resize or independently reposition them.
@@ -23,8 +25,35 @@ positions and files still need professional review before treatment or appliance
    whether the output uses actual tooth meshes or schematic proxy geometry.
 
 Photos, viewer links, and PDFs are useful supporting records, but the tooth
-mesh upload requires STL files. Preserve other original formats and ask for an
-STL export if necessary.
+mesh upload needs actual 3D geometry. Keep the originals of whatever you are
+given; see [Which export format should I pick?](#which-export-format-should-i-pick)
+if your scanner offers a choice.
+
+## Which export format should I pick?
+
+Consumer scanners let you choose. OpenSource Ortho reads all of these, so pick
+on merit rather than on what the app will accept:
+
+| Your scanner offers | Pick | Why |
+|---|---|---|
+| A mesh model | **PLY** or **STL** | Both are plain surface meshes with no extra layers to go wrong. PLY is more compact; STL is the most widely supported. |
+| A textured/colour model | **PLY** or **glTF/GLB** | Colour is not used for planning, but these keep the geometry intact and the file readable. |
+| Only a point cloud | **PLY** or **ASC** | Accepted, with real limits - see below. |
+| A 3D-printing export | **3MF** | Carries a declared unit, unlike STL. You still confirm units in the app. |
+
+Revopoint's Revo Scan (5.4.8 and later) exports point clouds as PLY/OBJ/ASC,
+meshes as PLY/OBJ/STL/FBX/glTF/3MF, and textured models as PLY/OBJ/FBX/glTF.
+Every one of those is supported.
+
+**Prefer a mesh over a point cloud.** A point cloud is just measured points with
+no surface between them. The app accepts one and can still segment it and
+register the bite, because those read points - but collision proximity, aligner
+shells, and print packages all need a surface and stay unavailable. If your
+scanner software can fuse the cloud into a mesh, do that and export the mesh.
+
+**Do not convert unless you have to.** Uploading the scanner's own export keeps
+the geometry the scanner actually measured. If you must convert, note the tool
+and settings with the record and re-check scale afterwards.
 
 ## Need scans? Try the cheaper options first
 
@@ -218,7 +247,9 @@ model comparisons you want to make.
    last molars, gum margins, holes, doubled surfaces, and missing areas. A smooth
    or watertight mesh can contain invented hole fills. Do not fill missing tooth
    anatomy and relabel it as measured data.
-3. **Verify scale and bite.** STL does not encode a reliable unit declaration.
+3. **Verify scale and bite.** Most scan formats encode no unit at all, and the
+   few that do (3MF, glTF, FBX) are only as reliable as the exporter that wrote
+   them - the app shows such a declaration but never treats it as confirmation.
    Obtain units from the exporter and an independent dimensional check on a
    bench reference/cast where appropriate. Do not resize to an average tooth
    width. Keep both arches in their shared coordinate frame; independently
@@ -242,14 +273,14 @@ model comparisons you want to make.
 
 ## Use the records in OpenSource Ortho
 
-The current surface intake path uses **STL**. Preserve PLY/OBJ originals if
-provided; requesting them does not imply the app imports them. Record any
-conversion separately and confirm that it preserved scale and geometry.
+Surface intake accepts STL, PLY, OBJ, 3MF, glTF/GLB, FBX, and ASC/XYZ/PTS
+point clouds, so keep and upload the original export rather than converting it -
+every conversion is another chance to lose scale or geometry.
 
 After [installation](HOW_TO.md), an optional local inspection is:
 
 ```bash
-orthoplan inspect-stl /path/to/initial-upper.stl
+orthoplan inspect-scan /path/to/initial-upper.ply
 ```
 
 Inspection reports mesh metadata with units unverified; it does not certify

@@ -161,7 +161,8 @@ orthoplan register-contribution path/to/upper.stl path/to/lower.stl \
 
 - `--i-confirm-no-phi` is **required**: it asserts the files and notes contain no
   patient-identifying information. Without it, nothing is written.
-- The command inspects each STL (via `io/stl_import.py::inspect_stl`), records
+- The command inspects each scan (via `io/mesh_import.py::inspect_mesh`, which
+  reads STL, PLY, OBJ, 3MF, glTF/GLB, FBX, and ASC/XYZ/PTS point clouds), records
   `sha256`, vertex/face counts, bounds, role, sequence, and arch labels,
   generates a fresh `spec-…` id, and writes a manifest. It never copies or
   uploads mesh bytes.

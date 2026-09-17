@@ -104,7 +104,7 @@
         <nav class="journey-nav" aria-label="Guided workflow">
           <button class="is-active" data-journey-step="upload" type="button">
             <strong>1</strong>
-            <span>Load STL scans</span>
+            <span>Load scans</span>
           </button>
           <button data-journey-step="review" type="button">
             <strong>2</strong>
@@ -146,14 +146,14 @@
           </ol>
 
           <section class="gstep" data-gstep="upload">
-            <h3>1 · Upload your STL files</h3>
-            <p>STL (stereolithography) files are the detailed 3D surface scan models of your teeth. Add your upper and/or lower scans.</p>
+            <h3>1 · Upload your scan files</h3>
+            <p>These are the 3D surface scan models of your teeth, exported by an intraoral or desktop scanner. STL, PLY, OBJ, 3MF, glTF/GLB, FBX, and ASC/XYZ/PTS point clouds are all accepted. Add your upper and/or lower scans.</p>
             <div id="guidedUploadHost">
               <div id="simpleUpload" class="upload-stack">
                 <label class="upload-target" for="simpleStlFile">
                   <span class="upload-icon" aria-hidden="true">↑</span>
-                  <span id="simpleUploadLabel">Choose your STL files</span>
-                  <input id="simpleStlFile" type="file" accept=".stl" multiple />
+                  <span id="simpleUploadLabel">Choose your scan files</span>
+                  <input id="simpleStlFile" type="file" accept=".stl,.ply,.obj,.asc,.xyz,.pts,.3mf,.gltf,.glb,.fbx" multiple />
                 </label>
                 <div id="simpleUploadFileList" class="upload-file-list"></div>
               </div>
@@ -286,13 +286,13 @@
 
         <section class="panel" id="panel-upload">
           <div class="panel-heading">
-            <h2>Upload STL (stereolithography)</h2>
-            <p>Add upper, lower, or both STL surface scans.</p>
+            <h2>Upload scans</h2>
+            <p>Add upper, lower, or both surface scans - STL, PLY, OBJ, 3MF, glTF/GLB, FBX, or an ASC/XYZ/PTS point cloud.</p>
           </div>
           <div class="howto-panel">
             <h2>Getting Started</h2>
             <ol>
-              <li>Upload STL (stereolithography) scans here, or use the Sample Test Case button in the sidebar for the built-in example.</li>
+              <li>Upload scans here in whatever format your scanner exports, or use the Sample Test Case button in the sidebar for the built-in example.</li>
               <li>Confirm units before relying on millimeter movement checks.</li>
               <li>Review findings and data gaps before exporting anything.</li>
             </ol>
@@ -301,8 +301,8 @@
             <div class="upload-stack">
               <label class="upload-target" for="stlFile">
                 <span class="upload-icon" aria-hidden="true">↑</span>
-                <span id="uploadLabel">Choose STL files</span>
-                <input id="stlFile" type="file" accept=".stl" multiple />
+                <span id="uploadLabel">Choose scan files</span>
+                <input id="stlFile" type="file" accept=".stl,.ply,.obj,.asc,.xyz,.pts,.3mf,.gltf,.glb,.fbx" multiple />
               </label>
               <div id="uploadFileList" class="upload-file-list"></div>
             </div>
@@ -576,7 +576,7 @@
                     </div>
                   </div>
                   <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
-                  <p class="viewer-caveat">STL scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
+                  <p class="viewer-caveat">Uploaded scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
                   <section id="manualEdit" class="manual-edit" aria-label="Manual target authoring">
                     <h3>Manual target</h3>
                     <p id="manualEditGate" class="viewer-caveat"></p>
@@ -793,7 +793,7 @@
 
           <div class="workflow-card">
             <h2>What the engine actually uses</h2>
-            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>stereolithography (STL) scan</strong>: it segments the arch into per-tooth meshes and proposes movement for review. That is the <strong>Surface Review</strong> tier, not a complete treatment plan. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware checks after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
+            <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>surface scan</strong> &mdash; STL, PLY, OBJ, 3MF, glTF/GLB, or FBX, and point clouds (ASC/XYZ/PTS) for the geometry-only steps: it segments the arch into per-tooth meshes and proposes movement for review. That is the <strong>Surface Review</strong> tier, not a complete treatment plan. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware checks after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
           </div>
 
           <div class="workflow-card">

@@ -9,42 +9,20 @@ leaves the machine; this is the on-device path.
 from __future__ import annotations
 
 import os
-import struct
 import tempfile
 
+from orthoplan.io.stl_export import binary_stl_bytes
+from orthoplan.mesh_workspace import register_scan_mesh
 from orthoplan.model.assets import MeshAsset, MeshProvenance
 from orthoplan.model.geometry import Vec3
-from orthoplan.mesh_workspace import register_stl_mesh
 from orthoplan.segmentation.heuristic import Triangle, ToothSegment
 
-_STL_HEADER = b"OpenSource Ortho auto-segment (model-generated, review required)"
-
-
-def _normal(tri: Triangle) -> tuple[float, float, float]:
-    ax, ay, az = (tri[1][i] - tri[0][i] for i in range(3))
-    bx, by, bz = (tri[2][i] - tri[0][i] for i in range(3))
-    nx, ny, nz = (ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx)
-    length = (nx * nx + ny * ny + nz * nz) ** 0.5
-    if length == 0:
-        return (0.0, 0.0, 0.0)
-    return (nx / length, ny / length, nz / length)
-
-
-def binary_stl_bytes(triangles: list[Triangle]) -> bytes:
-    """Serialize triangles to a standard 80-byte-header binary STL."""
-
-    out = bytearray()
-    out += _STL_HEADER[:80].ljust(80, b" ")
-    out += struct.pack("<I", len(triangles))
-    for tri in triangles:
-        nx, ny, nz = _normal(tri)
-        out += struct.pack(
-            "<12fH",
-            nx, ny, nz,
-            *tri[0], *tri[1], *tri[2],
-            0,
-        )
-    return bytes(out)
+__all__ = [
+    "binary_stl_bytes",
+    "export_proposal_rows",
+    "surface_sample_points",
+    "write_segment_meshes",
+]
 
 
 def write_segment_meshes(
@@ -61,7 +39,7 @@ def write_segment_meshes(
         try:
             tmp.write(data)
             tmp.close()
-            asset = register_stl_mesh(
+            asset = register_scan_mesh(
                 tmp.name,
                 workspace=workspace,
                 provenance=MeshProvenance.MODEL_GENERATED,

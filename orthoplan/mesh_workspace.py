@@ -6,7 +6,8 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from orthoplan.io.atomic import atomic_write_text
-from orthoplan.io.stl_import import inspect_stl
+from orthoplan.io.mesh_import import ScanImport, read_scan
+from orthoplan.io.stl_export import canonical_bytes, canonical_suffix
 from orthoplan.model.assets import MeshAsset, MeshProvenance
 
 REGISTRY_FILENAME = "mesh_registry.json"
@@ -17,6 +18,10 @@ class MeshRegistryEntry(BaseModel):
     filename: str
     original_reference: str | None = None
     sha256: str | None = None
+    # What the user actually uploaded, before canonicalization (e.g. "ply-le",
+    # "glb", "fbx-binary"). ``filename`` always points at the canonical copy.
+    source_format: str | None = None
+    geometry_kind: str = "mesh"
 
 
 class MeshRegistry(BaseModel):
@@ -40,31 +45,54 @@ def write_registry(registry: MeshRegistry, workspace: str | Path | None = None) 
     atomic_write_text(root / REGISTRY_FILENAME, registry.model_dump_json(indent=2))
 
 
-def register_stl_mesh(
-    stl_path: str | Path,
+def register_scan_mesh(
+    scan_path: str | Path,
     *,
     workspace: str | Path | None = None,
     provenance: MeshProvenance = MeshProvenance.IMPORTED,
 ) -> MeshAsset:
-    """Copy an STL into the local mesh workspace and register it by asset id."""
+    """Import a scan in any supported format and register it by asset id.
 
-    source = Path(stl_path)
-    asset = inspect_stl(source, provenance=provenance)
+    The file is parsed once, stored in the workspace's canonical form (binary
+    STL for a mesh, XYZ for a point cloud), and indexed under the hash of the
+    ORIGINAL bytes - so re-importing the same export always resolves to the
+    same asset regardless of how it is stored here.
+    """
+
+    source = Path(scan_path)
+    scan = read_scan(source, provenance=provenance)
     root = Path(workspace) if workspace else default_mesh_workspace()
     mesh_dir = root / "meshes"
     mesh_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"{asset.id}.stl"
-    shutil.copy2(source, mesh_dir / filename)
+    filename = _write_canonical(source, scan, mesh_dir)
 
     registry = read_registry(root)
-    registry.entries[asset.id] = MeshRegistryEntry(
-        mesh_asset_id=asset.id,
+    registry.entries[scan.asset.id] = MeshRegistryEntry(
+        mesh_asset_id=scan.asset.id,
         filename=f"meshes/{filename}",
-        original_reference=asset.reference,
-        sha256=asset.sha256,
+        original_reference=scan.asset.reference,
+        sha256=scan.asset.sha256,
+        source_format=scan.asset.format,
+        geometry_kind=scan.asset.geometry_kind,
     )
     write_registry(registry, root)
-    return asset
+    return scan.asset
+
+
+#: Retained name for callers that predate multi-format intake.
+register_stl_mesh = register_scan_mesh
+
+
+def _write_canonical(source: Path, scan: ScanImport, mesh_dir: Path) -> str:
+    """Store the canonical copy, passing STL through byte-for-byte."""
+
+    suffix = canonical_suffix(scan.payload)
+    filename = f"{scan.asset.id}{suffix}"
+    if scan.asset.format.startswith("stl-"):
+        shutil.copy2(source, mesh_dir / filename)
+    else:
+        (mesh_dir / filename).write_bytes(canonical_bytes(scan.payload))
+    return filename
 
 
 def resolve_mesh_path(mesh_asset_id: str, *, workspace: str | Path | None = None) -> Path | None:

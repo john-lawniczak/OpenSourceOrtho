@@ -38,7 +38,7 @@ export async function proposeSegmentation() {
   }));
   if (!scans.length) {
     seg.status =
-      "Upload STL files through the local server or load the Sample Test Case first.";
+      "Upload scan files through the local server or load the Sample Test Case first.";
     return;
   }
   const missingTeeth = parseMissingTeeth(seg.missingTeeth);

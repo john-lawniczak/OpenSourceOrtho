@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from orthoplan.io.stl_import import read_stl_geometry
+from orthoplan.io.mesh_import import read_scan
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import SegmentedToothMesh, TreatmentPlan
@@ -39,10 +39,11 @@ def reviewed_fragment_triangles(
     if path is None:
         return None
     try:
-        _asset, vertices = read_stl_geometry(path)
+        scan = read_scan(path)
     except (OSError, ValueError):
         return None
-    triangles: list[Triangle] = []
-    for index in range(0, len(vertices) - 2, 3):
-        triangles.append((vertices[index], vertices[index + 1], vertices[index + 2]))
-    return triangles or None
+    # A point cloud has no surface: grouping its points in threes would invent
+    # triangles that are not in the scan, so fail closed instead.
+    if not scan.payload.faces:
+        return None
+    return scan.payload.triangles() or None

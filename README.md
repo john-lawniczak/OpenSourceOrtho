@@ -179,12 +179,44 @@ See [docs/SAFETY.md](docs/SAFETY.md) before using or contributing.
 
 The first workflow is simple:
 
-1. Upload an STL intraoral scan.
+1. Upload an intraoral scan in whatever format your scanner exports (see
+   [Supported scan formats](#supported-scan-formats)).
 2. Segment the arch into individual tooth meshes.
 3. Create a staged `TreatmentPlan` with per-tooth movement deltas.
 4. Check each stage against user-configured movement caps.
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
+
+### Supported Scan Formats
+
+Upload whatever your scanner software exports - the engine reads all of it and
+normalizes it internally, so nothing has to be converted first.
+
+| Family | Extensions | Notes |
+|---|---|---|
+| STL | `.stl` | Binary and ASCII. Carries no units. |
+| PLY | `.ply` | ASCII and binary (both byte orders); mesh or point cloud. |
+| Wavefront OBJ | `.obj` | Mesh or point cloud. Materials and textures are ignored. |
+| 3MF | `.3mf` | Declares its unit; the declaration is shown, never applied on its own. |
+| glTF | `.gltf`, `.glb` | Node transforms applied; external `.bin` read next to a `.gltf`. |
+| FBX | `.fbx` | Binary (including zlib-compressed arrays) and ASCII. |
+| Point clouds | `.asc`, `.xyz`, `.pts` | Plain-text XYZ rows. |
+
+This covers every geometry export offered by consumer scanners such as the
+Revopoint POP series through Revo Scan (5.4.8 and later), for point-cloud, mesh,
+and textured models alike. Colour, texture, and material data is read past: the
+planner works on geometry.
+
+**Point clouds have no surface.** An `.asc`/`.xyz`/`.pts` export - or a PLY/OBJ
+saved with no faces - is accepted and can be segmented and bite-registered,
+because those steps read points. Anything that needs a surface (collision
+proximity, aligner shells, print packages) stays unavailable for it. Re-export
+as a mesh model if you need those.
+
+**Units are never inferred.** STL, PLY, OBJ, and point clouds carry no unit at
+all. 3MF, glTF, and FBX declare one, and that declaration is reported as
+`declared_units` so the app can pre-fill the prompt - but `units` stays
+`unverified` until you confirm it, because scan scale is a safety-relevant input.
 
 CBCT/DICOM support is tiered: local record metadata intake, on-device viewing
 handoff, STL-to-CBCT registration records, reviewed anatomy representation,
@@ -333,17 +365,23 @@ python3 tools/check_maintainability.py
 
 ### Local Mesh Workspace
 
-Plan JSON never stores mesh bytes. To render real per-tooth STL meshes locally,
-register each STL in a local mesh workspace, then link the returned `id` in the
+Plan JSON never stores mesh bytes. To render real per-tooth meshes locally,
+register each scan in a local mesh workspace, then link the returned `id` in the
 plan's `mesh_assets` and `tooth_meshes`.
 
 ```bash
+orthoplan inspect-scan path/to/upper.ply          # units-unverified metadata
 orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
 ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
 ```
 
+Registration accepts any supported format and stores a canonical copy (binary
+STL for a mesh, plain-text XYZ for a point cloud) keyed by the hash of the file
+you actually supplied, so re-importing the same export always resolves to the
+same asset id.
+
 The dev server exposes registered meshes only by asset id at `/api/mesh/<mesh_asset_id>`.
-The UI renders real linked STL meshes when available and falls back to schematic
+The UI renders real linked meshes when available and falls back to schematic
 proxy teeth when no registered mesh can be loaded.
 
 ## Contribute Your Data

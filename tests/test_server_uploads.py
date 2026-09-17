@@ -22,6 +22,21 @@ ASCII_STL = """solid tooth
 endsolid tooth
 """
 
+ASCII_PLY = """ply
+format ascii 1.0
+element vertex 3
+property float x
+property float y
+property float z
+element face 1
+property list uchar int vertex_indices
+end_header
+0 0 0
+1 0 0
+0 1 0
+3 0 1 2
+"""
+
 
 @pytest.fixture()
 def server() -> Iterator[int]:
@@ -68,16 +83,60 @@ def test_upload_stl_registers_mesh_and_serves_by_asset_id(server: int, tmp_path,
         assert resp.read() == ASCII_STL.encode()
 
 
-def test_upload_stl_rejects_non_stl_filename(server: int) -> None:
+def test_upload_scan_rejects_unsupported_filename(server: int) -> None:
     status, payload = _post(
         server,
         ASCII_STL.encode(),
-        {"Content-Type": "application/octet-stream", "X-Filename": "upper.obj"},
-        "/api/upload/stl",
+        {"Content-Type": "application/octet-stream", "X-Filename": "notes.txt"},
+        "/api/upload/scan",
     )
 
     assert status == 400
     assert payload["ok"] is False
+    assert "supported" in payload["errors"][0]
+
+
+def test_upload_scan_accepts_ply_and_serves_canonical_stl(
+    server: int, tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("ORTHOPLAN_MESH_WORKSPACE", str(tmp_path / "workspace"))
+
+    status, payload = _post(
+        server,
+        ASCII_PLY.encode(),
+        {"Content-Type": "application/octet-stream", "X-Filename": "/patient/name/upper.ply"},
+        "/api/upload/scan",
+    )
+
+    assert status == 200
+    assert payload["asset"]["format"] == "ply-ascii"
+    assert payload["asset"]["geometry_kind"] == "mesh"
+    assert payload["asset"]["face_count"] == 1
+    # The registered copy is canonical binary STL, whatever the upload format.
+    with urlopen(f"http://127.0.0.1:{server}{payload['url']}", timeout=5) as resp:
+        body = resp.read()
+    assert resp.headers["Content-Type"] == "model/stl"
+    assert len(body) == 84 + 50
+
+
+def test_upload_scan_accepts_point_cloud_and_serves_xyz(
+    server: int, tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setenv("ORTHOPLAN_MESH_WORKSPACE", str(tmp_path / "workspace"))
+
+    status, payload = _post(
+        server,
+        b"0 0 0\n1 0 0\n0 1 0\n",
+        {"Content-Type": "application/octet-stream", "X-Filename": "cloud.asc"},
+        "/api/upload/scan",
+    )
+
+    assert status == 200
+    assert payload["asset"]["geometry_kind"] == "points"
+    assert payload["asset"]["face_count"] == 0
+    assert payload["asset"]["vertex_count"] == 3
+    with urlopen(f"http://127.0.0.1:{server}{payload['url']}", timeout=5) as resp:
+        assert resp.read().split(b"\n")[0] == b"0.000000 0.000000 0.000000"
 
 
 def test_upload_case_record_registers_local_metadata(server: int, tmp_path, monkeypatch) -> None:

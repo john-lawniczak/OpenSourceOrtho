@@ -1,4 +1,5 @@
-import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, requestCbctAnatomyProposal, requestCbctAnatomyReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadStlFile } from "./state.js";
+import { SCAN_FORMATS_LABEL, isSupportedScanName } from "./scan_formats.js";
+import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, requestCbctAnatomyProposal, requestCbctAnatomyReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadScanFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderStagePreview, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -80,7 +81,7 @@ const VIEWER_GUIDED_STEPS = new Set(["plan", "details", "preview"]);
 const GUIDED_STAGE_CONTEXT = {
   upload: {
     label: "Guided step 1: Upload",
-    purpose: "Collect STL scan files and confirm the educational-use acknowledgement.",
+    purpose: "Collect scan files and confirm the educational-use acknowledgement.",
   },
   plan: {
     label: "Guided step 2: Teeth and time",
@@ -105,8 +106,8 @@ const GUIDED_STAGE_CONTEXT = {
 };
 const TECH_STAGE_CONTEXT = {
   upload: {
-    label: "Technician step: Upload STL",
-    purpose: "Add upper/lower STL scans and set scan units and arch metadata.",
+    label: "Technician step: Upload scans",
+    purpose: "Add upper/lower scans and set scan units and arch metadata.",
   },
   availability: {
     label: "Technician step: Data availability",
@@ -575,8 +576,7 @@ document.body.addEventListener("click", (event) => {
 
 function uploadLabel(files, emptyLabel) {
   if (!files.length) return emptyLabel;
-  if (files.length === 1) return files[0].name;
-  return `${files.length} STL files selected`;
+  return files.length === 1 ? files[0].name : `${files.length} scan files selected`;
 }
 
 // Reference panels (Key Terms / Tooth Map, Imaging & Photos guide) are reachable
@@ -593,9 +593,9 @@ function goToStep(step) {
 
 async function setUploadedFiles(files) {
   stopStagePlayback();
-  const stlFiles = files.filter((file) => file?.name?.toLowerCase().endsWith(".stl"));
-  state.files = stlFiles;
-  state.file = stlFiles[0] || null;
+  const scanFiles = files.filter((file) => isSupportedScanName(file?.name));
+  state.files = scanFiles;
+  state.file = scanFiles[0] || null;
   state.scanSources = [];
   state.useDemoMeshes = false;
   state.scanArchFilter = "both";
@@ -606,22 +606,22 @@ async function setUploadedFiles(files) {
   // A new scan also invalidates any bite-proximity overlay: it was computed for the
   // previous scan pair's coordinates and uploaded files cannot be read server-side.
   state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null, registeredView: false };
-  state.sampleStatus = stlFiles.length
-    ? "Uploaded STL scan layer · movement preview is schematic until segmented per-tooth meshes are available."
+  state.sampleStatus = scanFiles.length
+    ? "Uploaded scan layer · movement preview is schematic until segmented per-tooth meshes are available."
     : "";
   updateUploadLabels();
-  if (stlFiles.length) {
-    state.uploadStorageStatus = "Saving STL files locally in this browser...";
+  if (scanFiles.length) {
+    state.uploadStorageStatus = "Saving scan files locally in this browser...";
     try {
-      await saveUploadedFiles(stlFiles);
-      state.uploadStorageStatus = "Saved locally in this browser. Registering STL bytes with the local engine...";
+      await saveUploadedFiles(scanFiles);
+      state.uploadStorageStatus = "Saved locally in this browser. Registering scan bytes with the local engine...";
     } catch (error) {
       state.uploadStorageStatus = `Loaded for this session only; browser storage failed: ${error.message}`;
     }
-    await registerUploadedStls(stlFiles);
+    await registerUploadedScans(scanFiles);
   } else {
     await clearUploadedFiles().catch(() => {});
-    state.uploadStorageStatus = files.length ? "No STL files were selected." : "";
+    state.uploadStorageStatus = files.length ? `No supported scan files (${SCAN_FORMATS_LABEL}).` : "";
     el("stlFile").value = "";
     el("simpleStlFile").value = "";
   }
@@ -753,7 +753,7 @@ async function proposeCbctAnatomy() {
   const cbct = state.caseRecords.find((record) => record.kind === "cbct" || record.kind === "dicom");
   const source = state.scanSources.find((item) => item.asset?.id);
   if (!cbct || !source?.asset?.id) {
-    workflow.status = "Attach CBCT/DICOM and register an STL scan before importing masks.";
+    workflow.status = "Attach CBCT/DICOM and register a scan before importing masks.";
     renderAll();
     return;
   }
@@ -796,13 +796,13 @@ function applyServerPlanParts(snapshot) {
   state.derivedAnatomy = snapshot.derived_anatomy || null;
 }
 
-async function registerUploadedStls(files) {
+async function registerUploadedScans(files) {
   const registered = [];
   const errors = [];
   for (const file of files) {
     try {
       const arch = state.scanArch || inferArchFromName(file.name) || "";
-      const result = await uploadStlFile(file, { arch });
+      const result = await uploadScanFile(file, { arch });
       if (result.ok === false) {
         errors.push(`${file.name}: ${(result.errors || ["upload failed"]).join("; ")}`);
         continue;
@@ -821,16 +821,16 @@ async function registerUploadedStls(files) {
   if (registered.length) {
     const detail = errors.length ? ` ${errors.length} upload(s) could not be registered.` : "";
     state.uploadStorageStatus =
-      `Registered ${registered.length} STL file(s) with the local engine for segmentation and case metadata.${detail}`;
+      `Registered ${registered.length} scan file(s) with the local engine for segmentation and case metadata.${detail}`;
   } else if (errors.length) {
     state.uploadStorageStatus =
-      `Loaded in this browser, but the local engine could not register the STL bytes: ${errors.join("; ")}`;
+      `Loaded in this browser, but the local engine could not register the scan bytes: ${errors.join("; ")}`;
   }
 }
 
 function updateUploadLabels() {
-  el("uploadLabel").textContent = uploadLabel(state.files, "Choose STL files");
-  el("simpleUploadLabel").textContent = uploadLabel(state.files, "Choose your STL files");
+  el("uploadLabel").textContent = uploadLabel(state.files, "Choose scan files");
+  el("simpleUploadLabel").textContent = uploadLabel(state.files, "Choose your scan files");
 }
 
 function downloadJson(filename, value) {
@@ -1030,8 +1030,8 @@ async function restoreStoredUploads() {
     state.file = files[0];
     state.scanSources = [];
     state.useDemoMeshes = false;
-    state.uploadStorageStatus = "Restored saved STL files from this browser. Registering with the local engine...";
-    await registerUploadedStls(files);
+    state.uploadStorageStatus = "Restored saved scan files from this browser. Registering with the local engine...";
+    await registerUploadedScans(files);
     updateUploadLabels();
     renderAll();
   } catch {

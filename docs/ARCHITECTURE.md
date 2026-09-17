@@ -111,9 +111,9 @@ Python data contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
 local mesh workspace. Plan JSON still does not contain mesh bytes; it contains
-`mesh_asset_id` links. `orthoplan register-mesh` copies an STL into a local
-workspace registry, and `/api/mesh/<mesh_asset_id>` serves only registered files
-under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
+`mesh_asset_id` links. `orthoplan register-mesh` imports a scan in any supported
+format into a local workspace registry (storing a canonical copy), and
+`/api/mesh/<mesh_asset_id>` serves only registered files under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
 load real tooth meshes when available and falls back to schematic proxies when a
 mesh is missing.
 
@@ -170,23 +170,43 @@ mesh is missing.
 
 ## Safety-Review Tiers
 
-### Surface Review: STL Upload
+### Surface Review: Scan Upload
 
-The initial user upload can be an STL of an intraoral scan. STL contains surface
-geometry only. It does not contain roots, bone, periodontal status, occlusion
-dynamics, diagnosis, or CBCT anatomy.
+The initial user upload is an intraoral scan in whatever format the scanner
+exported. A surface scan contains surface geometry only. It does not contain
+roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT
+anatomy.
 
 That means the UI must show these data gaps. A surface scan can support
 crown-surface visualization, staged crown movement, arch-form proposals,
 crown-collision checks, and manufacturing-oriented handoff. It cannot prove root
 position, bone safety, periodontal suitability, or readiness for physical use.
 
-STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
+#### Scan intake (`orthoplan/io/`)
+
+Intake is format-neutral. `io/mesh_formats/` holds one reader per family - STL,
+PLY, OBJ, plain-text points (ASC/XYZ/PTS), 3MF, glTF/GLB, and FBX - each
+reducing its file to the same `MeshPayload` (points, triangle indices, format
+label, declared unit, notes). Dispatch is by extension with content sniffing as
+a fallback, so a renamed or mislabelled export still imports. `io/mesh_import.py`
+turns a payload into the redacted `MeshAsset`; `io/stl_import.py` remains as
+thin back-compatible aliases.
+
+Registration (`mesh_workspace.register_scan_mesh`) stores one canonical copy per
+asset - binary STL for a mesh, plain-text XYZ for a point cloud
+(`io/stl_export.py`) - keyed by the hash of the ORIGINAL bytes. An STL is passed
+through byte-for-byte. Everything downstream (viewer, segmentation, print
+package) therefore reads one shape, and the browser never needs a second set of
+parsers.
+
+Upload stays metadata-only:
 
 - mesh bytes are never stored in the serialized plan; only redacted metadata and an optional relative reference are kept
 - absolute paths and directory structure (which often carry patient names) are stripped
-- STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- most scan formats carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- formats that DO declare a unit (3MF, glTF, FBX) record it as `declared_units`, a prompt hint only - a file's own claim never satisfies the confirmation gate
 - a bounding-box sanity check can warn about implausible scale, but never infers units
+- a point cloud (no faces) records `geometry_kind: "points"` and `face_count: 0`; surface-dependent steps fail closed on it rather than inventing triangles between points
 
 ### Root/Bone-Aware Review: CBCT/DICOM
 
@@ -362,10 +382,13 @@ Timeline is an arithmetic projection, not an outcome estimate. Only inputs are s
 
 ### Local intake and case recovery boundaries
 
-STL intake rejects non-finite vertex coordinates, malformed vertex records, and
-facet/vertex count mismatches before computing quality or bounds. Accepted STL
-metadata still has unverified units; parsing does not establish scale or record
-readiness.
+Scan intake rejects non-finite vertex coordinates, malformed vertex records,
+faces referencing vertices outside the vertex list, and STL facet/vertex count
+mismatches before computing quality or bounds. Vertex and face counts are capped,
+and container formats (3MF's ZIP, FBX's zlib arrays) bound what they will
+decompress, so a malformed or hostile file cannot turn intake into an
+out-of-memory event. Accepted metadata still has unverified units; parsing does
+not establish scale or record readiness.
 
 Case history and the mesh registry are saved through flushed sibling temporary
 files and atomic replacement. A failed write or replacement preserves the prior

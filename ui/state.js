@@ -1,3 +1,5 @@
+import { scanUploadContentType } from "./scan_formats.js";
+
 export const state = {
   theme: "light",
   // The guided wizard is the default, primary experience for non-technical
@@ -454,13 +456,11 @@ export async function requestCbctAnatomyReview(payload) {
   return response.json();
 }
 
-export async function uploadStlFile(file, { arch } = {}) {
-  const headers = {
-    "Content-Type": "model/stl",
-    "X-Filename": file.name || "uploaded.stl",
-  };
+export async function uploadScanFile(file, { arch } = {}) {
+  const name = file.name || "uploaded.stl";
+  const headers = { "Content-Type": scanUploadContentType(name), "X-Filename": name };
   if (arch) headers["X-Arch"] = arch;
-  const response = await fetch("/api/upload/stl", {
+  const response = await fetch("/api/upload/scan", {
     method: "POST",
     headers,
     body: file,
