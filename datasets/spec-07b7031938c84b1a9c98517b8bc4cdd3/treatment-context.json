@@ -19,11 +19,11 @@
   "attachments": {
     "present_user_reported": true,
     "placement_date": null,
-    "reference_media": "sample-test-case-cliniccheck-reference.mp4",
+    "reference_media": "media/reference-simulation.mp4",
     "actual_locations_match_reference_user_confirmed": true,
     "location_confirmation_source": "User explicitly confirms that the actual attachments are placed at the locations shown in the reference video.",
     "reviewed_tooth_ids": null,
-    "note": "The user confirms actual locations match the video. Six identifiable tooth locations are transcribed in attachment-transcription.json; upper posterior markers remain unresolved. The numeric transcription has not received independent review, so reviewed_tooth_ids remains null. Placement timing is unspecified.",
+    "note": "The user confirms actual locations match the video. Six identifiable tooth locations are transcribed in derived/attachment-transcription.json; upper posterior markers remain unresolved. The numeric transcription has not received independent review, so reviewed_tooth_ids remains null. Placement timing is unspecified.",
     "transcribed_tooth_ids": [
       "11",
       "12",
@@ -32,7 +32,7 @@
       "43",
       "44"
     ],
-    "transcription_reference": "attachment-transcription.json",
+    "transcription_reference": "derived/attachment-transcription.json",
     "transcription_provenance": "MODEL",
     "complete_attachment_inventory": false
   },

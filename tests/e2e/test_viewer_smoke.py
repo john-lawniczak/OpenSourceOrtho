@@ -89,7 +89,7 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
             )
             chip = page.locator("#sampleStatusChip").inner_text()
             assert "walkthrough" in chip.lower()
-            assert page.locator("#planTitle").input_value() == "Sample test case"
+            assert page.locator("#planTitle").input_value() == "Sample test case · USER_ONE"
             assert page.locator("#scanUnits").input_value() == "mm"
 
             max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")

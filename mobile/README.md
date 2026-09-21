@@ -44,7 +44,7 @@ Opening history leaves uploaded files and generated reviews intact.
 
 Both targets package the same `mobile/sample-history/` JSON and PNG assets.
 Full-resolution STL originals remain tracked in
-[`ui/example-scans/canonical-orthocad-001`](../ui/example-scans/canonical-orthocad-001).
+[`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3`](../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3).
 Mobile visit views are fixed orthographic renders with equal source-coordinate
 scale, not a registered overlay or a new interactive 3D viewer. Baseline units
 are recorded as mm; progress scale and cross-time registration remain unverified.

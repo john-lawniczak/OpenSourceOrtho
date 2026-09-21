@@ -1,6 +1,5 @@
 {
   "schema": "opensource-ortho-redacted-cbct-metadata-v1",
-  "case_alias": "canonical-orthocad-001",
   "scan_acquisition": {
     "date": "2026-06-18",
     "provenance": "User-confirmed CBCT acquisition date; not independently verified against DICOM tags.",

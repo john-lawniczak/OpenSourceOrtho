@@ -2,11 +2,13 @@
 
 import json
 from pathlib import Path
+
+from orthoplan.datasets import SAMPLE_CASE_DIR
 import struct
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CASE = ROOT / "ui/example-scans/canonical-orthocad-001"
+CASE = SAMPLE_CASE_DIR
 ASSETS = ROOT / "mobile/sample-history"
 
 
@@ -15,6 +17,7 @@ def test_mobile_history_matches_canonical_scans_and_timeline():
     manifest = json.loads((CASE / "manifest.json").read_text())
     timeline = json.loads((CASE / "longitudinal-record.json").read_text())
     assert history["specimenId"] == manifest["specimen_id"]
+    assert history["summary"].startswith(manifest["pseudonym"])
     scans = {s["filename"]: s for s in manifest["scans"]}
     events = {e["event_id"]: e for e in timeline["events"]}
     for visit in history["visits"]:

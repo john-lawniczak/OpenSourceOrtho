@@ -8,6 +8,8 @@ falls back to a clearly-flagged approximate alignment that brings them to contac
 
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_CASE_DIR
+
 from pathlib import Path
 
 import pytest
@@ -92,9 +94,9 @@ def test_registration_to_dict_is_json_shaped() -> None:
 
 
 def test_real_bundled_scans_register_as_scanned() -> None:
-    scan_dir = Path(__file__).resolve().parents[1] / "ui" / "example-scans" / "canonical-orthocad-001"
-    upper_path = scan_dir / "sample-test-case-upper.stl"
-    lower_path = scan_dir / "sample-test-case-lower.stl"
+    scan_dir = SAMPLE_CASE_DIR
+    upper_path = scan_dir / "initial-upper.stl"
+    lower_path = scan_dir / "initial-lower.stl"
     if not (upper_path.is_file() and lower_path.is_file()):
         pytest.skip("bundled scans not present")
 

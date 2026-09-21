@@ -1,7 +1,7 @@
 {
   "schema": "opensource-ortho-attachment-transcription-v1",
   "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
-  "reference_media": "sample-test-case-cliniccheck-reference.mp4",
+  "reference_media": "media/reference-simulation.mp4",
   "reference_sha256": "98827b46e66131f6d1cfa9e5745461d78b233ccb2f3549c5187b958334db8d57",
   "numbering_system": "FDI permanent dentition",
   "orientation_assumption": "Standard non-mirrored frontal view: viewer left is patient right.",
@@ -119,6 +119,6 @@
     "code": null,
     "data_gap": "No labeled side or occlusal views; no independent tooth-number review.",
     "clinician_question": null,
-    "reference": "sample-test-case-cliniccheck-reference.mp4 at 2 and 18 seconds"
+    "reference": "media/reference-simulation.mp4 at 2 and 18 seconds"
   }
 }

@@ -2,7 +2,7 @@
   "schema": "opensource-ortho-mobile-history-v1",
   "specimenId": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
   "title": "Sample history",
-  "summary": "One contributed case, two observed scan visits.",
+  "summary": "USER_ONE \u00b7 two observed scan visits.",
   "timing": "104 days between scans. 30 calendar days from recorded treatment start to progress scan. Week 7 is the contributor's progress label. Five-day changes are reported practice, not a recommended schedule.",
   "limitation": "Independent views at equal source-coordinate scale. Progress scale and cross-time registration are unverified; tooth movement is not measured.",
   "context": "38 trays planned. Earlier tray-5 report has no observation date. Current tray per arch, schedule start date, and adherence are unknown.",
@@ -15,8 +15,8 @@
       "arches": [
         {
           "name": "Upper",
-          "previewImage": "sample-test-case-upper.png",
-          "filename": "sample-test-case-upper.stl",
+          "previewImage": "initial-upper.png",
+          "filename": "initial-upper.stl",
           "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
           "faceCount": 330309,
           "zeroAreaFaces": 0,
@@ -24,8 +24,8 @@
         },
         {
           "name": "Lower",
-          "previewImage": "sample-test-case-lower.png",
-          "filename": "sample-test-case-lower.stl",
+          "previewImage": "initial-lower.png",
+          "filename": "initial-lower.stl",
           "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
           "faceCount": 286801,
           "zeroAreaFaces": 1,

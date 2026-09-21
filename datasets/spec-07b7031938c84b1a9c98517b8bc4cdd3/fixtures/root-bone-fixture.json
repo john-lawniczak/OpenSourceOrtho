@@ -1,6 +1,6 @@
 {
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
   "schema": "opensource-ortho-canonical-root-bone-fixture-v1",
-  "case_alias": "canonical-orthocad-001",
   "fixture_scope": "root-bone-aware sample workflow plumbing with safe derived anterior landmarks",
   "clinical_use": "not-for-diagnosis-not-treatment-approval",
   "source_metadata": "cbct-metadata.redacted.json",
@@ -13,7 +13,7 @@
       "content_type": "application/json",
       "size_bytes": 515429934,
       "sha256": "d57f34f6ed9701e5c7fef659280815de444d9251a3996cf4dbc76940336d9af5",
-      "local_reference": "records/canonical-orthocad-001/cbct/IMGDATA",
+      "local_reference": ".local/records/canonical-orthocad-001/cbct/IMGDATA",
       "provenance": "patient-derived",
       "dicom": {
         "modality": "CT",

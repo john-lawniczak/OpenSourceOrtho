@@ -191,6 +191,7 @@ class DatasetManifest(BaseModel):
     model_config = {"extra": "forbid"}
 
     specimen_id: str = Field(default_factory=new_specimen_id)
+    pseudonym: str | None = Field(default=None, pattern=r"^USER_[A-Z0-9_]{1,32}$")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     engine_version: str = __version__
     scans: list[ContributedScan] = Field(default_factory=list)

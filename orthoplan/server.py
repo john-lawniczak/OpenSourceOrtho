@@ -17,6 +17,7 @@ from orthoplan.case_review import case_review_payload
 from orthoplan.cases import default_case_store
 from orthoplan.cbct_workflow import cbct_proposal_payload, cbct_review_payload
 from orthoplan.generation import generate_plan_payload
+from orthoplan.datasets import resolve_published_asset
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.segmentation_api import segment_payload
@@ -33,6 +34,9 @@ _CONTENT_TYPES = {
     ".json": "application/json; charset=utf-8",
     ".svg": "image/svg+xml",
     ".stl": "model/stl",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".md": "text/plain; charset=utf-8",
     # Canonical point-cloud storage; served as text so the viewer can read it.
     ".xyz": "text/plain; charset=utf-8",
 }
@@ -59,6 +63,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _resolve_static(self, url_path: str) -> Path | None:
+        if urllib.parse.unquote(url_path).startswith("/datasets/"):
+            return resolve_published_asset(url_path)
         relative = url_path.lstrip("/") or "index.html"
         candidate = (UI_DIR / relative).resolve()
         if not candidate.is_relative_to(UI_DIR) or not candidate.is_file():

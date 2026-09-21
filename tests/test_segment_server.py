@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_URL_ROOT
+
 import json
 import threading
 from collections.abc import Iterator
@@ -65,7 +67,7 @@ def test_segment_endpoint_proposes_and_serves_meshes(
         {
             "scans": [
                 {
-                    "reference": "example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
+                    "reference": f"{SAMPLE_URL_ROOT}/initial-upper.stl",
                     "arch": "maxillary",
                 }
             ]

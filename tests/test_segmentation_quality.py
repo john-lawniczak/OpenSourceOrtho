@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
+from orthoplan.datasets import SAMPLE_CASE_DIR
+
 
 from orthoplan.io.stl_import import read_stl_geometry
 from orthoplan.segmentation.auto import load_local_segmenter
@@ -47,8 +48,7 @@ def test_perfect_synthetic_segments_clear_production_gate() -> None:
 
 def test_current_real_scan_heuristic_is_reviewable_but_not_production_candidate() -> None:
     scan = (
-        Path(__file__).resolve().parents[1]
-        / "ui/example-scans/canonical-orthocad-001/sample-test-case-upper.stl"
+        SAMPLE_CASE_DIR / "initial-upper.stl"
     )
     _asset, vertices = read_stl_geometry(scan)
     segments = load_local_segmenter().segment(vertices, arch="maxillary")

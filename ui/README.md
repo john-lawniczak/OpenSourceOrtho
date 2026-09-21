@@ -60,7 +60,7 @@ workflows:
   clinical controls, print metadata, optimized staging, and plan JSON.
 
 The Sample Test Case renders the exact bundled STL models
-(`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`). On
+(`/datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/initial-{upper,lower}.stl`). On
 entry it loads `root-bone-fixture.json` (redacted CBCT record metadata, accepted
 fixture STL-to-CBCT registrations, safe derived anterior root centerlines,
 trusted tooth axes, and an alveolar-bounds record), then runs the on-device
@@ -127,8 +127,8 @@ uploaded to a server database.
 
 ## Canonical scan fixture
 
-`ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
-OrthoCAD shell STLs (`sample-test-case-{upper,lower}.stl`) used to keep exact scan
+`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/` contains upper and lower whole-arch
+OrthoCAD shell STLs (`initial-{upper,lower}.stl`) used to keep exact scan
 rendering stable as the product evolves (and as the first tracked data
 contribution). You can load them via the normal upload control to see exact
 whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
@@ -283,3 +283,7 @@ regenerated after UI changes:
 pip install -e ".[e2e]" && python -m playwright install chromium
 python tools/capture_screenshots.py    # writes docs/images/*.png
 ```
+
+The sample paths and `USER_ONE` label come from generated `sample-dataset.js`.
+Regenerate it with `python3 tools/build_dataset_catalog.py` from the repo root.
+Dataset assets require the Python server, which applies the publication allowlist.

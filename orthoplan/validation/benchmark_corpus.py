@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_CASE_DIR, SAMPLE_SPECIMEN_ID
+
 import json
-from pathlib import Path
 
 from orthoplan.validation.benchmark_models import BenchmarkCorpusCase, BenchmarkCorpusScan
 
@@ -16,7 +17,7 @@ _REVIEWED_SCAN_HASHES = {
 def reviewed_benchmark_corpus() -> list[BenchmarkCorpusCase]:
     """Reviewed non-PHI scan cases available for benchmark reporting."""
 
-    manifest_path = _repo_root() / "ui/example-scans/canonical-orthocad-001/manifest.json"
+    manifest_path = SAMPLE_CASE_DIR / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     scans = [
         BenchmarkCorpusScan(
@@ -33,7 +34,7 @@ def reviewed_benchmark_corpus() -> list[BenchmarkCorpusCase]:
     ]
     return [
         BenchmarkCorpusCase(
-            case_id="canonical-orthocad-001",
+            case_id=SAMPLE_SPECIMEN_ID,
             source="bundled Sample Test Case manifest",
             license="project fixture; consent acknowledged in manifest",
             phi_removed=bool(manifest["phi_removed"]),
@@ -43,7 +44,3 @@ def reviewed_benchmark_corpus() -> list[BenchmarkCorpusCase]:
             scans=scans,
         )
     ]
-
-
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]

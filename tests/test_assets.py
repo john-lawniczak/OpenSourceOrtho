@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_CASE_DIR
+
 import struct
 from pathlib import Path
 
@@ -66,10 +68,7 @@ def test_case_record_redacts_filename_and_rejects_unsafe_reference() -> None:
 
 def test_canonical_cbct_metadata_is_redacted_and_complete() -> None:
     metadata = (
-        ROOT
-        / "ui"
-        / "example-scans"
-        / "canonical-orthocad-001"
+        SAMPLE_CASE_DIR
         / "cbct-metadata.redacted.json"
     ).read_text(encoding="utf-8")
 

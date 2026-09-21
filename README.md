@@ -227,9 +227,13 @@ STL-to-CBCT registration proposals exist, but they remain untrusted until
 explicit human review/acceptance; a bundled clinical-grade CBCT segmentation
 model remains out of scope for the core install.
 
+Browse the [published dataset catalog](datasets/README.md) for **USER_ONE** and
+its baseline/progress records. Each case has a stable UUID, a readable pseudonym,
+and separate folders for source media, generated reports, and engineering fixtures.
+
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
-test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), the redacted
+test-case STL scans (`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/`), the redacted
 CBCT companion metadata, and a safe root/bone engineering fixture. It starts at
 step 1 so you can walk the whole flow. The 3D preview renders the real scans,
 pre-applies a sample-only segmentation draft, and demonstrates what changes when

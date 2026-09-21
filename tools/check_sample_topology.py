@@ -7,11 +7,13 @@ import hashlib
 import json
 from pathlib import Path
 import struct
+import sys
 
 import numpy as np
 
 
-CASE = Path(__file__).resolve().parents[1] / "ui/example-scans/canonical-orthocad-001"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from orthoplan.datasets import SAMPLE_CASE_DIR as CASE
 TRIANGLE = np.dtype([("normal", "<f4", (3,)), ("vertices", "<f4", (3, 3)),
                      ("attribute", "<u2")])
 
@@ -75,7 +77,7 @@ def main():
                          "bite accuracy", "physical scale", "cross-time registration"],
         "interpretation": "Topology inventory only. Open boundary edges establish that these are not closed surfaces; edge count alone does not measure scan accuracy or locate missing anatomy.",
     }
-    (CASE / "scan-topology.json").write_text(json.dumps(report, indent=2) + "\n")
+    (CASE / "derived/scan-topology.json").write_text(json.dumps(report, indent=2) + "\n")
 
 
 if __name__ == "__main__":

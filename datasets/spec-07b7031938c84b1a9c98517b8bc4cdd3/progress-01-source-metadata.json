@@ -114,7 +114,7 @@
   },
   "images": [
     {
-      "filename": "progress-01-gallery.jpg",
+      "filename": "media/progress-01-gallery.jpg",
       "view": "gallery",
       "sha256": "898ca62e91cfd8ef633105a082cde4ab163e285e67f7d18234a9f6addd67a0f8",
       "size_bytes": 491146,
@@ -123,7 +123,7 @@
       "bytes_unchanged": true
     },
     {
-      "filename": "progress-01-front.jpg",
+      "filename": "media/progress-01-front.jpg",
       "view": "front",
       "sha256": "1fddad06179132426a7c8a00133a7f43ba4c7416ac4e75cacbae44ee368258dd",
       "size_bytes": 350170,
@@ -132,7 +132,7 @@
       "bytes_unchanged": true
     },
     {
-      "filename": "progress-01-upper.jpg",
+      "filename": "media/progress-01-upper.jpg",
       "view": "upper",
       "sha256": "516881ed24fb3493ebd27716e7e338d31ef4646797ccd133dcaf926149383b51",
       "size_bytes": 543663,
@@ -141,7 +141,7 @@
       "bytes_unchanged": true
     },
     {
-      "filename": "progress-01-lower.jpg",
+      "filename": "media/progress-01-lower.jpg",
       "view": "lower",
       "sha256": "9a799c0a32c208cc12e7e84f4ec8a4f96fb9dd0295fe691c5ae2d2825426ee3f",
       "size_bytes": 488810,
@@ -150,7 +150,7 @@
       "bytes_unchanged": true
     },
     {
-      "filename": "progress-01-left.jpg",
+      "filename": "media/progress-01-left.jpg",
       "view": "left",
       "sha256": "04c8c7b71feb99da0270a324cdda295cb16ce37efea8926aab85080b07acff2b",
       "size_bytes": 281532,
@@ -159,7 +159,7 @@
       "bytes_unchanged": true
     },
     {
-      "filename": "progress-01-right.jpg",
+      "filename": "media/progress-01-right.jpg",
       "view": "right",
       "sha256": "ec71c35151e0ef17e5ccbcaba895acf436f873e3ced622b1a68ed580d981ecac",
       "size_bytes": 282959,

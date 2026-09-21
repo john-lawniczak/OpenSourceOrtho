@@ -1,8 +1,9 @@
 {
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
   "schema": "opensource-ortho-reference-media-v1",
   "media": [
     {
-      "filename": "sample-test-case-cliniccheck-reference.mp4",
+      "filename": "media/reference-simulation.mp4",
       "sha256": "98827b46e66131f6d1cfa9e5745461d78b233ccb2f3549c5187b958334db8d57",
       "role": "external-treatment-simulation-reference",
       "source_note": "Debranded/cropped local ClinCheck-style simulation matching the canonical sample STLs by source STL hash.",

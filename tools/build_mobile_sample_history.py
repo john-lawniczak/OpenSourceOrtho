@@ -20,7 +20,7 @@ OUTPUT = Path(__file__).resolve().parents[1] / "mobile/sample-history"
 def build_history() -> dict:
     manifest = json.loads((CASE / "manifest.json").read_text())
     timeline = json.loads((CASE / "longitudinal-record.json").read_text())
-    comparison = json.loads((CASE / "progress-01-comparison.json").read_text())
+    comparison = json.loads((CASE / "derived/progress-01-comparison.json").read_text())
     scans = {scan["filename"]: scan for scan in comparison["scans"]}
     visits = []
     for event_id, label, detail in [
@@ -35,7 +35,7 @@ def build_history() -> dict:
         "schema": "opensource-ortho-mobile-history-v1",
         "specimenId": manifest["specimen_id"],
         "title": "Sample history",
-        "summary": "One contributed case, two observed scan visits.",
+        "summary": f"{manifest['pseudonym']} · two observed scan visits.",
         "timing": f"{timeline['timing']['baseline_to_progress_days']} days between scans. "
                   f"{timeline['timing']['recorded_treatment_start_to_progress_days']} calendar "
                   "days from recorded treatment start to progress scan. Week 7 is the "

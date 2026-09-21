@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from orthoplan.datasets import SAMPLE_CASE_DIR, SAMPLE_SPECIMEN_ID
+
 
 from orthoplan.io.mesh_import import read_mesh_geometry
 from orthoplan.segmentation.auto import load_local_segmenter
@@ -11,10 +12,10 @@ from orthoplan.validation.benchmark_models import BenchmarkMetric
 
 
 def segmentation_quality_gate_metrics() -> list[BenchmarkMetric]:
-    scan_dir = Path(__file__).resolve().parents[2] / "ui/example-scans/canonical-orthocad-001"
+    scan_dir = SAMPLE_CASE_DIR
     scans = [
-        ("sample-test-case-upper.stl", "maxillary"),
-        ("sample-test-case-lower.stl", "mandibular"),
+        ("initial-upper.stl", "maxillary"),
+        ("initial-lower.stl", "mandibular"),
     ]
     reviewable = 0
     production = 0
@@ -53,14 +54,14 @@ def _summary_metrics(reviewable: int, production: int) -> list[BenchmarkMetric]:
             "real_scan_reviewable_segmentation_arches",
             float(reviewable),
             "segmentation-quality-gates",
-            "canonical-orthocad-001",
+            SAMPLE_SPECIMEN_ID,
             notes="Bundled non-PHI real scans clearing reviewable segmentation gates.",
         ),
         _metric(
             "real_scan_production_candidate_arches",
             float(production),
             "segmentation-quality-gates",
-            "canonical-orthocad-001",
+            SAMPLE_SPECIMEN_ID,
             notes="Expected to remain 0 until a stronger backend clears production gates.",
         ),
     ]

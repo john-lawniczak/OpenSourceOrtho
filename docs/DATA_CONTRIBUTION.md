@@ -58,7 +58,7 @@ in the schema - this is locked by a test (`tests/test_dataset.py`).
 Each contributed dataset gets a stable, non-identifying **specimen id** of the
 form `spec-<uuid4 hex>`. This is how data is tracked and deduplicated as the
 collection grows. The first tracked specimen is the bundled OrthoCAD example at
-[`ui/example-scans/canonical-orthocad-001/manifest.json`](../ui/example-scans/canonical-orthocad-001/manifest.json).
+[`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/manifest.json`](../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/manifest.json).
 That same sample folder also contains tracked redacted CBCT metadata and a safe
 root/bone engineering fixture. Those companion files are not a substitute for
 contributed raw DICOM; they show the preferred public-repo pattern: keep raw
@@ -66,7 +66,7 @@ DICOM local/ignored unless it is explicitly de-identified and shareable, and
 commit only redacted metadata or reviewed/safe derived anatomy.
 
 The sample now also includes a first progress pair, six source-rendered views,
-and a [baseline/progress record](../ui/example-scans/canonical-orthocad-001/outcome-notes.md).
+and a [baseline/progress record](../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/outcome-notes.md).
 Its existing specimen ID connects the visits. The confirmed week-7 progress label,
 reported five-day tray changes, and elapsed calendar days are recorded separately;
 unverified scale prevents millimeter
@@ -86,7 +86,11 @@ specimen id whenever possible:
 ```text
 datasets/
   spec-<uuid>/
-    manifest.json
+    README.md                   # case overview and timeline links
+    manifest.json               # stable UUID and optional display pseudonym
+    consent.json                # explicit publication scope and date exceptions
+    longitudinal-record.json    # observed visits and timeline
+    treatment-context.json      # reported history and unknowns
     initial-upper.stl
     initial-lower.stl
     initial-bite.stl              # optional
@@ -99,7 +103,11 @@ datasets/
     plan-summary.json             # optional but strongly preferred
     outcome-notes.md              # optional, no PHI
     cbct-metadata.redacted.json    # optional, no raw DICOM or identifiers
-    root-bone-fixture.json         # optional reviewed/safe derived anatomy
+    media/                      # source renderings and reference media
+    derived/                    # comparisons, previews, and quality reports
+    fixtures/                   # synthetic engineering fixtures
+      root-bone-fixture.json
+    .local/                     # ignored private records; never published
 ```
 
 Use these filename labels so future tooling can parse the case consistently:
@@ -114,7 +122,7 @@ Use these filename labels so future tooling can parse the case consistently:
 | `plan-summary.json` | Non-proprietary summary of intended movement and controls. |
 | `outcome-notes.md` | Plain-language, non-identifying notes about tracking/refinements/results. |
 | `cbct-metadata.redacted.json` | Optional structural CBCT metadata only; no pixel bytes, identifier values, absolute paths, UID values, or full dates. |
-| `root-bone-fixture.json` | Optional reviewed or safe derived anatomy and registration records; not raw DICOM. |
+| `fixtures/root-bone-fixture.json` | Explicit engineering fixture; not measured patient anatomy or raw DICOM. |
 
 If you only have one scan pair, use `initial-upper.stl` and `initial-lower.stl`.
 If you only have one arch, keep the same label style (`initial-upper.stl`, for
@@ -169,6 +177,11 @@ orthoplan register-contribution path/to/upper.stl path/to/lower.stl \
 
 - `--i-confirm-no-phi` is **required**: it asserts the files and notes contain no
   patient-identifying information. Without it, nothing is written.
+- `--pseudonym USER_ONE` supplies a non-identifying display label. For subsequent
+  visits, pass `--specimen-id <existing-specimen-id>` and the same pseudonym to
+  retain the case identity. Include all previous scans as well as the new pair;
+  this command writes the supplied scan list, not an automatic append. Retain
+  any existing plan/outcome sidecars with their corresponding options.
 - The command inspects each scan (via `io/mesh_import.py::inspect_mesh`, which
   reads STL, PLY, OBJ, 3MF, glTF/GLB, FBX, and ASC/XYZ/PTS point clouds), records
   `sha256`, vertex/face counts, bounds, role, sequence, and arch labels,
@@ -203,6 +216,7 @@ orthoplan register-contribution \
 | Field | Meaning |
 |-------|---------|
 | `specimen_id` | `spec-<uuid4 hex>` stable handle |
+| `pseudonym` | Optional non-identifying display label, e.g. `USER_ONE` |
 | `created_at` | UTC registration time |
 | `engine_version` | engine version at registration |
 | `scans[]` | per-file: `filename` (redacted), `role`, `sequence_index`, `sha256`, `units`, `provenance`, `arch`, `vertex_count`, `face_count`, `bounds` |
@@ -226,9 +240,31 @@ datasets/
     manifest.json
 ```
 
-The bundled example keeps the readable folder name `canonical-orthocad-001` and
-carries its specimen id inside `manifest.json`; the folder name is a convenience
-alias, the UUID is the canonical identity.
+The bundled example now follows this standard in `datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/`.
+Its manifest retains the original specimen UUID and records the display pseudonym
+`USER_ONE`. Later visits keep that UUID. Pseudonyms use `USER_` followed by uppercase
+letters, digits, or underscores; they must not encode real identities.
+
+The generated [catalog](../datasets/README.md) and [index](../datasets/index.json)
+list pseudonyms, UUIDs, available roles, scan pairs, consent flags, and published
+byte counts. They omit case dates and contributor identities. Regenerate with
+`python3 tools/build_dataset_catalog.py`; `--check` fails on stale output. The
+builder checks original scan hashes, filename labels, unique pseudonyms, and
+consistency between the manifest and publication scope.
+
+`consent.json` records the documented authorization basis, exact-date exceptions,
+and explicit `public_assets` paths. It is not a signed consent form and must not
+claim permissions that were never supplied. Existing third-party media with
+unverified rights retains that caveat and is excluded from the HTTP allowlist.
+Manifest consent and redaction flags must agree with the scope record.
+
+Scan paths and plan/outcome sidecars remain basenames at the case root for schema
+compatibility. Other case metadata uses case-root-relative references, including
+`media/`, `derived/`, and `fixtures/` paths. Raw records stay in ignored `.local/`.
+The server exposes only listed public assets and rejects traversal and symlinks.
+The same resolver supports segmentation references under `/datasets/<specimen>/`.
+Mobile previews and the browser sample reference are generated from this dataset;
+original STLs remain full-resolution Git blobs with unchanged hashes.
 
 Before opening a pull request or sending a data drop, check:
 

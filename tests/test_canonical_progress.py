@@ -2,7 +2,8 @@
 
 import hashlib
 import json
-from pathlib import Path
+
+from orthoplan.datasets import SAMPLE_CASE_DIR
 import struct
 
 from orthoplan.model.dataset import read_manifest
@@ -10,7 +11,7 @@ from orthoplan.validation.benchmark_corpus import reviewed_benchmark_corpus
 from orthoplan.validation.longitudinal_benchmark import longitudinal_outcome_reports
 
 
-CASE = Path(__file__).resolve().parents[1] / "ui/example-scans/canonical-orthocad-001"
+CASE = SAMPLE_CASE_DIR
 
 
 def test_progress_assets_match_manifest_and_source_inventory():
@@ -40,7 +41,7 @@ def test_progress_comparison_does_not_report_unverified_mm_error():
     for metric in report.tracking_errors:
         assert metric.value_mm is None
         assert metric.status == "unverified-or-unsupported-units"
-    comparison = json.loads((CASE / "progress-01-comparison.json").read_text())
+    comparison = json.loads((CASE / "derived/progress-01-comparison.json").read_text())
     assert comparison["registration_status"] == "not-validated"
     assert comparison["per_tooth_movement_mm"] is None
     assert comparison["tracking_error_mm"] is None
@@ -49,7 +50,7 @@ def test_progress_comparison_does_not_report_unverified_mm_error():
 def test_new_visits_do_not_inherit_baseline_benchmark_review():
     case = reviewed_benchmark_corpus()[0]
     assert {scan.filename for scan in case.scans} == {
-        "sample-test-case-upper.stl", "sample-test-case-lower.stl",
+        "initial-upper.stl", "initial-lower.stl",
     }
 
 

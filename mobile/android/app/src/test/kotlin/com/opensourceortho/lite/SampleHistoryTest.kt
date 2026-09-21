@@ -14,6 +14,7 @@ class SampleHistoryTest {
     @Test
     fun observedVisitsKeepSeparateGeometryAndDates() {
         val history = SampleHistory.decode(fixture.readText())
+        assertTrue(history.summary.startsWith("USER_ONE"))
         assertEquals(listOf("2026-06-05", "2026-09-17"), history.visits.map { it.date })
         assertEquals(listOf("Baseline", "Week 7"), history.visits.map { it.label })
         assertEquals(4, history.visits.flatMap { it.arches }.map { it.sha256 }.distinct().size)

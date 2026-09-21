@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import struct
+import sys
 
 import matplotlib
 
@@ -20,7 +21,8 @@ from matplotlib.collections import PolyCollection
 import numpy as np
 
 
-CASE = Path(__file__).resolve().parents[1] / "ui/example-scans/canonical-orthocad-001"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from orthoplan.datasets import SAMPLE_CASE_DIR as CASE
 TRIANGLE = np.dtype([("normal", "<f4", (3,)), ("vertices", "<f4", (3, 3)),
                      ("attribute", "<u2")])
 
@@ -78,9 +80,9 @@ def main() -> None:
     scans = {s["filename"]: s for s in manifest["scans"]}
     # View-only camera orientation; source export transforms are not reapplied.
     views = [
-        ("sample-test-case-upper.stl", [-1, 1, -1], "Upper | Baseline"),
+        ("initial-upper.stl", [-1, 1, -1], "Upper | Baseline"),
         ("progress-01-upper.stl", [1, 1, 1], "Upper | Reported week 7"),
-        ("sample-test-case-lower.stl", [1, 1, 1], "Lower | Baseline"),
+        ("initial-lower.stl", [1, 1, 1], "Lower | Baseline"),
         ("progress-01-lower.stl", [1, 1, 1], "Lower | Reported week 7"),
     ]
     fig, axes = plt.subplots(2, 2, figsize=(12, 11), facecolor="white")
@@ -98,7 +100,7 @@ def main() -> None:
              "Surface appearance includes scan coverage and attachments; no tooth movement is measured.",
              ha="center", fontsize=10, linespacing=1.7)
     fig.subplots_adjust(top=0.90, bottom=0.12, hspace=0.14, wspace=0.05)
-    fig.savefig(CASE / "progress-01-comparison.png", dpi=150)
+    fig.savefig(CASE / "derived/progress-01-comparison.png", dpi=150)
     plt.close(fig)
     report = {
         "schema": "opensource-ortho-unregistered-scan-comparison-v1",
@@ -122,7 +124,7 @@ def main() -> None:
             "No final outcome, reviewed tooth correspondence, or verified progress scale",
         ],
     }
-    (CASE / "progress-01-comparison.json").write_text(json.dumps(report, indent=2) + "\n")
+    (CASE / "derived/progress-01-comparison.json").write_text(json.dumps(report, indent=2) + "\n")
 
 
 if __name__ == "__main__":

@@ -33,6 +33,8 @@ def add_contribution_parser(subparsers: Any) -> None:
         help="register contributed STL scans under a tracked, PHI-free specimen id",
     )
     parser.add_argument("paths", nargs="+", help="one or more STL files")
+    parser.add_argument("--specimen-id", default=None, help="reuse an existing specimen ID for later visits")
+    parser.add_argument("--pseudonym", default=None, help="non-identifying display label, e.g. USER_ONE")
     parser.add_argument(
         "--arch",
         choices=["maxillary", "mandibular"],
@@ -143,7 +145,8 @@ def cmd_register_contribution(args: argparse.Namespace) -> int:
 
     try:
         manifest = DatasetManifest(
-            specimen_id=new_specimen_id(),
+            specimen_id=args.specimen_id or new_specimen_id(),
+            pseudonym=args.pseudonym,
             scans=scans,
             plan_summary=plan_summary,
             plan_summary_filename=args.plan_summary,

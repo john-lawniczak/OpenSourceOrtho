@@ -1,12 +1,12 @@
 # Baseline to first progress scan
 
 This is the first longitudinal update for specimen
-`spec-07b7031938c84b1a9c98517b8bc4cdd3` (the existing User 1 sample).
+`spec-07b7031938c84b1a9c98517b8bc4cdd3` (display pseudonym `USER_ONE`).
 The contributor confirms the new pair as **week 7**, explaining that trays were
 being changed every **five days**. It is a progress record;
 no final outcome or treatment-effectiveness assessment has been supplied.
 
-![Independent baseline and progress scan views](progress-01-comparison.png)
+![Independent baseline and progress scan views](derived/progress-01-comparison.png)
 
 The figure renders all triangles from the four actual STL files, with equal
 source-coordinate scale, independent centering, and view-only rotations. It
@@ -50,7 +50,7 @@ The manifest records SHA-256 hashes, triangle-soup vertex counts, raw bounds,
 arch labels, and the progress role. The new unit labels remain `unverified`
 because STL does not declare a unit and independent scale confirmation is absent.
 
-The [topology inventory](scan-topology.json) checks all four scans using exact
+The [topology inventory](derived/scan-topology.json) checks all four scans using exact
 coordinate matches and retains the original geometry. Both progress arches have
 finite coordinates, one connected component, and no duplicate faces. The upper
 has 2,219 boundary edges and six edges incident to more than two faces; the lower
@@ -60,7 +60,7 @@ boundary edges do not by themselves quantify missing anatomy or scan accuracy.
 Self-intersections, scanner accuracy, and anatomical completeness were not tested.
 Reproduce the inventory with `python3 tools/check_sample_topology.py` (NumPy).
 
-The reproducible [comparison JSON](progress-01-comparison.json) contains raw
+The reproducible [comparison JSON](derived/progress-01-comparison.json) contains raw
 geometry statistics and explicit null values for tooth movement and tracking
 error. Millimeter bounds proxies are suppressed for unverified scan units.
 No root/bone registration from the baseline engineering fixture is transferred
@@ -80,11 +80,11 @@ treated as evidence that an intervention did not occur.
 The five-day wear interval comes from the contributor's follow-up clarification,
 not the source export. It describes reported practice, not a recommended schedule.
 
-![Source-rendered progress gallery](progress-01-gallery.jpg)
+![Source-rendered progress gallery](media/progress-01-gallery.jpg)
 
-Full-resolution source views: [front](progress-01-front.jpg),
-[upper](progress-01-upper.jpg), [lower](progress-01-lower.jpg),
-[left](progress-01-left.jpg), and [right](progress-01-right.jpg).
+Full-resolution source views: [front](media/progress-01-front.jpg),
+[upper](media/progress-01-upper.jpg), [lower](media/progress-01-lower.jpg),
+[left](media/progress-01-left.jpg), and [right](media/progress-01-right.jpg).
 These are textured scanner renderings, not clinical photographs. View labels
 follow the source export. There are no equivalent baseline color views in the
 tracked case, so the baseline/progress figure uses STL geometry for both visits.

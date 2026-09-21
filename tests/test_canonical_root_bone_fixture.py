@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_CASE_DIR
+
 import json
 from pathlib import Path
 
@@ -13,19 +15,19 @@ from orthoplan.evaluation.rules.root_bone import RootBoneVerdict, root_bone_revi
 from orthoplan.segmentation.cbct_prior import boundary_priors_for_arch
 
 ROOT = Path(__file__).resolve().parents[1]
-CASE_DIR = ROOT / "ui" / "example-scans" / "canonical-orthocad-001"
+CASE_DIR = SAMPLE_CASE_DIR
 
 
 def _fixture() -> dict:
-    return json.loads((CASE_DIR / "root-bone-fixture.json").read_text(encoding="utf-8"))
+    return json.loads((CASE_DIR / "fixtures/root-bone-fixture.json").read_text(encoding="utf-8"))
 
 
 def _sample_plan() -> TreatmentPlan:
     fixture = _fixture()
-    upper = inspect_stl(CASE_DIR / "sample-test-case-upper.stl").model_copy(
+    upper = inspect_stl(CASE_DIR / "initial-upper.stl").model_copy(
         update={"units": MeshUnits.MM}
     )
-    lower = inspect_stl(CASE_DIR / "sample-test-case-lower.stl").model_copy(
+    lower = inspect_stl(CASE_DIR / "initial-lower.stl").model_copy(
         update={"units": MeshUnits.MM}
     )
     return TreatmentPlan(
@@ -130,7 +132,7 @@ def test_canonical_fixture_drives_root_bone_review_after_segmentation() -> None:
 
 
 def test_canonical_fixture_does_not_track_raw_identifiers_or_absolute_paths() -> None:
-    text = (CASE_DIR / "root-bone-fixture.json").read_text(encoding="utf-8")
+    text = (CASE_DIR / "fixtures/root-bone-fixture.json").read_text(encoding="utf-8")
 
     assert "/Users/" not in text
     assert "PatientName" not in text

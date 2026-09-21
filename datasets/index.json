@@ -1,0 +1,23 @@
+{
+  "schema": "opensource-ortho-dataset-index-v1",
+  "cases": [
+    {
+      "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+      "uuid": "07b70319-38c8-4b1a-9c98-517b8bc4cdd3",
+      "pseudonym": "USER_ONE",
+      "manifest": "spec-07b7031938c84b1a9c98517b8bc4cdd3/manifest.json",
+      "overview": "spec-07b7031938c84b1a9c98517b8bc4cdd3/README.md",
+      "roles_present": [
+        "initial",
+        "progress"
+      ],
+      "scan_count": 4,
+      "scan_pair_count": 2,
+      "has_cbct_metadata": true,
+      "consent_acknowledged": true,
+      "exact_dates_retained": true,
+      "public_asset_count": 26,
+      "published_bytes": 64422007
+    }
+  ]
+}

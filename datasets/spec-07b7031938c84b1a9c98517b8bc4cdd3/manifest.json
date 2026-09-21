@@ -4,7 +4,7 @@
   "engine_version": "1.0.0",
   "scans": [
     {
-      "filename": "sample-test-case-upper.stl",
+      "filename": "initial-upper.stl",
       "role": "initial",
       "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
       "units": "mm",
@@ -26,7 +26,7 @@
       }
     },
     {
-      "filename": "sample-test-case-lower.stl",
+      "filename": "initial-lower.stl",
       "role": "initial",
       "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
       "units": "mm",
@@ -98,7 +98,7 @@
     "schema": "opensource-ortho-plan-summary-v1",
     "stage_count": 38,
     "tracking_notes": "Historical report: tray 5, observation date unspecified. User confirms the new progress pair as week 7 with five-day tray changes; 30 calendar days elapsed from recorded start to scan. Schedule start date and current tray per arch remain unknown. See longitudinal-record.json.",
-    "notes": "User confirms actual attachment locations match the video. The attachments list is a partial model visual transcription of six identifiable teeth, assuming a non-mirrored frontal view; additional upper posterior locations are unresolved. See attachment-transcription.json for evidence and limitations. Placement timing is unspecified.",
+    "notes": "User confirms actual attachment locations match the video. The attachments list is a partial model visual transcription of six identifiable teeth, assuming a non-mirrored frontal view; additional upper posterior locations are unresolved. See derived/attachment-transcription.json for evidence and limitations. Placement timing is unspecified.",
     "attachments": [
       "11",
       "12",
@@ -113,5 +113,6 @@
   "phi_removed": true,
   "notes": "Canonical OrthoCAD specimen with initial pair and first progress pair. Sequence index counts scan visits, not treatment stages. New progress units and cross-time registration remain unverified.",
   "outcome_notes_filename": "outcome-notes.md",
-  "outcome_notes_sha256": "37788a7ee8f76f0f6f13cbbb627767e33c630bc732b4735c8f2723b49e4390b8"
+  "outcome_notes_sha256": "ed3713e8142afd501b26ce3149bdad59056b93280750ce1f0991eed19e6ffefc",
+  "pseudonym": "USER_ONE"
 }

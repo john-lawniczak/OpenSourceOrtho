@@ -12,6 +12,7 @@ final class SampleHistoryTests: XCTestCase {
 
     func testBundledObservedVisitsKeepSeparateGeometryAndDates() throws {
         let history = try SampleHistory.decode(Data(contentsOf: fixtureURL))
+        XCTAssertTrue(history.summary.hasPrefix("USER_ONE"))
         XCTAssertEqual(history.visits.map(\.date), ["2026-06-05", "2026-09-17"])
         XCTAssertEqual(history.visits.map(\.label), ["Baseline", "Week 7"])
         XCTAssertEqual(Set(history.visits.flatMap(\.arches).map(\.sha256)).count, 4)

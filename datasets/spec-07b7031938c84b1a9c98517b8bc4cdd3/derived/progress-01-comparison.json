@@ -7,7 +7,7 @@
   "coordinate_scale": "Source units; progress millimeter scale unverified",
   "scans": [
     {
-      "filename": "sample-test-case-upper.stl",
+      "filename": "initial-upper.stl",
       "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
       "units": "mm",
       "face_count": 330309,
@@ -59,7 +59,7 @@
       "degenerate_faces": 7
     },
     {
-      "filename": "sample-test-case-lower.stl",
+      "filename": "initial-lower.stl",
       "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
       "units": "mm",
       "face_count": 286801,
@@ -114,7 +114,7 @@
   "display": {
     "projection": "XY, camera along positive Z",
     "rotation_diagonals": {
-      "sample-test-case-upper.stl": [
+      "initial-upper.stl": [
         -1,
         1,
         -1
@@ -124,7 +124,7 @@
         1,
         1
       ],
-      "sample-test-case-lower.stl": [
+      "initial-lower.stl": [
         1,
         1,
         1

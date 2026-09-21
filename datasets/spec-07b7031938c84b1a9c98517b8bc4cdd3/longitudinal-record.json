@@ -1,7 +1,6 @@
 {
   "schema": "opensource-ortho-longitudinal-record-v1",
   "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
-  "case_alias": "canonical-orthocad-001",
   "events": [
     {
       "event_id": "initial",
@@ -9,8 +8,8 @@
       "date": "2026-06-05",
       "provenance": "user-confirmed",
       "files": [
-        "sample-test-case-upper.stl",
-        "sample-test-case-lower.stl"
+        "initial-upper.stl",
+        "initial-lower.stl"
       ],
       "metadata": "source-export-metadata.json"
     },
@@ -69,8 +68,8 @@
     "wear_interval_start_date": null
   },
   "comparison": {
-    "report": "progress-01-comparison.json",
-    "figure": "progress-01-comparison.png",
+    "report": "derived/progress-01-comparison.json",
+    "figure": "derived/progress-01-comparison.png",
     "registration_status": "not-validated",
     "per_tooth_movement": null,
     "tracking_error": null,

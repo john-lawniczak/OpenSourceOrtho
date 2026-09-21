@@ -210,7 +210,7 @@ What exists:
 - Synthetic volume benchmarks and fail-closed tests proving unaccepted
   registration, proposed anatomy, optional-extra absence, and rejected anatomy do
   not promote a plan to trusted root/bone-aware behavior.
-- Canonical `canonical-orthocad-001` redacted CBCT metadata and root/bone
+- Canonical `USER_ONE` redacted CBCT metadata and root/bone
   engineering fixture exercise accepted registrations, trusted derived landmarks,
   anatomical frames, root/bone review, and CBCT boundary priors without
   committing raw DICOM bytes.
