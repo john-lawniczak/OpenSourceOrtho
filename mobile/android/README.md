@@ -26,7 +26,10 @@ android/
       SafetyText.kt              verdict labels (disclaimer text in strings.xml)
       LiteFlowViewModel.kt       StateFlow UI state, delegates to the client
       MainActivity.kt            Compose entry + safety banner
-      LiteScreens.kt             Upload / Teeth + Time / Review / Print + Send / Settings
+      LiteScreens.kt             Upload / Review / Print + Send / Settings
+      TeethAndTimeScreen.kt         observed sample / imported scan selection
+      ScanSurfaceView.kt            full-resolution OpenGL ES surface viewer
+      StlMesh.kt                    validated STL parser
     src/test/kotlin/...          JVM unit tests for the core
 ```
 
@@ -45,7 +48,9 @@ gradle wrapper --gradle-version 8.9   # one-time: creates ./gradlew + wrapper ja
 Open the `mobile/android/` folder in Android Studio to run on an emulator.
 The Settings About card reads `BuildConfig.VERSION_NAME` and
 `BuildConfig.VERSION_CODE`; keep version metadata in `app/build.gradle.kts`.
-Version 0.2.0-scaffold (2) adds **Sample history** in the top bar. The offline
+Version 0.3.0-scaffold (3) adds the interactive USER_ONE scan viewer in **Teeth**.
+The Gradle `bundleSampleScans` task copies only the four originals listed in the
+shared history; private records and reference video are excluded. The offline
 baseline/week-7 viewer reads the shared `mobile/sample-history` assets configured
 in Gradle; it does not replace uploaded scans or generated reviews.
 
@@ -66,9 +71,9 @@ engine.
   STL bytes with the engine mesh workspace instead of sending metadata only.
 - **Persistent review library**: browser JSON can be imported and included in
   the exported mobile package; add durable app storage and deletion/rename UI.
-- **Per-tooth 3D renderer**: `TeethAndTimeScreen` now renders a projected native
-  preview from selected STL geometry when URI access is available. Replace it
-  with a Filament/OpenGL renderer backed by segmented per-tooth meshes from
+- **Per-tooth 3D renderer**: `TeethAndTimeScreen` now renders a complete, depth-tested OpenGL ES
+  surface from selected STL geometry when URI access is available. The next step
+  is segmented per-tooth meshes from
   `GET /api/mesh/<id>` and engine stage transforms.
 - **Destination-specific print/send handoff**: `PrintAndSendScreen` writes a JSON
   package, supports Android document export, opens Sharesheet targets, and opens
@@ -81,7 +86,7 @@ engine.
 
 ## Safety
 
-The non-dismissible banner (`R.string.safety_disclaimer`) and `CONSISTENT`/`ISSUES`
+The safety summary (`R.string.safety_disclaimer`) and `CONSISTENT`/`ISSUES`
 verdict labels are mandatory. Never present a plan, generated package, printed
 model, aligner, or other appliance as safe, approved, cleared, complete, suitable,
 or ready for treatment or physical use. Any physical use is the user's own

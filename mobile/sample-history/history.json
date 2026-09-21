@@ -20,7 +20,12 @@
           "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
           "faceCount": 330309,
           "zeroAreaFaces": 0,
-          "units": "mm"
+          "units": "mm",
+          "displayRotation": [
+            -1,
+            1,
+            -1
+          ]
         },
         {
           "name": "Lower",
@@ -29,7 +34,12 @@
           "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
           "faceCount": 286801,
           "zeroAreaFaces": 1,
-          "units": "mm"
+          "units": "mm",
+          "displayRotation": [
+            1,
+            1,
+            1
+          ]
         }
       ]
     },
@@ -46,7 +56,12 @@
           "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
           "faceCount": 332227,
           "zeroAreaFaces": 7,
-          "units": "unverified"
+          "units": "unverified",
+          "displayRotation": [
+            1,
+            1,
+            1
+          ]
         },
         {
           "name": "Lower",
@@ -55,7 +70,12 @@
           "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
           "faceCount": 265329,
           "zeroAreaFaces": 0,
-          "units": "unverified"
+          "units": "unverified",
+          "displayRotation": [
+            1,
+            1,
+            1
+          ]
         }
       ]
     }
@@ -91,5 +111,6 @@
       "date": "2026-09-21",
       "label": "Progress export"
     }
-  ]
+  ],
+  "pseudonym": "USER_ONE"
 }

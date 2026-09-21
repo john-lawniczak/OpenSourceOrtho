@@ -37,7 +37,14 @@ final class LiteFlowViewModel: ObservableObject {
         }
 
         let byteCount = ((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
-        let previewData = try? Data(contentsOf: url)
+        let previewData: Data?
+        if modality == "stl" && byteCount <= STLMesh.maxBytes {
+            previewData = try? Data(contentsOf: url, options: .mappedIfSafe)
+            if previewData == nil { errorMessage = "The selected STL could not be read. Choose the file again." }
+        } else {
+            previewData = nil
+            if modality == "stl" { errorMessage = "Scan exceeds the mobile preview limit. Open it in the browser." }
+        }
         addScan(
             SelectedScan(
                 fileName: url.lastPathComponent,
@@ -66,36 +73,6 @@ final class LiteFlowViewModel: ObservableObject {
             )
         )
         previewScans.append(PreviewScan(fileName: fileName, modality: "photo", data: data))
-    }
-
-    func addDevSampleSTL() {
-        let samples = [
-            ("dev-sample-upper", "dev-sample-upper.stl", "upper"),
-            ("dev-sample-lower", "dev-sample-lower.stl", "lower"),
-        ]
-        for sample in samples {
-            let url = Bundle.main.url(forResource: sample.0, withExtension: "stl")
-            let byteCount = url.flatMap { try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize } ?? 0
-            let previewData = url.flatMap { try? Data(contentsOf: $0) }
-            scans.append(
-                SelectedScan(
-                    fileName: sample.1,
-                    arch: sample.2,
-                    byteCount: byteCount,
-                    modality: "stl"
-                )
-            )
-            if let previewData {
-                previewScans.append(
-                    PreviewScan(
-                        fileName: sample.1,
-                        modality: "stl",
-                        data: previewData
-                    )
-                )
-            }
-        }
-        step = .teethAndTime
     }
 
     /// Posts selected records to the engine and advances to Review.
@@ -191,7 +168,7 @@ final class LiteFlowViewModel: ObservableObject {
 }
 
 struct PreviewScan: Identifiable {
-    var id: String { fileName }
+    let id = UUID()
     var fileName: String
     var modality: String
     var data: Data

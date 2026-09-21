@@ -43,10 +43,6 @@ class LiteFlowViewModel(
         _state.update { it.copy(step = step) }
     }
 
-    fun addDevSample(scans: List<SelectedScan>) {
-        _state.update { it.copy(scans = it.scans + scans, step = LiteStep.TEETH_AND_TIME) }
-    }
-
     /** Posts selected records to the engine and advances to Review. */
     fun generate() {
         val scans = _state.value.scans

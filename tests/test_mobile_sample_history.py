@@ -16,6 +16,8 @@ def test_mobile_history_matches_canonical_scans_and_timeline():
     history = json.loads((ASSETS / "history.json").read_text())
     manifest = json.loads((CASE / "manifest.json").read_text())
     timeline = json.loads((CASE / "longitudinal-record.json").read_text())
+    assert history["pseudonym"] == manifest["pseudonym"]
+    comparison = json.loads((CASE / "derived/progress-01-comparison.json").read_text())
     assert history["specimenId"] == manifest["specimen_id"]
     assert history["summary"].startswith(manifest["pseudonym"])
     scans = {s["filename"]: s for s in manifest["scans"]}
@@ -25,6 +27,7 @@ def test_mobile_history_matches_canonical_scans_and_timeline():
         assert [a["filename"] for a in visit["arches"]] == events[visit["id"]]["files"]
         for arch in visit["arches"]:
             scan = scans[arch["filename"]]
+            assert arch["displayRotation"] == comparison["display"]["rotation_diagonals"][arch["filename"]]
             assert arch["sha256"] == scan["sha256"]
             assert arch["faceCount"] == scan["face_count"]
             assert arch["units"] == scan["units"]

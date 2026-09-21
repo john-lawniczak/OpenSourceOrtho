@@ -5,7 +5,7 @@ from math import ceil, hypot
 from pydantic import BaseModel, Field
 
 from orthoplan.clinical_control_checks import delta_violates_controls, max_control_stage_end
-from orthoplan.model import Stage, ToothDelta, ToothId, TreatmentPlan
+from orthoplan.model import Stage, ToothDelta, TreatmentPlan
 
 
 class OptimizerIssue(BaseModel):

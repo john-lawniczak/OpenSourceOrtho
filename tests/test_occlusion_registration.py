@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from orthoplan.datasets import SAMPLE_CASE_DIR
 
-from pathlib import Path
 
 import pytest
 

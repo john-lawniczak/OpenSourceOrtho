@@ -3,6 +3,7 @@ import Foundation
 /// Observed visits for the bundled case; independent of generated plan stages.
 public struct SampleHistory: Decodable {
     public let schema: String
+    public let pseudonym: String
     public let specimenId: String
     public let title: String
     public let summary: String
@@ -27,6 +28,7 @@ public struct SampleHistory: Decodable {
         public let sha256: String
         public let faceCount: Int
         public let zeroAreaFaces: Int
+        public let displayRotation: [Float]
         public let units: String
     }
 
@@ -41,7 +43,9 @@ public struct SampleHistory: Decodable {
         guard history.schema == "opensource-ortho-mobile-history-v1",
               !history.visits.isEmpty,
               Set(history.visits.map(\.id)).count == history.visits.count,
-              history.visits.allSatisfy({ !$0.arches.isEmpty }) else {
+              history.visits.allSatisfy({ !$0.arches.isEmpty && $0.arches.allSatisfy { arch in
+                  arch.displayRotation.count == 3 && arch.displayRotation.allSatisfy { abs($0) == 1 }
+              } }) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Invalid sample history"))
         }
         return history

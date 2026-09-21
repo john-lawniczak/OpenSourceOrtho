@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class SampleHistory(
     val schema: String,
+    val pseudonym: String,
     val specimenId: String,
     val title: String,
     val summary: String,
@@ -22,7 +23,9 @@ data class SampleHistory(
             require(history.schema == "opensource-ortho-mobile-history-v1")
             require(history.visits.isNotEmpty())
             require(history.visits.map { it.id }.distinct().size == history.visits.size)
-            require(history.visits.all { it.arches.isNotEmpty() })
+            require(history.visits.all { it.arches.isNotEmpty() && it.arches.all { arch ->
+                arch.displayRotation.size == 3 && arch.displayRotation.all { value -> kotlin.math.abs(value) == 1f }
+            } })
             return history
         }
     }
@@ -45,6 +48,7 @@ data class SampleArch(
     val sha256: String,
     val faceCount: Int,
     val zeroAreaFaces: Int,
+    val displayRotation: List<Float>,
     val units: String,
 )
 

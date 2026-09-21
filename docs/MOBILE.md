@@ -26,6 +26,21 @@ ingestion, volume viewing, STL-to-CBCT registration, reviewed anatomy, and
 quality metrics. A phone may eventually help display or annotate those records,
 but it should not silently claim to perform the full root/bone-aware workflow.
 
+## Real scan viewing
+
+The Teeth tab defaults to USER_ONE's observed baseline and week-7 scan history.
+Both apps render every STL triangle (SceneKit on iOS, OpenGL ES on Android), with
+independent arch/visit selection, rotation, zoom, and reset. Sample viewing stays
+separate from the uploaded case and plan generation. No synthetic teeth or
+inferred intermediate stages are shown. Full originals are copied from the UUID
+dataset at build time, with SHA-256 verification at load; they are not duplicated
+in the source tree. The top-bar history remains a timeline with fixed PNG views.
+
+The views fit each arch independently and do not measure tooth movement. The
+progress scan's units and registration remain unverified. See
+[mobile build details](../mobile/README.md) and the
+[release-readiness review](RELEASE_READINESS.md).
+
 ## Browser Handoff
 
 The browser/Python workspace remains the source of truth for high-fidelity work:

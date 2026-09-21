@@ -3,7 +3,7 @@ import Foundation
 /// Where the lite app reaches the OpenSource Ortho Python engine.
 ///
 /// The engine is the single source of truth (see ../../API_CONTRACT.md); the app
-/// never synthesizes a plan on-device. Change `baseURL` in one place to point at
+/// can produce a labeled, limited STL-only review when offline. Change `baseURL` in one place to point at
 /// a deployed engine. Cleartext HTTP is only for the local dev hosts below.
 public struct EngineConfig: Sendable {
     public var baseURL: URL

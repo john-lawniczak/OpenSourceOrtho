@@ -39,6 +39,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "644D3A07379E654CA1B835AF"
+               BuildableName = "ScanViewerUITests.xctest"
+               BlueprintName = "ScanViewerUITests"
+               ReferencedContainer = "container:OpenSourceOrthoLite.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

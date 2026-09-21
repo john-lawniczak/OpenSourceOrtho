@@ -66,9 +66,8 @@ context first:
   in [orthoplan/](orthoplan). Native lite clients live in [mobile/](mobile/README.md).
   Architecture, safety, data contribution, AI-chat, and maturity docs live in
   [docs/](docs/README.md).
-- Active implementation work is tracked only in [TODO.md](TODO.md). Completed
-  history should be read from git history and the feature docs, not treated as
-  unfinished work.
+- Active implementation notes may live in a local, ignored `TODO.md`. Shared
+  work is tracked in repository issues; completed history is in Git and feature docs.
 - The most useful contributions are privacy-safe longitudinal STL
   (stereolithography) scan bundles, reviewed segmentation/setup improvements,
   UI tests, safety-boundary hardening, and docs that help non-specialists

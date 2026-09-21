@@ -34,6 +34,7 @@ def build_history() -> dict:
     return {
         "schema": "opensource-ortho-mobile-history-v1",
         "specimenId": manifest["specimen_id"],
+        "pseudonym": manifest["pseudonym"],
         "title": "Sample history",
         "summary": f"{manifest['pseudonym']} · two observed scan visits.",
         "timing": f"{timeline['timing']['baseline_to_progress_days']} days between scans. "
@@ -69,7 +70,7 @@ def build_arch(scan: dict, comparison: dict) -> dict:
     return {"name": "Upper" if "upper" in filename else "Lower",
             "previewImage": preview, "filename": filename, "sha256": scan["sha256"],
             "faceCount": scan["face_count"], "zeroAreaFaces": scan["degenerate_faces"],
-            "units": scan["units"]}
+            "units": scan["units"], "displayRotation": rotation}
 
 
 if __name__ == "__main__":

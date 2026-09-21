@@ -34,30 +34,37 @@ matching the repo's no-heavy-framework, auditable, offline-leaning posture.
 
 ## The lite flow
 
-Both apps also offer **Sample history** in the top bar, available offline.
-Switch between the baseline (June 5) and reported week 7 (September 17) to see
-upper/lower views rendered from the actual contributed STLs, source dates,
-triangle counts, and the recorded case timeline. Five-day tray changes are
-contributor-reported history. The two observed visits do not interpolate
-intermediate tooth movement or populate the generated-plan stage slider.
-Opening history leaves uploaded files and generated reviews intact.
+The **Teeth** tab opens a real, interactive `USER_ONE` scan by default. Choose
+**Baseline / Week 7** and **Upper / Lower**, drag to rotate, pinch to zoom, or
+reset the view. Every source triangle is rendered with depth and surface lighting;
+there are no box/pyramid teeth, fabricated intermediate stages, or synthetic
+fallback surfaces. Failed or oversized imports show an explicit error.
 
-Both targets package the same `mobile/sample-history/` JSON and PNG assets.
-Full-resolution STL originals remain tracked in
+Both native builds copy exactly four original STL files from the UUID dataset
+into their app resources. They verify the sample SHA-256 before decoding. This
+adds about 61 MB of original scan bytes to each uncompressed app, without adding
+another copy to Git. Source scans remain in
 [`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3`](../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3).
-Mobile visit views are fixed orthographic renders with equal source-coordinate
-scale, not a registered overlay or a new interactive 3D viewer. Baseline units
-are recorded as mm; progress scale and cross-time registration remain unverified.
-Missing assets show an error instead of synthetic teeth.
+The iOS renderer uses SceneKit; Android uses OpenGL ES with a depth buffer.
+Both parsers reject incomplete/non-finite meshes and enforce an 80 MiB / one
+million triangle mobile limit instead of silently dropping faces.
 
-Regenerate assets after a canonical case update with the optional NumPy and
-Matplotlib dependencies installed:
+These are independent, fitted whole-arch views. Display orientation is recorded
+in the shared history metadata; it is not a bite or cross-time registration.
+Progress scale is unverified and no per-tooth movement is inferred. Viewing the
+sample never adds it to uploaded files or sends it for plan generation. Imported
+STLs have a separate file selector and retain the existing review workflow.
+
+**Sample history** in the top bar retains the offline timeline, dates, quality
+inventory, and fixed orthographic PNG views. Both targets package the shared
+`mobile/sample-history/` JSON and PNGs. Regenerate these after a canonical case
+update with the optional NumPy and Matplotlib dependencies installed:
 
 ```bash
 python3 tools/build_mobile_sample_history.py
 ```
 
-Both app versions are now 0.2.0 (build 2); Android retains its `-scaffold` suffix.
+Both app versions are 0.3.0 (build 3); Android retains its `-scaffold` suffix.
 
 Both apps implement the same four-step phone flow. The full clinician workspace
 (records, caps editor, staged-movement table, plan versions) is intentionally
@@ -67,8 +74,8 @@ path.
 1. **Upload files** - STL scans for mobile preview/review, CBCT/DICOM and photos
    as attached context, plus browser/full-engine JSON reviews/packages imported
    for on-device storage and sharing.
-2. **Teeth + time** - show a 3D preview surface, stage scrubber, and the action
-   that posts a plan-shaped payload to the engine's `POST /api/generate-plan`.
+2. **Teeth + time** - inspect real observed scans. For imported files, the review
+   action posts a plan-shaped payload to the engine's `POST /api/generate-plan`.
    If the engine is offline and the selected records are STL-only, the app builds
    a limited on-device review instead of blocking the user completely.
 3. **Review** - the engine runs deterministic generation + named correctness

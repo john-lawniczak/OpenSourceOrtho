@@ -13,8 +13,8 @@ android {
         applicationId = "com.opensourceortho.lite"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "0.2.0-scaffold"
+        versionCode = 3
+        versionName = "0.3.0-scaffold"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -25,6 +25,8 @@ android {
     }
 
     sourceSets.getByName("main").assets.srcDir("../../sample-history")
+
+    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/sample-scans"))
 
     buildFeatures {
         buildConfig = true
@@ -60,3 +62,18 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
+
+// Bundle only the four public STL originals; never copy the entire case directory.
+val bundleSampleScans by tasks.registering(Sync::class) {
+    val historyFile = file("../../sample-history/history.json")
+    inputs.file(historyFile)
+    val history = groovy.json.JsonSlurper().parse(historyFile) as Map<*, *>
+    val visits = history["visits"] as List<Map<*, *>>
+    val names = visits.flatMap { it["arches"] as List<Map<*, *>> }.map { it["filename"] as String }
+    from(file("../../../datasets/${history["specimenId"]}")) { include(names) }
+    into(layout.buildDirectory.dir("generated/sample-scans/sample-scans"))
+    doLast {
+        check(names.all { destinationDir.resolve(it).isFile }) { "Missing canonical sample STL" }
+    }
+}
+tasks.named("preBuild") { dependsOn(bundleSampleScans) }
