@@ -93,7 +93,8 @@ def main() -> None:
     fig.text(0.5, 0.94, "June 5, 2026  →  September 17, 2026", ha="center", fontsize=12)
     fig.text(0.5, 0.045,
              "Independent occlusal views • equal source-coordinate scale • no registration\n"
-             "Progress scale unverified. Week 7 is user-reported; recorded dates imply 30 days after start.\n"
+             "User-confirmed week 7 • reported five-day tray changes • 30 calendar days after start\n"
+             "Progress scale unverified.\n"
              "Surface appearance includes scan coverage and attachments; no tooth movement is measured.",
              ha="center", fontsize=10, linespacing=1.7)
     fig.subplots_adjust(top=0.90, bottom=0.12, hspace=0.14, wspace=0.05)

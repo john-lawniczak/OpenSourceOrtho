@@ -97,7 +97,7 @@
   "plan_summary": {
     "schema": "opensource-ortho-plan-summary-v1",
     "stage_count": 38,
-    "tracking_notes": "Historical report: tray 5, observation date unspecified. New progress pair is user-labeled week 7; source scan date conflicts with elapsed treatment time. Current tray and wear interval remain unknown. See longitudinal-record.json.",
+    "tracking_notes": "Historical report: tray 5, observation date unspecified. User confirms the new progress pair as week 7 with five-day tray changes; 30 calendar days elapsed from recorded start to scan. Schedule start date and current tray per arch remain unknown. See longitudinal-record.json.",
     "notes": "User confirms actual attachment locations match the video. The attachments list is a partial model visual transcription of six identifiable teeth, assuming a non-mirrored frontal view; additional upper posterior locations are unresolved. See attachment-transcription.json for evidence and limitations. Placement timing is unspecified.",
     "attachments": [
       "11",
@@ -106,11 +106,12 @@
       "34",
       "43",
       "44"
-    ]
+    ],
+    "wear_interval_days": 5
   },
   "consent_acknowledged": true,
   "phi_removed": true,
   "notes": "Canonical OrthoCAD specimen with initial pair and first progress pair. Sequence index counts scan visits, not treatment stages. New progress units and cross-time registration remain unverified.",
   "outcome_notes_filename": "outcome-notes.md",
-  "outcome_notes_sha256": "dd34a28985b53fdffd40729565d954f3019071a7656d41eb09fe6da2de0a9fbf"
+  "outcome_notes_sha256": "ff563b300bf079dd3beea0ddb8133f8acd52653e73ce1adb83d0a8826eed632a"
 }

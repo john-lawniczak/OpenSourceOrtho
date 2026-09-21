@@ -2,7 +2,8 @@
 
 This is the first longitudinal update for specimen
 `spec-07b7031938c84b1a9c98517b8bc4cdd3` (the existing User 1 sample).
-The contributor identifies the new pair as **week 7**. It is a progress record;
+The contributor confirms the new pair as **week 7**, explaining that trays were
+being changed every **five days**. It is a progress record;
 no final outcome or treatment-effectiveness assessment has been supplied.
 
 ![Independent baseline and progress scan views](progress-01-comparison.png)
@@ -26,9 +27,11 @@ coverage, gingiva, attachments, and orientation can affect apparent changes.
 | Progress export | 2026-09-21 | Source XML export date |
 
 The scans are **104 days apart**. The recorded treatment start is **30 days
-before the progress scan**. That interval does not establish week 7. Both the
-contributor's week label and source dates are preserved pending clarification;
-neither export time nor the XML treatment-stage code establishes a tray number.
+before the progress scan**. The contributor clarified that the **week 7** label
+reflects progress with **five-day tray changes**, rather than seven elapsed
+calendar weeks. The source dates remain unchanged. The date when the five-day
+schedule began and the actual tray per arch were not supplied; neither export
+time nor the XML treatment-stage code establishes a tray number.
 The first progress sequence index is `1`, meaning the first contributed progress
 visit, not tray 1 or week 1. Machine-readable events and missing fields are in
 [longitudinal-record.json](longitudinal-record.json).
@@ -61,9 +64,11 @@ The previous **38-tray plan**, historical **tray 5** report, reported attachment
 placement correspondence, partial unreviewed attachment transcription, and
 reported absence of IPR as of 2026-06-18 remain in
 [treatment-context.json](treatment-context.json). The new export supplies no
-confirmed current tray, wear interval, adherence, updated IPR, attachment
+confirmed current tray, adherence, updated IPR, attachment
 inventory, refinement history, or final result. Empty source fields are not
 treated as evidence that an intervention did not occur.
+The five-day wear interval comes from the contributor's follow-up clarification,
+not the source export. It describes reported practice, not a recommended schedule.
 
 ![Source-rendered progress gallery](progress-01-gallery.jpg)
 

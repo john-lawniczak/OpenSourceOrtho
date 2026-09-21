@@ -4,8 +4,9 @@ The case now includes a **first progress scan pair, reported as week 7**, under
 the same specimen ID. See [the baseline/progress comparison and full case
 timeline](outcome-notes.md), [machine-readable events](longitudinal-record.json),
 and [redacted progress source metadata](progress-01-source-metadata.json).
-The source scanning date is September 17, 2026; this is 30 days after the recorded
-treatment start, so the week/date discrepancy remains explicit. The two new STLs
+The contributor confirms week 7 and reports five-day tray changes. The source
+scanning date is September 17, 2026, 30 days after the recorded treatment start;
+the progress label does not mean seven elapsed calendar weeks. The two new STLs
 and six source-rendered JPEG views retain their original bytes with neutral
 filenames. Progress scale and cross-time registration are unverified.
 
@@ -28,8 +29,10 @@ establish same-session acquisition or a validated STL-to-CBCT registration.
 The user reports a **38-tray plan**, **tray 5 at the time of the report**, and
 attachments present. **The user confirms that actual attachment locations match
 the reference video.** This is user-confirmed placement correspondence; the
-simulation alone does not independently verify physical placement. The progress
-observation date, wear interval, and attachment placement date are not yet recorded.
+simulation alone does not independently verify physical placement. The historical
+tray-5 observation date and attachment placement date are not yet recorded.
+For the progress update, the contributor reports five-day tray changes; the date
+that schedule began is unknown.
 `attachment-transcription.json` records a partial model visual transcription of
 the red attachment markers using FDI numbering: **11, 12, 33, 34, 43, 44**.
 It includes tooth names, Universal numbering equivalents, video timestamps, and

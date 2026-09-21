@@ -48,7 +48,9 @@
         "progress-01-upper.stl",
         "progress-01-lower.stl"
       ],
-      "metadata": "progress-01-source-metadata.json"
+      "metadata": "progress-01-source-metadata.json",
+      "reported_wear_interval_days": 5,
+      "progress_provenance": "User follow-up confirms week 7 and five-day tray changes."
     },
     {
       "event_id": "progress-01-export",
@@ -61,8 +63,10 @@
     "baseline_to_progress_days": 104,
     "recorded_treatment_start_to_progress_days": 30,
     "reported_week": 7,
-    "status": "unresolved-date-week-discrepancy",
-    "note": "30 elapsed days does not establish treatment week 7. Retain both source dates and user label pending clarification; do not infer wear interval, tray count, or movement per week."
+    "status": "user-confirmed-progress-label",
+    "note": "User confirms week 7 and explains five-day tray changes. Week 7 is the reported progress label, not seven elapsed calendar weeks. Source dates remain unchanged. The schedule start date and actual tray per arch are unspecified.",
+    "reported_wear_interval_days": 5,
+    "wear_interval_start_date": null
   },
   "comparison": {
     "report": "progress-01-comparison.json",
@@ -74,10 +78,9 @@
     "final_scan_available": false
   },
   "missing_data": [
-    "confirmed week/start-date relationship",
     "confirmed progress scale",
     "current tray per arch",
-    "wear interval and adherence",
+    "five-day schedule start date and adherence",
     "updated IPR and attachment history",
     "reviewed per-tooth segmentation and stable registration landmarks",
     "observed refinements and final outcome"

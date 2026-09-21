@@ -53,12 +53,18 @@ def test_new_visits_do_not_inherit_baseline_benchmark_review():
     }
 
 
-def test_timeline_preserves_reported_week_and_date_conflict():
+def test_timeline_preserves_confirmed_progress_and_calendar_days():
     timeline = json.loads((CASE / "longitudinal-record.json").read_text())
     assert timeline["timing"]["reported_week"] == 7
     assert timeline["timing"]["recorded_treatment_start_to_progress_days"] == 30
-    assert timeline["timing"]["status"] == "unresolved-date-week-discrepancy"
+    assert timeline["timing"]["status"] == "user-confirmed-progress-label"
+    assert timeline["timing"]["reported_wear_interval_days"] == 5
+    assert timeline["timing"]["wear_interval_start_date"] is None
     assert timeline["comparison"]["final_scan_available"] is False
     context = json.loads((CASE / "treatment-context.json").read_text())
     assert context["reported_progress"]["tray_number"] == 5
     assert context["progress_records"][0]["reported_tray_number"] is None
+    assert context["progress_records"][0]["wear_interval_days"] == 5
+    assert context["reported_progress"]["wear_interval_days"] is None
+    manifest = read_manifest(CASE / "manifest.json")
+    assert manifest.plan_summary.wear_interval_days == 5

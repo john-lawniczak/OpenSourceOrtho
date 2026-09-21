@@ -44,7 +44,9 @@
       "source_scan_date": "2026-09-17",
       "source_metadata": "progress-01-source-metadata.json",
       "timeline_reference": "longitudinal-record.json",
-      "note": "Historical tray-5 report above is retained; week 7 is not interpreted as tray 7."
+      "note": "User follow-up confirms week 7 with five-day tray changes. Historical tray-5 report is retained separately. Actual current tray per arch and the date the five-day schedule began were not supplied.",
+      "wear_interval_days": 5,
+      "wear_interval_start_date": null
     }
   ]
 }

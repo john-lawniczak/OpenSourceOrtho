@@ -3,7 +3,7 @@
   "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
   "progress_record_id": "progress-01",
   "reported_week": 7,
-  "reported_week_provenance": "User supplied; not derived from dates or tray count",
+  "reported_week_provenance": "User follow-up confirms week 7 and explains five-day tray changes; this is a progress label, not elapsed calendar weeks.",
   "scan_acquisition": {
     "date": "2026-09-17",
     "source": "Source HTML explicitly labels Scanning Date; XML DueDate matches but is not independently an acquisition field",
@@ -187,5 +187,7 @@
       "original identifying filenames"
     ],
     "raw_archive_committed": false
-  }
+  },
+  "reported_wear_interval_days": 5,
+  "wear_interval_provenance": "User follow-up; not source-export metadata. Schedule start date and adherence are unspecified."
 }
