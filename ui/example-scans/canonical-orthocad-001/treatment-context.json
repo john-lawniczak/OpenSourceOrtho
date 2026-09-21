@@ -35,5 +35,16 @@
     "transcription_reference": "attachment-transcription.json",
     "transcription_provenance": "MODEL",
     "complete_attachment_inventory": false
-  }
+  },
+  "progress_records": [
+    {
+      "record_id": "progress-01",
+      "reported_week": 7,
+      "reported_tray_number": null,
+      "source_scan_date": "2026-09-17",
+      "source_metadata": "progress-01-source-metadata.json",
+      "timeline_reference": "longitudinal-record.json",
+      "note": "Historical tray-5 report above is retained; week 7 is not interpreted as tray 7."
+    }
+  ]
 }

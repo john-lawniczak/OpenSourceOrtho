@@ -1,0 +1,86 @@
+{
+  "schema": "opensource-ortho-longitudinal-record-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "case_alias": "canonical-orthocad-001",
+  "events": [
+    {
+      "event_id": "initial",
+      "kind": "initial-scan",
+      "date": "2026-06-05",
+      "provenance": "user-confirmed",
+      "files": [
+        "sample-test-case-upper.stl",
+        "sample-test-case-lower.stl"
+      ],
+      "metadata": "source-export-metadata.json"
+    },
+    {
+      "event_id": "cbct",
+      "kind": "cbct",
+      "date": "2026-06-18",
+      "provenance": "user-confirmed",
+      "metadata": "cbct-metadata.redacted.json",
+      "raw_data_public": false
+    },
+    {
+      "event_id": "treatment-start",
+      "kind": "treatment-start",
+      "date": "2026-08-18",
+      "provenance": "user-reported",
+      "metadata": "treatment-context.json"
+    },
+    {
+      "event_id": "tray-report",
+      "kind": "progress-report",
+      "date": null,
+      "tray_number": 5,
+      "provenance": "historical user report; relative position to progress-01 unknown"
+    },
+    {
+      "event_id": "progress-01",
+      "kind": "progress-scan",
+      "date": "2026-09-17",
+      "provenance": "source HTML scanning date",
+      "reported_week": 7,
+      "tray_number": null,
+      "sequence_index": 1,
+      "files": [
+        "progress-01-upper.stl",
+        "progress-01-lower.stl"
+      ],
+      "metadata": "progress-01-source-metadata.json"
+    },
+    {
+      "event_id": "progress-01-export",
+      "kind": "export",
+      "date": "2026-09-21",
+      "provenance": "source XML export time; not acquisition date"
+    }
+  ],
+  "timing": {
+    "baseline_to_progress_days": 104,
+    "recorded_treatment_start_to_progress_days": 30,
+    "reported_week": 7,
+    "status": "unresolved-date-week-discrepancy",
+    "note": "30 elapsed days does not establish treatment week 7. Retain both source dates and user label pending clarification; do not infer wear interval, tray count, or movement per week."
+  },
+  "comparison": {
+    "report": "progress-01-comparison.json",
+    "figure": "progress-01-comparison.png",
+    "registration_status": "not-validated",
+    "per_tooth_movement": null,
+    "tracking_error": null,
+    "clinical_outcome": null,
+    "final_scan_available": false
+  },
+  "missing_data": [
+    "confirmed week/start-date relationship",
+    "confirmed progress scale",
+    "current tray per arch",
+    "wear interval and adherence",
+    "updated IPR and attachment history",
+    "reviewed per-tooth segmentation and stable registration landmarks",
+    "observed refinements and final outcome"
+  ],
+  "reuse": "Longitudinal scan research and reproducibility; this individual record does not specify movements or appliances for another person."
+}

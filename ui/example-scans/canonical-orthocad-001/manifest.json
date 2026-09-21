@@ -46,12 +46,58 @@
           3.537170886993408
         ]
       }
+    },
+    {
+      "filename": "progress-01-upper.stl",
+      "role": "progress",
+      "sequence_index": 1,
+      "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 996681,
+      "face_count": 332227,
+      "bounds": {
+        "min_xyz": [
+          -31.425596237182617,
+          -26.13219451904297,
+          0.0
+        ],
+        "max_xyz": [
+          31.425596237182617,
+          26.1321964263916,
+          17.081485748291016
+        ]
+      }
+    },
+    {
+      "filename": "progress-01-lower.stl",
+      "role": "progress",
+      "sequence_index": 1,
+      "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 795987,
+      "face_count": 265329,
+      "bounds": {
+        "min_xyz": [
+          -31.843496322631836,
+          -25.05031967163086,
+          0.0
+        ],
+        "max_xyz": [
+          31.843496322631836,
+          25.05031967163086,
+          16.376310348510742
+        ]
+      }
     }
   ],
   "plan_summary": {
     "schema": "opensource-ortho-plan-summary-v1",
     "stage_count": 38,
-    "tracking_notes": "User reports tray 5; observation date, wear interval, and days in that tray are unspecified.",
+    "tracking_notes": "Historical report: tray 5, observation date unspecified. New progress pair is user-labeled week 7; source scan date conflicts with elapsed treatment time. Current tray and wear interval remain unknown. See longitudinal-record.json.",
     "notes": "User confirms actual attachment locations match the video. The attachments list is a partial model visual transcription of six identifiable teeth, assuming a non-mirrored frontal view; additional upper posterior locations are unresolved. See attachment-transcription.json for evidence and limitations. Placement timing is unspecified.",
     "attachments": [
       "11",
@@ -64,5 +110,7 @@
   },
   "consent_acknowledged": true,
   "phi_removed": true,
-  "notes": "Canonical OrthoCAD upper/lower example shells; first tracked specimen."
+  "notes": "Canonical OrthoCAD specimen with initial pair and first progress pair. Sequence index counts scan visits, not treatment stages. New progress units and cross-time registration remain unverified.",
+  "outcome_notes_filename": "outcome-notes.md",
+  "outcome_notes_sha256": "dd34a28985b53fdffd40729565d954f3019071a7656d41eb09fe6da2de0a9fbf"
 }

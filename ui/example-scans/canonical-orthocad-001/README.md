@@ -1,5 +1,14 @@
 Canonical OrthoCAD scan fixture used by the browser UI.
 
+The case now includes a **first progress scan pair, reported as week 7**, under
+the same specimen ID. See [the baseline/progress comparison and full case
+timeline](outcome-notes.md), [machine-readable events](longitudinal-record.json),
+and [redacted progress source metadata](progress-01-source-metadata.json).
+The source scanning date is September 17, 2026; this is 30 days after the recorded
+treatment start, so the week/date discrepancy remains explicit. The two new STLs
+and six source-rendered JPEG views retain their original bytes with neutral
+filenames. Progress scale and cross-time registration are unverified.
+
 The user confirmed that the upper/lower STL pair was acquired on **June 5, 2026**,
 **before treatment**, and that the companion CBCT is from the **same person**.
 The manifest labels both STLs as `initial`; `source-export-metadata.json` records
@@ -35,6 +44,13 @@ historical user report, not live status. `treatment-context.json` preserves thes
 facts and unknowns; the manifest includes the confirmed plan stage count.
 
 Files:
+- `progress-01-upper.stl` / `progress-01-lower.stl`: first progress scan pair
+- `progress-01-*.jpg`: gallery and five individual source-rendered scan views
+- `progress-01-source-metadata.json`: redacted progress provenance and hashes
+- `longitudinal-record.json`: dated events, reported timing, and unresolved gaps
+- `outcome-notes.md`: readable history, comparison, and reuse instructions
+- `progress-01-comparison.json` / `progress-01-comparison.png`: reproducible
+  geometry inventory and independent baseline/progress views
 - `attachment-transcription.json`: partial tooth-number transcription with
   frame evidence, a linted model finding, and unresolved posterior regions
 - `treatment-context.json`: user-reported treatment dates, plan count, progress,

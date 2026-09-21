@@ -65,6 +65,13 @@ contributed raw DICOM; they show the preferred public-repo pattern: keep raw
 DICOM local/ignored unless it is explicitly de-identified and shareable, and
 commit only redacted metadata or reviewed/safe derived anatomy.
 
+The sample now also includes a first progress pair, six source-rendered views,
+and a [baseline/progress record](../ui/example-scans/canonical-orthocad-001/outcome-notes.md).
+Its existing specimen ID connects the visits. The reported week and conflicting
+date interval are recorded separately, and unverified scale prevents millimeter
+bounds-proxy reporting. A progress sequence number counts contributed visits;
+it must not be interpreted as a treatment week or tray number.
+
 Use the CLI to create the id. Do not invent an id from a name, initials, email,
 birth date, appointment date, chart number, or scanner-office label. Once a case
 has an id, keep that same id for later final/progress/refinement scans from the

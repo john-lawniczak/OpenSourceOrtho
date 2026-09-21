@@ -231,6 +231,15 @@ def _bounds_delta_metric(
             status="missing-comparable-scan-bounds",
             notes="Comparable consented scan bounds are not present for this arch.",
         )
+    if before.units != "mm" or after.units != "mm":
+        return OutcomeErrorMetric(
+            name=name,
+            specimen_id=manifest.specimen_id,
+            role=role,
+            arch=arch,
+            status="unverified-or-unsupported-units",
+            notes="Both scan scales must be confirmed in mm before reporting a mm proxy.",
+        )
     return OutcomeErrorMetric(
         name=name,
         specimen_id=manifest.specimen_id,
