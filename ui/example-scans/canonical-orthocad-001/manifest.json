@@ -113,5 +113,5 @@
   "phi_removed": true,
   "notes": "Canonical OrthoCAD specimen with initial pair and first progress pair. Sequence index counts scan visits, not treatment stages. New progress units and cross-time registration remain unverified.",
   "outcome_notes_filename": "outcome-notes.md",
-  "outcome_notes_sha256": "ff563b300bf079dd3beea0ddb8133f8acd52653e73ce1adb83d0a8826eed632a"
+  "outcome_notes_sha256": "37788a7ee8f76f0f6f13cbbb627767e33c630bc732b4735c8f2723b49e4390b8"
 }

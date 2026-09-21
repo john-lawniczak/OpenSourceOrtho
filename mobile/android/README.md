@@ -45,6 +45,9 @@ gradle wrapper --gradle-version 8.9   # one-time: creates ./gradlew + wrapper ja
 Open the `mobile/android/` folder in Android Studio to run on an emulator.
 The Settings About card reads `BuildConfig.VERSION_NAME` and
 `BuildConfig.VERSION_CODE`; keep version metadata in `app/build.gradle.kts`.
+Version 0.2.0-scaffold (2) adds **Sample history** in the top bar. The offline
+baseline/week-7 viewer reads the shared `mobile/sample-history` assets configured
+in Gradle; it does not replace uploaded scans or generated reviews.
 
 ## Run against the engine
 

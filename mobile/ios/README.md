@@ -54,7 +54,11 @@ xcodegen generate
 
 The app target keeps `CFBundleShortVersionString` as `$(MARKETING_VERSION)` and
 `CFBundleVersion` as `$(CURRENT_PROJECT_VERSION)`. `SettingsView` displays those
-bundle values as `Version 1.5 (5)`.
+bundle values as `Version 0.2.0 (2)`.
+
+The top-bar **Sample history** button opens an offline baseline/week-7 viewer.
+Its shared JSON and arch images are included as the `sample-history` resource
+folder; regenerate the Xcode project from `project.yml` after resource changes.
 
 Start the engine before generating a plan: `python3 -m orthoplan.server` (host
 loopback `127.0.0.1:8000`, which the Simulator reaches directly - see

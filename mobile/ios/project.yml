@@ -12,6 +12,9 @@ targets:
     platform: iOS
     sources:
       - path: App
+      - path: ../sample-history
+        type: folder
+        buildPhase: resources
     dependencies:
       - package: OpenSourceOrthoLite
         product: OpenSourceOrthoLiteKit
@@ -20,8 +23,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.opensourceortho.lite
         PRODUCT_NAME: OpenSourceOrthoLite
         INFOPLIST_FILE: App/Info.plist
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.2.0"
+        CURRENT_PROJECT_VERSION: "2"
         DEVELOPMENT_TEAM: ""
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"

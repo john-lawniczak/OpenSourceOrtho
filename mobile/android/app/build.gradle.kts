@@ -13,8 +13,8 @@ android {
         applicationId = "com.opensourceortho.lite"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0-scaffold"
+        versionCode = 2
+        versionName = "0.2.0-scaffold"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -23,6 +23,8 @@ android {
             isMinifyEnabled = false
         }
     }
+
+    sourceSets.getByName("main").assets.srcDir("../../sample-history")
 
     buildFeatures {
         buildConfig = true

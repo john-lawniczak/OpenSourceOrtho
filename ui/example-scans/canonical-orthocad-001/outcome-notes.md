@@ -50,6 +50,16 @@ The manifest records SHA-256 hashes, triangle-soup vertex counts, raw bounds,
 arch labels, and the progress role. The new unit labels remain `unverified`
 because STL does not declare a unit and independent scale confirmation is absent.
 
+The [topology inventory](scan-topology.json) checks all four scans using exact
+coordinate matches and retains the original geometry. Both progress arches have
+finite coordinates, one connected component, and no duplicate faces. The upper
+has 2,219 boundary edges and six edges incident to more than two faces; the lower
+has 2,513 boundary edges and none incident to more than two faces. Baseline
+boundary counts are 761 upper and 766 lower. These are open surfaces. More
+boundary edges do not by themselves quantify missing anatomy or scan accuracy.
+Self-intersections, scanner accuracy, and anatomical completeness were not tested.
+Reproduce the inventory with `python3 tools/check_sample_topology.py` (NumPy).
+
 The reproducible [comparison JSON](progress-01-comparison.json) contains raw
 geometry statistics and explicit null values for tooth movement and tracking
 error. Millimeter bounds proxies are suppressed for unverified scan units.

@@ -1,0 +1,74 @@
+{
+  "schema": "opensource-ortho-scan-topology-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "generator": "tools/check_sample_topology.py",
+  "method": "Exact-coordinate vertex deduplication; undirected edge incidence and connectivity; float64 triangle areas",
+  "input_geometry_modified": false,
+  "scans": [
+    {
+      "filename": "sample-test-case-upper.stl",
+      "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+      "finite_coordinates": true,
+      "face_count": 330309,
+      "unique_vertices": 165520,
+      "zero_area_faces": 0,
+      "duplicate_faces": 0,
+      "boundary_edges": 761,
+      "edges_with_more_than_two_incident_faces": 0,
+      "connected_component_vertex_counts": [
+        165520
+      ]
+    },
+    {
+      "filename": "sample-test-case-lower.stl",
+      "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+      "finite_coordinates": true,
+      "face_count": 286801,
+      "unique_vertices": 143782,
+      "zero_area_faces": 1,
+      "duplicate_faces": 0,
+      "boundary_edges": 766,
+      "edges_with_more_than_two_incident_faces": 1,
+      "connected_component_vertex_counts": [
+        143782
+      ]
+    },
+    {
+      "filename": "progress-01-upper.stl",
+      "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+      "finite_coordinates": true,
+      "face_count": 332227,
+      "unique_vertices": 167208,
+      "zero_area_faces": 7,
+      "duplicate_faces": 0,
+      "boundary_edges": 2219,
+      "edges_with_more_than_two_incident_faces": 6,
+      "connected_component_vertex_counts": [
+        167208
+      ]
+    },
+    {
+      "filename": "progress-01-lower.stl",
+      "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
+      "finite_coordinates": true,
+      "face_count": 265329,
+      "unique_vertices": 133907,
+      "zero_area_faces": 0,
+      "duplicate_faces": 0,
+      "boundary_edges": 2513,
+      "edges_with_more_than_two_incident_faces": 0,
+      "connected_component_vertex_counts": [
+        133907
+      ]
+    }
+  ],
+  "not_assessed": [
+    "self-intersections",
+    "scanner accuracy",
+    "complete anatomical coverage",
+    "bite accuracy",
+    "physical scale",
+    "cross-time registration"
+  ],
+  "interpretation": "Topology inventory only. Open boundary edges establish that these are not closed surfaces; edge count alone does not measure scan accuracy or locate missing anatomy."
+}

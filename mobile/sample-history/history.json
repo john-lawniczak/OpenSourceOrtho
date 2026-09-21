@@ -1,0 +1,95 @@
+{
+  "schema": "opensource-ortho-mobile-history-v1",
+  "specimenId": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "title": "Sample history",
+  "summary": "One contributed case, two observed scan visits.",
+  "timing": "104 days between scans. 30 calendar days from recorded treatment start to progress scan. Week 7 is the contributor's progress label. Five-day changes are reported practice, not a recommended schedule.",
+  "limitation": "Independent views at equal source-coordinate scale. Progress scale and cross-time registration are unverified; tooth movement is not measured.",
+  "context": "38 trays planned. Earlier tray-5 report has no observation date. Current tray per arch, schedule start date, and adherence are unknown.",
+  "visits": [
+    {
+      "id": "initial",
+      "label": "Baseline",
+      "date": "2026-06-05",
+      "detail": "Pretreatment scan; acquisition date confirmed by contributor.",
+      "arches": [
+        {
+          "name": "Upper",
+          "previewImage": "sample-test-case-upper.png",
+          "filename": "sample-test-case-upper.stl",
+          "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+          "faceCount": 330309,
+          "zeroAreaFaces": 0,
+          "units": "mm"
+        },
+        {
+          "name": "Lower",
+          "previewImage": "sample-test-case-lower.png",
+          "filename": "sample-test-case-lower.stl",
+          "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+          "faceCount": 286801,
+          "zeroAreaFaces": 1,
+          "units": "mm"
+        }
+      ]
+    },
+    {
+      "id": "progress-01",
+      "label": "Week 7",
+      "date": "2026-09-17",
+      "detail": "User-confirmed progress label with five-day tray changes.",
+      "arches": [
+        {
+          "name": "Upper",
+          "previewImage": "progress-01-upper.png",
+          "filename": "progress-01-upper.stl",
+          "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+          "faceCount": 332227,
+          "zeroAreaFaces": 7,
+          "units": "unverified"
+        },
+        {
+          "name": "Lower",
+          "previewImage": "progress-01-lower.png",
+          "filename": "progress-01-lower.stl",
+          "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
+          "faceCount": 265329,
+          "zeroAreaFaces": 0,
+          "units": "unverified"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "initial",
+      "date": "2026-06-05",
+      "label": "Baseline scan"
+    },
+    {
+      "id": "cbct",
+      "date": "2026-06-18",
+      "label": "CBCT record (not bundled)"
+    },
+    {
+      "id": "treatment-start",
+      "date": "2026-08-18",
+      "label": "Reported treatment start"
+    },
+    {
+      "id": "tray-report",
+      "date": "Date unknown",
+      "label": "Historical tray-5 report"
+    },
+    {
+      "id": "progress-01",
+      "date": "2026-09-17",
+      "label": "Week 7 progress scan"
+    },
+    {
+      "id": "progress-01-export",
+      "date": "2026-09-21",
+      "label": "Progress export"
+    }
+  ]
+}

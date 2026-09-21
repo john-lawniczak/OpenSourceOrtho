@@ -7,33 +7,37 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		047AFBB30833BFC71830D495 /* dev-sample-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = 1131E78FB6B4F5853B507780 /* dev-sample-lower.stl */; };
 		13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */; };
 		16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */ = {isa = PBXBuildFile; fileRef = 4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */; };
-		2D1B68E5297E4A8B9C1D2F31 /* dev-sample-upper.stl in Resources */ = {isa = PBXBuildFile; fileRef = 62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */; };
 		37A52C95416DB193C1647EB4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3EC22871DE3570233EAFD /* RootView.swift */; };
 		4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FEC8D213B7576DB4208180A /* Assets.xcassets */; };
 		74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8589067755F44462FE798BC8 /* SettingsView.swift */; };
 		7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */; };
-		8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */; };
+		B5051DF501A88A5001B73815 /* dev-sample-upper.stl in Resources */ = {isa = PBXBuildFile; fileRef = DB7E20EA98C0B79DE1FDCDEF /* dev-sample-upper.stl */; };
+		B7175031E694B0A824C68949 /* sample-history in Resources */ = {isa = PBXBuildFile; fileRef = 1DF488118404FD294F2E9349 /* sample-history */; };
 		BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A1C676D724465EA395DAFA /* AppIdentity.swift */; };
 		DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919681E695F14AC323DB1F57 /* Screens.swift */; };
+		E1EFD6B0D0CBAA3B589DC903 /* SampleHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E12A3C77B7C07EE6645D35 /* SampleHistoryView.swift */; };
 		FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		038A93E4FA3E99A155B4AD33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0FEC8D213B7576DB4208180A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1131E78FB6B4F5853B507780 /* dev-sample-lower.stl */ = {isa = PBXFileReference; path = "dev-sample-lower.stl"; sourceTree = "<group>"; };
+		1DF488118404FD294F2E9349 /* sample-history */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "sample-history"; path = "../sample-history"; sourceTree = SOURCE_ROOT; };
 		32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceOrthoLiteApp.swift; sourceTree = "<group>"; };
-		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
-		62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-upper.stl"; sourceTree = "<group>"; };
+		35E12A3C77B7C07EE6645D35 /* SampleHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHistoryView.swift; sourceTree = "<group>"; };
+		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
 		8589067755F44462FE798BC8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		888F68B82367F953AA8FC715 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = .; sourceTree = SOURCE_ROOT; };
-		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiteFlowViewModel.swift; sourceTree = "<group>"; };
 		919681E695F14AC323DB1F57 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
 		94A1C676D724465EA395DAFA /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
 		9BB3EC22871DE3570233EAFD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-lower.stl"; sourceTree = "<group>"; };
+		DB7E20EA98C0B79DE1FDCDEF /* dev-sample-upper.stl */ = {isa = PBXFileReference; path = "dev-sample-upper.stl"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +63,7 @@
 		631AC2D2F8BFBA05067850FF = {
 			isa = PBXGroup;
 			children = (
+				1DF488118404FD294F2E9349 /* sample-history */,
 				BE0697D1F65F6EE1B627E84F /* App */,
 				002C8182D0A6C4AA83FF47B4 /* Packages */,
 				6E48634B4930BC68BB41C389 /* Products */,
@@ -77,8 +82,8 @@
 			isa = PBXGroup;
 			children = (
 				4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */,
-				C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */,
-				62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */,
+				1131E78FB6B4F5853B507780 /* dev-sample-lower.stl */,
+				DB7E20EA98C0B79DE1FDCDEF /* dev-sample-upper.stl */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -92,6 +97,7 @@
 				8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */,
 				32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */,
 				9BB3EC22871DE3570233EAFD /* RootView.swift */,
+				35E12A3C77B7C07EE6645D35 /* SampleHistoryView.swift */,
 				919681E695F14AC323DB1F57 /* Screens.swift */,
 				8589067755F44462FE798BC8 /* SettingsView.swift */,
 				A012910D6970A6D2D2581C6B /* Resources */,
@@ -164,8 +170,9 @@
 			files = (
 				4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */,
 				16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */,
-				8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */,
-				2D1B68E5297E4A8B9C1D2F31 /* dev-sample-upper.stl in Resources */,
+				047AFBB30833BFC71830D495 /* dev-sample-lower.stl in Resources */,
+				B5051DF501A88A5001B73815 /* dev-sample-upper.stl in Resources */,
+				B7175031E694B0A824C68949 /* sample-history in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,6 +187,7 @@
 				FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */,
 				13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */,
 				37A52C95416DB193C1647EB4 /* RootView.swift in Sources */,
+				E1EFD6B0D0CBAA3B589DC903 /* SampleHistoryView.swift in Sources */,
 				DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */,
 				74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */,
 			);
@@ -313,7 +321,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = T286C8G7T2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
@@ -321,7 +329,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite;
 				PRODUCT_NAME = OpenSourceOrthoLite;
 				SDKROOT = iphoneos;
@@ -336,7 +344,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = T286C8G7T2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
@@ -344,7 +352,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite;
 				PRODUCT_NAME = OpenSourceOrthoLite;
 				SDKROOT = iphoneos;
