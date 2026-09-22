@@ -6,8 +6,10 @@ Privacy posture (Phase 1):
   and an optional relative/local reference are kept.
 - Absolute paths and parent-directory traversal are rejected, because file paths
   can embed patient names or DOB.
-- STL files carry no units; units default to ``UNVERIFIED`` and must be
-  confirmed by the user before cap evaluation runs.
+- Most scan formats carry no units; units default to ``UNVERIFIED`` and must be
+  confirmed by the user before cap evaluation runs. Formats that DO declare a
+  unit (3MF, glTF, FBX) record it in ``declared_units`` as a hint only - a
+  file's own claim never satisfies the confirmation gate.
 """
 
 from __future__ import annotations
@@ -19,7 +21,13 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from orthoplan.model.dicom import DicomMetadata
+
 ArchName = Literal["maxillary", "mandibular"]
+CaseRecordKind = Literal["cbct", "dicom", "photo", "radiograph", "note", "document"]
+# A scanner can export a surface mesh or a raw point cloud; only a mesh has a
+# surface, so anything surface-dependent must check this before running.
+GeometryKind = Literal["mesh", "points"]
 
 
 class MeshUnits(StrEnum):
@@ -78,8 +86,12 @@ class MeshAsset(BaseModel):
 
     id: str
     format: str
+    geometry_kind: GeometryKind = "mesh"
     provenance: MeshProvenance = MeshProvenance.PATIENT_DERIVED
     units: MeshUnits = MeshUnits.UNVERIFIED
+    # What the file itself claimed, when its format carries a unit. A hint for
+    # the units prompt only - it never counts as user confirmation.
+    declared_units: MeshUnits | None = None
     vertex_count: int = Field(ge=0)
     face_count: int = Field(ge=0)
     bounds: BoundingBox | None = None
@@ -105,6 +117,12 @@ class MeshAsset(BaseModel):
     def units_confirmed(self) -> bool:
         return self.units != MeshUnits.UNVERIFIED
 
+    @property
+    def has_surface(self) -> bool:
+        """True when the asset carries faces, not just a cloud of points."""
+
+        return self.geometry_kind == "mesh" and self.face_count > 0
+
 
 class UploadedScan(BaseModel):
     asset: MeshAsset
@@ -115,6 +133,47 @@ class UploadedScan(BaseModel):
     @property
     def units_confirmed(self) -> bool:
         return self.asset.units_confirmed
+
+
+class CaseRecord(BaseModel):
+    """Local-only case context record.
+
+    Binary payloads (DICOM volumes, photos, radiographs, documents) live in the
+    local case/record workspace. Plan JSON carries only this redacted metadata and
+    a local reference id/path; it never embeds those bytes.
+    """
+
+    id: str
+    kind: CaseRecordKind
+    modality: str | None = None
+    filename: str | None = None
+    content_type: str | None = None
+    size_bytes: int | None = Field(default=None, ge=0)
+    sha256: str | None = None
+    local_reference: str | None = None
+    note_text: str | None = Field(default=None, max_length=2000)
+    provenance: str = "patient-derived"
+    # Structural CBCT/DICOM metadata (no PHI, no pixel bytes). Populated only for
+    # cbct/dicom records when the optional ``dicom`` extra parses the study.
+    dicom: DicomMetadata | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @field_validator("filename")
+    @classmethod
+    def filename_is_basename(cls, value: str | None) -> str | None:
+        return redact_reference(value) if value else None
+
+    @field_validator("local_reference")
+    @classmethod
+    def local_reference_is_relative_and_redacted(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.replace("\\", "/")
+        if os.path.isabs(value) or normalized.startswith("/") or ":" in value:
+            raise ValueError("case record reference must be relative and contain no absolute path")
+        if ".." in normalized.split("/"):
+            raise ValueError("case record reference must not traverse parent directories")
+        return value
 
 
 def bounding_box_sanity(asset: MeshAsset) -> str | None:

@@ -122,3 +122,14 @@ def test_advisory_request_injects_boundary_caps_and_schema() -> None:
     assert "verdict words" in request.system
     assert "movement_caps" in request.prompt
     assert "data_availability" in request.prompt
+
+
+def test_advisory_request_appends_user_notes_without_relaxing_boundary() -> None:
+    request = build_advisory_request(_plan(), notes="Align the lateral incisors 12 and 22.")
+    assert "User focus" in request.prompt
+    assert "lateral incisors 12 and 22" in request.prompt
+    # The notes never weaken the system boundary.
+    assert "must not approve" in request.system
+
+    # Empty/whitespace notes add nothing.
+    assert "User focus" not in build_advisory_request(_plan(), notes="   ").prompt

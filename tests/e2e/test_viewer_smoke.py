@@ -1,14 +1,7 @@
-"""Headless-browser smoke test for the 3D progress viewer.
+"""Browser smoke checks for the 3D viewer and evaluation workflow.
 
-Skips entirely when Playwright is not installed (so the default `pytest` run
-stays green without it). Run the full thing with:
-
-    pip install -e ".[e2e]" && python -m playwright install chromium
-    pytest tests/e2e -q
-
-It serves the real dev server, loads the page in headless Chromium, and asserts
-the engine responded and the Three.js viewer mounted a sized WebGL canvas with
-no uncaught page errors.
+Requires the optional Playwright dependency and installed Chromium.
+Run with `pytest tests/e2e -q`.
 """
 
 from __future__ import annotations
@@ -22,7 +15,7 @@ import pytest
 
 pytest.importorskip("playwright.sync_api")
 
-from playwright.sync_api import sync_playwright  # noqa: E402
+from playwright.sync_api import expect, sync_playwright  # noqa: E402
 
 from orthoplan.server import Handler  # noqa: E402
 
@@ -53,6 +46,7 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             # Go to the Review step so the viewer container is visible and sized.
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#viewer3d canvas", state="attached", timeout=15000)
@@ -63,6 +57,104 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
             # The engine responded (no offline fallback message).
             findings = page.locator("#findingList").inner_text().lower()
             assert "engine offline" not in findings
+        finally:
+            browser.close()
+
+    assert not errors, f"uncaught page errors: {errors}"
+
+
+def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None:
+    with sync_playwright() as pw:
+        try:
+            browser = pw.chromium.launch(headless=True)
+        except Exception as exc:  # noqa: BLE001 - browser binary may be missing
+            pytest.skip(f"playwright chromium unavailable: {exc}")
+
+        page = browser.new_page(viewport={"width": 1280, "height": 900})
+        errors: list[str] = []
+        page.on("pageerror", lambda exc: errors.append(str(exc)))
+        try:
+            page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
+            page.wait_for_selector("#panel-upload.is-active", timeout=15000)
+            assert "Open sample" not in page.locator(".journey-nav").inner_text()
+            page.click(".sample-launch")
+            page.click('[data-user-mode="advanced"]')
+            page.click('button.step[data-step="review"]')
+            page.wait_for_selector("#panel-review.is-active", timeout=15000)
+            page.wait_for_selector("#findingList li", timeout=15000)
+
+            page.wait_for_function(
+                "() => document.querySelector('#sampleStatusChip')?.innerText.includes('walkthrough')"
+            )
+            chip = page.locator("#sampleStatusChip").inner_text()
+            assert "walkthrough" in chip.lower()
+            assert page.locator("#planTitle").input_value() == "Sample test case · USER_ONE"
+            assert page.locator("#scanUnits").input_value() == "mm"
+
+            max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")
+            assert max_stage > 0
+            page.locator("#stageSlider").evaluate(
+                """slider => {
+                  slider.value = slider.max;
+                  slider.dispatchEvent(new Event('input', { bubbles: true }));
+                }"""
+            )
+            page.wait_for_function(
+                """() => {
+                  const slider = document.querySelector('#stageSlider');
+                  return document.querySelector('#stageValue')?.innerText === slider?.max;
+                }"""
+            )
+        finally:
+            browser.close()
+
+    assert not errors, f"uncaught page errors: {errors}"
+
+
+def test_guided_build_review_and_print_status_happy_path(server_url: str) -> None:
+    with sync_playwright() as pw:
+        try:
+            browser = pw.chromium.launch(headless=True)
+        except Exception as exc:  # noqa: BLE001 - browser binary may be missing
+            pytest.skip(f"playwright chromium unavailable: {exc}")
+
+        page = browser.new_page(viewport={"width": 1280, "height": 900})
+        errors: list[str] = []
+        page.on("pageerror", lambda exc: errors.append(str(exc)))
+        try:
+            page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
+            page.click(".sample-launch")
+            page.wait_for_selector('#guided .gstep[data-gstep="upload"].is-active', timeout=15000)
+
+            page.click('[data-gstep-nav="plan"]')
+            page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
+            page.click("#guidedBuild")
+            page.wait_for_function(
+                """() => document.querySelector('#guidedBuildStatus')?.innerText.includes('CONSISTENT')"""
+            )
+            assert "source:" in page.locator("#guidedBuildStatus").inner_text()
+
+            page.click('[data-gstep-nav="review"]')
+            page.wait_for_selector('#guided .gstep[data-gstep="review"].is-active', timeout=15000)
+            review_text = page.locator("#guidedSummary").inner_text()
+            assert "aligner stage" in review_text
+            assert "Projected" in page.locator("#guidedDurationSummary").inner_text()
+
+            page.click('[data-gstep-nav="print"]')
+            page.wait_for_selector('#guided .gstep[data-gstep="print"].is-active', timeout=15000)
+            page.click("#guidedPrint")
+            page.wait_for_function(
+                """() => {
+                  const text = document.querySelector('#guidedPrintStatus')?.innerText || '';
+                  return text.includes('print export is disabled') ||
+                    text.includes('per-tooth segmentation') ||
+                    text.includes('Files built');
+                }"""
+            )
+            print_status = page.locator("#guidedPrintStatus").inner_text()
+            assert "Could not build files" not in print_status
         finally:
             browser.close()
 
@@ -81,6 +173,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#findingList li", timeout=15000)
 
@@ -102,6 +195,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
             assert non_background > 1000
 
             page.click('button.step[data-step="stages"]')
+            page.click("#addStage")
             page.fill('input[data-row="0"][data-field="tooth"]', "99")
             page.click('button.step[data-step="review"]')
             page.wait_for_function(
@@ -128,12 +222,15 @@ def test_acquisition_print_export_and_visual_screenshots(
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
 
             page.click('button.step[data-step="availability"]')
             page.check('input[data-availability="segmented_teeth"]')
             page.click('button.step[data-step="settings"]')
             page.check("#printEnabled")
             page.check("#printSafety")
+            page.click('button.step[data-step="stages"]')
+            page.click("#addStage")
 
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#findingList li", timeout=15000)
@@ -141,8 +238,8 @@ def test_acquisition_print_export_and_visual_screenshots(
             acquisition = page.locator("#acquisitionList").inner_text()
             assert "Treatment notes" in acquisition or "CBCT" in acquisition
 
+            expect(page.locator("#printExportStatus")).to_contain_text("Inputs complete")
             print_status = page.locator("#printExportStatus").inner_text()
-            assert "Ready" in print_status
             assert "user's own responsibility" in print_status
 
             viewer_path = tmp_path / "viewer3d.png"
@@ -171,6 +268,7 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            page.click('[data-user-mode="advanced"]')
             response = page.evaluate(
                 """async () => {
                   const res = await fetch('/api/evaluate', {
@@ -188,6 +286,7 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
             assert any("FDI quadrant" in item for item in response["errors"])
 
             page.click('button.step[data-step="stages"]')
+            page.click("#addStage")
             page.fill('input[data-row="0"][data-field="tooth"]', "99")
             page.click('button.step[data-step="review"]')
             page.wait_for_function(

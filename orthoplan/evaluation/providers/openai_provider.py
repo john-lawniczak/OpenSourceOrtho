@@ -18,7 +18,7 @@ class OpenAIProvider:
         self.model = model
         # An explicitly supplied key takes precedence; otherwise fall back to the
         # process environment. ``base_url`` lets this same adapter drive any
-        # OpenAI-compatible host (MCP / Odysseus / open-source local model server).
+        # OpenAI-compatible host (MCP / open-source or self-hosted local model server).
         self._api_key = api_key
         self._base_url = base_url
 

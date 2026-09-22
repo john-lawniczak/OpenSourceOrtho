@@ -2,11 +2,14 @@
 
 ## Scope and safety boundary
 
-OpenSource Ortho is a **research/education toolkit, not a medical device**. It
-does not diagnose, decide treatment safety or suitability, or replace a licensed
-dental professional. Please read [docs/SAFETY.md](docs/SAFETY.md). Reports that a
-finding "should have approved/cleared a plan" are out of scope by design - the
-software intentionally never makes those claims.
+OpenSource Ortho is a **clear-aligner planning safety playground and research
+toolkit, not a medical device and not complete treatment-planning software**. It
+does not diagnose, prescribe, approve treatment, decide treatment safety or
+suitability, authorize physical use, or replace a licensed dental professional.
+Any use, manufacturing, or physical application of outputs is the user's own
+responsibility and risk. Please read [docs/SAFETY.md](docs/SAFETY.md). Reports
+that a finding "should have approved/cleared a plan" are out of scope by design -
+the software intentionally never makes those claims.
 
 In-scope security issues include, for example:
 
@@ -22,8 +25,10 @@ In-scope security issues include, for example:
 
 Please **do not open a public issue for a security vulnerability.**
 
-- Preferred: open a [private security advisory](https://github.com/john-lawniczak/OpenSourceOrtho/security/advisories/new).
-- Or email **lawniczak.john@gmail.com** with steps to reproduce and impact.
+- Preferred: open a private security advisory from the repository's
+  **Security** tab.
+- If private advisories are unavailable, contact the active project maintainer
+  through their current public project profile with steps to reproduce and impact.
 
 You can expect an acknowledgement within a few days. This is a volunteer-run
 open-source project, so timelines are best-effort. Please give us a reasonable

@@ -2,7 +2,7 @@
 
 This file is the living source ledger for OpenSource Ortho. Use it to track external references, license posture, implementation ideas, and changes that may affect product direction.
 
-Last recorded source review: 2026-06-04.
+Last recorded source review: 2026-06-13.
 
 ## How To Use This File
 
@@ -17,14 +17,15 @@ Last recorded source review: 2026-06-04.
 | Source | URL | Current Use | Watch For |
 | --- | --- | --- | --- |
 | BlueSkyPlan download/license language | https://www.blueskybio.digital/page/download-software | Proprietary/freeware cautionary reference only. Do not fork or copy. | License terms, any explicit OSI-approved source license, product workflow changes. |
-| ClinCheck Pro | https://www.invisalign.com/provider/align-digital-platform/clincheck | Commercial workflow reference for review, staging, visualization, and provider handoff. | Proprietary terminology, UI/workflow changes, feature ideas to describe generically. |
+| Commercial clear-aligner platform overview | https://www.invisalign.com/provider/align-digital-platform | Commercial full-workflow reference for connect/scan/diagnose/plan/treat/monitor/retain coverage. | Proprietary terminology, workflow claims, product scope changes, and features to describe only generically. |
+| Commercial clear-aligner plan-editing software | https://www.invisalign.com/provider/align-digital-platform/clincheck | Commercial workflow reference for review, staging, side-by-side comparison, 3D controls, live updates, CBCT integration, and provider handoff. | Proprietary terminology, UI/workflow changes, feature ideas to describe generically. |
 | 3D Slicer license/commercial-use notes | https://slicer.readthedocs.io/en/5.10/user_guide/about.html | License/regulatory reference for a possible host platform. | License notes, medical-device disclaimers, extension guidance. |
 | 3D Slicer platform | https://www.slicer.org/ | Open-source platform reference for imaging, segmentation, and possible extension hosting. | Platform roadmap, extension APIs, segmentation and DICOM workflows. |
 | SlicerCMF | https://cmf.slicer.org/ | Dental/craniofacial workflow reference inside 3D Slicer. | Extension status, algorithms, dependency/license updates. |
-| Open3D MIT note | https://www.open3d.org/ | Candidate geometry and mesh-processing dependency. | License, Python API changes, mesh registration and visualization features. |
+| Open3D MIT note | https://www.open3d.org/ | Optional `mesh-processing` dependency for local geometry/segmentation experiments. | License, Python API changes, mesh registration and visualization features. |
 | PyVista MIT note | https://pyvista.org/ | Candidate Python visualization layer. | License, VTK compatibility, web/desktop rendering options. |
 | VTK BSD-3-Clause note | https://github.com/Kitware/VTK | Mature scientific visualization backend reference/dependency. | License, Python packaging, rendering features. |
-| pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Candidate dependency for future CBCT/DICOM support. | License, API changes, DICOM parsing/security guidance. |
+| pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Optional `dicom` extra for local CBCT/DICOM structural metadata parsing. | License, API changes, DICOM parsing/security guidance. |
 | Clear aligner staging reference | https://pmc.ncbi.nlm.nih.gov/articles/PMC8388591/ | Literature reference for conservative movement-cap heuristics. | Updated literature, movement efficacy estimates, limitations. |
 | Clear aligner staging reference | https://www.mdpi.com/2076-3417/14/15/6690 | Literature reference for movement planning and aligner biomechanics. | Updated review data, staging recommendations, limitations. |
 
@@ -34,8 +35,8 @@ Last recorded source review: 2026-06-04.
 
 Open3D
 
-- Use for point-cloud and mesh processing, registration experiments, geometry utilities, and potential visualization prototypes.
-- Good fit for Python-first research tooling.
+- Use for point-cloud and mesh processing, registration experiments, geometry utilities, and potential segmentation prototypes.
+- Good fit for Python-first research tooling; available as the optional `mesh-processing` extra.
 
 trimesh
 
@@ -61,8 +62,10 @@ SlicerCMF
 
 pydicom
 
-- Use only when DICOM/CBCT import becomes a real milestone.
-- Keep DICOM IO in `orthoplan/io`.
+- Use for local DICOM/CBCT structural metadata parsing only; keep pixel bytes out
+  of plan JSON.
+- Keep DICOM IO in `orthoplan/io` / `orthoplan.dicom_intake` and preserve the
+  `stop_before_pixels=True` pattern.
 
 ### Commercial Workflow References
 
@@ -71,10 +74,12 @@ BlueSkyPlan
 - Reference only.
 - Free availability is not enough; do not treat it as open source without a permissive source license.
 
-ClinCheck Pro
+Commercial Clear-Aligner Plan Editors
 
 - Reference only.
-- Useful for understanding expectations around staged tooth visualization, doctor review, and patient communication.
+- Useful for understanding expectations around staged tooth visualization, setup
+  comparison, doctor review, direct 3D controls, live restaging, and patient
+  communication.
 - Describe learned workflow ideas in generic language.
 
 ## Monitoring Cadence

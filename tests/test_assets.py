@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_CASE_DIR
+
 import struct
 from pathlib import Path
 
 import pytest
 
 from orthoplan.io.stl_import import inspect_stl
-from orthoplan.model import MeshAsset, MeshUnits, bounding_box_sanity
+from orthoplan.model import CaseRecord, MeshAsset, MeshUnits, bounding_box_sanity
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _write_binary_stl(path: Path, triangles: list[tuple[float, ...]]) -> None:
@@ -44,6 +48,37 @@ def test_absolute_reference_is_rejected() -> None:
             face_count=0,
             reference="/Users/patient_doe/scan.stl",
         )
+
+
+def test_case_record_redacts_filename_and_rejects_unsafe_reference() -> None:
+    record = CaseRecord(
+        id="rec-1",
+        kind="cbct",
+        filename="/Users/patient_doe/cbct/volume.dcm",
+        local_reference="records/rec-1.dcm",
+    )
+
+    assert record.filename == "volume.dcm"
+
+    with pytest.raises(ValueError, match="relative"):
+        CaseRecord(id="rec-2", kind="photo", local_reference="/Users/patient/photo.jpg")
+    with pytest.raises(ValueError, match="traverse"):
+        CaseRecord(id="rec-3", kind="radiograph", local_reference="../photo.jpg")
+
+
+def test_canonical_cbct_metadata_is_redacted_and_complete() -> None:
+    metadata = (
+        SAMPLE_CASE_DIR
+        / "cbct-metadata.redacted.json"
+    ).read_text(encoding="utf-8")
+
+    assert "/Users/" not in metadata
+    assert "SeriesInstanceUID" not in metadata
+    assert "StudyInstanceUID" not in metadata
+    assert '"PatientName": 825' in metadata
+    assert '"identifier_values_retained": false' in metadata
+    assert '"dicom_file_count": 824' in metadata
+    assert '"missing_instance_count": 0' in metadata
 
 
 def test_bounding_box_sanity_flags_unverified_units(tmp_path: Path) -> None:

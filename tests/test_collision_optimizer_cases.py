@@ -46,7 +46,8 @@ def test_segmented_mesh_collision_rule_flags_transformed_bounds_overlap() -> Non
     findings = evaluate_segmented_mesh_collisions(plan)
 
     assert len(findings) == 1
-    assert "bounds overlap" in findings[0].title
+    assert "interproximal contact" in findings[0].title
+    assert "falls back" in findings[0].message
 
 
 def test_segmented_mesh_collision_rule_reports_one_finding_per_pair() -> None:
@@ -84,7 +85,116 @@ def test_segmented_mesh_collision_rule_reports_one_finding_per_pair() -> None:
 
     assert len(findings) == 1
     assert "11 and 21" in findings[0].title
-    assert "deepest at stage 2" in findings[0].message
+    assert "stage 2" in findings[0].message
+
+
+def test_collision_check_skipped_when_scan_units_unverified() -> None:
+    # A scan with unverified units makes the plan's scale unconfirmed, so the
+    # millimeter overlap check must defer rather than report mm depths it cannot trust.
+    from orthoplan.model import MeshUnits, UploadedScan
+
+    mesh_11 = MeshAsset(
+        id="mesh-11", format="stl-ascii", vertex_count=8, face_count=12,
+        bounds=BoundingBox(min_xyz=(0, 0, 0), max_xyz=(1, 1, 1)),
+    )
+    mesh_21 = MeshAsset(
+        id="mesh-21", format="stl-ascii", vertex_count=8, face_count=12,
+        bounds=BoundingBox(min_xyz=(2, 0, 0), max_xyz=(3, 1, 1)),
+    )
+    raw_scan = UploadedScan(
+        asset=MeshAsset(id="raw", format="stl", units=MeshUnits.UNVERIFIED, vertex_count=1, face_count=1),
+    )
+    plan = TreatmentPlan(
+        id="unverified-collision",
+        scans=[raw_scan],
+        mesh_assets=[mesh_11, mesh_21],
+        tooth_meshes=[
+            SegmentedToothMesh(tooth=ToothId(value="11"), mesh_asset_id="mesh-11"),
+            SegmentedToothMesh(tooth=ToothId(value="21"), mesh_asset_id="mesh-21"),
+        ],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=-1.5)])],
+    )
+
+    findings = evaluate_segmented_mesh_collisions(plan)
+
+    assert len(findings) == 1
+    assert findings[0].code == "segmented-crown-collision-scale-unconfirmed"
+
+
+def test_sampled_collision_rule_reports_ipr_for_known_overlap() -> None:
+    mesh_11 = MeshAsset(
+        id="mesh-11",
+        format="stl-ascii",
+        vertex_count=8,
+        face_count=12,
+        bounds=BoundingBox(min_xyz=(0, 0, 0), max_xyz=(1, 1, 1)),
+    )
+    mesh_21 = MeshAsset(
+        id="mesh-21",
+        format="stl-ascii",
+        vertex_count=8,
+        face_count=12,
+        bounds=BoundingBox(min_xyz=(0.8, 0, 0), max_xyz=(1.8, 1, 1)),
+    )
+    plan = TreatmentPlan(
+        id="sampled-contact",
+        mesh_assets=[mesh_11, mesh_21],
+        tooth_meshes=[
+            SegmentedToothMesh(
+                tooth=ToothId(value="11"),
+                mesh_asset_id="mesh-11",
+                surface_sample_points=[(1.0, 0.5, 0.5)],
+            ),
+            SegmentedToothMesh(
+                tooth=ToothId(value="21"),
+                mesh_asset_id="mesh-21",
+                surface_sample_points=[(0.8, 0.5, 0.5)],
+            ),
+        ],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"))])],
+    )
+
+    findings = evaluate_segmented_mesh_collisions(plan)
+
+    assert len(findings) == 1
+    assert "Minimum representative-surface distance is 0.200 mm" in findings[0].message
+    assert "Estimated IPR needed" in findings[0].message
+
+
+def test_sampled_collision_rule_ignores_known_clear_pair() -> None:
+    mesh_11 = MeshAsset(
+        id="mesh-11",
+        format="stl-ascii",
+        vertex_count=8,
+        face_count=12,
+        bounds=BoundingBox(min_xyz=(0, 0, 0), max_xyz=(1, 1, 1)),
+    )
+    mesh_21 = MeshAsset(
+        id="mesh-21",
+        format="stl-ascii",
+        vertex_count=8,
+        face_count=12,
+        bounds=BoundingBox(min_xyz=(1.3, 0, 0), max_xyz=(2.3, 1, 1)),
+    )
+    plan = TreatmentPlan(
+        id="sampled-clear",
+        mesh_assets=[mesh_11, mesh_21],
+        tooth_meshes=[
+            SegmentedToothMesh(
+                tooth=ToothId(value="11"),
+                mesh_asset_id="mesh-11",
+                surface_sample_points=[(1.0, 0.5, 0.5)],
+            ),
+            SegmentedToothMesh(
+                tooth=ToothId(value="21"),
+                mesh_asset_id="mesh-21",
+                surface_sample_points=[(1.3, 0.5, 0.5)],
+            ),
+        ],
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"))])],
+    )
+
+    assert evaluate_segmented_mesh_collisions(plan) == []
 
 
 def test_optimizer_splits_large_movement_by_configured_caps() -> None:
@@ -121,6 +231,43 @@ def test_optimizer_respects_fixed_teeth_and_exclusions() -> None:
 
     assert result.plan.stages == []
     assert {issue.tooth for issue in result.issues} == {"11", "21"}
+
+
+def test_optimizer_respects_stage_windowed_fixed_teeth() -> None:
+    plan = TreatmentPlan(
+        id="optimize-windowed-controls",
+        fixed_teeth=[FixedTooth(tooth=ToothId(value="11"), stage_start=0, stage_end=0)],
+        stages=[
+            Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="11"), translate_x_mm=0.2)])
+        ],
+    )
+
+    result = optimize_staging(plan)
+
+    assert result.issues == []
+    assert [stage.index for stage in result.plan.stages] == [0, 1]
+    assert result.plan.stages[0].deltas == []
+    assert result.plan.stages[1].deltas[0].tooth.value == "11"
+    assert result.plan.stages[1].deltas[0].translate_x_mm == pytest.approx(0.2)
+
+
+def test_optimizer_respects_stage_windowed_movement_exclusions() -> None:
+    plan = TreatmentPlan(
+        id="optimize-windowed-exclusions",
+        movement_exclusions=[
+            MovementExclusion(tooth=ToothId(value="21"), axes={"translate_x"}, stage_start=0, stage_end=0),
+        ],
+        stages=[
+            Stage(index=0, deltas=[ToothDelta(tooth=ToothId(value="21"), translate_x_mm=0.2)])
+        ],
+    )
+
+    result = optimize_staging(plan)
+
+    assert result.issues == []
+    assert [stage.index for stage in result.plan.stages] == [0, 1]
+    assert result.plan.stages[0].deltas == []
+    assert result.plan.stages[1].deltas[0].tooth.value == "21"
 
 
 def test_case_store_versions_are_immutable_snapshots() -> None:

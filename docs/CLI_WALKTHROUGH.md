@@ -37,14 +37,17 @@ explicit, typed `coordinate_frame` and the `movement_caps.default` heuristics:
 }
 ```
 
-## 2. Inspect an STL (metadata only)
+## 2. Inspect a Scan (metadata only)
 
 ```bash
-orthoplan inspect-stl scan.stl
+orthoplan inspect-scan scan.stl
+orthoplan inspect-scan scan.ply      # or .obj .asc .xyz .pts .3mf .gltf .glb .fbx
 ```
 
-STL bytes are never stored - only redacted metadata. Units cannot be inferred
-from STL, so they are `unverified` until a user confirms them:
+Scan bytes are never stored - only redacted metadata. Most formats carry no
+unit, and a declaration from one that does (3MF, glTF, FBX) is reported as
+`declared_units` rather than applied, so `units` stays `unverified` until a user
+confirms them:
 
 ```json
 {
@@ -130,6 +133,22 @@ used by the CLI, API, reporting, and visualization frame contracts. The lab incl
 file-backed golden STL fixtures plus expected millimeter/degree outputs with tolerances.
 Failures print the exact expected-vs-actual mismatch.
 
+It also includes **segmentation accuracy** cases (`segmentation-full-arch-accuracy`,
+`segmentation-missing-tooth`, `segmentation-open-gap`, `segmentation-missing-tooth-marked`).
+These build a synthetic arch whose per-triangle tooth membership is known by
+construction, run the active on-device segmenter, and score two axes: `region_purity`
+(did the cuts separate the right crowns, independent of labels) and
+`triangle_label_accuracy` (did the right FDI number land on the right region).
+
+The segmenter derives the tooth count by counting **crown peaks** in the arch's
+height profile rather than assuming a full arch, so the count is right whether a
+tooth is congenitally absent (`segmentation-missing-tooth`) or left an open
+extraction hole filled with gum (`segmentation-open-gap`) - a gum hole has no peak,
+so it never reads as an extra tooth (`tooth_count_error == 0`). Which tooth is
+absent cannot be known from crown geometry, so FDI labels on a gap arch are a
+positional guess until the user marks the gap; `segmentation-missing-tooth-marked`
+shows that signal restoring label accuracy.
+
 ## 8. Print package export
 
 ```bash
@@ -142,7 +161,45 @@ hash, artifact hashes, and geometry-source metadata. Generated files are informa
 outputs from the supplied plan data and physical use is the user's own responsibility
 and risk.
 
-## 9. Optional model advisory
+## 9. Labelled segmentation benchmark
+
+```bash
+orthoplan segmentation-benchmark --manifest labelled-segmentation/manifest.json
+orthoplan segmentation-benchmark --manifest labelled-segmentation/manifest.json --json
+```
+
+Scores the active local segmenter against external labelled real-scan cases. The
+repo does not ship patient-derived labelled scans; the manifest points to local
+PHI-safe or consented fixtures and must mark each case as PHI-removed,
+consent-acknowledged, and commercial-use-allowed before it is scored.
+
+Minimal manifest shape:
+
+```json
+{
+  "cases": [{
+    "case_id": "non-phi-001",
+    "arch": "maxillary",
+    "scan_path": "case.stl",
+    "labels_path": "triangle-labels.json",
+    "phi_removed": true,
+    "consent_acknowledged": true,
+    "commercial_use_allowed": true
+  }]
+}
+```
+
+`triangle-labels.json` contains one FDI label per STL triangle:
+
+```json
+{ "triangle_labels": ["11", "11", "12"] }
+```
+
+The command reports triangle-label accuracy, region purity, tooth counts, and
+review-burden delta versus the fallback segmenter. It is a software benchmark,
+not clinical clearance.
+
+## 10. Optional model advisory
 
 The advisory layer is **off by default**. It runs only when you ask for it and a
 provider is configured:

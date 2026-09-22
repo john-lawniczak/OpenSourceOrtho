@@ -8,7 +8,10 @@ For the living source ledger and monitoring cadence, see [SOURCES_AND_RECOMMENDE
 
 BlueSkyPlan is marketed as free dental planning software, but free does not mean open source. Its download page requires agreement to terms and a license agreement. Treat it as proprietary unless a clear OSI-approved source license is found.
 
-ClinCheck is Align Technology/Invisalign treatment-planning software. It is useful as a workflow reference for stage visualization, doctor review, plan modification, and patient-facing progress display. Do not copy UI, assets, source, private workflows, or proprietary terminology beyond nominative reference.
+Commercial clear-aligner plan-editing systems are useful as workflow references
+for stage visualization, doctor review, plan modification, and patient-facing
+progress display. Do not copy UI, assets, source, private workflows, or
+proprietary terminology beyond nominative reference.
 
 ## Good Open-Source Building Blocks
 
@@ -26,7 +29,8 @@ SlicerCMF
 Open3D
 
 - MIT-licensed 3D data processing library
-- useful for point clouds, meshes, registration, visualization, and geometry utilities
+- useful for point clouds, meshes, registration, visualization, geometry utilities, and local segmentation experiments
+- available as the optional `mesh-processing` extra; the core app still has a pure-Python segmentation baseline
 
 PyVista / VTK
 
@@ -37,7 +41,8 @@ PyVista / VTK
 pydicom
 
 - MIT-licensed Python DICOM library
-- useful only if CBCT/DICOM support is added
+- optional `dicom` extra used for local CBCT/DICOM structural metadata intake
+  with `stop_before_pixels=True`
 
 Three.js
 
@@ -75,12 +80,15 @@ MeshLab / CloudCompare
 - **Trademarks**: "Invisalign", "ClinCheck", and "SmartTrack" are trademarks. Use them only as
   nominative references in prose, never in code identifiers, UI labels, or product naming.
 - **Sample datasets**: STL/CBCT sample scans often carry patient-consent or dataset licenses.
-  Phase 1 uses synthetic fixtures only; do not check in third-party patient scans.
+  The canonical sample tracks STL shells plus redacted CBCT metadata and safe
+  derived root/bone landmarks; raw DICOM remains local/ignored because source
+  identifier tags are present. Do not check in third-party or PHI-bearing patient
+  scans without de-identification and redistribution rights.
 
 ## Source Links To Recheck During Implementation
 
 - BlueSkyPlan download/license page: https://www.blueskybio.digital/page/download-software
-- ClinCheck Pro overview: https://www.invisalign.com/provider/align-digital-platform/clincheck
+- Commercial clear-aligner plan editor overview: https://www.invisalign.com/provider/align-digital-platform/clincheck
 - 3D Slicer: https://www.slicer.org/
 - 3D Slicer license docs: https://slicer.readthedocs.io/en/5.10/user_guide/about.html
 - SlicerCMF: https://cmf.slicer.org/

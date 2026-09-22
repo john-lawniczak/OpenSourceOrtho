@@ -1,6 +1,6 @@
 # Claude Code Notes
 
-This repository is safety-boundary-first. Do not describe OpenSource Ortho as a medical device, Invisalign clone, clinical approval tool, or autonomous treatment planner.
+This repository is safety-boundary-first. Do not describe OpenSource Ortho as a medical device, Invisalign clone, clinical approval tool, autonomous treatment planner, complete treatment-planning system, or software that makes physical use safe. Preferred framing: clear-aligner planning safety playground and research toolkit.
 
 When changing behavior, summarize it in your pull request description. When changing model-provider behavior, also update [docs/OpenAI_Agents.md](docs/OpenAI_Agents.md).
 

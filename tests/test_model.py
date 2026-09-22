@@ -4,6 +4,7 @@ import pytest
 
 from orthoplan.model import (
     Arch,
+    CaseRecord,
     MeshAsset,
     SegmentedToothMesh,
     Stage,
@@ -131,5 +132,16 @@ def test_duplicate_asset_ids_are_rejected() -> None:
             mesh_assets=[
                 MeshAsset(id="same", format="stl-binary", vertex_count=3, face_count=1),
                 MeshAsset(id="same", format="stl-binary", vertex_count=3, face_count=1),
+            ],
+        )
+
+
+def test_duplicate_case_record_ids_are_rejected() -> None:
+    with pytest.raises(ValueError, match="duplicate case record id"):
+        TreatmentPlan(
+            id="dupe-record",
+            case_records=[
+                CaseRecord(id="same", kind="cbct"),
+                CaseRecord(id="same", kind="photo"),
             ],
         )

@@ -22,9 +22,13 @@ from orthoplan.model.plan import TreatmentPlan
 
 
 def evaluate_mesh_quality(plan: TreatmentPlan) -> list[Finding]:
+    # Per-tooth crown meshes are not whole arches, so the arch-scale sanity range
+    # (30-120 mm) must not apply to them - otherwise every segmented crown is
+    # mis-flagged as "implausible scale".
+    crown_ids = {link.mesh_asset_id for link in plan.tooth_meshes}
     findings: list[Finding] = []
     for asset in _plan_assets(plan):
-        findings.extend(_asset_findings(asset))
+        findings.extend(_asset_findings(asset, is_crown=asset.id in crown_ids))
     return findings
 
 
@@ -32,7 +36,7 @@ def _plan_assets(plan: TreatmentPlan) -> list[MeshAsset]:
     return [scan.asset for scan in plan.scans] + list(plan.mesh_assets)
 
 
-def _asset_findings(asset: MeshAsset) -> list[Finding]:
+def _asset_findings(asset: MeshAsset, *, is_crown: bool = False) -> list[Finding]:
     findings: list[Finding] = []
     report = asset.quality
 
@@ -67,8 +71,9 @@ def _asset_findings(asset: MeshAsset) -> list[Finding]:
         )
 
     # Scale ambiguity for unverified units is already reported by the movement-cap
-    # rule; here we only flag confirmed-but-implausible scale.
-    if asset.units_confirmed:
+    # rule; here we only flag confirmed-but-implausible scale (arch scans only -
+    # per-tooth crowns are legitimately far smaller than an arch).
+    if asset.units_confirmed and not is_crown:
         note = bounding_box_sanity(asset)
         if note:
             findings.append(

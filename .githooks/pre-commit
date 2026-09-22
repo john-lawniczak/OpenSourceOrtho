@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Maintainer hook: block commits that fail strict maintainability or drift away
+# from dynamic mobile version metadata.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+python3 "$ROOT/tools/check_maintainability.py" --strict
+
+staged_files="$(git diff --cached --name-only)"
+
+if printf '%s\n' "$staged_files" | grep -Eq '(^|/)Info\.plist$|\.xcodeproj/project\.pbxproj$|mobile/ios/App/(AppIdentity|SettingsView)\.swift$'; then
+  if printf '%s\n' "$staged_files" | grep -Eq '(^|/)Info\.plist$'; then
+    while IFS= read -r plist; do
+      [ -n "$plist" ] || continue
+      staged_plist="$(git show ":$plist")"
+      if printf '%s' "$staged_plist" | grep -q 'CFBundleShortVersionString' &&
+        ! printf '%s' "$staged_plist" | grep -q '\$(MARKETING_VERSION)'; then
+        echo "pre-commit: $plist must keep CFBundleShortVersionString as \$(MARKETING_VERSION)" >&2
+        exit 1
+      fi
+      if printf '%s' "$staged_plist" | grep -q 'CFBundleVersion' &&
+        ! printf '%s' "$staged_plist" | grep -q '\$(CURRENT_PROJECT_VERSION)'; then
+        echo "pre-commit: $plist must keep CFBundleVersion as \$(CURRENT_PROJECT_VERSION)" >&2
+        exit 1
+      fi
+    done < <(printf '%s\n' "$staged_files" | grep -E '(^|/)Info\.plist$')
+  fi
+
+  if [ -f "$ROOT/mobile/ios/App/SettingsView.swift" ] &&
+    ! grep -q 'AppIdentity.installedVersionDisplay' "$ROOT/mobile/ios/App/SettingsView.swift"; then
+    echo "pre-commit: SettingsView.swift must read AppIdentity.installedVersionDisplay" >&2
+    exit 1
+  fi
+fi
+
+android_version_guard='mobile/android/app/build\.gradle\.kts|'
+android_version_guard+='mobile/android/app/src/main/kotlin/com/opensourceortho/lite/(LiteScreens|MainActivity)\.kt'
+
+if printf '%s\n' "$staged_files" | grep -Eq "$android_version_guard"; then
+  if ! grep -q 'buildConfig = true' "$ROOT/mobile/android/app/build.gradle.kts"; then
+    echo "pre-commit: Android buildConfig must stay enabled for Settings version metadata" >&2
+    exit 1
+  fi
+  if ! grep -q 'BuildConfig.VERSION_NAME' "$ROOT/mobile/android/app/src/main/kotlin/com/opensourceortho/lite/LiteScreens.kt" ||
+    ! grep -q 'BuildConfig.VERSION_CODE' "$ROOT/mobile/android/app/src/main/kotlin/com/opensourceortho/lite/LiteScreens.kt"; then
+    echo "pre-commit: Android Settings must read BuildConfig.VERSION_NAME and VERSION_CODE" >&2
+    exit 1
+  fi
+fi

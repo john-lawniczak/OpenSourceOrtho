@@ -1,0 +1,2 @@
+# Preserve the CRLF parser fixture byte-for-byte across checkout platforms.
+mobile/test-fixtures/scans/crlf.ply binary

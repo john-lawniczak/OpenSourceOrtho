@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material3 / Compose drives the actual styling; this base theme just keeps
+         the manifest valid and the system bars sane. -->
+    <style name="Theme.OpenSourceOrthoLite" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

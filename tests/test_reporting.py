@@ -62,6 +62,14 @@ def test_report_json_is_sorted_for_reproducible_handoff() -> None:
     assert first.splitlines()[1].startswith('  "created_at"')
 
 
+def test_report_labels_review_tier_and_lists_unresolved_surface_gaps() -> None:
+    report = build_handoff_report(_plan())
+    assert report["review_tier"]["tier"] == "stl-only"
+    assert report["review_tier"]["root_bone_aware"] is False
+    domains = {gap["domain"] for gap in report["unresolved_data_gaps"]}
+    assert {"roots", "alveolar_bone", "periodontal_status", "occlusion", "cbct_anatomy"} <= domains
+
+
 def test_report_can_include_reviewer_and_hmac_signature() -> None:
     report = build_handoff_report(
         _plan(),

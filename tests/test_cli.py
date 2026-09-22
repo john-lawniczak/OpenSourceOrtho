@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import json
 import sys
+import types
 from pathlib import Path
 
 from orthoplan import cli
+from orthoplan.io.serialization import write_plan
+from orthoplan.model.plan import Stage, ToothDelta, TreatmentPlan
 
 
 def test_cli_new_plan_emits_json(monkeypatch, capsys) -> None:
@@ -15,6 +18,30 @@ def test_cli_new_plan_emits_json(monkeypatch, capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert payload["id"] == "cli-test"
     assert payload["settings"]["timeline"]["wear_interval_days"] == 14
+
+
+def test_run_app_alias_launches_serve_command(monkeypatch) -> None:
+    calls = []
+
+    def fake_serve(*, host: str, port: int) -> None:
+        calls.append((host, port))
+
+    monkeypatch.setitem(sys.modules, "orthoplan.server", types.SimpleNamespace(serve=fake_serve))
+    monkeypatch.setattr(sys, "argv", ["happysmile", "--host", "127.0.0.2", "--port", "8123"])
+
+    assert cli.run_app_main() == 0
+    assert calls == [("127.0.0.2", 8123)]
+
+
+def test_cli_landmarks_template_emits_fillable_json(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sys, "argv", ["orthoplan", "landmarks-template", "--arch", "upper"])
+
+    assert cli.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert len(payload["landmarks"]) == 16  # full upper permanent dentition
+    assert payload["landmarks"][0]["tooth"]["value"][0] in {"1", "2"}
+    assert payload["landmarks"][0]["approximate"] is True
 
 
 def test_cli_inspect_stl_handles_invalid_file_without_traceback(
@@ -156,6 +183,32 @@ def test_cli_acquisition_handles_invalid_plan_without_traceback(
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "acquisition error" in captured.err
+
+
+def test_cli_compare_setups_json(monkeypatch, capsys, tmp_path: Path) -> None:
+    before = TreatmentPlan(
+        id="before",
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth={"value": "11"}, translate_x_mm=0.2)])],
+    )
+    after = TreatmentPlan(
+        id="after",
+        stages=[Stage(index=0, deltas=[ToothDelta(tooth={"value": "11"}, translate_x_mm=0.5)])],
+    )
+    before_path = tmp_path / "before.json"
+    after_path = tmp_path / "after.json"
+    write_plan(before, before_path)
+    write_plan(after, after_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["orthoplan", "compare-setups", str(before_path), str(after_path), "--json"],
+    )
+
+    assert cli.main() == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["changed_teeth"][0]["tooth"] == "11"
+    assert payload["changed_teeth"][0]["delta"]["translate_x_mm"] == 0.3
 
 
 def test_cli_print_package_writes_files(monkeypatch, capsys, tmp_path: Path) -> None:

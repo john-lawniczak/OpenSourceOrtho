@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from orthoplan.io.stl_import import read_stl_geometry
+from orthoplan.io.mesh_import import read_mesh_geometry
 from orthoplan.model.assets import MeshAsset, MeshProvenance
 from orthoplan.model.plan import SegmentedToothMesh, ToothId
 from orthoplan.planning.mesh_frame import compute_local_frame
@@ -33,7 +33,7 @@ def import_segmented_meshes(
     seen_ids: dict[str, str] = {}
 
     for tooth, path in sorted(tooth_paths.items(), key=lambda item: item[0].value):
-        asset, vertices = read_stl_geometry(path, provenance=provenance)
+        asset, vertices = read_mesh_geometry(path, provenance=provenance)
         if asset.id in seen_ids:
             raise ValueError(
                 f"teeth {seen_ids[asset.id]} and {tooth.value} resolve to identical mesh "

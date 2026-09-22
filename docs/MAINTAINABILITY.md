@@ -19,6 +19,8 @@ These are review triggers, not hard laws:
 - Python source file target: under 250 lines.
 - Python source file warning: 300 lines.
 - Python source file split-required threshold: 500 lines.
+- First-party JavaScript, Swift, and Kotlin warning: 300 lines.
+- First-party JavaScript, Swift, and Kotlin split-required threshold: 500 lines.
 - Test file target: under 300 lines.
 - Function or method target: under 60 lines.
 - Class target: under 150 lines.
@@ -32,6 +34,12 @@ When a file crosses a warning threshold, prefer one of these moves:
 - move rendering concerns out of planning/evaluation packages
 
 Do not split files only to satisfy a number. Split when it improves names, ownership, testing, or reviewability.
+
+Existing UI/native files above the split threshold have explicit non-growth
+budgets in `tools/maintainability_baseline.json`. CI fails if one grows past its
+recorded ceiling. Lower or remove a budget whenever a hotspot is split; new
+first-party files do not receive legacy budgets. Vendored JavaScript and test
+files are excluded from this source-file line check.
 
 ## Directory Ownership
 
@@ -93,7 +101,8 @@ Run:
 python3 tools/check_maintainability.py
 ```
 
-Use strict mode in CI or before large commits:
+Use strict mode in CI or before large commits. Strict mode covers Python
+structure plus first-party JavaScript, Swift, and Kotlin line budgets:
 
 ```bash
 python3 tools/check_maintainability.py --strict

@@ -1,18 +1,80 @@
 # Architecture
 
-OpenSource Ortho is a Python-first planning and visualization toolkit. The first milestone is not a polished production product; it is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, and feed an accurate UI.
+OpenSource Ortho is a Python-first planning and visualization safety playground for clear-aligner workflows. The current milestone is a clean, inspectable engine that can import dental meshes, represent staged movement, check configured movement caps, generate manufacturing-oriented exports, and feed an accurate UI. It is not a complete treatment-planning system. The roadmap has tiered review modes: STL-only surface review, enhanced-record review, CBCT-attached review, and root/bone-aware review only when registered, reviewed anatomy is trusted.
+
+## Full Treatment-System North Star
+
+The product direction is to get as close as possible to the functional coverage
+of a modern commercial clear-aligner treatment system while staying open,
+auditable, privacy-preserving, and safety-boundary-first. Commercial systems are
+workflow references only; do not copy proprietary UI, source, assets, private
+workflows, or product naming. The open target is generic capability parity where
+lawful and clinically honest, not a clone or a medical-device claim.
+
+Short version of the commercial reference workflow:
+
+1. Capture patient records with an intraoral scanner and related records such as
+   photos, bite scans, prescription/Rx preferences, and optionally CBCT.
+2. Convert the scan into segmented dentition and a proposed setup using a
+   cloud-backed planning system, doctor preferences, historical case data, and
+   technician/CAD workflows.
+3. Let the doctor modify the setup with plan-editing tools: side-by-side setup
+   comparison, direct 3D tooth controls, arch-form controls, attachment/cut
+   placement, IPR/spacing controls, tooth locking, automatic same-arch response,
+   and fast restaging after edits.
+4. Review roots/bone when CBCT-derived anatomy is available, then approve the
+   plan in the commercial system so manufacturing can begin.
+5. Manufacture aligners using validated material/process controls, monitor
+   progress against the planned stages, handle refinements, and retain the result.
+
+OpenSource Ortho's matching architecture should therefore grow in these generic
+layers:
+
+- **Data flywheel:** privacy-preserving longitudinal case bundles: initial scans,
+  target/final scans, refinements, intended movements, controls, and outcome
+  notes. Single pre-treatment STL files help segmentation, but paired
+  before/after and refinement data are what teach target setup and tracking.
+- **Setup workbench:** side-by-side comparison of original, generated, edited,
+  and saved-version setups, all backed by plan hashes and deterministic checks.
+- **3D controls:** direct authoring for translation, intrusion/extrusion,
+  rotation, crown tip, crown torque, arch-form edits, attachments/cuts,
+  IPR/spacing, and tooth locks. Controls may be edited from STL surface geometry,
+  but root-sensitive controls must stay flagged until trusted anatomy exists.
+- **Live restaging:** after an edit, run target resolution, staging optimization,
+  collision/IPR checks, fixed-tooth/exclusion checks, and timeline projection
+  immediately, then show diffs rather than silently replacing the plan.
+- **Automatic arch response:** when a tooth or arch-form change is made, propose
+  coupled same-arch adjustments to maintain contacts/spacing. The response is a
+  visible proposal with provenance, not hidden clinical intent.
+- **Manufacturing/monitoring loop:** exported geometry, shell QA, progress scans,
+  refinement records, and final scans should feed back into the case bundle for
+  validation and model improvement.
+
+The safety boundary is unchanged: a live-updated or data-informed plan can be
+internally consistent without being safe, clinically appropriate, approved, or
+complete.
 
 ## Simple Flow
 
 1. The user uploads an intraoral-scan mesh, usually an STL file.
 2. The mesh is imported and labeled with provenance: patient-derived, imported, manual, model-generated, or synthetic.
-3. Teeth are segmented into individual tooth meshes. The first implementation should be manual or imported segmentation; machine learning can come later.
+3. Teeth are segmented into individual tooth meshes. Supported paths: manual/imported per-tooth STLs, and an on-device hybrid geometric auto-segmenter (`orthoplan/segmentation/`, exposed as `POST /api/segment`) that proposes per-tooth regions for human review. It combines arch position, crown-height valleys, curvature, and face-normal changes into graph-cut-style boundaries, with optional Open3D mesh-processing support. When the request carries a plan with trusted, gate-passing registered CBCT anatomy, volume-derived interproximal boundary priors bias the cut placement and cut/prior agreement calibrates the per-tooth confidence (see the CBCT fidelity path below). A learned model (e.g. Teeth3DS) can replace the geometric proposal behind the `SegmentationModel` seam; it must run locally (scans are PHI).
 4. A `TreatmentPlan` stores each stage. Each `Stage` contains `ToothDelta` values for individual teeth.
 5. The planning layer checks each stage against user-configured `MovementCaps`.
 6. The visualization layer converts the plan into cumulative `StageProgressFrame` objects.
 7. The UI renders current, staged, and planned positions from those cumulative frames.
 8. Deterministic rules run first. Model providers such as OpenAI or Claude Code may add advisory findings, but all findings pass through `lint_finding()`.
 9. Optional print-export settings record intended file format, delivery email, materials, acknowledgement, and export blockers; `print-package` can generate stage proxy STL files, a manifest, zip package, and email draft.
+
+CBCT/DICOM is not required for every workflow. It is the higher-fidelity path for
+root/bone-aware checks when the app has local DICOM metadata, STL-to-CBCT
+registration, reviewed anatomy, and deterministic root/bone-aware findings.
+Local raw-volume sparse-mask anatomy proposals and automatic STL-to-CBCT
+registration proposals exist as safety-gated review packets; they are never
+trusted until deterministic checks and explicit human review/acceptance succeed.
+The canonical sample also includes a redacted CBCT metadata artifact and a safe
+root/bone engineering fixture so the UI/API can exercise the full gate sequence
+without committing raw DICOM bytes. See [cbct-evaluation.md](cbct-evaluation.md).
 
 ## Language and Stack
 
@@ -22,25 +84,36 @@ Python is a good first language here because:
 
 - dental mesh and medical-imaging libraries are mature in Python
 - Pydantic gives us explicit, serializable plan objects
-- PyVista/VTK and Open3D can support early visualization and mesh processing
+- Open3D can support optional mesh processing; PyVista/VTK can support early visualization
 - later web UIs can consume the same JSON frame contract
 
 The likely future split:
 
 - Python: data model, IO, planning, evaluation, CLI, test fixtures
 - Three.js or VTK/PyVista: interactive 3D visualization
-- Optional 3D Slicer extension: heavyweight dental/CBCT workflow integration
+- Optional 3D Slicer extension or VTK-style tooling: heavyweight dental/CBCT workflow integration
 
-The browser UI never reimplements the engine. `orthoplan/api.py` exposes a single pure evaluation entry point, and `orthoplan/server.py` serves it over `POST /api/evaluate`. The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders schematic per-tooth proxies from those frames; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
+The browser UI never reimplements the engine. `orthoplan/api.py` exposes pure entry points, and `orthoplan/server.py` serves them: `POST /api/evaluate` for findings/frames, `POST /api/print-package` (`print_package_payload`, reusing `export_print_package`) which returns a base64 zip of stage proxy STLs + manifest and an `.eml` draft for the guided Print / send step, and `POST /api/segment` (`segment_payload`) which runs the on-device segmenter on a server-local scan and returns a reviewable per-tooth proposal (confidence, linted advisory findings, and a ready-to-merge `mesh_assets`/`tooth_meshes` fragment). The UI sends plan-shaped JSON and renders the returned findings, data gaps, data-gap actions, timeline projection, and `StageProgressFrame` data verbatim - so there is exactly one source of truth for movement and policy. The 3D progress viewer (Three.js, vendored) renders exact whole-arch STL scans, schematic/marker movement when segmentation is not reviewed, and reviewed per-tooth STL fragments when `render_meshes` links are available; it draws rotation only where the engine marks it renderable. PCA `tooth_frames` are exposed as approximate metadata but do not make rotation renderable.
 
-The first UI prototype is a static browser workspace under `ui/`. It mirrors
-the Python data contract but does not yet run backend STL inspection.
+The UI is a static browser workspace under `ui/`. It opens by default into a
+guided, six-step wizard (`ui/guided.js`) for non-technical users; the dense
+Technician workspace is one toggle away. A self-contained **Sample test case**
+(`ui/sample.js`) reuses the guided wizard, pre-loaded with the bundled test-case
+STL scans and the canonical root/bone fixture, and snapshots/restores the user's
+working state (including any applied segmentation) so it stays isolated. On entry
+the sample loads accepted fixture registrations and reviewed derived landmarks,
+then runs the on-device auto-segmenter on the bundled scans and applies the
+per-tooth draft (sample-only pre-applying, clearly labeled). The sample therefore
+demonstrates the scan's own crowns moving across stages plus root/bone-aware
+review tier state, anatomical frames, root/bone context, and CBCT boundary priors;
+a user's own plan still requires explicit review + apply. The UI mirrors the
+Python data contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
 local mesh workspace. Plan JSON still does not contain mesh bytes; it contains
-`mesh_asset_id` links. `orthoplan register-mesh` copies an STL into a local
-workspace registry, and `/api/mesh/<mesh_asset_id>` serves only registered files
-under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
+`mesh_asset_id` links. `orthoplan register-mesh` imports a scan in any supported
+format into a local workspace registry (storing a canonical copy), and
+`/api/mesh/<mesh_asset_id>` serves only registered files under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
 load real tooth meshes when available and falls back to schematic proxies when a
 mesh is missing.
 
@@ -95,18 +168,92 @@ mesh is missing.
 - data gaps attached for the UI
 - designed so the UI does not recalculate treatment movement differently from the engine; transform composition lives in `planning/transforms.py`, and `viz` only consumes it
 
-## STL Upload
+## Safety-Review Tiers
 
-The initial user upload should be an STL of an intraoral scan. STL contains surface geometry only. It does not contain roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT anatomy.
+### Surface Review: Scan Upload
 
-That means the UI must show these data gaps. A surface scan can support crown-surface visualization and staged crown movement, but it cannot prove root position, bone safety, or periodontal suitability.
+The initial user upload is an intraoral scan in whatever format the scanner
+exported. A surface scan contains surface geometry only. It does not contain
+roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT
+anatomy.
 
-STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
+That means the UI must show these data gaps. A surface scan can support
+crown-surface visualization, staged crown movement, arch-form proposals,
+crown-collision checks, and manufacturing-oriented handoff. It cannot prove root
+position, bone safety, periodontal suitability, or readiness for physical use.
+
+#### Scan intake (`orthoplan/io/`)
+
+Intake is format-neutral. `io/mesh_formats/` holds one reader per family - STL,
+PLY, OBJ, plain-text points (ASC/XYZ/PTS), 3MF, glTF/GLB, and FBX - each
+reducing its file to the same `MeshPayload` (points, triangle indices, format
+label, declared unit, notes). Dispatch is by extension with content sniffing as
+a fallback, so a renamed or mislabelled export still imports. `io/mesh_import.py`
+turns a payload into the redacted `MeshAsset`; `io/stl_import.py` remains as
+thin back-compatible aliases.
+
+Registration (`mesh_workspace.register_scan_mesh`) stores one canonical copy per
+asset - binary STL for a mesh, plain-text XYZ for a point cloud
+(`io/stl_export.py`) - keyed by the hash of the ORIGINAL bytes. An STL is passed
+through byte-for-byte. Everything downstream (viewer, segmentation, print
+package) therefore reads one shape, and the browser never needs a second set of
+parsers.
+
+Upload stays metadata-only:
 
 - mesh bytes are never stored in the serialized plan; only redacted metadata and an optional relative reference are kept
 - absolute paths and directory structure (which often carry patient names) are stripped
-- STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- most scan formats carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- formats that DO declare a unit (3MF, glTF, FBX) record it as `declared_units`, a prompt hint only - a file's own claim never satisfies the confirmation gate
 - a bounding-box sanity check can warn about implausible scale, but never infers units
+- a point cloud (no faces) records `geometry_kind: "points"` and `face_count: 0`; surface-dependent steps fail closed on it rather than inventing triangles between points
+
+### Root/Bone-Aware Review: CBCT/DICOM
+
+CBCT/DICOM is an optional higher-fidelity tier rather than a universal
+requirement. It unlocks root/bone-aware behavior only behind these contracts:
+
+- local DICOM/CBCT record ingestion with PHI-aware metadata handling
+- on-device volume viewing or trusted local viewer integration
+- explicit STL-to-CBCT registration with quality metrics
+- reviewable derived anatomy such as roots, alveolar bone, and tooth axes
+- deterministic root/bone-aware findings that fail closed when registration or
+  segmentation quality is missing
+
+CBCT-derived data must enter planning through typed model contracts with
+provenance and review status. The planner must never silently assume that STL and
+CBCT coordinate spaces are aligned, and no review tier may imply clinical
+approval or complete treatment planning.
+
+The CBCT fidelity path is sequenced fail-closed, each step gating the next:
+
+1. **Registration quality gate** (`model/registration_gate.py`): a numeric
+   PASS/MARGINAL/FAIL judgement of each registration's recorded metrics (RMSE,
+   fitness, inlier ratio). A reviewer's acceptance click can never unlock
+   CBCT-derived behavior when the metrics contradict it; every CBCT consumer
+   (anatomy proposals, boundary priors, axis frames, root/bone checks) consults
+   the gate. Verdicts surface in the evaluate payload (`registration.gate`).
+2. **Boundary priors + cross-modal confidence** (`segmentation/cbct_prior.py`,
+   `segmentation/prior_blend.py`): trusted per-tooth root/axis anatomy behind an
+   open gate is mapped through the inverse registration into scan space; the
+   midpoints between adjacent teeth become interproximal priors that BIAS (never
+   replace) the hybrid segmenter's cut placement. Cut/prior agreement is then a
+   measured per-tooth confidence calibration: disagreement always lowers
+   confidence, and raising it above the surface-only score requires a PASS gate
+   (capped below certainty). The `/api/segment` payload may carry the plan; the
+   response reports the `cbct_prior` block.
+3. **Trusted anatomical frames** (`planning/anatomical_frame.py`): a trusted
+   CBCT tooth axis (open gate, invertible registration, computable arch tangent
+   from neighbouring crown centroids) rebuilds that tooth's local frame as
+   non-approximate, which is exactly the validated frame source that makes
+   tip/torque/rotation renderable (see below).
+4. **Root-aware movement checks** (`evaluation/rules/root_bone.py`,
+   `evaluation/rules/root_apex.py`): root proximity, cortical-boundary
+   proximity, and a geometric root-apex sweep estimate
+   (`root_length * sin(angulation)` about the crown-centroid pivot) that
+   documents every trusted tooth's estimate and warns past a stated review
+   threshold. All of it emits `cannot assess` rather than guessing when
+   readiness is missing.
 
 ## How The Plan Moves Teeth
 
@@ -121,14 +268,56 @@ Translation accumulates as a true vector sum (translation is commutative), so cu
 
 Rotation is different. Summed Euler components (tip/torque/rotation) are not a composable rigid rotation, and converting them to a renderable transform requires per-tooth anatomical axes that the Phase 1 scan frame does not resolve. So frames report cumulative rotation values but flag `rotation_renderable=False`; a UI must not build a rotation matrix from a non-renderable pose. This is why `build_stage_progress_frames()` exists and why transform composition lives in `planning/transforms.py`.
 
-Approximate crown-surface PCA frames are not enough to change that flag. A future real-mesh
-orientation path must supply non-approximate anatomical frames or another validated frame
-source before rotation can be rendered.
+Approximate crown-surface PCA frames are not enough to change that flag. The validated
+frame source is the trusted-CBCT-axis path (`planning/anatomical_frame.py`): when a plan
+carries a human-reviewed, in-field CBCT tooth axis behind a registration whose numeric
+quality gate is open, `evaluate_plan()` rebuilds that tooth's local frame as
+non-approximate (long axis from the registered CBCT axis, mesiodistal from the arch
+tangent through neighbouring crown centroids, buccolingual as their cross product) and
+rotation becomes renderable for that tooth only. Everything else keeps
+`rotation_renderable=False`.
 
 For local real-mesh visualization, `planning/mesh_transform.py` can transform externally
 supplied per-tooth vertices by cumulative translation while preserving the same rotation
 honesty rule. The server/UI path uses the same stage frames; real STL meshes are visual
 geometry, not a different planning engine.
+
+## Plan Generation
+
+`planning/generate.py` turns the best available target into cap-respecting staging
+by reusing the existing optimizer (`planning/optimizer.py`) - it never re-implements
+staging or caps. Target resolution is, in order: authored movement; a
+**landmark-derived** plan (per-tooth crown landmarks → real arch-form deviation
+targets + arch-length/space analysis in `planning/arch_analysis.py`, assembled with
+IPR, attachments, and approximate collision bounds in `planning/landmark_plan.py`);
+a geometry-derived arch-form fit over visible segmented crowns
+(`planning/arch_form.py`); or a labeled educational template. It has no model calls.
+
+The top-level `generation.py` gateway composes the deterministic generator with
+`run_rules` validation, a deterministic correctness review, and an optional
+consent-gated model review reusing `evaluation/advisory.py`. The UI consumes the
+returned staged plan through the same stage-frame contract as everything else; it
+does not re-stage. See [SAFETY.md](SAFETY.md) for the boundary.
+
+The correctness review emits explicit named **checks**, each with a pass/fail and
+a severity. Gate checks (`caps-respected`, `fixed-teeth-unmoved`,
+`exclusions-respected`, `targets-reached`, `stages-contiguous`) decide the verdict
+(`CONSISTENT`/`ISSUES`/`NOT_APPLICABLE`, never an approval). `scale-confirmed` is a
+warning check and `collisions-checked` is informational (it reports when the
+overlap check is vacuous because no segmented teeth exist). `targets-reached`
+regression-checks that the staged plan's cumulative movement actually reaches the
+requested target, so a staging bug cannot pass silently.
+
+## Plan Versions
+
+`cases.py` stores a `CaseStore` of `CaseRecord`s, each holding ordered
+`PlanVersion` snapshots (full plan JSON + content hash + engine version + note).
+A "case" groups versions of one plan; the default case id is the plan id.
+`case_api.py` wraps this in dict-in/dict-out functions used by both the server
+(`POST /api/plan/version`, `GET /api/cases`, `GET /api/cases/<case_id>`) and the
+CLI (`case-save`, `case-list`, `case-versions`). The store path defaults to
+`.orthoplan-cases.json` and is overridable via `ORTHOPLAN_CASE_STORE`. The UI's
+Versions panel saves snapshots and restores any version back into the editor.
 
 ## Handoff Reports
 
@@ -153,7 +342,8 @@ per-artifact SHA-256 hashes, byte sizes, blockers, and geometry-source metadata.
 has linked segmented mesh bounds, the generated proxy is sized from those bounds; otherwise it
 is explicitly labeled as schematic proxy geometry. These are objective geometry outputs from
 the supplied plan data. Material choice, printing, post-processing, and any physical use are
-the user's responsibility and risk.
+the user's own responsibility and risk. The package is not a certification, warranty,
+clearance, or authorization to wear or physically use an appliance.
 
 The next print-geometry phase should package intentionally supplied mesh bytes and transform
 actual per-tooth vertices instead of bounded proxy solids.
@@ -189,3 +379,36 @@ Initial heuristic defaults (`AxisCaps`):
 These defaults are based on commonly cited clear-aligner staging ranges and should be treated as starting points for research tooling only. The software must never claim that a movement within these values is safe.
 
 Timeline is an arithmetic projection, not an outcome estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, pauses, and user-directed changes.
+
+### Local intake and case recovery boundaries
+
+Scan intake rejects non-finite vertex coordinates, malformed vertex records,
+faces referencing vertices outside the vertex list, and STL facet/vertex count
+mismatches before computing quality or bounds. Vertex and face counts are capped,
+and container formats (3MF's ZIP, FBX's zlib arrays) bound what they will
+decompress, so a malformed or hostile file cannot turn intake into an
+out-of-memory event. Accepted metadata still has unverified units; parsing does
+not establish scale or record readiness.
+
+Case history and the mesh registry are saved through flushed sibling temporary
+files and atomic replacement. A failed write or replacement preserves the prior
+JSON document and removes the temporary file. This protects individual saves
+from partial writes; it does not coordinate concurrent read/modify/write clients
+or provide portable case backups.
+
+Reading case history verifies each snapshot against its stored canonical plan
+hash. Invalid JSON, unreadable storage, or a hash mismatch returns a structured
+case API error, and saving refuses to overwrite damaged history. Keep the damaged
+file for recovery from a known backup. The hashes detect accidental content
+changes; they do not authenticate the source or constitute a review decision.
+
+
+### Shared intake readiness
+
+Evaluation now composes a typed [intake-readiness report](INTAKE_READINESS.md)
+from record metadata, the existing registration gates, deterministic findings,
+and export prerequisites. Domain contracts live in `model/readiness.py`; the
+surface, CBCT, and workflow derivations live in focused evaluation modules. The
+UI maps stable action identifiers to controls and does not derive evidence gates.
+The evaluation scheduler invalidates older requests when an edit is queued, and
+refreshes the trust strip on success or failure to avoid stale readiness claims.

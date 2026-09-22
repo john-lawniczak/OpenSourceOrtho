@@ -4,7 +4,7 @@ from pathlib import Path
 
 from orthoplan.api import evaluate_plan
 from orthoplan.evaluation.rules.movement_caps import evaluate_movement_caps
-from orthoplan.io.stl_import import inspect_stl
+from orthoplan.io.mesh_import import inspect_mesh
 from orthoplan.model import (
     MeshAsset,
     MeshUnits,
@@ -40,7 +40,7 @@ def golden_stl_bounds() -> MeasurementTruthResult:
         "max_span_mm": 14.0,
     }
     tolerances = {key: 1e-9 for key in expected if key.endswith("_mm")}
-    asset = inspect_stl(FIXTURE_DIR / "golden_bounds_ascii.stl")
+    asset = inspect_mesh(FIXTURE_DIR / "golden_bounds_ascii.stl")
     observed: dict[str, MeasurementValue] = {
         "face_count": asset.face_count,
         "vertex_count": asset.vertex_count,
@@ -66,7 +66,7 @@ def golden_stl_bounds() -> MeasurementTruthResult:
 
 def golden_stl_degenerate() -> MeasurementTruthResult:
     case_id = "golden-stl-degenerate"
-    asset = inspect_stl(FIXTURE_DIR / "golden_degenerate_ascii.stl")
+    asset = inspect_mesh(FIXTURE_DIR / "golden_degenerate_ascii.stl")
     expected: dict[str, MeasurementValue] = {"degenerate_faces": 1}
     observed: dict[str, MeasurementValue] = {
         "degenerate_faces": asset.quality.degenerate_faces,
@@ -82,7 +82,7 @@ def golden_stl_degenerate() -> MeasurementTruthResult:
 def bounds_known_ascii() -> MeasurementTruthResult:
     case_id = "bounds-known-ascii"
     failures: list[str] = []
-    asset = inspect_stl(FIXTURE_DIR / "golden_bounds_ascii.stl")
+    asset = inspect_mesh(FIXTURE_DIR / "golden_bounds_ascii.stl")
     if asset.bounds is None:
         failures.append("missing bounds")
     else:

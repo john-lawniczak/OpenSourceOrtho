@@ -97,6 +97,7 @@ def _cap_warning(title: str, message: str, reference: str) -> Finding:
             provenance=FindingProvenance.RULE,
             title=title,
             message=message,
+            code="movement-cap-exceeded",
             data_gap=SURFACE_SCAN_LIMITATION,
             clinician_question=_CLINICIAN_QUESTION,
             reference=reference,
@@ -116,6 +117,7 @@ def _scale_unconfirmed_notice() -> Finding:
                 "movement caps cannot be compared in millimeters. Confirm scan units "
                 "to enable cap evaluation."
             ),
+            code="movement-cap-scale-unconfirmed",
             data_gap="Scan units are unverified; declared geometry scale cannot be trusted.",
             clinician_question="Have the scan units and scale been confirmed?",
         )

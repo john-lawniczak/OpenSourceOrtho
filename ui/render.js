@@ -1,3 +1,4 @@
+import { buildViewerScanSources } from "./scan_formats.js";
 import {
   availabilityLabels,
   el,
@@ -7,17 +8,101 @@ import {
   state,
   toothPositions,
 } from "./state.js";
-import { createLatest, escapeHtml, framePoseTotals, toothKind } from "./core.js";
+import {
+  archFromTooth,
+  escapeHtml,
+  framePoseTotals,
+  inferArchFromName,
+  toothKind,
+} from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
+import { renderGuided, toggleExcludedTooth } from "./guided.js";
+import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
+import { CONTROL_AXES, CONTROL_STEPS, controlGate } from "./direct_controls.js";
+import { formatScaleStatus } from "./scale.js";
+import { registeredOffsetForViewer } from "./proximity.js";
+import { renderSetupCompare, scheduleSetupCompare } from "./setup_compare.js";
+import { renderSegmentation } from "./segmentation_render.js";
+import { renderPrintExport } from "./print_export.js";
+import { renderTrustStatus } from "./trust_status.js";
+import { createEvaluationRunner } from "./evaluation_runner.js";
+import { renderAnatomyReview } from "./anatomy_render.js";
 
 let viewer = null;
 let viewerFailed = false;
+let renderedChatCount = 0;
+let renderedChatSignature = "";
+// One-shot request to re-frame the camera once the next evaluation has populated
+// the scene. Used when a new scene becomes visible (sample screen, guided 3D
+// step) where the viewer may have been sized while hidden or framed for a
+// different scene. It is honored after the async evaluation renders, so the fit
+// uses the real container size and the new geometry.
+let pendingRefit = false;
+
+export function requestViewerRefit() {
+  pendingRefit = true;
+}
+
+// The guided steps that show the 3D viewer for selecting/holding teeth. Returns
+// the step id, or null when not in that context.
+function guidedViewerStep() {
+  if (state.userMode !== "simple") return null;
+  const step = state.guided.step;
+  return step === "plan" || step === "details" ? step : null;
+}
+
+function guidedStageIndex(step, result) {
+  const lastStage = Math.max(0, (result.frames?.length || 1) - 1);
+  if (step === "details") {
+    return Math.min(Number(el("guidedStagePreview")?.value || 0), lastStage);
+  }
+  if (step === "plan") return 0;
+  return lastStage;
+}
+
+function formatWeek(value) {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function stagePhaseText(result, stageIndex) {
+  if (!result?.timeline) return `Stage ${stageIndex}`;
+  const totalAligners = Math.max(1, Number(result.timeline.stage_count || result.frames?.length || 1));
+  const alignerNumber = Math.min(totalAligners, stageIndex + 1);
+  const wearDays = Math.max(0, Number(result.timeline.wear_interval_days || 0));
+  const weekStart = (stageIndex * wearDays) / 7;
+  const weekEnd = ((stageIndex + 1) * wearDays) / 7;
+  return `Aligner ${alignerNumber} of ${totalAligners} · Weeks ${formatWeek(weekStart)}-${formatWeek(weekEnd)}`;
+}
+
+function updateStagePhase(result = state.lastEval) {
+  const slider = el("stageSlider");
+  const stageIndex = Number(slider.value || 0);
+  el("stageValue").textContent = String(stageIndex);
+  if (!result?.timeline) {
+    el("stagePhase").textContent = "Aligner timeline unavailable";
+    return;
+  }
+  el("stagePhase").textContent = stagePhaseText(result, stageIndex);
+}
 
 function ensureViewer() {
   if (viewer || viewerFailed) return viewer;
   try {
     viewer = createViewer(el("viewer3d"));
+    // Clicking a tooth means different things by context. In the guided "teeth"
+    // and "details" steps it toggles whether that tooth is held still (the visual
+    // equivalent of the checkbox list). Everywhere else it selects the tooth for
+    // manual target authoring (only honored when scan units are confirmed).
+    viewer.setSelectionHandler((tooth) => {
+      if (guidedViewerStep() === "plan") {
+        toggleExcludedTooth(tooth);
+      } else {
+        state.manualEdit.selectedTooth = tooth;
+      }
+      renderAll();
+    });
   } catch (error) {
     viewerFailed = true;
     el("viewer3d").hidden = true;
@@ -58,46 +143,146 @@ function demoRenderMeshes() {
   }));
 }
 
+// Status line under the 3D viewer for a loaded scan: which movement layer is
+// active, with an in-progress note while the on-device segmenter is running
+// (e.g. the sample test case preparing its per-tooth teeth).
+function scanStatusText(count, movingFragments) {
+  if (!count) return "Your scan could not be displayed.";
+  if (movingFragments) return "Showing your scan with reviewed per-tooth fragments moving in 3D.";
+  if (state.segmentation.busy) {
+    return "Showing your scan. Segmenting individual teeth on this machine — movement switches from arrows to real crowns when it is applied.";
+  }
+  return "Showing your scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.";
+}
+
 function updateViewer(result) {
   if (state.dim !== "3d") return;
   const v = ensureViewer();
   if (!v) return;
   v.resize();
-  const renderMeshes = result.render_meshes?.length
-    ? result.render_meshes
-    : (state.useDemoMeshes ? demoRenderMeshes() : []);
-  if (renderMeshes.length) {
-    v.loadMeshes(renderMeshes).then((loaded) => {
+  const allScanSources = buildViewerScanSources(state.files, state.scanSources, inferArchFromName);
+  const scanSources = filterScanSources(allScanSources);
+  v.setVisibleArchFilter(state.scanArchFilter);
+  if (allScanSources.length) {
+    v.loadScanSources(allScanSources).then(({ loaded }) => {
+      const movingFragments = Boolean(
+        result.render_meshes?.some((item) => item.source === "model-generated" && toothMatchesArch(item.tooth)),
+      );
+      state.scanRenderStatus = scanStatusText(scanSources.length, movingFragments);
+      renderScanStatus();
+      if (loaded && state.lastEval === result) updateViewer(result);
+    }).catch(() => {
+      state.scanRenderStatus = "Your scan could not be displayed.";
+      renderScanStatus();
+    });
+  } else {
+    v.loadScanSources([]);
+    state.scanRenderStatus = state.useDemoMeshes
+      ? "Simulated sample teeth — drag the stage slider to watch them move."
+      : "No scan loaded yet; the preview uses simple placeholder teeth.";
+    renderScanStatus();
+  }
+  // Applied segmentation yields real per-tooth crown fragments (scan-space,
+  // source "model_generated"). With a scan loaded, render those moving at their
+  // true positions; otherwise fall back to centered class/demo meshes positioned
+  // on the schematic arch.
+  const scanLoaded = scanSources.length > 0;
+  // Segmentation links carry MeshProvenance.MODEL_GENERATED, whose serialized
+  // value is "model-generated" (hyphen). Match that exact string.
+  const segFragments = (result.render_meshes || [])
+    .filter((item) => item.source === "model-generated" && toothMatchesArch(item.tooth));
+  if (scanLoaded && segFragments.length) {
+    v.loadToothFragments(segFragments).then((loaded) => {
       if (loaded && state.lastEval === result) updateViewer(result);
     });
+  } else {
+    const renderMeshes = result.render_meshes?.length
+      ? result.render_meshes
+      : (state.useDemoMeshes ? demoRenderMeshes() : []);
+    const filteredRenderMeshes = renderMeshes.filter((item) => toothMatchesArch(item.tooth));
+    if (filteredRenderMeshes.length) {
+      v.loadMeshes(filteredRenderMeshes).then((loaded) => {
+        if (loaded && state.lastEval === result) updateViewer(result);
+      });
+    }
   }
+  const visibleResult = filterResultForArch(result);
+  const guidedSelect = guidedViewerStep();
+  // Tooth picking is enabled for manual authoring once units are confirmed, and
+  // unconditionally in the guided teeth/details steps (there a click just toggles
+  // "hold still", which needs no millimetre scale).
+  v.setSelectionEnabled(Boolean(guidedSelect) || scaleConfirmed(state.scanUnits));
+  v.setSelectedTooth(state.manualEdit.selectedTooth);
+  // In guided Plan the viewer shows final movement for hold-still selection. In
+  // guided Details the local stage slider previews real staged movement.
   v.update({
-    frames: result.frames,
-    toothFrames: result.tooth_frames,
-    attachments: result.clinical_controls?.attachments || [],
+    frames: visibleResult.frames,
+    toothFrames: visibleResult.tooth_frames,
+    attachments: visibleResult.clinical_controls?.attachments || [],
     initialOffsets: state.demoInitialOffsets,
-    stageIndex: Number(el("stageSlider").value || 0),
-    view: state.view,
-    exaggeration: numberValue("exaggeration") || 1,
+    stageIndex: guidedSelect
+      ? guidedStageIndex(guidedSelect, visibleResult)
+      : Number(el("stageSlider").value || 0),
+    view: guidedSelect ? "overlay" : state.view,
+    exaggeration: guidedSelect ? 1 : (numberValue("exaggeration") || 1),
+    showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
+    showScale: state.showScale,
+    unitsConfirmed: scaleConfirmed(state.scanUnits),
+    excluded: state.guided.excludedTeeth,
   });
+  // The occlusal proximity overlay rides the registered scans. loadProximity caches
+  // by map reference, so calling it every render is cheap when the map is unchanged.
+  v.loadProximity(state.proximity.map);
+  v.setProximityVisible(
+    Boolean(state.scanArchFilter === "both" && state.proximity.enabled && state.proximity.map?.aligned_to_scan),
+  );
+  // Registered-bite view: move the lower arch into the estimated occlusal frame.
+  // null for an as-scanned export (already occluding) or when the view is off.
+  v.setArchRegistration(
+    state.scanArchFilter === "both" && state.proximity.registeredView
+      ? registeredOffsetForViewer(state.proximity.registration)
+      : null,
+  );
+  // True-scale reference status (with the loaded scan's measured extent, if shown).
+  const unitsConfirmed = scaleConfirmed(state.scanUnits);
+  const extentMm = state.showScale && unitsConfirmed ? v.scanExtentMm() : null;
+  state.scaleStatus = formatScaleStatus({
+    enabled: state.showScale,
+    hasScan: scanSources.length > 0,
+    unitsConfirmed,
+    extentMm,
+  });
+  renderScale();
 }
 
 export function renderAll() {
   document.body.dataset.mode = state.userMode;
   document.body.dataset.theme = state.theme;
-  el("themeToggle").textContent = state.theme === "dark" ? "Light Mode" : "Dark Mode";
+  document.body.dataset.step = state.activeStep;
+  document.body.dataset.sample = state.sample.active ? "1" : "";
+  document.body.dataset.generationDetail = state.detailMode.generation;
+  document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
+  el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
+  const toothLabelBtn = el("toothLabelToggle");
+  if (toothLabelBtn) {
+    toothLabelBtn.setAttribute("aria-pressed", state.showToothLabels ? "true" : "false");
+    toothLabelBtn.classList.toggle("is-active", state.showToothLabels);
+  }
   state.scanUnits = el("scanUnits").value;
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
   state.simpleAcknowledged = el("simpleAcknowledged").checked;
-  el("simpleReview").disabled = !state.simpleAcknowledged;
-  state.chat.provider = el("chatProvider").value;
-  state.chat.model = el("chatModel").value;
-  state.chat.contextScope = el("chatScope").value;
+  state.chat.provider = el("chatProvider").value || state.chat.provider;
+  state.chat.model = currentChatModel();
   state.chat.input = el("chatInput").value;
   state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
   state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
   state.chat.agentEndpoint = el("agentEndpoint").value;
+  state.generation.acknowledged = el("generationAck").checked;
+  state.generation.notes = el("generationNotes").value;
+  const segMissing = el("segmentMissingTeeth");
+  if (segMissing) state.segmentation.missingTeeth = segMissing.value;
+  state.versions.note = el("versionNote").value;
   state.caps = {
     linear_mm: numberValue("capLinear"),
     angular_deg: numberValue("capAngular"),
@@ -111,6 +296,9 @@ export function renderAll() {
     model_material: el("modelMaterial").value,
     thermoforming_material: el("thermoformingMaterial").value,
     safety_acknowledged: el("printSafety").checked,
+    aligner_shell_enabled: el("alignerShellEnabled")?.checked || false,
+    sheet_thickness_mm: numberValue("sheetThickness") || 0.6,
+    gingival_trim_margin_mm: numberValue("trimMargin"),
   };
   state.clinicalControls = {
     fixedTeeth: el("fixedTeeth").value,
@@ -119,52 +307,377 @@ export function renderAll() {
     iprContacts: state.clinicalControls.iprContacts,
   };
   renderSteps();
+  // Relocates the shared viewer/AI/upload singletons into the active mode's
+  // hosts and renders the guided wizard steps (no-op visuals when technician
+  // view is active). Runs before updateViewer so the viewer is in its host
+  // before it resizes.
+  renderGuided();
+  renderReviewHeading();
   renderMetadata();
+  renderUploadFileList();
+  renderCaseRecordList();
   renderRows();
   renderIprContactMap();
   renderChat();
-  el("planJson").value = JSON.stringify(planJson(), null, 2);
-  el("stageValue").textContent = el("stageSlider").value;
+  renderGeneration();
+  renderDetailModes();
+  renderVersions();
+  renderScanStatus();
+  renderProximity();
+  renderScale();
+  renderCbctWorkflow();
+  renderMovementFidelity();
+  renderTrustStatus(el("trustStatusStrip"), state, renderAll);
+  renderStagePlayback();
+  renderSampleStatus();
+  renderSegmentation();
+  renderManualEdit();
+  renderDirectControls();
+  renderDownloadActions();
+  const currentPlan = planJson();
+  el("planJson").value = JSON.stringify(currentPlan, null, 2);
+  updateStagePhase();
   scheduleEvaluate();
+  renderSetupCompare();
+  scheduleSetupCompare(currentPlan);
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
 }
 
+export function renderStagePreview() {
+  updateStagePhase();
+  renderGuidedStagePreviewControl(Number(el("stageSlider").max || 0));
+  drawCanvas();
+  if (state.lastEval) updateViewer(state.lastEval);
+}
+
+function renderCbctWorkflow() {
+  const workflow = state.cbctWorkflow || {};
+  const status = el("cbctWorkflowStatus");
+  if (!status) return;
+  const mask = workflow.mask;
+  const cbctRecords = state.caseRecords.filter((record) => record.kind === "cbct" || record.kind === "dicom");
+  el("cbctRegistrationAccepted").checked = Boolean(workflow.registrationAccepted);
+  el("cbctRegistrationRmse").value = workflow.rmseMm ?? 0.25;
+  el("cbctRegistrationFitness").value = workflow.fitness ?? 0.9;
+  el("proposeCbctAnatomy").disabled = Boolean(workflow.busy || !mask || !cbctRecords.length || !state.scanSources.length);
+  const parts = [];
+  if (!cbctRecords.length) parts.push("Attach a CBCT/DICOM record.");
+  if (!state.scanSources.length) parts.push("Register a scan with the local engine.");
+  if (!mask) parts.push("Import a root/bone mask JSON.");
+  // The engine's fail-closed numeric gate on each registration's recorded
+  // quality metrics: acceptance alone never unlocks CBCT-derived behavior.
+  const gates = state.lastEval?.registration?.gate || [];
+  const gateText = gates.length
+    ? ` Registration quality gate: ${gates.map((g) => `${g.registration_id} ${g.verdict}`).join(", ")}.`
+    : "";
+  status.textContent = workflow.busy
+    ? "Building proposed CBCT-derived anatomy..."
+    : (workflow.status || parts.join(" ") || "Mask ready for proposal import.") + gateText;
+}
+
+function renderMovementFidelity() {
+  const target = el("movementFidelityStatus");
+  if (!target) return;
+  const scanCount = state.scanSources.length || state.files.length;
+  const appliedCount = state.segmentation.applied?.tooth_meshes?.length || 0;
+  const renderLinks = state.lastEval?.render_meshes?.filter((item) => item.source === "model-generated") || [];
+  if (appliedCount && renderLinks.length) {
+    target.dataset.mode = "real";
+    target.textContent = `Movement layer: reviewed per-tooth 3D meshes (${renderLinks.length}) moving over the scan.`;
+  } else if (scanCount) {
+    target.dataset.mode = "scan-arrow";
+    target.textContent = "Movement layer: scan is real; tooth movement is shown with markers/arrows until segmentation is reviewed.";
+  } else {
+    target.dataset.mode = "schematic";
+    target.textContent = "Movement layer: schematic preview until scans and reviewed per-tooth meshes are available.";
+  }
+}
+
+function renderStagePlayback() {
+  const button = el("stagePlayToggle");
+  if (!button) return;
+  const max = Number(el("stageSlider").max || 0);
+  button.disabled = max <= 0;
+  button.textContent = state.stagePlayback.playing ? "Pause" : "Play";
+  button.setAttribute("aria-pressed", state.stagePlayback.playing ? "true" : "false");
+  button.classList.toggle("is-active", state.stagePlayback.playing);
+}
+
+function renderReviewHeading() {
+  el("reviewHeading").textContent = state.activeStep === "sample" ? "Sample Test Case" : "Progress Preview";
+}
+
+function filterScanSources(sources) {
+  if (state.scanArchFilter === "both") return sources;
+  return sources.filter((source) => (source.arch || inferArchFromName(source.name)) === state.scanArchFilter);
+}
+
+function toothMatchesArch(tooth) {
+  if (state.scanArchFilter === "both") return true;
+  const arch = archFromTooth(tooth);
+  if (!arch) return true;
+  return arch === state.scanArchFilter;
+}
+
+function filterResultForArch(result) {
+  if (state.scanArchFilter === "both") return result;
+  return {
+    ...result,
+    frames: (result.frames || []).map((frame) => ({
+      ...frame,
+      poses: (frame.poses || []).filter((pose) => toothMatchesArch(pose.tooth)),
+    })),
+    clinical_controls: {
+      ...(result.clinical_controls || {}),
+      attachments: (result.clinical_controls?.attachments || [])
+        .filter((item) => toothMatchesArch(item.tooth?.value)),
+    },
+  };
+}
+
+const AI_KEY_HELP = {
+  local: "The local helper runs on this machine and needs no API key.",
+  openai: "Paste your OpenAI API key (from platform.openai.com). It is used only for this session and never saved.",
+  "claude-code": "Paste your Anthropic API key (from console.anthropic.com). It is used only for this session and never saved.",
+  mcp: "Paste the API key your MCP host expects (set the endpoint under Connector settings). Used only for this session.",
+  "open-source": "Set the model endpoint under Connector settings. Paste a key only if your endpoint requires one; used only for this session.",
+};
+
 export function renderChat() {
-  el("chatProvider").value = state.chat.provider;
-  el("chatModel").value = state.chat.model;
-  el("chatScope").value = state.chat.contextScope;
+  renderChatConnectorControls();
   el("chatInput").value = state.chat.input;
   el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
   el("agentEndpoint").value = state.chat.agentEndpoint;
   el("sendChat").disabled = state.chat.busy || !state.chat.input.trim();
+  const toggle = el("toggleChatPanel");
+  if (toggle) {
+    toggle.textContent = state.chat.collapsed ? "Show" : "Hide";
+    toggle.setAttribute("aria-expanded", state.chat.collapsed ? "false" : "true");
+    toggle.setAttribute("aria-label", state.chat.collapsed ? "Expand AI chat" : "Collapse AI chat");
+  }
+  // The reopen tab is the only visible handle once the panel slides off-screen.
+  const reopenTab = el("chatReopenTab");
+  if (reopenTab) reopenTab.hidden = !state.chat.collapsed;
+  const contextEl = el("chatStageContext");
+  if (contextEl) contextEl.textContent = chatStageLabel();
+  // The local helper needs no key, so hide the key field for it; for any real
+  // provider show the field with provider-specific, plain-language instructions.
+  const isLocal = state.chat.provider === "local";
+  const connector = chatConnector(state.chat.provider);
+  el("aiKeyField").hidden = isLocal || connector?.requires_api_key === false;
+  el("chatCustomModelField").hidden = !connector?.allow_custom_model;
+  el("aiKeyHelp").textContent = AI_KEY_HELP[state.chat.provider] || AI_KEY_HELP.local;
   const secretStatus = state.chat.apiKeyPresent ? " · key in session" : "";
   const agentStatus = state.chat.agentAccessEnabled ? " · agent access staged" : "";
   el("chatStatus").textContent = `${state.chat.status}${secretStatus}${agentStatus}`;
-  el("chatMessages").innerHTML = state.chat.messages.length
-    ? state.chat.messages.map((message) => `
-      <div class="chat-message ${escapeHtml(message.role)}">
-        <strong>${message.role === "user" ? "You" : "AI"}</strong>
-        <p>${escapeHtml(message.content)}</p>
-      </div>
-    `).join("")
-    : "<p class=\"chat-empty\">Ask what the preview can and cannot tell you.</p>";
+  renderChatMessages();
 }
 
-let evaluateTimer = null;
-// Monotonic token so a slow in-flight request can never overwrite a newer one.
-const evalLatest = createLatest();
-
-function scheduleEvaluate() {
-  if (evaluateTimer) clearTimeout(evaluateTimer);
-  evaluateTimer = setTimeout(runEvaluate, 150);
+function currentChatModel() {
+  const custom = el("chatCustomModel")?.value.trim();
+  const selected = el("chatModel")?.value;
+  if (selected === "__custom__") return custom || state.chat.model || "custom-model";
+  return selected || state.chat.model;
 }
 
-async function runEvaluate() {
-  const token = evalLatest.next();
-  try {
-    const result = await evaluatePlan(planJson());
-    if (!evalLatest.isCurrent(token)) return; // a newer evaluation superseded this one
+function chatConnector(kind) {
+  return (state.chat.connectors || []).find((connector) => connector.kind === kind);
+}
+
+function renderChatConnectorControls() {
+  const provider = el("chatProvider");
+  const model = el("chatModel");
+  const custom = el("chatCustomModel");
+  const connectors = state.chat.connectors || [];
+  const providerSignature = connectors.map((item) => `${item.kind}:${item.label}`).join("|");
+  if (provider.dataset.signature !== providerSignature) {
+    provider.replaceChildren(...connectors.map((connector) => {
+      const option = document.createElement("option");
+      option.value = connector.kind;
+      option.textContent = connector.shares_patient_data
+        ? `${connector.label} (shares plan context)`
+        : connector.label;
+      return option;
+    }));
+    provider.dataset.signature = providerSignature;
+  }
+  provider.value = state.chat.provider;
+  const connector = chatConnector(state.chat.provider) || connectors[0];
+  const models = connector?.models?.length ? connector.models : [connector?.model || state.chat.model];
+  const modelSignature = `${connector?.kind || ""}:${models.join("|")}:${connector?.allow_custom_model ? "custom" : ""}`;
+  if (model.dataset.signature !== modelSignature) {
+    const options = models.map((modelId) => {
+      const option = document.createElement("option");
+      option.value = modelId;
+      option.textContent = modelId;
+      return option;
+    });
+    if (connector?.allow_custom_model) {
+      const option = document.createElement("option");
+      option.value = "__custom__";
+      option.textContent = "Custom model ID";
+      options.push(option);
+    }
+    model.replaceChildren(...options);
+    model.dataset.signature = modelSignature;
+  }
+  const selected = state.chat.modelByProvider[state.chat.provider] || connector?.model || models[0];
+  const customSelected = connector?.allow_custom_model && !models.includes(selected);
+  model.value = customSelected ? "__custom__" : selected;
+  custom.value = customSelected ? selected : custom.value;
+  state.chat.model = customSelected ? custom.value : model.value;
+}
+
+function renderChatMessages() {
+  const host = el("chatMessages");
+  const signature = state.chat.messages.map((message) => `${message.role}:${message.content}`).join("\n");
+  if (!state.chat.messages.length) {
+    if (renderedChatSignature !== signature) {
+      host.replaceChildren(chatEmptyNode("Ask what the preview can and cannot tell you."));
+      renderedChatCount = 0;
+      renderedChatSignature = signature;
+    }
+    return;
+  }
+  if (!signature.startsWith(renderedChatSignature) || renderedChatCount > state.chat.messages.length) {
+    host.replaceChildren();
+    renderedChatCount = 0;
+  }
+  for (const message of state.chat.messages.slice(renderedChatCount)) {
+    host.appendChild(chatMessageNode(message));
+  }
+  renderedChatCount = state.chat.messages.length;
+  renderedChatSignature = signature;
+  host.scrollTop = host.scrollHeight;
+}
+
+function chatEmptyNode(text) {
+  const node = document.createElement("p");
+  node.className = "chat-empty";
+  node.textContent = text;
+  return node;
+}
+
+function chatMessageNode(message) {
+  const node = document.createElement("div");
+  node.className = `chat-message ${escapeHtml(message.role)}`;
+  const label = document.createElement("strong");
+  label.textContent = message.role === "user" ? "You" : "AI";
+  const body = document.createElement("p");
+  body.textContent = message.content;
+  node.append(label, body);
+  return node;
+}
+
+function chatStageLabel() {
+  if (state.userMode === "simple") {
+    const labels = {
+      upload: "Guided step 1: Upload",
+      plan: "Guided step 2: Teeth and time",
+      details: "Guided step 3: Details",
+      review: "Guided step 4: Review",
+      preview: "Guided step 5: 3D preview",
+      print: "Guided step 6: Print / send",
+    };
+    return labels[state.guided.step] || "Guided workflow";
+  }
+  const labels = {
+    upload: "Technician: Upload",
+    availability: "Technician: Data",
+    settings: "Technician: Settings",
+    stages: "Technician: Stages",
+    review: "Technician: Review",
+    toothmap: "Reference: Tooth map",
+    glossary: "Reference: Glossary",
+    photos: "Reference: Imaging guide",
+  };
+  return labels[state.activeStep] || "Technician workflow";
+}
+
+export function renderGeneration() {
+  const gen = state.generation;
+  el("generationAck").checked = gen.acknowledged;
+  el("generationNotes").value = gen.notes;
+  el("generatePlan").disabled = gen.busy;
+  el("generationStatus").textContent = gen.busy ? "Working..." : (gen.status || "Idle");
+  el("generationConnector").textContent = generationConnectorHint();
+  if (gen.landmarksStatus) el("landmarksStatus").textContent = gen.landmarksStatus;
+  el("generationReport").innerHTML = gen.result ? generationReportMarkup(gen.result) : "";
+}
+
+function renderDetailModes() {
+  document.querySelectorAll("[data-detail-mode]").forEach((button) => {
+    const group = button.dataset.detailMode;
+    button.classList.toggle("is-active", state.detailMode[group] === button.dataset.detailValue);
+  });
+}
+
+// Tells the user exactly where the optional AI review gets its model/key, and
+// whether it is currently wired up. Notes only feed that review step.
+function generationConnectorHint() {
+  if (state.chat.provider === "local") {
+    return "AI review: local helper, offline. External review uses the Plan AI connector settings.";
+  }
+  const key = state.chat.apiKeyPresent ? "key in session" : "no key yet";
+  const consent = state.chat.agentAccessEnabled ? "sharing acknowledged" : "sharing OFF — review will be skipped";
+  return `AI review: ${state.chat.provider} · ${key} · ${consent}. Notes are sent only when sharing is on.`;
+}
+
+function generationReportMarkup(result) {
+  const verdict = result.correctness?.verdict || "N/A";
+  const ack = result.requires_acknowledgement
+    ? "<p class=\"finding-gap\">This educational plan is not derived from your scan. Tick the acknowledgement and regenerate to confirm you understand.</p>"
+    : "";
+  const warnings = (result.warnings || [])
+    .map((w) => `<li class="warning">${escapeHtml(w)}</li>`).join("");
+  const steps = (result.steps || [])
+    .map((s) => `<li class="${escapeHtml(s.status)}"><strong>${escapeHtml(s.name)}</strong>: ${escapeHtml(s.detail)}</li>`)
+    .join("");
+  const checks = (result.checks || [])
+    .map((c) => `<li class="${c.passed ? "ok" : (c.severity === "gate" ? "warning" : "skipped")}">${c.passed ? "✓" : "✗"} <strong>${escapeHtml(c.name)}</strong>: ${escapeHtml(c.detail)}</li>`)
+    .join("");
+  const det = (result.deterministic_findings || []).length;
+  const adv = (result.advisory_findings || []).length;
+  const blocked = result.correctness?.fixed_teeth_moved?.length
+    ? `<p class="finding-gap">Fixed teeth reported moved: ${escapeHtml(result.correctness.fixed_teeth_moved.join(", "))}</p>`
+    : "";
+  return `
+    <p><strong>Source:</strong> ${escapeHtml(result.source)} · <strong>Correctness:</strong> ${escapeHtml(verdict)}</p>
+    ${ack}
+    <p>${result.stage_count} stage(s) · ${det} deterministic finding(s) · ${adv} linted advisory finding(s) · ${Number(result.correctness?.collision_count || 0)} crown overlap(s)</p>
+    ${blocked}
+    ${warnings ? `<ul>${warnings}</ul>` : ""}
+    ${checks ? `<details open><summary>Correctness checks</summary><ul class="gen-steps">${checks}</ul></details>` : ""}
+    <details><summary>Orchestration steps</summary><ul class="gen-steps">${steps}</ul></details>
+    <p class="viewer-caveat">${escapeHtml(result.caveat || "")}</p>
+  `;
+}
+
+export function renderVersions() {
+  const v = state.versions;
+  el("versionNote").value = v.note;
+  el("saveVersion").disabled = v.busy;
+  el("versionStatus").textContent = v.busy ? "Saving..." : v.status;
+  el("versionList").innerHTML = v.list.length
+    ? v.list.map((item, index) => `
+        <li>
+          <div>
+            <strong>${escapeHtml(item.version_id)}</strong>
+            <small>${escapeHtml((item.created_at || "").slice(0, 19).replace("T", " "))}</small>
+            ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+            <code>${escapeHtml((item.plan_hash || "").slice(0, 12))}</code>
+          </div>
+          <button data-restore-version="${index}" type="button">Restore</button>
+        </li>`).join("")
+    : "<li class=\"chat-empty\">No saved versions yet.</li>";
+}
+
+const scheduleEvaluate = createEvaluationRunner({
+  getPayload: planJson,
+  evaluate: evaluatePlan,
+  onPending: () => renderTrustStatus(el("trustStatusStrip"), state, renderAll, true),
+  onResult(result) {
     state.engineError = null;
     if (result.ok === false) {
       state.lastEval = null;
@@ -173,13 +686,15 @@ async function runEvaluate() {
       state.lastEval = result;
       renderEvaluation(result);
     }
-  } catch (error) {
-    if (!evalLatest.isCurrent(token)) return;
+    renderTrustStatus(el("trustStatusStrip"), state, renderAll);
+  },
+  onError(error) {
     state.lastEval = null;
     state.engineError = error.message;
     renderEngineOffline();
-  }
-}
+    renderTrustStatus(el("trustStatusStrip"), state, renderAll);
+  },
+});
 
 export function renderAvailability() {
   el("availabilityGrid").innerHTML = Object.entries(availabilityLabels).map(([key, label]) => `
@@ -197,12 +712,73 @@ function renderSteps() {
   document.querySelectorAll(".step").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.step === state.activeStep);
   });
+  document.querySelectorAll("[data-journey-step]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.journeyStep === state.activeStep);
+  });
+  // Keep the Current/Planned/Overlay toolbar in sync with state.view. Without
+  // this, programmatic view changes (e.g. the sample sets "overlay") leave the
+  // toolbar showing "Current" - the static baseline view where the stage slider
+  // moves nothing - so the preview looks frozen when scrubbing stages.
+  document.querySelectorAll(".mode").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.view === state.view);
+  });
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("is-active"));
-  if (state.userMode === "simple" && state.activeStep !== "review") {
-    el("panel-simple").classList.add("is-active");
-    return;
+  // Guided mode shows the #guided wizard (CSS-gated by body[data-mode]); the
+  // technician panels stay inactive. In technician mode, activate the panel for
+  // the current step (the sample step reuses the review panel).
+  const panelId = state.activeStep === "sample" ? "panel-review" : `panel-${state.activeStep}`;
+  el(panelId)?.classList.add("is-active");
+}
+
+function renderUploadFileList() {
+  const statusNote = state.uploadStorageStatus ? `<p>${escapeHtml(state.uploadStorageStatus)}</p>` : "";
+  let markup;
+  if (state.files.length) {
+    markup = `
+      <div class="upload-file-heading">
+        <strong>${state.files.length === 1 ? "Uploaded scan" : "Uploaded scans"}</strong>
+        <button data-clear-uploads="true" type="button">Clear All</button>
+      </div>
+      ${statusNote}
+      <ul>
+        ${state.files.map((file, index) => `
+          <li>
+            <span>${escapeHtml(file.name)}</span>
+            <small>${escapeHtml(uploadFileDetail(file))}</small>
+            <button data-remove-upload="${index}" type="button" aria-label="Remove ${escapeHtml(file.name)}">x</button>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+  } else if (state.scanSources.length) {
+    // The Sample Test Case loads its two scans as already-present records, so
+    // step 1 shows them as "loaded" (read-only - they are not user uploads).
+    markup = `
+      <div class="upload-file-heading">
+        <strong>Loaded scans</strong>
+      </div>
+      <ul>
+        ${state.scanSources.map((source) => `
+          <li>
+            <span>${escapeHtml(source.name)}</span>
+            <small>${escapeHtml(source.arch || "arch unknown")}</small>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+  } else {
+    markup = `${statusNote}<p>No scan files are stored yet. Select upper, lower, or both arches.</p>`;
   }
-  el(`panel-${state.activeStep}`).classList.add("is-active");
+  el("uploadFileList").innerHTML = markup;
+  el("simpleUploadFileList").innerHTML = markup;
+}
+
+function uploadFileDetail(file) {
+  const registered = state.scanSources.find((source) => source.name === file.name);
+  const size = `${Math.round(file.size / 1024)} KB`;
+  if (!registered?.asset) return size;
+  const arch = registered.arch || "arch unknown";
+  return `${size} · engine asset ${registered.asset.id} · ${arch}`;
 }
 
 function renderRows() {
@@ -222,18 +798,65 @@ function renderRows() {
 }
 
 function renderMetadata() {
-  const items = state.file ? [
-    ["File", state.file.name],
-    ["Size", `${Math.round(state.file.size / 1024)} KB`],
+  const sources = state.files.length ? state.files : state.scanSources;
+  const totalSize = state.files.reduce((sum, file) => sum + file.size, 0);
+  const items = state.files.length ? [
+    ["Files", state.files.map((file) => file.name).join(", ")],
+    ["Size", `${Math.round(totalSize / 1024)} KB`],
     ["Units", state.scanUnits],
     ["Arch", state.scanArch || "unknown"],
-  ] : [["File", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"]];
+    ["Context records", String(state.caseRecords.length)],
+  ] : sources.length ? [
+    ["Files", sources.map((source) => source.name).join(", ")],
+    ["Size", "repo example"],
+    ["Units", state.scanUnits],
+    ["Arch", "upper + lower"],
+    ["Context records", String(state.caseRecords.length)],
+  ] : [["Files", "none"], ["Size", "0 KB"], ["Units", state.scanUnits], ["Arch", "unknown"], ["Context records", String(state.caseRecords.length)]];
   el("scanMetadata").innerHTML = items
     .map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`)
     .join("");
 }
 
+function renderCaseRecordList() {
+  const container = el("caseRecordList");
+  if (!container) return;
+  const records = state.caseRecords;
+  if (!records.length) {
+    container.innerHTML = state.recordUploadStatus
+      ? `<p>${escapeHtml(state.recordUploadStatus)}</p>`
+      : "<p>No enhanced-review records attached.</p>";
+    return;
+  }
+  container.innerHTML = `
+    <div class="upload-file-heading">
+      <strong>${records.length === 1 ? "Attached record" : "Attached records"}</strong>
+    </div>
+    ${state.recordUploadStatus ? `<p>${escapeHtml(state.recordUploadStatus)}</p>` : ""}
+    <ul>
+      ${records.map((record) => `
+        <li>
+          <span>${escapeHtml(record.filename || record.id)}</span>
+          <small>${escapeHtml(caseRecordDetail(record))}</small>
+          <button data-remove-record="${escapeHtml(record.id)}" type="button" aria-label="Remove ${escapeHtml(record.filename || record.id)}">x</button>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+function caseRecordDetail(record) {
+  const bits = [record.kind];
+  if (record.modality) bits.push(record.modality);
+  if (record.size_bytes != null) bits.push(`${Math.round(record.size_bytes / 1024)} KB`);
+  if (record.local_reference) bits.push("local reference");
+  return bits.join(" · ");
+}
+
 function renderEvaluation(result) {
+  renderReviewTier(result.review_tier);
+  renderCbct(result.cbct_status, result.cbct_handoff, result.registration);
+  renderAnatomyReview(result.derived_anatomy);
   el("dataGapList").innerHTML = dataGapMarkup(result);
   renderAcquisitionAdvice(result.acquisition_advice);
 
@@ -250,11 +873,96 @@ function renderEvaluation(result) {
   const lastStage = Math.max(0, result.frames.length - 1);
   slider.max = String(lastStage);
   if (Number(slider.value) > lastStage) slider.value = String(lastStage);
-  el("stageValue").textContent = slider.value;
+  renderGuidedStagePreviewControl(lastStage);
+  updateStagePhase(result);
   drawCanvas();
   updateViewer(result);
-  renderPrintExport(result.print_export);
+  if (pendingRefit) {
+    pendingRefit = false;
+    ensureViewer()?.recenter();
+  }
+  renderPrintExport(el("printExportStatus"), result.print_export);
   renderOptimizedStaging(result.optimized_staging);
+  renderDownloadActions();
+}
+
+function renderGuidedStagePreviewControl(lastStage) {
+  const guidedSlider = el("guidedStagePreview");
+  if (!guidedSlider) return;
+  guidedSlider.max = String(lastStage);
+  if (Number(guidedSlider.value) > lastStage) guidedSlider.value = String(lastStage);
+  el("guidedStagePreviewValue").textContent =
+    stagePhaseText(state.lastEval, Number(guidedSlider.value || 0));
+}
+
+function renderReviewTier(info) {
+  const container = el("reviewTierBanner");
+  if (!container) return;
+  if (!info) {
+    container.innerHTML = "";
+    return;
+  }
+  container.dataset.tier = info.tier;
+  container.innerHTML = `
+    <p class="review-tier-label"><strong>${escapeHtml(info.label)}</strong></p>
+    <p class="review-tier-summary">${escapeHtml(info.summary)}</p>
+    ${info.root_bone_aware
+      ? ""
+      : `<p class="review-tier-note">Root/bone-aware review is not available for this plan.</p>`}
+  `;
+}
+
+const CBCT_STATUS_COPY = {
+  unavailable: "No CBCT/DICOM volume is attached.",
+  attached: "CBCT/DICOM attached for reference only. Not registered; root/bone checks stay unavailable.",
+  viewed: "CBCT opened in a local viewer. Still not registered to the scan.",
+  registered: "CBCT registered to the surface scan. Anatomy review still pending.",
+  "anatomy-reviewed": "CBCT registered and root/bone anatomy reviewed.",
+};
+
+function renderCbct(status, handoff, registration) {
+  const panel = el("cbctPanel");
+  const banner = el("cbctBanner");
+  if (!panel || !banner) return;
+  if (!status || status === "unavailable") {
+    panel.hidden = true;
+    banner.innerHTML = "";
+    return;
+  }
+  panel.hidden = false;
+  banner.dataset.tier = status === "anatomy-reviewed" ? "root-bone-aware" : "cbct-attached";
+  const refs = handoff?.local_references || [];
+  banner.innerHTML = `
+    <p class="review-tier-label"><strong>CBCT status: ${escapeHtml(status)}</strong></p>
+    <p class="review-tier-summary">${escapeHtml(CBCT_STATUS_COPY[status] || "")}</p>
+    ${handoff?.available ? `
+      <p class="review-tier-summary">${escapeHtml(handoff.instructions)}</p>
+      <p class="review-tier-note">Suggested viewer: ${escapeHtml(handoff.viewer_suggestion)}</p>
+      ${refs.length ? `<ul>${refs.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` : ""}
+    ` : ""}
+    ${registrationMarkup(registration)}
+  `;
+}
+
+function registrationMarkup(registration) {
+  const transforms = registration?.transforms || [];
+  if (!transforms.length) return "";
+  const rows = transforms.map((t) => {
+    const q = t.quality;
+    const metrics = q
+      ? [
+          q.rmse_mm != null ? `RMSE ${Number(q.rmse_mm).toFixed(3)} mm` : null,
+          q.fitness != null ? `fitness ${Number(q.fitness).toFixed(2)}` : null,
+          q.inlier_ratio != null ? `inliers ${Number(q.inlier_ratio).toFixed(2)}` : null,
+        ].filter(Boolean).join(" · ")
+      : "no quality metrics";
+    const state = t.accepted ? (q ? "accepted" : "accepted (no quality - not usable)") : "proposed";
+    return `<li><strong>${escapeHtml(t.method)}</strong> · ${escapeHtml(state)} · ${escapeHtml(metrics)}</li>`;
+  }).join("");
+  return `
+    <p class="review-tier-note">Registration${registration.ready ? " (accepted, quality-backed)" : " (not yet usable)"}:</p>
+    <ul>${rows}</ul>
+  `;
 }
 
 function dataGapMarkup(result) {
@@ -317,7 +1025,9 @@ function renderEngineErrors(errors) {
     .map((message) => `<li class="warning"><strong>Plan rejected</strong><p>${escapeHtml(message)}</p></li>`)
     .join("");
   el("timelineText").textContent = "Plan invalid - fix the errors above to re-evaluate.";
+  updateStagePhase(null);
   el("printExportStatus").innerHTML = "";
+  renderDownloadActions();
 }
 
 function renderEngineOffline() {
@@ -331,26 +1041,207 @@ function renderEngineOffline() {
   el("printExportStatus").innerHTML = "";
   el("optimizedStaging").innerHTML = "";
   el("timelineText").textContent = "Engine offline - no projection available.";
+  updateStagePhase(null);
+  renderDownloadActions();
 }
 
-function renderPrintExport(status) {
-  if (!status) {
-    el("printExportStatus").innerHTML = "";
-    return;
+function renderScanStatus() {
+  el("scanRenderStatus").textContent = state.scanRenderStatus;
+  el("scanArchFilter").value = state.scanArchFilter;
+}
+
+function renderProximity() {
+  const button = el("proximityToggle");
+  if (!button) return;
+  const prox = state.proximity;
+  const active = Boolean(prox.enabled && prox.map?.aligned_to_scan);
+  button.classList.toggle("is-active", active);
+  button.setAttribute("aria-pressed", active ? "true" : "false");
+  button.disabled = prox.busy;
+  button.textContent = prox.busy ? "Bite…" : "Bite proximity";
+  const legend = el("proximityLegend");
+  if (legend) legend.hidden = !active;
+  const status = el("proximityStatus");
+  if (status) {
+    status.textContent = prox.status;
+    status.hidden = !prox.status;
   }
-  const blockers = status.blockers?.length
-    ? `<ul>${status.blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : "<p>Print package inputs are ready for export.</p>";
-  const artifacts = status.artifacts?.length
-    ? `<p>${escapeHtml(status.artifacts.map((item) => item.filename).join(", "))}</p>`
-    : "";
-  el("printExportStatus").innerHTML = `
-    <p><strong>${status.ready ? "Ready" : "Not ready"}</strong></p>
-    ${blockers}
-    ${artifacts}
-    <p>${escapeHtml(status.model_material)}</p>
-    <p>${escapeHtml(status.thermoforming_material)}</p>
-    <p>${escapeHtml(status.caveat)}</p>
+  const regButton = el("registeredBiteToggle");
+  if (regButton) {
+    regButton.classList.toggle("is-active", Boolean(prox.registeredView));
+    regButton.setAttribute("aria-pressed", prox.registeredView ? "true" : "false");
+    regButton.disabled = prox.busy;
+  }
+}
+
+function renderScale() {
+  const button = el("scaleToggle");
+  if (button) {
+    button.classList.toggle("is-active", state.showScale);
+    button.setAttribute("aria-pressed", state.showScale ? "true" : "false");
+  }
+  const status = el("scaleStatus");
+  if (status) {
+    status.textContent = state.scaleStatus;
+    status.hidden = !state.scaleStatus;
+  }
+}
+
+function renderSampleStatus() {
+  const chip = el("sampleStatusChip");
+  chip.hidden = !state.sampleStatus;
+  chip.textContent = state.sampleStatus;
+  // The sidebar launcher doubles as the exit so the sample is always escapable,
+  // in either Guided or Technician view, as the user navigates.
+  const launch = el("sampleLaunch");
+  if (launch) {
+    launch.textContent = state.sample.active ? "Exit Sample Test Case" : "Sample Test Case";
+    launch.classList.toggle("is-active-sample", state.sample.active);
+  }
+}
+
+// Manual target authoring panel. The user clicks a tooth in the 3D preview and
+// nudges its final IN-PLANE position; the authored target is a normal manual
+// stage delta in state.rows, so Generate Plan re-stages it into cap-respecting
+// stages. Authoring is gated on confirmed scan units (mm) - the engine treats
+// other units as unverified, so a mm nudge would be meaningless.
+function renderManualEdit() {
+  const panel = el("manualEdit");
+  if (!panel) return; // panel not present (e.g. trimmed markup)
+  const confirmed = scaleConfirmed(state.scanUnits);
+  const selected = state.manualEdit.selectedTooth;
+  panel.dataset.scaleConfirmed = confirmed ? "1" : "";
+  panel.dataset.selected = selected ? "1" : "";
+
+  const gate = el("manualEditGate");
+  if (gate) {
+    gate.textContent = confirmed
+      ? "Click a tooth in the preview, then nudge its final position. Generate Plan splits the target into cap-respecting stages."
+      : "Confirm the scan units (set Units to mm) before authoring a target - millimetre nudges are meaningless while units are unverified.";
+  }
+
+  const selectionLabel = el("manualEditSelection");
+  if (selectionLabel) {
+    selectionLabel.textContent = selected ? `Selected tooth: ${selected}` : "No tooth selected.";
+  }
+
+  const readout = el("manualEditReadout");
+  if (readout) {
+    if (selected) {
+      const t = targetFor(state.rows, selected);
+      readout.textContent =
+        `Target (geometric, crown translation only): x ${t.x.toFixed(2)} mm, y ${t.y.toFixed(2)} mm ` +
+        `(${targetMagnitudeMm(t).toFixed(2)} mm in-plane). Not a treatment goal or approval.`;
+    } else {
+      readout.textContent = "";
+    }
+  }
+
+  const editable = confirmed && Boolean(selected);
+  for (const id of ["manualNudgeXMinus", "manualNudgeXPlus", "manualNudgeYMinus", "manualNudgeYPlus", "manualTargetReset"]) {
+    const btn = el(id);
+    if (btn) btn.disabled = !editable;
+  }
+  const clearBtn = el("manualClearSelection");
+  if (clearBtn) clearBtn.disabled = !selected;
+}
+
+function renderDirectControls() {
+  const panel = el("directControls");
+  if (!panel) return;
+  const selected = state.manualEdit.selectedTooth;
+  const appliedSegmentation = Boolean(state.segmentation.applied?.tooth_meshes?.length);
+  const gate = controlGate({
+    unitsConfirmed: scaleConfirmed(state.scanUnits),
+    segmentedTeeth: appliedSegmentation,
+    rootsAvailable: Boolean(state.availability.roots || state.derivedAnatomy?.roots?.length),
+    reviewedAnatomy: state.lastEval?.review_tier?.root_bone_aware,
+  });
+  const familyHost = el("directControlFamilies");
+  if (familyHost) {
+    familyHost.innerHTML = Object.keys(CONTROL_AXES).map((family) => `
+      <button data-direct-family="${escapeHtml(family)}" class="${state.directControls.selectedFamily === family ? "is-active" : ""}" type="button">
+        ${escapeHtml(family.replace(/_/g, " "))}
+      </button>
+    `).join("");
+  }
+  const status = el("directControlStatus");
+  if (status) {
+    status.textContent = selected
+      ? `Selected tooth ${selected}`
+      : "Select a tooth in the 3D preview";
+  }
+  const axes = CONTROL_AXES[state.directControls.selectedFamily] || [];
+  const editable = Boolean(selected && gate.allowed);
+  const grid = el("directControlGrid");
+  if (grid) {
+    grid.innerHTML = axes.map((axis) => {
+      const step = CONTROL_STEPS[axis] || 0.1;
+      const unit = axis === "x" || axis === "y" || axis === "z" ? "mm" : "deg";
+      return `
+        <div class="direct-axis">
+          <span>${escapeHtml(axisLabel(axis))}</span>
+          <button data-direct-axis="${escapeHtml(axis)}" data-direct-delta="${-step}" ${editable ? "" : "disabled"} type="button">-</button>
+          <button data-direct-axis="${escapeHtml(axis)}" data-direct-delta="${step}" ${editable ? "" : "disabled"} type="button">+</button>
+          <small>${escapeHtml(step)} ${unit}</small>
+        </div>
+      `;
+    }).join("");
+  }
+  const archAmount = el("archResponseAmount");
+  if (archAmount) archAmount.value = state.directControls.archResponseMm;
+  const archButton = el("applyArchResponse");
+  if (archButton) archButton.disabled = !editable;
+  const warnings = [
+    ...gate.blockers,
+    ...gate.warnings,
+    ...(state.directControls.warnings || []),
+  ];
+  const warningTarget = el("directControlWarnings");
+  if (warningTarget) {
+    warningTarget.textContent = warnings.length
+      ? warnings.join(". ")
+      : "Direct controls are geometric proposals and remain review-gated; generate/restage and review findings before use.";
+  }
+}
+
+function axisLabel(axis) {
+  return {
+    x: "Translate X",
+    y: "Translate Y",
+    z: "Intrude / extrude",
+    tip: "Crown tip",
+    torque: "Crown torque",
+    rotation: "Rotation",
+  }[axis] || axis;
+}
+
+function renderDownloadActions() {
+  el("downloadEvaluation").disabled = !state.lastEval;
+  el("downloadPrintMetadata").disabled = !state.lastEval?.print_export;
+  renderMovementReadiness();
+}
+
+function renderMovementReadiness() {
+  const target = el("movementReadinessChecklist");
+  if (!target) return;
+  const scanReady = Boolean(state.scanSources.length || state.files.length);
+  const unitsReady = scaleConfirmed(state.scanUnits);
+  const appliedMeshes = state.segmentation.applied?.tooth_meshes?.length || 0;
+  const renderMeshes = state.lastEval?.render_meshes?.filter((item) => item.source === "model-generated").length || 0;
+  const printReady = Boolean(state.lastEval?.print_export?.ready);
+  const items = [
+    ["Scan registered", scanReady],
+    ["Units confirmed in mm", unitsReady],
+    ["Reviewed per-tooth meshes applied", appliedMeshes > 0],
+    ["3D movement uses real tooth fragments", renderMeshes > 0],
+    ["Print package inputs complete", printReady],
+  ];
+  target.innerHTML = `
+    <strong>Real movement / print checklist</strong>
+    <ul>
+      ${items.map(([label, ok]) => `<li data-ok="${ok ? "1" : "0"}">${ok ? "✓" : "○"} ${escapeHtml(label)}</li>`).join("")}
+    </ul>
   `;
 }
 
@@ -392,7 +1283,8 @@ function drawCanvas() {
   const accentColor = styles.getPropertyValue("--accent").trim() || "#0f766e";
   const blueColor = styles.getPropertyValue("--blue").trim() || "#2563eb";
   const stageIndex = Number(el("stageSlider").value || 0);
-  const totals = framePoseTotals(state.lastEval?.frames?.[stageIndex]);
+  const visibleResult = state.lastEval ? filterResultForArch(state.lastEval) : null;
+  const totals = framePoseTotals(visibleResult?.frames?.[stageIndex]);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = canvasColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -403,6 +1295,7 @@ function drawCanvas() {
   ctx.stroke();
 
   for (const [tooth, [x, y]] of Object.entries(toothPositions)) {
+    if (!toothMatchesArch(tooth)) continue;
     const movement = totals.get(tooth) || { x: 0, y: 0, z: 0 };
     const initial = state.demoInitialOffsets[tooth] || { x: 0, y: 0, z: 0 };
     const ix = initial.x * 80;
@@ -472,4 +1365,3 @@ function toothPath(ctx, x, y, label) {
   ctx.bezierCurveTo(x + 8, y + 22, x - 8, y + 22, x - 13, y + 14);
   ctx.closePath();
 }
-

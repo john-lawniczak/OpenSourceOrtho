@@ -1,0 +1,118 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "created_at": "2026-06-06T18:02:33.472518Z",
+  "engine_version": "1.0.0",
+  "scans": [
+    {
+      "filename": "initial-upper.stl",
+      "role": "initial",
+      "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+      "units": "mm",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 990927,
+      "face_count": 330309,
+      "bounds": {
+        "min_xyz": [
+          -30.415630340576172,
+          -50.040771484375,
+          -1.499996542930603
+        ],
+        "max_xyz": [
+          32.407981872558594,
+          3.999868392944336,
+          15.583396911621094
+        ]
+      }
+    },
+    {
+      "filename": "initial-lower.stl",
+      "role": "initial",
+      "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+      "units": "mm",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 860403,
+      "face_count": 286801,
+      "bounds": {
+        "min_xyz": [
+          -31.994709014892578,
+          -49.88878631591797,
+          -15.29747200012207
+        ],
+        "max_xyz": [
+          32.569801330566406,
+          0.7881450653076172,
+          3.537170886993408
+        ]
+      }
+    },
+    {
+      "filename": "progress-01-upper.stl",
+      "role": "progress",
+      "sequence_index": 1,
+      "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 996681,
+      "face_count": 332227,
+      "bounds": {
+        "min_xyz": [
+          -31.425596237182617,
+          -26.13219451904297,
+          0.0
+        ],
+        "max_xyz": [
+          31.425596237182617,
+          26.1321964263916,
+          17.081485748291016
+        ]
+      }
+    },
+    {
+      "filename": "progress-01-lower.stl",
+      "role": "progress",
+      "sequence_index": 1,
+      "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 795987,
+      "face_count": 265329,
+      "bounds": {
+        "min_xyz": [
+          -31.843496322631836,
+          -25.05031967163086,
+          0.0
+        ],
+        "max_xyz": [
+          31.843496322631836,
+          25.05031967163086,
+          16.376310348510742
+        ]
+      }
+    }
+  ],
+  "plan_summary": {
+    "schema": "opensource-ortho-plan-summary-v1",
+    "stage_count": 38,
+    "tracking_notes": "Historical report: tray 5, observation date unspecified. User confirms the new progress pair as week 7 with five-day tray changes; 30 calendar days elapsed from recorded start to scan. Schedule start date and current tray per arch remain unknown. See longitudinal-record.json.",
+    "notes": "User confirms actual attachment locations match the video. The attachments list is a partial model visual transcription of six identifiable teeth, assuming a non-mirrored frontal view; additional upper posterior locations are unresolved. See derived/attachment-transcription.json for evidence and limitations. Placement timing is unspecified.",
+    "attachments": [
+      "11",
+      "12",
+      "33",
+      "34",
+      "43",
+      "44"
+    ],
+    "wear_interval_days": 5
+  },
+  "consent_acknowledged": true,
+  "phi_removed": true,
+  "notes": "Canonical OrthoCAD specimen with initial pair and first progress pair. Sequence index counts scan visits, not treatment stages. New progress units and cross-time registration remain unverified.",
+  "outcome_notes_filename": "outcome-notes.md",
+  "outcome_notes_sha256": "ed3713e8142afd501b26ce3149bdad59056b93280750ce1f0991eed19e6ffefc",
+  "pseudonym": "USER_ONE"
+}

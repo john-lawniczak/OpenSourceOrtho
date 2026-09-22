@@ -1,0 +1,9 @@
+ply
+format ascii 1.0
+comment normal export
+element vertex 1000000000
+property float x
+property float y
+property float z
+property uchar red
+end_header

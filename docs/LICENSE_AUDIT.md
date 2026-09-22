@@ -1,6 +1,6 @@
 # Dependency License Audit
 
-> Last reviewed: 2026-06-04. Versions are those observed during the review;
+> Dependency table reviewed: 2026-06-04. License notices completed: 2026-09-21. Versions are those observed during the review;
 > actual versions float within the `pyproject.toml` constraints. Re-run the
 > audit when adding or bumping a dependency (see CONTRIBUTING.md).
 
@@ -35,6 +35,7 @@ copyleft (GPL/LGPL) dependencies.
 |-------|---------|---------|---------|-------|
 | `providers` | openai | 2.41 | Apache-2.0 | advisory layer only |
 | `mesh` | trimesh | 4.x | MIT | optional mesh quality metadata |
+| `mesh-processing` | open3d | 0.x | MIT | optional local mesh-processing backend for segmentation experiments |
 | `e2e` | playwright | 1.60 | Apache-2.0 | headless test only |
 | `e2e` | pyee | 13.0 | MIT | transitive (playwright) |
 | `e2e` | greenlet | 3.5 | MIT AND PSF-2.0 | transitive (playwright) |
@@ -51,14 +52,19 @@ BSD-3-Clause with additional component licenses.
 | `OrbitControls.js` | Three.js examples | r169 | MIT |
 
 Three.js is vendored (not fetched from a CDN at runtime) so the UI works
-offline. The upstream MIT license header is retained in `three.module.js`; keep
-it intact on any version bump, and bump both files together to a matching
-release.
+offline. The upstream header is retained in `three.module.js`, and the full r169 MIT
+permission notice is now included in [`ui/vendor/LICENSE.three`](../ui/vendor/LICENSE.three).
+Keep both notices and bump both files together. The root LICENSE now contains
+the complete Apache-2.0 terms, with project attribution in NOTICE. Sources:
+[Three.js r169 license](https://github.com/mrdoob/three.js/blob/r169/LICENSE) and
+[Apache-2.0 text](https://www.apache.org/licenses/LICENSE-2.0.txt).
 
 ## Traps watched (see OPEN_SOURCE_REFERENCES.md)
 
 - AI/segmentation tools: code, model-weight, and dataset licenses are separate —
   none are currently a dependency.
 - 3D Slicer extensions can carry GPL — not a dependency; referenced only.
+- Blender and PyMeshLab/MeshLab are GPL — keep them as external workflow tools
+  unless the project intentionally accepts GPL obligations.
 - Trademarks (Invisalign/ClinCheck/SmartTrack): nominative reference only, never
   in code identifiers or UI labels.

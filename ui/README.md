@@ -5,8 +5,8 @@
 
 Browser prototype for the data-model workflow:
 
-1. Guided educational STL review and synthetic 12-month crowding demo
-2. STL upload metadata
+1. Guided six-step wizard (default) + isolated Sample Test Case demonstration
+2. multi-file STL upload metadata with browser-side upload persistence
 3. data availability toggles
 4. movement cap controls
 5. stage movement table
@@ -15,6 +15,12 @@ Browser prototype for the data-model workflow:
 8. scoped Plan AI chat
 9. plan-shaped JSON output
 10. print-export readiness and package metadata
+
+This UI is a safety-review playground. It is not complete treatment-planning
+software, does not diagnose, does not approve treatment, and does not authorize
+printing, wearing, or physically applying any output. Printable files and package
+metadata are informational geometry artifacts; any physical use is the user's own
+responsibility and risk.
 
 ## Run it
 
@@ -27,39 +33,73 @@ python3 -m orthoplan.server        # or: orthoplan serve
 
 Then open `http://127.0.0.1:8000`.
 
-The Upload step includes a short Getting Started panel for first-time users.
+The app opens in Guided mode by default. A light/dark switch is anchored at the
+top-right of the window in every mode. The sidebar **Sample Test Case** button
+opens an isolated walkthrough that reuses the guided wizard, pre-loaded with the
+two bundled test-case STL scans plus the canonical redacted CBCT/root-bone
+fixture; it snapshots and restores the user's working state, so it never replaces
+the normal Guided or Technician flows. The same button becomes **Exit Sample Test
+Case** while the sample is active, and the
+Guided/Technician toggle stays available throughout so the sample can be viewed in
+either mode.
 
 ## Modes
 
-The sidebar mode switch exposes two workflows:
+The sidebar **Guided / Technician** toggle (always visible on the left) exposes two
+workflows:
 
-- **Guided** is for non-technical educational review. It lets a user upload an STL
-  or launch a synthetic crowding demo, acknowledges that the preview is not a
-  diagnosis or treatment plan, and focuses the review surface on visualization and
-  findings. The built-in demo uses synthetic tooth-shaped models with crown/cusp
-  detail for clarity; it does not represent patient anatomy.
-- **Clinician** is the advanced workspace for records, caps, staged movement,
+- **Guided** (default) is a six-step wizard for non-technical users -
+  **Upload → Teeth & time → Details → Review → 3D preview → Print / send** - with
+  a progress rail and Back/Next, showing one step at a time. It lets a user upload
+  an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
+  default, with Faster/Gentle behind a disclosure), build the plan, review it as a
+	  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
+	  printable files. It acknowledges that the preview is not a diagnosis or treatment
+	  plan and that physical use is the user's own responsibility and risk.
+- **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
+
+The Sample Test Case renders the exact bundled STL models
+(`/datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/initial-{upper,lower}.stl`). On
+entry it loads `root-bone-fixture.json` (redacted CBCT record metadata, accepted
+fixture STL-to-CBCT registrations, safe derived anterior root centerlines,
+trusted tooth axes, and an alveolar-bounds record), then runs the on-device
+auto-segmenter on those scans and applies the per-tooth draft (clearly labeled as
+sample-only pre-applying). That lets the 3D preview animate the scan's own crowns
+moving stage by stage while the engine exposes root/bone-aware review tier state,
+registration gates, trusted anatomical frames, root/bone context, and CBCT
+boundary priors. The fixture is an engineering/demo artifact, not raw CBCT
+segmentation or treatment approval. If segmentation fails, the movement layer
+falls back to the labeled marker/arrow display. Outside the sample, movement
+stays schematic/marker-based until the user reviews and applies per-tooth meshes
+themselves.
+
+The 3D viewer, AI box, and upload control are single instances relocated into the
+active surface (delegated events + id-based renders), so there is never a second
+WebGL context.
 
 ## Plan AI
 
-The Review panel includes a compact chat surface. It posts the current
-plan-shaped JSON to `POST /api/chat` with a selected connector, model
-preference, and context scope. The default `local` connector produces an
-educational explanation without leaving the local server. External connectors
-for OpenAI, Claude Code, MCP hosts, Odysseus, and open-source models are visible
-in the UI but return a clear "not enabled" response until an explicit provider
-gateway is configured.
+The Review surface includes a prominent **Ask AI about your plan** box. It posts
+the current plan-shaped JSON to `POST /api/chat`. A single model dropdown picks
+both the model and its provider, and the chat always sends the full plan context.
+The default `local` helper produces an educational explanation without leaving the
+local server. External models (OpenAI GPT, Claude, and open-source / self-hosted
+endpoints) perform live completions once a model is selected, a key/endpoint is
+supplied, and per-session egress consent (`share_acknowledged`) is given.
 
-The connector settings panel includes session-only API key entry and future
-agent/MCP access controls. API keys are not written into plan JSON, case
-snapshots, or exported reports.
+The **single model dropdown** (each option carries its provider) and a
+**session-only API-key field** are shown directly in the AI box with
+provider-specific, plain-language help (the key field is hidden for the no-key
+local helper); the model endpoint (for an open-source / self-hosted model) and the
+egress consent live under **Connector settings**. API keys are read only at send
+time and are not written into plan JSON, case snapshots, `localStorage`, or
+exported reports.
 
-Context scopes:
-
-- **Summary**: findings, data gaps, timeline, and clinical controls.
-- **Clinical metadata**: summary plus mesh/tooth-mesh metadata.
-- **Full plan snapshot**: the complete plan payload.
+The assistant always works from the **full plan context** (findings, data gaps,
+timeline, clinical controls, mesh metadata, and the plan snapshot); there is no
+context-scope selector. For an external model the egress-consent checkbox is the
+sole control over what leaves the machine.
 
 ## Engine is the single source of truth
 
@@ -77,10 +117,49 @@ If the engine is unreachable (e.g. the page was opened via `file://`), the UI
 shows an "engine offline" message instead of silently falling back to a second,
 divergent implementation.
 
-Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
-remains the source of truth for mesh inspection.
+Browser scan metadata is approximate; `orthoplan.io.mesh_import.inspect_mesh()`
+remains the source of truth for mesh inspection, and it is the only parser for
+the non-STL formats - the engine stores a canonical copy (binary STL, or XYZ for
+a point cloud) that the viewer reads back, so the browser never reimplements
+PLY/OBJ/3MF/glTF/FBX. Uploaded scan files are stored locally in IndexedDB so a
+small upper/lower scan set survives reloads on the same browser; they are not
+uploaded to a server database.
+
+## Canonical scan fixture
+
+`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/` contains upper and lower whole-arch
+OrthoCAD shell STLs (`initial-{upper,lower}.stl`) used to keep exact scan
+rendering stable as the product evolves (and as the first tracked data
+contribution). You can load them via the normal upload control to see exact
+whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
+STLs as its already-present records and renders them in an overlay view, with a
+clearly labeled tooth-movement layer animating across stages.
+
+The same folder now also contains:
+
+- `cbct-metadata.redacted.json`: structural CBCT metadata only; no raw DICOM
+  bytes, identifier values, UID values, absolute paths, or full study date.
+- `root-bone-fixture.json`: accepted fixture registrations and safe derived
+  anterior root/axis landmarks that exercise the root/bone-aware workflow.
+
+Raw CBCT/DICOM remains local-only and ignored. The root/bone fixture exists so
+tests and the UI can exercise registration, anatomical frames, root/bone review,
+and CBCT boundary priors without checking PHI-bearing DICOM into git.
 
 ## 3D viewer
+
+The sidebar **Tooth Map** opens **Find teeth in 3D**, an independent schematic
+permanent-tooth explorer available in either workflow without uploading scans.
+Enter multiple FDI numbers (for example `11 12 33 34 43 44`), select the numbered
+buttons, or click teeth directly in the 3D model. Blue, red, yellow, and a custom
+color picker recolor the selected teeth; FDI badges and a tooth-name list identify
+the selection. Invalid numbers leave the previous selection unchanged. Clear and
+Reset view controls let users start over or restore the camera.
+
+The explorer uses schematic teeth even when patient meshes are loaded elsewhere.
+It does not edit movement rows, clinical controls, or the current plan. Selection
+and color remain while navigating within the page session. Keyboard-accessible
+number buttons and the tooth-name list remain usable when WebGL is unavailable.
 
 The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
 toggle (2D canvas is the fallback when WebGL is unavailable). Important honesty
@@ -90,24 +169,85 @@ constraints, surfaced in the on-screen caveat:
   available from the Python API. Otherwise it falls back to schematic proxy teeth.
   Plan JSON still does not store mesh bytes; local mesh serving is limited to
   `/api/mesh/<mesh_asset_id>` files registered in the local mesh workspace.
+- Uploaded or canonical whole-arch STL scans render as an exact enamel-colored
+  scan layer in Current and Overlay views. Current schematic proxy teeth are hidden
+  when that exact scan layer is present, so the user is not shown two competing
+  "current" anatomies.
+- Reviewed per-tooth segmentation upgrades the movement layer from markers/arrows
+  to real STL crown fragments moving over the scan; the viewer status and print
+  checklist label which mode is active.
+- Whole-arch scans are rotated from common STL dental coordinates into the viewer
+  frame (`x, y, z` -> `x, z, -y`) so the occlusal plane lies on the 3D grid and
+  tooth height points upward.
 - Translation is exact but **exaggerated** by the on-screen ×factor so sub-mm
   movement is visible next to ~10 mm teeth.
 - Rotation is drawn **only** where the engine sets `rotation_renderable`. The
   approximate crown-surface PCA frame (`tooth_frames` in the API) is metadata
   only; by itself it does not authorize rendered rotation.
+- A **Tooth #** toolbar toggle overlays FDI tooth-number badges on each tooth so a
+  user can see which teeth they are focusing on. It is off by default and follows
+  the displayed (current or planned) tooth position.
+- A **Play** toolbar button steps through the stage slider so users can inspect
+  the movement path across aligner stages without manually scrubbing.
+- A **Bite proximity** toggle paints a red/amber/green overlay of how close the
+  upper and lower crown surfaces are (contact / near / clearance). It is GEOMETRIC
+  proximity of the registered surfaces, NOT bite force or a diagnosis, and is shown
+  only when the scans register as already-occluding. Backed by `POST /api/occlusion`
+  (server-resolvable scans only). See [docs/occlusion-registration.md](../docs/occlusion-registration.md).
+- A **Scale** toggle draws a true-scale 10 mm reference bar beside the loaded scan
+  and reports its measured W×H×D extent. The scan geometry is at true scale (only
+  movement is exaggerated), so the bar is honest; it needs a loaded scan with
+  confirmed mm units.
+- A **Registered bite** toggle moves the lower arch into the registered occlusal
+  frame. It only changes separate-frame scans; arches scanned already in occlusion
+  show the true bite unchanged.
 
 Three.js (r169, MIT) is **vendored** under `ui/vendor/` and loaded via an import
 map, so the app runs fully offline with no runtime calls to any external host.
 To update it, replace `ui/vendor/three.module.js` and `ui/vendor/OrbitControls.js`
 with a matching pinned pair.
 
+## Auto-segmentation (experimental)
+
+A whole-arch STL is a single shell, not per-tooth meshes, so real per-tooth
+planning needs segmentation. The Technician Review side panel **Auto-Segmentation
+(experimental)** proposes per-tooth regions from a loaded server-local scan via
+`POST /api/segment`:
+
+- It runs **on this machine** (scans are PHI; segmentation never calls a hosted
+  API). Today the local model is a hybrid geometry proposal
+  (`orthoplan/segmentation/hybrid.py`): it walks the arch, scores candidate
+  boundaries from height valleys, curvature, and face-normal changes, then splits
+  triangles with graph-cut-style balanced boundaries. Open3D can be installed via
+  the optional `mesh-processing` extra for future mesh-processing acceleration,
+  while the pure-Python path remains the default baseline. `orthoplan/segmentation/auto.py`
+  is the seam where an on-device learned model (e.g. Teeth3DS / MeshSegNet) can
+  be dropped in behind the same contract.
+- The response is a **draft proposal**, never auto-applied: per-tooth confidence
+  (separation, not certainty), advisory model-provenance findings (all pass
+  `lint_finding`), and a ready-to-merge plan fragment (`mesh_assets` +
+  `tooth_meshes`). Each proposed tooth mesh is written into the local mesh
+  workspace and served by `/api/mesh/<id>`.
+- When the request includes a plan with accepted, gate-passing registration and
+  trusted CBCT-derived roots/axes (as the Sample Test Case fixture does), the
+  response includes a `cbct_prior` block. These priors bias boundary placement
+  and calibrate confidence; they do not replace human review or turn a proposal
+  into a clinical segmentation.
+- The UI lets the user correct each tooth number and include/exclude teeth, then
+  **explicitly** apply the accepted set; only then does `plan.js` merge it into the
+  plan. It only operates on server-local scans (the Sample Test Case / example
+  scans), because uploaded bytes stay in the browser.
+
 ## Print Export
 
 The Settings step has print-export fields for format, delivery email, dental model
 material, thermoforming material, and acknowledgement. The Review step renders backend
-readiness status from `print_export`. `orthoplan print-package` generates stage proxy STL
-files, a hash-bound manifest, optional deterministic zip package, and optional email draft
-from the supplied plan data.
+readiness status from `print_export`. The guided **Print / send** step builds the
+files in-browser via `POST /api/print-package` (which reuses `export_print_package`)
+and offers a zip download plus an `.eml` draft that opens pre-attached in a mail
+client. The same package is available from the CLI: `orthoplan print-package`
+generates stage proxy STL files, a hash-bound manifest, optional deterministic zip
+package, and optional email draft from the supplied plan data.
 
 ## Tests
 
@@ -143,3 +283,7 @@ regenerated after UI changes:
 pip install -e ".[e2e]" && python -m playwright install chromium
 python tools/capture_screenshots.py    # writes docs/images/*.png
 ```
+
+The sample paths and `USER_ONE` label come from generated `sample-dataset.js`.
+Regenerate it with `python3 tools/build_dataset_catalog.py` from the repo root.
+Dataset assets require the Python server, which applies the publication allowlist.
