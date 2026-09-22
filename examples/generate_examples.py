@@ -11,6 +11,9 @@ The checked-in JSON lets contributors immediately try, e.g.:
 
 from __future__ import annotations
 
+# Repository bootstrapping must precede local package imports.
+# ruff: noqa: E402
+
 import sys
 from datetime import datetime, timezone
 from pathlib import Path

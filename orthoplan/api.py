@@ -20,6 +20,7 @@ from pydantic import ValidationError
 
 from orthoplan.evaluation.acquisition import acquisition_advice
 from orthoplan.evaluation.engine import run_rules
+from orthoplan.evaluation.readiness import build_intake_readiness
 from orthoplan.evaluation.rules.root_bone import root_bone_review
 from orthoplan.model.gaps import data_gap_actions, data_gaps
 from orthoplan.model.plan import TreatmentPlan
@@ -57,8 +58,10 @@ def evaluate_plan(plan: TreatmentPlan, *, workspace: str | Path | None = None) -
     frames = build_stage_progress_frames(plan)
     timeline = project_timeline(plan)
     optimized = optimize_staging(plan)
+    print_status = build_print_export_status(plan)
     return {
         "ok": True,
+        "intake_readiness": build_intake_readiness(plan, findings, print_status).model_dump(mode="json"),
         "scale_confirmed": plan.scale_confirmed,
         "review_tier": review_tier_info(plan).model_dump(mode="json"),
         "cbct_status": cbct_status(plan).value,
@@ -78,7 +81,7 @@ def evaluate_plan(plan: TreatmentPlan, *, workspace: str | Path | None = None) -
         "acquisition_advice": acquisition_advice(plan).model_dump(),
         "findings": [finding.model_dump() for finding in findings],
         "timeline": timeline.model_dump(),
-        "print_export": build_print_export_status(plan).model_dump(),
+        "print_export": print_status.model_dump(),
         "clinical_controls": _clinical_controls_block(plan),
         "optimized_staging": {
             "stage_count": len(optimized.plan.stages),

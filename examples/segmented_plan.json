@@ -59,8 +59,10 @@
       "asset": {
         "id": "example-arch-scan",
         "format": "stl-binary",
+        "geometry_kind": "mesh",
         "provenance": "synthetic",
         "units": "mm",
+        "declared_units": null,
         "vertex_count": 3,
         "face_count": 1,
         "bounds": null,
@@ -79,8 +81,10 @@
     {
       "id": "example-tooth-11",
       "format": "stl-binary",
+      "geometry_kind": "mesh",
       "provenance": "synthetic",
       "units": "mm",
+      "declared_units": null,
       "vertex_count": 3,
       "face_count": 1,
       "bounds": null,

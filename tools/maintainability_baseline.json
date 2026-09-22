@@ -1,11 +1,11 @@
 {
   "line_budgets": {
-    "mobile/android/app/src/main/kotlin/com/opensourceortho/lite/LiteScreens.kt": 1321,
-    "mobile/ios/App/Screens.swift": 1255,
+    "mobile/android/app/src/main/kotlin/com/opensourceortho/lite/LiteScreens.kt": 934,
+    "mobile/ios/App/Screens.swift": 806,
     "ui/app.js": 1365,
     "ui/guided.js": 482,
-    "ui/render.js": 1374,
+    "ui/render.js": 1367,
     "ui/state.js": 518,
-    "ui/viewer3d.js": 1127
+    "ui/viewer3d.js": 1100
   }
 }

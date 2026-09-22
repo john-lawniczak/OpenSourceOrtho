@@ -32,6 +32,9 @@ current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
 
+Need your own dental data? Start with [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
+for acquisition options, cost tradeoffs, export requests, and quality checks.
+
 The first static UI prototype lives in [ui/](ui/README.md).
 
 Scaffolding for the **lite** iOS and Android apps - thin native clients over the
@@ -46,6 +49,10 @@ the left sidebar. A light/dark switch is anchored in the top bar.
 If you open this repo in an IDE and ask an AI model for help, give it this
 context first:
 
+- For questions about acquiring dental scans, read
+  [GETTING_YOUR_TEETH_SCANNED.md](GETTING_YOUR_TEETH_SCANNED.md), including its
+  evidence limits and copyable LLM context.
+
 - This is an open-source clear-aligner planning **research toolkit and safety
   playground**, not medical-device software and not a treatment recommendation
   engine.
@@ -59,9 +66,8 @@ context first:
   in [orthoplan/](orthoplan). Native lite clients live in [mobile/](mobile/README.md).
   Architecture, safety, data contribution, AI-chat, and maturity docs live in
   [docs/](docs/README.md).
-- Active implementation work is tracked only in [TODO.md](TODO.md). Completed
-  history should be read from git history and the feature docs, not treated as
-  unfinished work.
+- Shared work is tracked in repository issues; completed history is in Git and
+  feature docs.
 - The most useful contributions are privacy-safe longitudinal STL
   (stereolithography) scan bundles, reviewed segmentation/setup improvements,
   UI tests, safety-boundary hardening, and docs that help non-specialists
@@ -110,6 +116,11 @@ context first:
   higher-fidelity path toward **Root/Bone-Aware Review** when the record is
   locally ingested, registered to the STL, segmented/reviewed, and validated. See
   [docs/cbct-evaluation.md](docs/cbct-evaluation.md).
+- **Record and workflow readiness**: expand the report in the Review workspace's
+  trust strip to inspect scan metadata, segmentation review, bite context, CBCT
+  registrations, and reviewed anatomy. It separates record evidence, plan checks,
+  export prerequisites, and physical validation, with links to the corresponding
+  Technician controls. See [the report contract and limits](docs/INTAKE_READINESS.md).
 - **Plan versions and setup comparison**: save named snapshots of a plan, restore
   any version back into the editor, compare captured/saved/current/generated
   setups side by side, live-restage an edited candidate, and promote a compared
@@ -167,12 +178,44 @@ See [docs/SAFETY.md](docs/SAFETY.md) before using or contributing.
 
 The first workflow is simple:
 
-1. Upload an STL intraoral scan.
+1. Upload an intraoral scan in whatever format your scanner exports (see
+   [Supported scan formats](#supported-scan-formats)).
 2. Segment the arch into individual tooth meshes.
 3. Create a staged `TreatmentPlan` with per-tooth movement deltas.
 4. Check each stage against user-configured movement caps.
 5. Render cumulative progress frames in the UI.
 6. Export a reproducible handoff report that clearly separates rule checks, model advisories, data gaps, and provenance.
+
+### Supported Scan Formats
+
+Upload whatever your scanner software exports - the engine reads all of it and
+normalizes it internally, so nothing has to be converted first.
+
+| Family | Extensions | Notes |
+|---|---|---|
+| STL | `.stl` | Binary and ASCII. Carries no units. |
+| PLY | `.ply` | ASCII and binary (both byte orders); mesh or point cloud. |
+| Wavefront OBJ | `.obj` | Mesh or point cloud. Materials and textures are ignored. |
+| 3MF | `.3mf` | Declares its unit; the declaration is shown, never applied on its own. |
+| glTF | `.gltf`, `.glb` | Node transforms applied; external `.bin` read next to a `.gltf`. |
+| FBX | `.fbx` | Binary (including zlib-compressed arrays) and ASCII. |
+| Point clouds | `.asc`, `.xyz`, `.pts` | Plain-text XYZ rows. |
+
+This covers every geometry export offered by consumer scanners such as the
+Revopoint POP series through Revo Scan (5.4.8 and later), for point-cloud, mesh,
+and textured models alike. Colour, texture, and material data is read past: the
+planner works on geometry.
+
+**Point clouds have no surface.** An `.asc`/`.xyz`/`.pts` export - or a PLY/OBJ
+saved with no faces - is accepted and can be segmented and bite-registered,
+because those steps read points. Anything that needs a surface (collision
+proximity, aligner shells, print packages) stays unavailable for it. Re-export
+as a mesh model if you need those.
+
+**Units are never inferred.** STL, PLY, OBJ, and point clouds carry no unit at
+all. 3MF, glTF, and FBX declare one, and that declaration is reported as
+`declared_units` so the app can pre-fill the prompt - but `units` stays
+`unverified` until you confirm it, because scan scale is a safety-relevant input.
 
 CBCT/DICOM support is tiered: local record metadata intake, on-device viewing
 handoff, STL-to-CBCT registration records, reviewed anatomy representation,
@@ -183,9 +226,13 @@ STL-to-CBCT registration proposals exist, but they remain untrusted until
 explicit human review/acceptance; a bundled clinical-grade CBCT segmentation
 model remains out of scope for the core install.
 
+Browse the [published dataset catalog](datasets/README.md) for **USER_ONE** and
+its baseline/progress records. Each case has a stable UUID, a readable pseudonym,
+and separate folders for source media, generated reports, and engineering fixtures.
+
 For a quick demo, open the app and click **Sample Test Case** in the left
 sidebar. The sample reuses the guided wizard, pre-loaded with the two bundled
-test-case STL scans (`ui/example-scans/canonical-orthocad-001/`), the redacted
+test-case STL scans (`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/`), the redacted
 CBCT companion metadata, and a safe root/bone engineering fixture. It starts at
 step 1 so you can walk the whole flow. The 3D preview renders the real scans,
 pre-applies a sample-only segmentation draft, and demonstrates what changes when
@@ -321,17 +368,23 @@ python3 tools/check_maintainability.py
 
 ### Local Mesh Workspace
 
-Plan JSON never stores mesh bytes. To render real per-tooth STL meshes locally,
-register each STL in a local mesh workspace, then link the returned `id` in the
+Plan JSON never stores mesh bytes. To render real per-tooth meshes locally,
+register each scan in a local mesh workspace, then link the returned `id` in the
 plan's `mesh_assets` and `tooth_meshes`.
 
 ```bash
+orthoplan inspect-scan path/to/upper.ply          # units-unverified metadata
 orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes
 ORTHOPLAN_MESH_WORKSPACE=.orthoplan-meshes orthoplan serve
 ```
 
+Registration accepts any supported format and stores a canonical copy (binary
+STL for a mesh, plain-text XYZ for a point cloud) keyed by the hash of the file
+you actually supplied, so re-importing the same export always resolves to the
+same asset id.
+
 The dev server exposes registered meshes only by asset id at `/api/mesh/<mesh_asset_id>`.
-The UI renders real linked STL meshes when available and falls back to schematic
+The UI renders real linked meshes when available and falls back to schematic
 proxy teeth when no registered mesh can be loaded.
 
 ## Contribute Your Data

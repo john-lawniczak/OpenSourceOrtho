@@ -4,15 +4,20 @@ This directory holds the project docs that should evolve with the product.
 
 ## Core Docs
 
+- [Getting 3D scans of your teeth](../GETTING_YOUR_TEETH_SCANNED.md) - acquisition options, costs, export request template, quality checks, and LLM guidance
+
 - [SAFETY.md](SAFETY.md) - capability boundary and safety language
 - [application maturity.md](application%20maturity.md) - 10-point maturity tracking for the four application surfaces
 - [NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md) - end-to-end first-time-user scorecard, weak areas, and prioritized improvement path
+- [INTAKE_READINESS.md](INTAKE_READINESS.md) - shared record evidence, workflow states, action links, and remaining intake limits
 - [ARCHITECTURE.md](ARCHITECTURE.md) - plain-language system flow and technical layout
 - [MOBILE.md](MOBILE.md) - mobile architecture, STL-only fallback, and browser handoff progress
 - [cbct-evaluation.md](cbct-evaluation.md) - CBCT/DICOM safety-review tiers, shipped gates, and remaining roadmap
 - [UI_DESIGN.md](UI_DESIGN.md) - visualization and interface accuracy contract
 - [MAINTAINABILITY.md](MAINTAINABILITY.md) - composability, code hygiene, and file-size guardrails
 - [OPEN_SOURCE_REFERENCES.md](OPEN_SOURCE_REFERENCES.md) - open-source dependencies and proprietary reference boundaries
+- [PUBLIC_RELEASE_2026-09-22.md](PUBLIC_RELEASE_2026-09-22.md) - public snapshot scope, exclusions, and validation
+- [RELEASE_READINESS.md](RELEASE_READINESS.md) - release review and publication disposition
 - [LICENSE_AUDIT.md](LICENSE_AUDIT.md) - per-dependency license audit and compatibility
 - [SOURCES_AND_RECOMMENDED_SOFTWARE.md](SOURCES_AND_RECOMMENDED_SOFTWARE.md) - source ledger for monitoring upstream references over time
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance

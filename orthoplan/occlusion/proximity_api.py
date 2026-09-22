@@ -15,7 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from orthoplan.io.stl_import import read_stl_geometry
+from orthoplan.io.mesh_import import read_mesh_geometry
 from orthoplan.occlusion.grid import build_occlusal_grid
 from orthoplan.occlusion.proximity import (
     PROXIMITY_CAVEAT,
@@ -44,7 +44,7 @@ def _resolve_arches(
         if arch is None:
             errors.append(f"could not determine arch for scan: {reference!r}")
             continue
-        _asset, vertices = read_stl_geometry(path)
+        _asset, vertices = read_mesh_geometry(path)
         if arch == "maxillary":
             upper = vertices
         else:

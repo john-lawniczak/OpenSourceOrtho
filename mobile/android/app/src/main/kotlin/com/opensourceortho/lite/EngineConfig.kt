@@ -4,7 +4,7 @@ package com.opensourceortho.lite
  * Where the lite app reaches the OpenSource Ortho Python engine.
  *
  * The engine is the single source of truth (see ../../API_CONTRACT.md); the app
- * never synthesizes a plan on-device. Change [baseUrl] in one place to point at a
+ * can produce a labeled, limited STL-only review when offline. Change [baseUrl] in one place to point at a
  * deployed engine. Cleartext HTTP is only allowed for the dev hosts in
  * res/xml/network_security_config.xml.
  */

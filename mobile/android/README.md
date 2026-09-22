@@ -26,7 +26,10 @@ android/
       SafetyText.kt              verdict labels (disclaimer text in strings.xml)
       LiteFlowViewModel.kt       StateFlow UI state, delegates to the client
       MainActivity.kt            Compose entry + safety banner
-      LiteScreens.kt             Upload / Teeth + Time / Review / Print + Send / Settings
+      LiteScreens.kt             Upload / Review / Print + Send / Settings
+      TeethAndTimeScreen.kt         observed sample / imported scan selection
+      ScanSurfaceView.kt            full-resolution OpenGL ES surface viewer
+      StlMesh.kt                    validated STL parser
     src/test/kotlin/...          JVM unit tests for the core
 ```
 
@@ -45,6 +48,13 @@ gradle wrapper --gradle-version 8.9   # one-time: creates ./gradlew + wrapper ja
 Open the `mobile/android/` folder in Android Studio to run on an emulator.
 The Settings About card reads `BuildConfig.VERSION_NAME` and
 `BuildConfig.VERSION_CODE`; keep version metadata in `app/build.gradle.kts`.
+Version 0.4.0-scaffold (4) shows both USER_ONE arches and a continuous
+baseline/week-7 reveal in **Teeth**. [Native scanner imports](../SCAN_IMPORT.md)
+support STL, OBJ, PLY, ASC, XYZ, and PTS.
+The Gradle `bundleSampleScans` task copies only the four originals listed in the
+shared history; private records and reference video are excluded. The offline
+baseline/week-7 viewer reads the shared `mobile/sample-history` assets configured
+in Gradle; it does not replace uploaded scans or generated reviews.
 
 ## Run against the engine
 
@@ -58,14 +68,14 @@ engine.
 ## What still has to be built (lite v1 -> shippable)
 
 - **Mesh registration**: `UploadScreen` uses the Storage Access Framework for
-  `.stl` files, CBCT/DICOM attachments, photos from local/cloud providers, and
+  scanner geometry files, CBCT/DICOM attachments, photos from local/cloud providers, and
   browser-generated JSON reviews/packages; the next step is uploading/registering
   STL bytes with the engine mesh workspace instead of sending metadata only.
 - **Persistent review library**: browser JSON can be imported and included in
   the exported mobile package; add durable app storage and deletion/rename UI.
-- **Per-tooth 3D renderer**: `TeethAndTimeScreen` now renders a projected native
-  preview from selected STL geometry when URI access is available. Replace it
-  with a Filament/OpenGL renderer backed by segmented per-tooth meshes from
+- **Per-tooth 3D renderer**: `TeethAndTimeScreen` now renders a complete, depth-tested OpenGL ES
+  surface or point cloud from selected scanner geometry when URI access is available. The next step
+  is segmented per-tooth meshes from
   `GET /api/mesh/<id>` and engine stage transforms.
 - **Destination-specific print/send handoff**: `PrintAndSendScreen` writes a JSON
   package, supports Android document export, opens Sharesheet targets, and opens
@@ -78,7 +88,7 @@ engine.
 
 ## Safety
 
-The non-dismissible banner (`R.string.safety_disclaimer`) and `CONSISTENT`/`ISSUES`
+The safety summary (`R.string.safety_disclaimer`) and `CONSISTENT`/`ISSUES`
 verdict labels are mandatory. Never present a plan, generated package, printed
 model, aligner, or other appliance as safe, approved, cleared, complete, suitable,
 or ready for treatment or physical use. Any physical use is the user's own

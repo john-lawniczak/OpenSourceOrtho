@@ -7,7 +7,7 @@ from orthoplan.arch_contract import arch_from_tooth_value
 from orthoplan.mesh_intersect import triangles_intersect
 from orthoplan.model.assets import BoundingBox
 from orthoplan.model.geometry import Vec3
-from orthoplan.model.plan import SegmentedToothMesh, TreatmentPlan
+from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.biomechanics import apply_pose_to_vertex, trusted_movement_frames
 from orthoplan.viz.progress import build_stage_progress_frames
 

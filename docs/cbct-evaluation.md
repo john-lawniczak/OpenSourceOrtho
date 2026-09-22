@@ -33,7 +33,7 @@ CBCT lifecycle status (`unavailable` -> `attached` -> `registered` ->
 registration and reviewed anatomy exist, and a CBCT attachment never changes
 movement generation on its own.
 
-The bundled `canonical-orthocad-001` sample carries two CBCT companion artifacts:
+The bundled `USER_ONE` sample carries two CBCT companion artifacts:
 
 - `cbct-metadata.redacted.json`: structural metadata for a local 824-slice
   primary CT stack plus one documented secondary CT object. It records counts,
@@ -156,7 +156,7 @@ Verdicts are surfaced per registration in the evaluate payload
 (`registration.gate`) and the CBCT workflow panel. Thresholds are geometric
 review heuristics, never clinical acceptance criteria.
 
-Canonical fixture: `ui/example-scans/canonical-orthocad-001/root-bone-fixture.json`
+Canonical fixture: `datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/fixtures/root-bone-fixture.json`
 contains accepted imported registrations for the bundled upper/lower STLs. The
 fixture metrics PASS the numeric gate so the sample and tests can exercise the
 root/bone-aware pipeline. The transform is documented as deterministic

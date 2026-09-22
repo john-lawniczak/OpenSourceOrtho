@@ -24,7 +24,7 @@ public struct SelectedScan: Codable, Sendable, Equatable {
     public var fileName: String
     public var arch: String?       // "upper" | "lower" | nil (unspecified)
     public var byteCount: Int
-    public var modality: String    // "cbct" | "stl" | "photo"
+    public var modality: String    // "cbct" | "stl" | "scan" | "photo"
 
     public init(fileName: String, arch: String? = nil, byteCount: Int, modality: String = "stl") {
         self.fileName = fileName
@@ -33,8 +33,10 @@ public struct SelectedScan: Codable, Sendable, Equatable {
         self.modality = modality
     }
 
+    public var isSurfaceScan: Bool { ["stl", "scan"].contains(modality.lowercased()) && ScanImport.supports(fileName) }
+
     public var isSTL: Bool {
-        modality.lowercased() == "stl" || fileName.lowercased().hasSuffix(".stl")
+        ["stl", "scan"].contains(modality.lowercased()) && fileName.lowercased().hasSuffix(".stl")
     }
 }
 
@@ -160,7 +162,7 @@ public enum LitePlanBuilder {
         let scanObjects: [AnyCodable] = scans.enumerated().map { index, scan in
             let asset: [String: AnyCodable] = [
                 "id": AnyCodable(.string(assetId(for: scan.fileName, index: index))),
-                "format": AnyCodable(.string(engineFormat(scan.modality))),
+                "format": AnyCodable(.string(scan.isSurfaceScan ? URL(fileURLWithPath: scan.fileName).pathExtension.lowercased() : engineFormat(scan.modality))),
                 "provenance": AnyCodable(.string("patient-derived")),
                 "units": AnyCodable(.string("unverified")),
                 "vertex_count": AnyCodable(.int(0)),

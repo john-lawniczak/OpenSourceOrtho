@@ -3,37 +3,62 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02AB58A41CCE219990C58848 /* progress-01-upper.stl in Resources */ = {isa = PBXBuildFile; fileRef = 30D96B6232C8BB2F1F2D071E /* progress-01-upper.stl */; };
+		064C26ED1F7F6C292A45D663 /* ScanSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EE721093FEDE2BC003557D2 /* ScanSurfaceView.swift */; };
 		13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */; };
-		16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */ = {isa = PBXBuildFile; fileRef = 4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */; };
-		2D1B68E5297E4A8B9C1D2F31 /* dev-sample-upper.stl in Resources */ = {isa = PBXBuildFile; fileRef = 62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */; };
+		13E5C50C6173F377DD0089DF /* ScanPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE36B42254AE58C7C6BDDBD /* ScanPresentation.swift */; };
+		141BB36E11918188CC8FF6F9 /* progress-01-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = AEB5B27E9ED445C67EB5D605 /* progress-01-lower.stl */; };
 		37A52C95416DB193C1647EB4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3EC22871DE3570233EAFD /* RootView.swift */; };
 		4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FEC8D213B7576DB4208180A /* Assets.xcassets */; };
+		6572368ECDB4B6E0C4473561 /* initial-upper.stl in Resources */ = {isa = PBXBuildFile; fileRef = 1E6DCDCA083D4CC557BC8881 /* initial-upper.stl */; };
 		74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8589067755F44462FE798BC8 /* SettingsView.swift */; };
 		7D3D25F79F7B9C78EB01AD2C /* OpenSourceOrthoLiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E95A2568C52A78F18CEF33B /* OpenSourceOrthoLiteKit */; };
-		8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */; };
+		A8C5300D8153E31BC9AE3C02 /* ScanViewerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25DCFC73D1BB5F0D6887E0D6 /* ScanViewerUITests.swift */; };
+		B7175031E694B0A824C68949 /* sample-history in Resources */ = {isa = PBXBuildFile; fileRef = 1DF488118404FD294F2E9349 /* sample-history */; };
 		BEDCA8A414E962BAB0DCEF28 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A1C676D724465EA395DAFA /* AppIdentity.swift */; };
+		BFB5027873D79068254C371E /* TeethAndTimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579A00BFC2F479D98BA5EE9F /* TeethAndTimeView.swift */; };
 		DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919681E695F14AC323DB1F57 /* Screens.swift */; };
+		E1EFD6B0D0CBAA3B589DC903 /* SampleHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E12A3C77B7C07EE6645D35 /* SampleHistoryView.swift */; };
+		EB3050ADC0C131EFA0E0AB8F /* initial-lower.stl in Resources */ = {isa = PBXBuildFile; fileRef = E8C39D54B6CB5F07F55FBA7C /* initial-lower.stl */; };
 		FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F826EB48EE7B832ACB844363 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 15926F78AA8F94B009C18DD3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41985455D915DDEB2015CE48;
+			remoteInfo = OpenSourceOrthoLite;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		038A93E4FA3E99A155B4AD33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0FEC8D213B7576DB4208180A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1DF488118404FD294F2E9349 /* sample-history */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "sample-history"; path = "../sample-history"; sourceTree = SOURCE_ROOT; };
+		1E6DCDCA083D4CC557BC8881 /* initial-upper.stl */ = {isa = PBXFileReference; path = "initial-upper.stl"; sourceTree = "<group>"; };
+		25DCFC73D1BB5F0D6887E0D6 /* ScanViewerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViewerUITests.swift; sourceTree = "<group>"; };
+		2FE36B42254AE58C7C6BDDBD /* ScanPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPresentation.swift; sourceTree = "<group>"; };
+		30D96B6232C8BB2F1F2D071E /* progress-01-upper.stl */ = {isa = PBXFileReference; path = "progress-01-upper.stl"; sourceTree = "<group>"; };
 		32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceOrthoLiteApp.swift; sourceTree = "<group>"; };
-		4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-incisor.stl"; sourceTree = "<group>"; };
-		62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-upper.stl"; sourceTree = "<group>"; };
+		35E12A3C77B7C07EE6645D35 /* SampleHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHistoryView.swift; sourceTree = "<group>"; };
+		579A00BFC2F479D98BA5EE9F /* TeethAndTimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeethAndTimeView.swift; sourceTree = "<group>"; };
+		6EE721093FEDE2BC003557D2 /* ScanSurfaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanSurfaceView.swift; sourceTree = "<group>"; };
+		80B43BD9E6C016F1E44993AD /* ScanViewerUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ScanViewerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8589067755F44462FE798BC8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		888F68B82367F953AA8FC715 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = .; sourceTree = SOURCE_ROOT; };
-		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenSourceOrthoLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiteFlowViewModel.swift; sourceTree = "<group>"; };
 		919681E695F14AC323DB1F57 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
 		94A1C676D724465EA395DAFA /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
 		9BB3EC22871DE3570233EAFD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dev-sample-lower.stl"; sourceTree = "<group>"; };
+		AEB5B27E9ED445C67EB5D605 /* progress-01-lower.stl */ = {isa = PBXFileReference; path = "progress-01-lower.stl"; sourceTree = "<group>"; };
+		E8C39D54B6CB5F07F55FBA7C /* initial-lower.stl */ = {isa = PBXFileReference; path = "initial-lower.stl"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,8 +84,11 @@
 		631AC2D2F8BFBA05067850FF = {
 			isa = PBXGroup;
 			children = (
+				1DF488118404FD294F2E9349 /* sample-history */,
 				BE0697D1F65F6EE1B627E84F /* App */,
 				002C8182D0A6C4AA83FF47B4 /* Packages */,
+				A720AD4F1A9EAE5608A51A3E /* spec-07b7031938c84b1a9c98517b8bc4cdd3 */,
+				C23B796F5266CE49F55BF273 /* UITests */,
 				6E48634B4930BC68BB41C389 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -69,18 +97,21 @@
 			isa = PBXGroup;
 			children = (
 				8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */,
+				80B43BD9E6C016F1E44993AD /* ScanViewerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A012910D6970A6D2D2581C6B /* Resources */ = {
+		A720AD4F1A9EAE5608A51A3E /* spec-07b7031938c84b1a9c98517b8bc4cdd3 */ = {
 			isa = PBXGroup;
 			children = (
-				4846C184BF110EC988AD5B85 /* dev-sample-incisor.stl */,
-				C70A54D23F9146A1BE82F019 /* dev-sample-lower.stl */,
-				62F8E9A4D2C94710B5A63190 /* dev-sample-upper.stl */,
+				E8C39D54B6CB5F07F55FBA7C /* initial-lower.stl */,
+				1E6DCDCA083D4CC557BC8881 /* initial-upper.stl */,
+				AEB5B27E9ED445C67EB5D605 /* progress-01-lower.stl */,
+				30D96B6232C8BB2F1F2D071E /* progress-01-upper.stl */,
 			);
-			path = Resources;
+			name = "spec-07b7031938c84b1a9c98517b8bc4cdd3";
+			path = "../../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3";
 			sourceTree = "<group>";
 		};
 		BE0697D1F65F6EE1B627E84F /* App */ = {
@@ -92,11 +123,22 @@
 				8DC5B2CB68FC2CCF3796D405 /* LiteFlowViewModel.swift */,
 				32EB9786231C04C17A062485 /* OpenSourceOrthoLiteApp.swift */,
 				9BB3EC22871DE3570233EAFD /* RootView.swift */,
+				35E12A3C77B7C07EE6645D35 /* SampleHistoryView.swift */,
+				2FE36B42254AE58C7C6BDDBD /* ScanPresentation.swift */,
+				6EE721093FEDE2BC003557D2 /* ScanSurfaceView.swift */,
 				919681E695F14AC323DB1F57 /* Screens.swift */,
 				8589067755F44462FE798BC8 /* SettingsView.swift */,
-				A012910D6970A6D2D2581C6B /* Resources */,
+				579A00BFC2F479D98BA5EE9F /* TeethAndTimeView.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		C23B796F5266CE49F55BF273 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				25DCFC73D1BB5F0D6887E0D6 /* ScanViewerUITests.swift */,
+			);
+			path = UITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -122,6 +164,24 @@
 			productReference = 8D5AA9C2F3757F8610859698 /* OpenSourceOrthoLite.app */;
 			productType = "com.apple.product-type.application";
 		};
+		644D3A07379E654CA1B835AF /* ScanViewerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 653F68101694F8621D81B414 /* Build configuration list for PBXNativeTarget "ScanViewerUITests" */;
+			buildPhases = (
+				9B7835B0DF17AF5090E5E75E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FD02250D39E4531CC2D165CD /* PBXTargetDependency */,
+			);
+			name = ScanViewerUITests;
+			packageProductDependencies = (
+			);
+			productName = ScanViewerUITests;
+			productReference = 80B43BD9E6C016F1E44993AD /* ScanViewerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -132,7 +192,11 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					41985455D915DDEB2015CE48 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
+					};
+					644D3A07379E654CA1B835AF = {
+						TestTargetID = 41985455D915DDEB2015CE48;
 					};
 				};
 			};
@@ -149,10 +213,12 @@
 			packageReferences = (
 				CC2B05072D73BECC81BD9818 /* XCLocalSwiftPackageReference "." */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				41985455D915DDEB2015CE48 /* OpenSourceOrthoLite */,
+				644D3A07379E654CA1B835AF /* ScanViewerUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -163,9 +229,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BE8B9C1B0A0D22CCEFF6E62 /* Assets.xcassets in Resources */,
-				16AFF434CA24ED8129952EA1 /* dev-sample-incisor.stl in Resources */,
-				8C3B5A9D1E624F7A9B02C4D6 /* dev-sample-lower.stl in Resources */,
-				2D1B68E5297E4A8B9C1D2F31 /* dev-sample-upper.stl in Resources */,
+				EB3050ADC0C131EFA0E0AB8F /* initial-lower.stl in Resources */,
+				6572368ECDB4B6E0C4473561 /* initial-upper.stl in Resources */,
+				141BB36E11918188CC8FF6F9 /* progress-01-lower.stl in Resources */,
+				02AB58A41CCE219990C58848 /* progress-01-upper.stl in Resources */,
+				B7175031E694B0A824C68949 /* sample-history in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,12 +248,32 @@
 				FF6E8B3BD55B748227637483 /* LiteFlowViewModel.swift in Sources */,
 				13D18ED2B11E134D460F797E /* OpenSourceOrthoLiteApp.swift in Sources */,
 				37A52C95416DB193C1647EB4 /* RootView.swift in Sources */,
+				E1EFD6B0D0CBAA3B589DC903 /* SampleHistoryView.swift in Sources */,
+				13E5C50C6173F377DD0089DF /* ScanPresentation.swift in Sources */,
+				064C26ED1F7F6C292A45D663 /* ScanSurfaceView.swift in Sources */,
 				DCEA3B4430B69898511C72B1 /* Screens.swift in Sources */,
 				74C4726EEE2CA12F155E7177 /* SettingsView.swift in Sources */,
+				BFB5027873D79068254C371E /* TeethAndTimeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B7835B0DF17AF5090E5E75E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A8C5300D8153E31BC9AE3C02 /* ScanViewerUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FD02250D39E4531CC2D165CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41985455D915DDEB2015CE48 /* OpenSourceOrthoLite */;
+			targetProxy = F826EB48EE7B832ACB844363 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		06AEE9C6225B7B1A5BAB5C25 /* Debug */ = {
@@ -313,20 +401,54 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = T286C8G7T2;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite;
 				PRODUCT_NAME = OpenSourceOrthoLite;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		56F625D3BDA0682088FD6A2A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OpenSourceOrthoLite;
+			};
+			name = Debug;
+		};
+		661E54D17BCED5A77D4B488D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OpenSourceOrthoLite;
 			};
 			name = Release;
 		};
@@ -336,15 +458,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = T286C8G7T2;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.opensourceortho.lite;
 				PRODUCT_NAME = OpenSourceOrthoLite;
 				SDKROOT = iphoneos;
@@ -356,6 +478,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		653F68101694F8621D81B414 /* Build configuration list for PBXNativeTarget "ScanViewerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56F625D3BDA0682088FD6A2A /* Debug */,
+				661E54D17BCED5A77D4B488D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		AB36442CFD3813268CF15988 /* Build configuration list for PBXNativeTarget "OpenSourceOrthoLite" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

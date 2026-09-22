@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic import BaseModel, Field
+from orthoplan.datasets import DATASETS_ROOT
 
 from orthoplan.model.dataset import DatasetManifest, read_manifest
 from orthoplan.validation.benchmark_models import BenchmarkMetric
@@ -231,6 +232,15 @@ def _bounds_delta_metric(
             status="missing-comparable-scan-bounds",
             notes="Comparable consented scan bounds are not present for this arch.",
         )
+    if before.units != "mm" or after.units != "mm":
+        return OutcomeErrorMetric(
+            name=name,
+            specimen_id=manifest.specimen_id,
+            role=role,
+            arch=arch,
+            status="unverified-or-unsupported-units",
+            notes="Both scan scales must be confirmed in mm before reporting a mm proxy.",
+        )
     return OutcomeErrorMetric(
         name=name,
         specimen_id=manifest.specimen_id,
@@ -279,4 +289,4 @@ def _metric(name: str, value: float, case_id: str) -> BenchmarkMetric:
 
 
 def _default_manifest_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return DATASETS_ROOT

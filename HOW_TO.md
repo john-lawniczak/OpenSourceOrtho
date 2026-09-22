@@ -10,10 +10,13 @@ is entirely at the user's own responsibility and risk.
 
 New to dental terms (IPR, tip, torque, FDI numbering)? See the
 [Glossary and tooth-numbering diagram](docs/GLOSSARY.md), also reachable in the
-app from the **Key Terms** button in the sidebar. To contribute your own STL
+app from the **Key Terms** button in the sidebar. To contribute your own
 scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md).
 
 ## 1. Start The App
+
+Before buying scanning equipment, read [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
+for existing-record requests, budget comparisons, and checks for usable STL data.
 
 ```bash
 python3.11 -m venv .venv
@@ -56,7 +59,8 @@ editors; use **Exit Sample Test Case** to return.
 
 The Technician workflow:
 
-1. Upload or reference an STL surface scan.
+1. Upload or reference a surface scan (STL, PLY, OBJ, 3MF, glTF/GLB, FBX, or an
+   ASC/XYZ/PTS point cloud - whatever your scanner exports).
 2. Confirm scan units before trusting millimeter measurements.
 3. Declare available records: segmentation, roots, CBCT, periodontal status, occlusion,
    photos, radiographs, and treatment notes.
@@ -79,7 +83,7 @@ tooth, which helps when choosing which teeth to move.
 
 ### Auto-segmenting teeth (experimental)
 
-A whole-arch STL is one shell, not per-tooth meshes, so real per-tooth planning
+A whole-arch scan is one shell, not per-tooth meshes, so real per-tooth planning
 needs segmentation. In the **Technician** Review side panel, **Auto-Segmentation
 (experimental)** proposes per-tooth regions from a loaded server-local scan (the
 Sample Test Case / example scans) via `POST /api/segment`. It uses local hybrid
@@ -143,9 +147,10 @@ The Generate Plan panel shows which connector is active. With the default
 ## 3. Render Local Per-Tooth Meshes
 
 Plan JSON stores mesh metadata and asset IDs, not mesh bytes. To render real
-per-tooth STL meshes in the local UI, register each tooth STL in a local mesh
+per-tooth meshes in the local UI, register each tooth mesh in a local mesh
 workspace and link the returned asset ID in the plan's `mesh_assets` and
-`tooth_meshes`.
+`tooth_meshes`. Any supported format is accepted; the workspace stores a
+canonical copy.
 
 ```bash
 orthoplan register-mesh path/to/tooth_11.stl --workspace .orthoplan-meshes

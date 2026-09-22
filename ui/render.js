@@ -1,3 +1,4 @@
+import { buildViewerScanSources } from "./scan_formats.js";
 import {
   availabilityLabels,
   el,
@@ -9,7 +10,6 @@ import {
 } from "./state.js";
 import {
   archFromTooth,
-  createLatest,
   escapeHtml,
   framePoseTotals,
   inferArchFromName,
@@ -26,6 +26,7 @@ import { renderSetupCompare, scheduleSetupCompare } from "./setup_compare.js";
 import { renderSegmentation } from "./segmentation_render.js";
 import { renderPrintExport } from "./print_export.js";
 import { renderTrustStatus } from "./trust_status.js";
+import { createEvaluationRunner } from "./evaluation_runner.js";
 import { renderAnatomyReview } from "./anatomy_render.js";
 
 let viewer = null;
@@ -147,11 +148,11 @@ function demoRenderMeshes() {
 // (e.g. the sample test case preparing its per-tooth teeth).
 function scanStatusText(count, movingFragments) {
   if (!count) return "Your scan could not be displayed.";
-  if (movingFragments) return "Showing your STL scan with reviewed per-tooth fragments moving in 3D.";
+  if (movingFragments) return "Showing your scan with reviewed per-tooth fragments moving in 3D.";
   if (state.segmentation.busy) {
-    return "Showing your STL scan. Segmenting individual teeth on this machine — movement switches from arrows to real crowns when it is applied.";
+    return "Showing your scan. Segmenting individual teeth on this machine — movement switches from arrows to real crowns when it is applied.";
   }
-  return "Showing your STL scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.";
+  return "Showing your scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.";
 }
 
 function updateViewer(result) {
@@ -159,9 +160,7 @@ function updateViewer(result) {
   const v = ensureViewer();
   if (!v) return;
   v.resize();
-  const allScanSources = state.files.length
-    ? state.files.map((file) => ({ name: file.name, file, arch: inferArchFromName(file.name) }))
-    : state.scanSources;
+  const allScanSources = buildViewerScanSources(state.files, state.scanSources, inferArchFromName);
   const scanSources = filterScanSources(allScanSources);
   v.setVisibleArchFilter(state.scanArchFilter);
   if (allScanSources.length) {
@@ -328,7 +327,7 @@ export function renderAll() {
   renderScale();
   renderCbctWorkflow();
   renderMovementFidelity();
-  renderTrustStatus(el("trustStatusStrip"), state);
+  renderTrustStatus(el("trustStatusStrip"), state, renderAll);
   renderStagePlayback();
   renderSampleStatus();
   renderSegmentation();
@@ -364,7 +363,7 @@ function renderCbctWorkflow() {
   el("proposeCbctAnatomy").disabled = Boolean(workflow.busy || !mask || !cbctRecords.length || !state.scanSources.length);
   const parts = [];
   if (!cbctRecords.length) parts.push("Attach a CBCT/DICOM record.");
-  if (!state.scanSources.length) parts.push("Register an STL scan with the local engine.");
+  if (!state.scanSources.length) parts.push("Register a scan with the local engine.");
   if (!mask) parts.push("Import a root/bone mask JSON.");
   // The engine's fail-closed numeric gate on each registration's recorded
   // quality metrics: acceptance alone never unlocks CBCT-derived behavior.
@@ -391,7 +390,7 @@ function renderMovementFidelity() {
     target.textContent = "Movement layer: scan is real; tooth movement is shown with markers/arrows until segmentation is reviewed.";
   } else {
     target.dataset.mode = "schematic";
-    target.textContent = "Movement layer: schematic preview until STL scans and reviewed per-tooth meshes are available.";
+    target.textContent = "Movement layer: schematic preview until scans and reviewed per-tooth meshes are available.";
   }
 }
 
@@ -674,20 +673,11 @@ export function renderVersions() {
     : "<li class=\"chat-empty\">No saved versions yet.</li>";
 }
 
-let evaluateTimer = null;
-// Monotonic token so a slow in-flight request can never overwrite a newer one.
-const evalLatest = createLatest();
-
-function scheduleEvaluate() {
-  if (evaluateTimer) clearTimeout(evaluateTimer);
-  evaluateTimer = setTimeout(runEvaluate, 150);
-}
-
-async function runEvaluate() {
-  const token = evalLatest.next();
-  try {
-    const result = await evaluatePlan(planJson());
-    if (!evalLatest.isCurrent(token)) return; // a newer evaluation superseded this one
+const scheduleEvaluate = createEvaluationRunner({
+  getPayload: planJson,
+  evaluate: evaluatePlan,
+  onPending: () => renderTrustStatus(el("trustStatusStrip"), state, renderAll, true),
+  onResult(result) {
     state.engineError = null;
     if (result.ok === false) {
       state.lastEval = null;
@@ -696,13 +686,15 @@ async function runEvaluate() {
       state.lastEval = result;
       renderEvaluation(result);
     }
-  } catch (error) {
-    if (!evalLatest.isCurrent(token)) return;
+    renderTrustStatus(el("trustStatusStrip"), state, renderAll);
+  },
+  onError(error) {
     state.lastEval = null;
     state.engineError = error.message;
     renderEngineOffline();
-  }
-}
+    renderTrustStatus(el("trustStatusStrip"), state, renderAll);
+  },
+});
 
 export function renderAvailability() {
   el("availabilityGrid").innerHTML = Object.entries(availabilityLabels).map(([key, label]) => `
@@ -739,14 +731,15 @@ function renderSteps() {
 }
 
 function renderUploadFileList() {
+  const statusNote = state.uploadStorageStatus ? `<p>${escapeHtml(state.uploadStorageStatus)}</p>` : "";
   let markup;
   if (state.files.length) {
     markup = `
       <div class="upload-file-heading">
-        <strong>${state.files.length === 1 ? "Uploaded STL" : "Uploaded STLs"}</strong>
+        <strong>${state.files.length === 1 ? "Uploaded scan" : "Uploaded scans"}</strong>
         <button data-clear-uploads="true" type="button">Clear All</button>
       </div>
-      ${state.uploadStorageStatus ? `<p>${escapeHtml(state.uploadStorageStatus)}</p>` : ""}
+      ${statusNote}
       <ul>
         ${state.files.map((file, index) => `
           <li>
@@ -758,7 +751,7 @@ function renderUploadFileList() {
       </ul>
     `;
   } else if (state.scanSources.length) {
-    // The Sample Test Case loads its two STL scans as already-present records, so
+    // The Sample Test Case loads its two scans as already-present records, so
     // step 1 shows them as "loaded" (read-only - they are not user uploads).
     markup = `
       <div class="upload-file-heading">
@@ -774,7 +767,7 @@ function renderUploadFileList() {
       </ul>
     `;
   } else {
-    markup = "<p>No STL files are stored yet. Select upper, lower, or both arches.</p>";
+    markup = `${statusNote}<p>No scan files are stored yet. Select upper, lower, or both arches.</p>`;
   }
   el("uploadFileList").innerHTML = markup;
   el("simpleUploadFileList").innerHTML = markup;
@@ -1238,7 +1231,7 @@ function renderMovementReadiness() {
   const renderMeshes = state.lastEval?.render_meshes?.filter((item) => item.source === "model-generated").length || 0;
   const printReady = Boolean(state.lastEval?.print_export?.ready);
   const items = [
-    ["STL scan registered", scanReady],
+    ["Scan registered", scanReady],
     ["Units confirmed in mm", unitsReady],
     ["Reviewed per-tooth meshes applied", appliedMeshes > 0],
     ["3D movement uses real tooth fragments", renderMeshes > 0],

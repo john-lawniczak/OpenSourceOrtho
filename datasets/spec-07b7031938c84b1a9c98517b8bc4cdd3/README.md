@@ -1,0 +1,115 @@
+# USER_ONE
+
+Published longitudinal research case used by the browser and mobile samples.
+
+- **Pseudonym:** `USER_ONE` (a display label, not a real-identity lookup)
+- **UUID:** `07b70319-38c8-4b1a-9c98-517b8bc4cdd3`
+- **Stable specimen ID:** `spec-07b7031938c84b1a9c98517b8bc4cdd3`
+- **Visits:** baseline and first progress scan, confirmed as week 7
+- **Publication scope:** [consent.json](consent.json)
+- **Browse all cases:** [dataset catalog](../README.md)
+
+The UUID is the existing case identity, preserved across all records. The
+pseudonym does not replace it or identify a different participant. Original
+scan bytes are unchanged. Metadata references are relative to this case root,
+even when the referring JSON lives in `media/`, `derived/`, or `fixtures/`.
+
+
+The case now includes a **first progress scan pair, reported as week 7**, under
+the same specimen ID. See [the baseline/progress comparison and full case
+timeline](outcome-notes.md), [machine-readable events](longitudinal-record.json),
+and [redacted progress source metadata](progress-01-source-metadata.json).
+The contributor confirms week 7 and reports five-day tray changes. The source
+scanning date is September 17, 2026, 30 days after the recorded treatment start;
+the progress label does not mean seven elapsed calendar weeks. The two new STLs
+and six source-rendered JPEG views retain their original bytes with neutral
+filenames. Progress scale and cross-time registration are unverified.
+
+The user confirmed that the upper/lower STL pair was acquired on **June 5, 2026**,
+**before treatment**, and that the companion CBCT is from the **same person**.
+The manifest labels both STLs as `initial`; `source-export-metadata.json` records
+the user-confirmed acquisition date and pretreatment status. This acquisition
+date is distinct from the manifest creation timestamp. The exact STL and CBCT dates are
+retained at the user's explicit request; it is an exception to the usual
+date-redaction guidance for contributed records.
+
+The user confirmed that the CBCT was acquired on **June 18, 2026**, **13 days
+after the STL pair**. `cbct-metadata.redacted.json` records this user-confirmed
+date; it has not been independently verified against DICOM tags. Treatment began
+on **August 18, 2026**, so both scan acquisitions precede treatment. The user
+confirmed that **no IPR had occurred as of June 18**; later IPR status is unknown.
+Same-person provenance does not
+establish same-session acquisition or a validated STL-to-CBCT registration.
+
+The user reports a **38-tray plan**, **tray 5 at the time of the report**, and
+attachments present. **The user confirms that actual attachment locations match
+the reference video.** This is user-confirmed placement correspondence; the
+simulation alone does not independently verify physical placement. The historical
+tray-5 observation date and attachment placement date are not yet recorded.
+For the progress update, the contributor reports five-day tray changes; the date
+that schedule began is unknown.
+`derived/attachment-transcription.json` records a partial model visual transcription of
+the red attachment markers using FDI numbering: **11, 12, 33, 34, 43, 44**.
+It includes tooth names, Universal numbering equivalents, video timestamps, and
+pixel locations. This assumes a standard non-mirrored frontal view. Additional
+upper posterior markers cannot be assigned reliably from this view and are
+recorded as unresolved regions; the six teeth are not a complete inventory.
+The model finding passed `lint_finding()` before export; this checks finding
+language, not anatomical correctness. Independent tooth-number review remains
+outstanding. Your confirmation that placement matches the video is retained
+separately from the model's numeric transcription. Tray 5 is a
+historical user report, not live status. `treatment-context.json` preserves these
+facts and unknowns; the manifest includes the confirmed plan stage count.
+
+Files:
+- `progress-01-upper.stl` / `progress-01-lower.stl`: first progress scan pair
+- `media/progress-01-*.jpg`: gallery and five individual source-rendered scan views
+- `progress-01-source-metadata.json`: redacted progress provenance and hashes
+- `longitudinal-record.json`: dated events, reported timing, and unresolved gaps
+- `outcome-notes.md`: readable history, comparison, and reuse instructions
+- `derived/progress-01-comparison.json` / `derived/progress-01-comparison.png`: reproducible
+  geometry inventory and independent baseline/progress views
+- `derived/attachment-transcription.json`: partial tooth-number transcription with
+  frame evidence, a linted model finding, and unresolved posterior regions
+- `treatment-context.json`: user-reported treatment dates, plan count, progress,
+  IPR history, and attachment context; exact dates retained at the user's request
+- `initial-upper.stl`: maxillary occlusion shell
+- `initial-lower.stl`: mandibular occlusion shell
+- `media/reference-media.json`: provenance metadata for a reference video whose
+  bytes are excluded from this public snapshot
+- `source-export-metadata.json`: redacted source-export metadata showing that
+  the sample STLs correspond to the iTero `shell_occlusion` upper/lower jaw
+  surfaces, with no separate bite STL present in the local export
+- `cbct-metadata.redacted.json`: redacted structural CBCT companion metadata for
+  the same sample case; raw DICOM bytes are intentionally not tracked
+- `fixtures/root-bone-fixture.json`: safe derived anterior root/axis landmarks, fixture
+  STL-to-CBCT registrations, and an alveolar-bounds record used to exercise the
+  root/bone-aware sample workflow without committing raw DICOM bytes
+
+These STLs are whole-arch scan shells, not segmented per-tooth meshes. They are
+the exact models used by the in-app **Sample Test Case** (and named to match it).
+The UI uses them to verify exact scan rendering and camera/material behavior. The
+Sample Test Case pairs these scans with a simulated educational stage sequence;
+it does not represent a clinical prediction, diagnosis, or treatment plan.
+
+Local CBCT/DICOM for this same sample case may be attached on development
+machines via the ignored `.local/local-cbct-record.json` sidecar and `.local/records/`
+symlink. The tracked `cbct-metadata.redacted.json` file records the current
+gold-standard structural facts: the primary volume is a contiguous 824-slice CT
+stack at 900x900 with 0.2 mm in-plane spacing and 0.2 mm slice thickness, plus
+one secondary CT object that is not part of the primary stack. Keep the raw DICOM
+series outside git unless it has been explicitly de-identified and redistribution
+rights are confirmed; this repository's plan fixtures should carry only redacted
+metadata or reviewed derived anatomy.
+
+The root/bone fixture is a deterministic engineering fixture. It is accepted by
+the app so the Sample Test Case can demonstrate the full registration,
+anatomical-frame, root/bone-review, and CBCT-boundary-prior pipeline. It is not a
+clinical segmentation, diagnosis, clearance, or treatment approval.
+
+The reference video is omitted from this public snapshot because redistribution
+rights remain unverified. Its descriptive metadata and explicitly unreviewed
+attachment transcription retain their provenance references, not downloadable
+video bytes. Earlier public Git history is unchanged. The reference is not an
+outcome record, treatment approval, or evidence that the educational stage
+sequence is clinically correct.

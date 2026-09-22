@@ -26,6 +26,23 @@ ingestion, volume viewing, STL-to-CBCT registration, reviewed anatomy, and
 quality metrics. A phone may eventually help display or annotate those records,
 but it should not silently claim to perform the full root/bone-aware workflow.
 
+## Real scan viewing
+
+The Teeth tab defaults to USER_ONE's observed baseline and week-7 scan history.
+Both apps render every STL triangle (SceneKit on iOS, OpenGL ES on Android), with
+both arches together, a continuous baseline/week-7 reveal slider, rotation,
+zoom, and reset. The slider reveals recorded surfaces without morphing vertices. Sample viewing stays
+separate from the uploaded case and plan generation. No synthetic teeth or
+inferred intermediate stages are shown. Full originals are copied from the UUID
+dataset at build time, with SHA-256 verification at load; they are not duplicated
+in the source tree. The top-bar history remains a timeline with fixed PNG views.
+
+The views fit each arch independently and do not measure tooth movement. The
+progress scan's units and registration remain unverified. See
+[mobile build details](../mobile/README.md),
+[format support and limits](../mobile/SCAN_IMPORT.md), and the
+[post-implementation audit](MOBILE_AUDIT_2026-09-22.md).
+
 ## Browser Handoff
 
 The browser/Python workspace remains the source of truth for high-fidelity work:
@@ -47,12 +64,13 @@ handoff, but edits still happen in the browser/full engine.
 Both native apps share the same policy:
 
 - `SelectedScan` supports STL intake for mobile generation.
-- The upload screens accept STL, CBCT/DICOM attachments, photo-library images,
+- The upload screens preview STL, OBJ, PLY, ASC, XYZ, and PTS locally and accept
+  CBCT/DICOM attachments, photo-library images,
   Files/iCloud/Drive-style photo providers, and browser review JSON.
 - `OnDevicePlanSynthesizer` creates a limited response only for STL-only inputs.
 - `StoredPlanReview` holds browser-generated JSON without interpreting or
   mutating it.
-- The primary review preview renders selected STL geometry locally when file
+- The primary review preview renders selected scan geometry locally when file
   bytes/URI access is available; CBCT/DICOM is attached but still requires the
   browser/full engine for volume rendering.
 - The Review screen shows mobile warnings and stored browser reviews.

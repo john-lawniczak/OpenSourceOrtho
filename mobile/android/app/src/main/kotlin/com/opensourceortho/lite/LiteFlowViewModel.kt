@@ -36,6 +36,10 @@ class LiteFlowViewModel(
     val state: StateFlow<LiteUiState> = _state.asStateFlow()
 
     fun addScan(scan: SelectedScan) {
+        if (scan.modality in listOf("scan", "stl") && !ScanImport.supports(scan.fileName)) {
+            reportImportError("Unsupported scan. Export ${ScanImport.formats} from your scanner.")
+            return
+        }
         _state.update { it.copy(scans = it.scans + scan, step = LiteStep.TEETH_AND_TIME) }
     }
 
@@ -43,14 +47,14 @@ class LiteFlowViewModel(
         _state.update { it.copy(step = step) }
     }
 
-    fun addDevSample(scans: List<SelectedScan>) {
-        _state.update { it.copy(scans = it.scans + scans, step = LiteStep.TEETH_AND_TIME) }
-    }
-
     /** Posts selected records to the engine and advances to Review. */
     fun generate() {
         val scans = _state.value.scans
         if (scans.isEmpty()) return
+        if (scans.any { it.isSurfaceScan && !it.isStl }) {
+            reportImportError("Use the browser/full engine for review of other scan formats.")
+            return
+        }
         _state.update { it.copy(isGenerating = true, errorMessage = null) }
         viewModelScope.launch {
             try {

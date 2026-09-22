@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any
 
 from orthoplan.arch_contract import infer_arch_from_name, normalize_arch_label
-from orthoplan.io.stl_import import read_stl_geometry
-from orthoplan.mesh_workspace import resolve_mesh_path
+from orthoplan.io.mesh_import import read_mesh_geometry
+from orthoplan.io.scan_reference import resolve_scan_path as _resolve_scan_path
 from orthoplan.model.assets import ArchName, MeshAsset
 from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import SegmentedToothMesh
@@ -39,27 +39,6 @@ from orthoplan.segmentation.quality import (
     SegmentationQualityReport,
     evaluate_segmentation_quality,
 )
-
-
-def _resolve_scan_path(
-    reference: object, *, ui_dir: Path, workspace: Path | None
-) -> Path | None:
-    if not isinstance(reference, str) or not reference.strip():
-        return None
-    normalized = reference.strip()
-    asset_id = normalized.removeprefix("/api/mesh/")
-    asset_path = resolve_mesh_path(asset_id, workspace=workspace)
-    if asset_path is not None:
-        return asset_path
-    relative = normalized.lstrip("./").lstrip("/")
-    candidate = (ui_dir / relative).resolve()
-    if (
-        candidate.is_relative_to(ui_dir)
-        and candidate.is_file()
-        and candidate.suffix.lower() == ".stl"
-    ):
-        return candidate
-    return None
 
 
 def _scan_arch(scan: dict[str, Any], path: Path) -> ArchName | None:
@@ -126,7 +105,7 @@ def _segment_one_scan(
     if arch is None:
         return [], [], [], f"could not determine arch for scan: {reference!r}", None, [], None, None
 
-    _asset, vertices = read_stl_geometry(path)
+    _asset, vertices = read_mesh_geometry(path)
     # User-marked gaps anchor the FDI labels for this arch; None lets the segmenter
     # detect the tooth count itself.
     tooth_values = tooth_values_for_arch(arch, missing_teeth)

@@ -2,19 +2,20 @@ package com.opensourceortho.lite
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,10 +49,17 @@ class MainActivity : ComponentActivity() {
 fun LiteApp(model: LiteFlowViewModel = viewModel()) {
     val state by model.state.collectAsState()
     var isShowingSettings by remember { mutableStateOf(false) }
+    var isShowingSampleHistory by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = isShowingSampleHistory) { isShowingSampleHistory = false }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("OpenSource Ortho") },
+                title = { Text(if (isShowingSampleHistory) "Sample history" else "OpenSource Ortho") },
+                actions = {
+                    TextButton(onClick = { isShowingSampleHistory = !isShowingSampleHistory }) {
+                        Text(if (isShowingSampleHistory) "Done" else "Sample history")
+                    }
+                },
             )
         },
         bottomBar = {
@@ -59,17 +67,20 @@ fun LiteApp(model: LiteFlowViewModel = viewModel()) {
                 selectedStep = state.step,
                 isShowingSettings = isShowingSettings,
                 onSelectStep = { step ->
+                    isShowingSampleHistory = false
                     isShowingSettings = false
                     model.navigate(step)
                 },
-                onSelectSettings = { isShowingSettings = true },
+                onSelectSettings = { isShowingSampleHistory = false; isShowingSettings = true },
             )
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             SafetyBanner()
             HorizontalDivider()
-            if (isShowingSettings) {
+            if (isShowingSampleHistory) {
+                SampleHistoryScreen()
+            } else if (isShowingSettings) {
                 SettingsScreen()
             } else {
                 when (state.step) {
@@ -137,10 +148,10 @@ fun SafetyBanner() {
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
     )
     androidx.compose.foundation.layout.Row(modifier = Modifier.padding(horizontal = 4.dp)) {
-        IconButton(onClick = { collapsed = !collapsed }) {
+        TextButton(onClick = { collapsed = !collapsed }) {
             Text(if (collapsed) "More" else "Less")
         }
-        IconButton(onClick = { dismissed = true }) {
+        TextButton(onClick = { dismissed = true }) {
             Text("Dismiss")
         }
     }

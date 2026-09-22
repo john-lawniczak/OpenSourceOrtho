@@ -6,7 +6,6 @@ import math
 from pathlib import Path
 
 from orthoplan.evaluation.finding import FindingProvenance, lint_finding
-from orthoplan.evaluation.finding import Finding
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.segmentation.auto import build_advisory_findings, load_local_segmenter

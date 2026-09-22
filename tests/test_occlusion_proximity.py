@@ -7,7 +7,8 @@ the viewer consumes - including that it never raises and needs both arches.
 
 from __future__ import annotations
 
-from pathlib import Path
+from orthoplan.datasets import SAMPLE_CASE_DIR, SAMPLE_URL_ROOT
+
 
 import pytest
 
@@ -20,7 +21,7 @@ from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.occlusion.registration import register_bite
 from orthoplan.validation.occlusion_truth import build_occluding_arches
 
-_SCAN_DIR = Path(__file__).resolve().parents[1] / "ui" / "example-scans" / "canonical-orthocad-001"
+_SCAN_DIR = SAMPLE_CASE_DIR
 
 
 def _classify(gap_mm: float):
@@ -77,16 +78,16 @@ def test_payload_never_raises_on_bad_input() -> None:
 
 
 def test_payload_on_bundled_scans_is_as_scanned() -> None:
-    upper = _SCAN_DIR / "sample-test-case-upper.stl"
-    lower = _SCAN_DIR / "sample-test-case-lower.stl"
+    upper = _SCAN_DIR / "initial-upper.stl"
+    lower = _SCAN_DIR / "initial-lower.stl"
     if not (upper.is_file() and lower.is_file()):
         pytest.skip("bundled scans not present")
 
     result = proximity_payload(
         {
             "scans": [
-                {"reference": f"example-scans/canonical-orthocad-001/{upper.name}", "arch": "maxillary"},
-                {"reference": f"example-scans/canonical-orthocad-001/{lower.name}", "arch": "mandibular"},
+                {"reference": f"{SAMPLE_URL_ROOT}/{upper.name}", "arch": "maxillary"},
+                {"reference": f"{SAMPLE_URL_ROOT}/{lower.name}", "arch": "mandibular"},
             ],
             "units_confirmed": True,
         },

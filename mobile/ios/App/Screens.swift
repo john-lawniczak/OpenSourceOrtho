@@ -1,10 +1,8 @@
 import SwiftUI
-import SceneKit
 import UIKit
 import UniformTypeIdentifiers
 import PhotosUI
 import OpenSourceOrthoLiteKit
-
 // Lite-flow screens. These are scaffolding: they wire the flow and render engine
 // output. Mobile can synthesize a limited STL-only review if the engine is
 // offline; CBCT/DICOM and mesh-backed edits remain browser/full-engine work.
@@ -23,7 +21,7 @@ struct UploadView: View {
 
         var title: String {
             switch self {
-            case .stl: return "STL scans"
+            case .stl: return "3D scans"
             case .cbct: return "CBCT / DICOM"
             case .photoFiles: return "Photos"
             case .browserReview: return "Browser review"
@@ -41,7 +39,7 @@ struct UploadView: View {
 
         var actionTitle: String {
             switch self {
-            case .stl: return "Choose STL scans"
+            case .stl: return "Choose 3D scans"
             case .cbct: return "Choose CBCT / DICOM"
             case .photoFiles: return "Choose photos"
             case .browserReview: return "Import review JSON"
@@ -59,7 +57,7 @@ struct UploadView: View {
 
         var modality: String {
             switch self {
-            case .stl: return "stl"
+            case .stl: return "scan"
             case .cbct: return "cbct"
             case .photoFiles: return "photo"
             case .browserReview: return "browser-review"
@@ -69,7 +67,7 @@ struct UploadView: View {
         var allowedTypes: [UTType] {
             switch self {
             case .stl:
-                return [UTType(filenameExtension: "stl") ?? .data]
+                return ScanImport.extensions.compactMap { UTType(filenameExtension: $0) } + [.data]
             case .cbct:
                 var types: [UTType] = [.zip, .data]
                 if let dicom = UTType(filenameExtension: "dcm") {
@@ -91,7 +89,7 @@ struct UploadView: View {
                 .foregroundStyle(.tint)
             Text("Upload patient files")
                 .font(.title3.bold())
-            Text("Mobile renders selected STL scans for review. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.")
+            Text("Open STL, OBJ, PLY, ASC, XYZ, or PTS scanner exports on-device. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -136,6 +134,7 @@ struct UploadView: View {
             .padding(12)
             .background(.thinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            if let error = model.errorMessage { Text(error).font(.caption).foregroundStyle(.red) }
             if !model.storedReviews.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Stored browser reviews")
@@ -180,12 +179,12 @@ struct UploadView: View {
             allowedContentTypes: importer?.allowedTypes ?? [.data],
             allowsMultipleSelection: true
         ) { result in
-            guard let importer else { return }
+            let chosenImport = importer ?? selectedImport
             if case let .success(urls) = result {
                 for url in urls {
-                    switch importer {
+                    switch chosenImport {
                     case .stl, .cbct, .photoFiles:
-                        model.addFile(url: url, modality: importer.modality)
+                        model.addFile(url: url, modality: chosenImport.modality)
                     case .browserReview:
                         model.importBrowserReview(url: url)
                     }
@@ -224,103 +223,6 @@ private struct ImportOptionCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// Step 2: staged teeth preview and timeline controls.
-struct TeethAndTimeView: View {
-    @EnvironmentObject private var model: LiteFlowViewModel
-    @State private var stage = 0.0
-    @State private var showDemoSample = false
-    @State private var previewArch: DentalPreviewArch = .both
-    @State private var zoom = 1.0
-
-    private var hasSelectedStl: Bool {
-        model.scans.contains { $0.modality.lowercased() == "stl" }
-    }
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("Teeth + time")
-                .font(.title3.bold())
-            DentalScenePreview(
-                stage: stage,
-                scans: model.previewScans,
-                previewArch: previewArch,
-                zoom: zoom,
-                hasSelectedStl: hasSelectedStl
-            )
-                .frame(height: 340)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            if hasSelectedStl {
-                Picker("Arch", selection: $previewArch) {
-                    ForEach(DentalPreviewArch.allCases, id: \.self) { arch in
-                        Text(arch.title).tag(arch)
-                    }
-                }
-                .pickerStyle(.segmented)
-                HStack(spacing: 12) {
-                    Text("Zoom")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Slider(value: $zoom, in: 0.75...2.4, step: 0.05)
-                    Text(String(format: "%.1fx", zoom))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .frame(width: 42, alignment: .trailing)
-                }
-            }
-            if !hasSelectedStl {
-                VStack(spacing: 8) {
-                    Button {
-                        withAnimation(.snappy) {
-                            showDemoSample.toggle()
-                        }
-                    } label: {
-                        Label("Demo sample", systemImage: showDemoSample ? "chevron.up.circle" : "chevron.down.circle")
-                    }
-                    .buttonStyle(.bordered)
-                    if showDemoSample {
-                        Button {
-                            model.addDevSampleSTL()
-                            withAnimation(.snappy) {
-                                showDemoSample = false
-                            }
-                        } label: {
-                            Label("Use full-arch dev sample", systemImage: "cube.transparent")
-                        }
-                        .buttonStyle(.borderedProminent)
-                        Text("Loads bundled upper and lower STL scans for a full mobile rendering preview.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            }
-            Slider(value: $stage, in: 0...12, step: 1)
-            Text("Stage \(Int(stage)) of 12")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text("\(model.scans.count) file(s) selected")
-                .font(.headline)
-            Text("STL scans render from the selected file when available. CBCT/DICOM is attached for engine/browser review; native volume rendering is not in lite yet.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            if let error = model.errorMessage {
-                Text(error).font(.footnote).foregroundStyle(.red).multilineTextAlignment(.center)
-            }
-            Button {
-                Task { await model.generate() }
-            } label: {
-                if model.isGenerating { ProgressView() } else { Text("Generate for review") }
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(model.isGenerating)
-        }
-        .padding()
-        .frame(maxHeight: .infinity)
     }
 }
 
@@ -501,357 +403,6 @@ struct PrintAndSendView: View {
     }
 }
 
-struct DentalScenePreview: View {
-    var stage: Double
-    var scans: [PreviewScan]
-    var previewArch: DentalPreviewArch = .both
-    var zoom: Double = 1
-    var hasSelectedStl: Bool = false
-
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            SceneView(
-                scene: DentalPreviewScene.make(stage: stage, scans: scans, previewArch: previewArch, zoom: zoom),
-                options: [.allowsCameraControl, .autoenablesDefaultLighting]
-            )
-            Text(previewCaption)
-                .font(.caption)
-                .padding(8)
-                .background(.thinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(10)
-        }
-    }
-
-    private var previewCaption: String {
-        if scans.contains(where: { $0.modality.lowercased() == "stl" }) {
-            return "Rendering selected STL geometry"
-        }
-        if hasSelectedStl {
-            return "Showing sample teeth preview"
-        }
-        if scans.contains(where: { $0.modality.lowercased() == "cbct" }) {
-            return "CBCT attached; open browser/full engine for volume rendering"
-        }
-        return "Add an STL scan to render patient geometry"
-    }
-}
-
-enum DentalPreviewArch: CaseIterable {
-    case both
-    case upper
-    case lower
-
-    var title: String {
-        switch self {
-        case .both: return "Both"
-        case .upper: return "Upper"
-        case .lower: return "Lower"
-        }
-    }
-
-    func includes(_ scan: PreviewScan) -> Bool {
-        guard scan.modality.lowercased() == "stl" else { return false }
-        let name = scan.fileName.lowercased()
-        switch self {
-        case .both:
-            return true
-        case .upper:
-            return name.contains("upper") || name.contains("maxillary")
-        case .lower:
-            return name.contains("lower") || name.contains("mandibular")
-        }
-    }
-}
-
-private enum DentalPreviewScene {
-    static func make(stage: Double, scans: [PreviewScan], previewArch: DentalPreviewArch, zoom: Double) -> SCNScene {
-        let scene = SCNScene()
-        scene.background.contents = UIColor.systemBackground
-
-        let camera = SCNCamera()
-        camera.fieldOfView = 36
-        let cameraNode = SCNNode()
-        cameraNode.camera = camera
-        cameraNode.position = SCNVector3(0, 0, Float(7.2 / Swift.max(0.75, zoom)))
-        scene.rootNode.addChildNode(cameraNode)
-
-        let ambient = SCNLight()
-        ambient.type = .ambient
-        ambient.intensity = 560
-        let ambientNode = SCNNode()
-        ambientNode.light = ambient
-        scene.rootNode.addChildNode(ambientNode)
-
-        let light = SCNLight()
-        light.type = .directional
-        light.intensity = 1_350
-        let lightNode = SCNNode()
-        lightNode.light = light
-        lightNode.eulerAngles = SCNVector3(-0.6, 0.25, 0)
-        lightNode.position = SCNVector3(0, 4, 6)
-        scene.rootNode.addChildNode(lightNode)
-
-        let selectedScans = selectedScans(from: scans, previewArch: previewArch)
-        let stlNodes = selectedScans.compactMap(STLSceneMesh.node)
-        if stlNodes.isEmpty {
-            addSampleDentalCast(to: scene, stage: stage)
-        } else {
-            let parent = SCNNode()
-            for (index, node) in stlNodes.enumerated() {
-                node.position.y = Float(index) * -1.15 + (stlNodes.count == 1 ? 0 : 0.55)
-                parent.addChildNode(node)
-            }
-            centerAndScale(parent)
-            scene.rootNode.addChildNode(parent)
-        }
-        return scene
-    }
-
-    private static func selectedScans(from scans: [PreviewScan], previewArch: DentalPreviewArch) -> [PreviewScan] {
-        let stlScans = Array(scans.filter { $0.modality.lowercased() == "stl" }.prefix(2))
-        guard previewArch != .both else { return stlScans }
-
-        let namedMatches = stlScans.filter(previewArch.includes)
-        if !namedMatches.isEmpty {
-            return namedMatches
-        }
-        guard stlScans.count > 1 else { return stlScans }
-        return previewArch == .upper ? [stlScans[0]] : [stlScans[1]]
-    }
-
-    private static func centerAndScale(_ node: SCNNode) {
-        guard let bounds = recursiveBounds(for: node) else { return }
-        let min = bounds.min
-        let maxPoint = bounds.max
-        let center = SCNVector3((min.x + maxPoint.x) / 2, (min.y + maxPoint.y) / 2, (min.z + maxPoint.z) / 2)
-        let span = Swift.max(maxPoint.x - min.x, Swift.max(maxPoint.y - min.y, maxPoint.z - min.z))
-        let scale = span > 0 ? 6.2 / span : 1
-        for child in node.childNodes {
-            child.position = SCNVector3(
-                child.position.x - center.x,
-                child.position.y - center.y,
-                child.position.z - center.z
-            )
-        }
-        node.position = SCNVector3Zero
-        node.scale = SCNVector3(scale, scale, scale)
-        node.eulerAngles.x = -.pi / 2
-    }
-
-    private static func recursiveBounds(for node: SCNNode) -> (min: SCNVector3, max: SCNVector3)? {
-        var result: (min: SCNVector3, max: SCNVector3)?
-        for child in node.childNodes {
-            let bounds = child.boundingBox
-            let corners = [
-                SCNVector3(bounds.min.x, bounds.min.y, bounds.min.z),
-                SCNVector3(bounds.min.x, bounds.min.y, bounds.max.z),
-                SCNVector3(bounds.min.x, bounds.max.y, bounds.min.z),
-                SCNVector3(bounds.min.x, bounds.max.y, bounds.max.z),
-                SCNVector3(bounds.max.x, bounds.min.y, bounds.min.z),
-                SCNVector3(bounds.max.x, bounds.min.y, bounds.max.z),
-                SCNVector3(bounds.max.x, bounds.max.y, bounds.min.z),
-                SCNVector3(bounds.max.x, bounds.max.y, bounds.max.z),
-            ]
-            for corner in corners {
-                let converted = child.convertPosition(corner, to: node)
-                if let current = result {
-                    result = (
-                        min: SCNVector3(Swift.min(current.min.x, converted.x), Swift.min(current.min.y, converted.y), Swift.min(current.min.z, converted.z)),
-                        max: SCNVector3(Swift.max(current.max.x, converted.x), Swift.max(current.max.y, converted.y), Swift.max(current.max.z, converted.z))
-                    )
-                } else {
-                    result = (converted, converted)
-                }
-            }
-        }
-        return result
-    }
-
-    private static func addSampleDentalCast(to scene: SCNScene, stage: Double) {
-        let parent = SCNNode()
-        parent.eulerAngles.x = -0.08
-        parent.eulerAngles.y = 0.12
-        scene.rootNode.addChildNode(parent)
-
-        addScanBase(to: parent, y: 0.76, isUpper: true)
-        addScanBase(to: parent, y: -0.72, isUpper: false)
-        addArch(to: parent, y: 0.28, stage: stage, isUpper: true)
-        addArch(to: parent, y: -0.28, stage: stage, isUpper: false)
-
-        let grid = SCNPlane(width: 7.2, height: 3.2)
-        grid.firstMaterial?.diffuse.contents = UIColor.systemGray5
-        let gridNode = SCNNode(geometry: grid)
-        gridNode.position = SCNVector3(0, -1.72, -0.92)
-        gridNode.eulerAngles.x = -.pi / 2
-        scene.rootNode.addChildNode(gridNode)
-    }
-
-    private static func addScanBase(to parent: SCNNode, y: Float, isUpper: Bool) {
-        let base = SCNBox(width: 5.4, height: 0.52, length: 1.2, chamferRadius: 0.18)
-        base.firstMaterial?.diffuse.contents = UIColor(red: 0.77, green: 0.75, blue: 0.66, alpha: 1)
-        base.firstMaterial?.specular.contents = UIColor.white
-        let baseNode = SCNNode(geometry: base)
-        baseNode.position = SCNVector3(0, y, -0.32)
-        baseNode.scale.y = isUpper ? 0.72 : 0.64
-        parent.addChildNode(baseNode)
-
-        for index in 0..<11 {
-            let centered = Float(index) - 5
-            let ridge = SCNSphere(radius: 0.16 + CGFloat(abs(centered)) * 0.006)
-            ridge.segmentCount = 12
-            ridge.firstMaterial?.diffuse.contents = UIColor(red: 0.82, green: 0.80, blue: 0.72, alpha: 1)
-            let ridgeNode = SCNNode(geometry: ridge)
-            ridgeNode.scale = SCNVector3(1.8, isUpper ? 0.54 : 0.48, 0.34)
-            ridgeNode.position = SCNVector3(centered * 0.5, y + (isUpper ? -0.08 : 0.08), -0.14 - abs(centered) * 0.012)
-            parent.addChildNode(ridgeNode)
-        }
-    }
-
-    private static func addArch(to parent: SCNNode, y: Float, stage: Double, isUpper: Bool) {
-        let progress = Float(stage / 12.0)
-        for index in 0..<16 {
-            let centered = Float(index) - 7.5
-            let normalized = abs(centered) / 6.5
-            let crown = sampleToothGeometry(index: index)
-            crown.firstMaterial?.diffuse.contents = UIColor(red: 0.91, green: 0.89, blue: 0.80, alpha: 1)
-            crown.firstMaterial?.specular.contents = UIColor.white
-
-            let node = SCNNode(geometry: crown)
-            let archDepth = (1 - min(normalized, 1) * min(normalized, 1)) * 0.36
-            let lateralExpansion = (centered >= 0 ? 1 : -1) * progress * 0.14
-            node.position = SCNVector3(
-                centered * 0.3 + lateralExpansion,
-                y + archDepth * (isUpper ? 1 : -1),
-                0.14 - normalized * 0.08
-            )
-            node.eulerAngles.z = -centered * 0.035
-            node.eulerAngles.x = isUpper ? 0.02 : -0.02
-            node.scale = SCNVector3(1.0 + normalized * 0.22, isUpper ? 1.04 : 0.98, 0.82 + normalized * 0.14)
-            parent.addChildNode(node)
-        }
-    }
-
-    private static func sampleToothGeometry(index: Int) -> SCNGeometry {
-        let distanceFromMidline = abs(index - 7)
-        if distanceFromMidline <= 1 {
-            return SCNBox(width: 0.34, height: 0.74, length: 0.34, chamferRadius: 0.1)
-        }
-        if distanceFromMidline == 2 {
-            return SCNPyramid(width: 0.4, height: 0.78, length: 0.4)
-        }
-        if distanceFromMidline <= 4 {
-            return SCNBox(width: 0.42, height: 0.58, length: 0.44, chamferRadius: 0.12)
-        }
-        return SCNBox(width: 0.52, height: 0.48, length: 0.52, chamferRadius: 0.13)
-    }
-}
-
-private enum STLSceneMesh {
-    private static let trianglePreviewLimit = 120_000
-    private static var geometryCache: [String: SCNGeometry] = [:]
-    private static let cacheLock = NSLock()
-
-    static func node(from scan: PreviewScan) -> SCNNode? {
-        let cacheKey = "\(scan.fileName):\(scan.data.count)"
-        if let cached = cachedGeometry(for: cacheKey) {
-            return SCNNode(geometry: cached)
-        }
-
-        let triangles = parseTriangles(from: scan.data)
-        guard !triangles.isEmpty else { return nil }
-        let vertices = triangles.flatMap { $0 }
-        let source = SCNGeometrySource(vertices: vertices)
-        let indices = Array(Int32(0)..<Int32(vertices.count))
-        let indexData = indices.withUnsafeBufferPointer { Data(buffer: $0) }
-        let element = SCNGeometryElement(
-            data: indexData,
-            primitiveType: .triangles,
-            primitiveCount: vertices.count / 3,
-            bytesPerIndex: MemoryLayout<Int32>.size
-        )
-        let geometry = SCNGeometry(sources: [source], elements: [element])
-        let material = SCNMaterial()
-        material.diffuse.contents = UIColor(red: 0.99, green: 0.96, blue: 0.82, alpha: 1.0)
-        material.ambient.contents = UIColor(red: 0.62, green: 0.56, blue: 0.36, alpha: 1.0)
-        material.specular.contents = UIColor(white: 0.9, alpha: 1.0)
-        material.emission.contents = UIColor(red: 0.06, green: 0.05, blue: 0.02, alpha: 1.0)
-        material.shininess = 0.45
-        material.lightingModel = .blinn
-        material.isDoubleSided = true
-        geometry.materials = [material]
-        storeGeometry(geometry, for: cacheKey)
-        return SCNNode(geometry: geometry)
-    }
-
-    private static func cachedGeometry(for key: String) -> SCNGeometry? {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        return geometryCache[key]
-    }
-
-    private static func storeGeometry(_ geometry: SCNGeometry, for key: String) {
-        cacheLock.lock()
-        geometryCache[key] = geometry
-        cacheLock.unlock()
-    }
-
-    private static func parseTriangles(from data: Data) -> [[SCNVector3]] {
-        if let ascii = String(data: data.prefix(4 * 1024 * 1024), encoding: .utf8), ascii.contains("vertex") {
-            let vertices = ascii
-                .split(separator: "\n")
-                .compactMap { line -> SCNVector3? in
-                    let parts = line.trimmingCharacters(in: .whitespaces).split(separator: " ")
-                    guard parts.first == "vertex", parts.count >= 4,
-                          let x = Float(parts[1]), let y = Float(parts[2]), let z = Float(parts[3]) else {
-                        return nil
-                    }
-                    return SCNVector3(x, y, z)
-                }
-            return stride(from: 0, to: vertices.count - 2, by: 3).map {
-                [vertices[$0], vertices[$0 + 1], vertices[$0 + 2]]
-            }
-        }
-        guard data.count >= 84, let rawTriangleCount = littleEndianUInt32(in: data, at: 80) else { return [] }
-        let triangleCount = Int(rawTriangleCount)
-        var triangles: [[SCNVector3]] = []
-        triangles.reserveCapacity(min(triangleCount, trianglePreviewLimit))
-        let sampleStep = Swift.max(1, triangleCount / trianglePreviewLimit)
-        var triangleIndex = 0
-        while triangleIndex < triangleCount && triangles.count < trianglePreviewLimit {
-            var offset = 84 + triangleIndex * 50 + 12
-            guard offset + 36 <= data.count else { break }
-            var triangle: [SCNVector3] = []
-            for _ in 0..<3 {
-                guard let x = littleEndianFloat(in: data, at: offset),
-                      let y = littleEndianFloat(in: data, at: offset + 4),
-                      let z = littleEndianFloat(in: data, at: offset + 8) else {
-                    break
-                }
-                triangle.append(SCNVector3(x, y, z))
-                offset += 12
-            }
-            if triangle.count == 3 {
-                triangles.append(triangle)
-            }
-            triangleIndex += sampleStep
-        }
-        return triangles
-    }
-
-    private static func littleEndianFloat(in data: Data, at offset: Int) -> Float? {
-        littleEndianUInt32(in: data, at: offset).map { Float(bitPattern: $0) }
-    }
-
-    private static func littleEndianUInt32(in data: Data, at offset: Int) -> UInt32? {
-        guard offset >= 0, offset + 4 <= data.count else { return nil }
-        return UInt32(data[offset])
-            | UInt32(data[offset + 1]) << 8
-            | UInt32(data[offset + 2]) << 16
-            | UInt32(data[offset + 3]) << 24
-    }
-}
-
 struct GlossaryView: View {
     @State private var query = ""
     // BEGIN GENERATED GLOSSARY TERMS
@@ -875,7 +426,7 @@ struct GlossaryView: View {
         ("Intrusion", "Pushing a tooth into the bone."),
         ("IPR", "Interproximal reduction: planned enamel reduction between adjacent teeth to create space."),
         ("Malocclusion", "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion."),
-        ("Mesh / STL", "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed."),
+        ("Mesh / scan file", "A 3D model of your teeth from a scanner. STL, PLY, OBJ, 3MF, glTF/GLB and FBX describe triangle surfaces; ASC, XYZ and PTS hold bare points with no surface. Most carry no units - a few declare one, which still needs confirming - so units start unverified."),
         ("Molar", "A large back chewing tooth, positions 6 through 8."),
         ("Movement cap", "A per-stage review threshold for linear, vertical, angular, and rotation movement."),
         ("Occlusion", "How upper and lower teeth meet when biting."),

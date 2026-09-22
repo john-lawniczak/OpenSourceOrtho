@@ -111,9 +111,9 @@ Python data contract but does not run backend STL inspection itself.
 
 The local development server can also serve registered per-tooth STL meshes from a
 local mesh workspace. Plan JSON still does not contain mesh bytes; it contains
-`mesh_asset_id` links. `orthoplan register-mesh` copies an STL into a local
-workspace registry, and `/api/mesh/<mesh_asset_id>` serves only registered files
-under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
+`mesh_asset_id` links. `orthoplan register-mesh` imports a scan in any supported
+format into a local workspace registry (storing a canonical copy), and
+`/api/mesh/<mesh_asset_id>` serves only registered files under that workspace. The UI uses `render_meshes` links from `evaluate_plan()` to
 load real tooth meshes when available and falls back to schematic proxies when a
 mesh is missing.
 
@@ -170,23 +170,43 @@ mesh is missing.
 
 ## Safety-Review Tiers
 
-### Surface Review: STL Upload
+### Surface Review: Scan Upload
 
-The initial user upload can be an STL of an intraoral scan. STL contains surface
-geometry only. It does not contain roots, bone, periodontal status, occlusion
-dynamics, diagnosis, or CBCT anatomy.
+The initial user upload is an intraoral scan in whatever format the scanner
+exported. A surface scan contains surface geometry only. It does not contain
+roots, bone, periodontal status, occlusion dynamics, diagnosis, or CBCT
+anatomy.
 
 That means the UI must show these data gaps. A surface scan can support
 crown-surface visualization, staged crown movement, arch-form proposals,
 crown-collision checks, and manufacturing-oriented handoff. It cannot prove root
 position, bone safety, periodontal suitability, or readiness for physical use.
 
-STL upload is metadata-only in Phase 1 (`orthoplan/io/stl_import.py`):
+#### Scan intake (`orthoplan/io/`)
+
+Intake is format-neutral. `io/mesh_formats/` holds one reader per family - STL,
+PLY, OBJ, plain-text points (ASC/XYZ/PTS), 3MF, glTF/GLB, and FBX - each
+reducing its file to the same `MeshPayload` (points, triangle indices, format
+label, declared unit, notes). Dispatch is by extension with content sniffing as
+a fallback, so a renamed or mislabelled export still imports. `io/mesh_import.py`
+turns a payload into the redacted `MeshAsset`; `io/stl_import.py` remains as
+thin back-compatible aliases.
+
+Registration (`mesh_workspace.register_scan_mesh`) stores one canonical copy per
+asset - binary STL for a mesh, plain-text XYZ for a point cloud
+(`io/stl_export.py`) - keyed by the hash of the ORIGINAL bytes. An STL is passed
+through byte-for-byte. Everything downstream (viewer, segmentation, print
+package) therefore reads one shape, and the browser never needs a second set of
+parsers.
+
+Upload stays metadata-only:
 
 - mesh bytes are never stored in the serialized plan; only redacted metadata and an optional relative reference are kept
 - absolute paths and directory structure (which often carry patient names) are stripped
-- STL files carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- most scan formats carry no units, so units default to `unverified` and must be confirmed by the user before movement-cap evaluation runs
+- formats that DO declare a unit (3MF, glTF, FBX) record it as `declared_units`, a prompt hint only - a file's own claim never satisfies the confirmation gate
 - a bounding-box sanity check can warn about implausible scale, but never infers units
+- a point cloud (no faces) records `geometry_kind: "points"` and `face_count: 0`; surface-dependent steps fail closed on it rather than inventing triangles between points
 
 ### Root/Bone-Aware Review: CBCT/DICOM
 
@@ -359,3 +379,36 @@ Initial heuristic defaults (`AxisCaps`):
 These defaults are based on commonly cited clear-aligner staging ranges and should be treated as starting points for research tooling only. The software must never claim that a movement within these values is safe.
 
 Timeline is an arithmetic projection, not an outcome estimate. Only inputs are stored (stage count comes from the plan; `wear_interval_days` defaults to 14). Duration is computed on demand in `planning/timeline.py` and always carries the caveat that the projection excludes refinements, compliance variation, pauses, and user-directed changes.
+
+### Local intake and case recovery boundaries
+
+Scan intake rejects non-finite vertex coordinates, malformed vertex records,
+faces referencing vertices outside the vertex list, and STL facet/vertex count
+mismatches before computing quality or bounds. Vertex and face counts are capped,
+and container formats (3MF's ZIP, FBX's zlib arrays) bound what they will
+decompress, so a malformed or hostile file cannot turn intake into an
+out-of-memory event. Accepted metadata still has unverified units; parsing does
+not establish scale or record readiness.
+
+Case history and the mesh registry are saved through flushed sibling temporary
+files and atomic replacement. A failed write or replacement preserves the prior
+JSON document and removes the temporary file. This protects individual saves
+from partial writes; it does not coordinate concurrent read/modify/write clients
+or provide portable case backups.
+
+Reading case history verifies each snapshot against its stored canonical plan
+hash. Invalid JSON, unreadable storage, or a hash mismatch returns a structured
+case API error, and saving refuses to overwrite damaged history. Keep the damaged
+file for recovery from a known backup. The hashes detect accidental content
+changes; they do not authenticate the source or constitute a review decision.
+
+
+### Shared intake readiness
+
+Evaluation now composes a typed [intake-readiness report](INTAKE_READINESS.md)
+from record metadata, the existing registration gates, deterministic findings,
+and export prerequisites. Domain contracts live in `model/readiness.py`; the
+surface, CBCT, and workflow derivations live in focused evaluation modules. The
+UI maps stable action identifiers to controls and does not derive evidence gates.
+The evaluation scheduler invalidates older requests when an edit is queued, and
+refreshes the trust strip on success or failure to avoid stale readiness claims.

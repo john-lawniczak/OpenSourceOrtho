@@ -60,7 +60,7 @@ workflows:
   clinical controls, print metadata, optimized staging, and plan JSON.
 
 The Sample Test Case renders the exact bundled STL models
-(`example-scans/canonical-orthocad-001/sample-test-case-{upper,lower}.stl`). On
+(`/datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/initial-{upper,lower}.stl`). On
 entry it loads `root-bone-fixture.json` (redacted CBCT record metadata, accepted
 fixture STL-to-CBCT registrations, safe derived anterior root centerlines,
 trusted tooth axes, and an alveolar-bounds record), then runs the on-device
@@ -117,15 +117,18 @@ If the engine is unreachable (e.g. the page was opened via `file://`), the UI
 shows an "engine offline" message instead of silently falling back to a second,
 divergent implementation.
 
-Browser STL metadata is approximate; `orthoplan.io.stl_import.inspect_stl()`
-remains the source of truth for mesh inspection. Uploaded STL files are stored
-locally in IndexedDB so a small upper/lower scan set survives reloads on the
-same browser; they are not uploaded to a server database.
+Browser scan metadata is approximate; `orthoplan.io.mesh_import.inspect_mesh()`
+remains the source of truth for mesh inspection, and it is the only parser for
+the non-STL formats - the engine stores a canonical copy (binary STL, or XYZ for
+a point cloud) that the viewer reads back, so the browser never reimplements
+PLY/OBJ/3MF/glTF/FBX. Uploaded scan files are stored locally in IndexedDB so a
+small upper/lower scan set survives reloads on the same browser; they are not
+uploaded to a server database.
 
 ## Canonical scan fixture
 
-`ui/example-scans/canonical-orthocad-001/` contains upper and lower whole-arch
-OrthoCAD shell STLs (`sample-test-case-{upper,lower}.stl`) used to keep exact scan
+`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/` contains upper and lower whole-arch
+OrthoCAD shell STLs (`initial-{upper,lower}.stl`) used to keep exact scan
 rendering stable as the product evolves (and as the first tracked data
 contribution). You can load them via the normal upload control to see exact
 whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
@@ -144,6 +147,19 @@ tests and the UI can exercise registration, anatomical frames, root/bone review,
 and CBCT boundary priors without checking PHI-bearing DICOM into git.
 
 ## 3D viewer
+
+The sidebar **Tooth Map** opens **Find teeth in 3D**, an independent schematic
+permanent-tooth explorer available in either workflow without uploading scans.
+Enter multiple FDI numbers (for example `11 12 33 34 43 44`), select the numbered
+buttons, or click teeth directly in the 3D model. Blue, red, yellow, and a custom
+color picker recolor the selected teeth; FDI badges and a tooth-name list identify
+the selection. Invalid numbers leave the previous selection unchanged. Clear and
+Reset view controls let users start over or restore the camera.
+
+The explorer uses schematic teeth even when patient meshes are loaded elsewhere.
+It does not edit movement rows, clinical controls, or the current plan. Selection
+and color remain while navigating within the page session. Keyboard-accessible
+number buttons and the tooth-name list remain usable when WebGL is unavailable.
 
 The Progress Preview renders in 3D via Three.js (`viewer3d.js`), with a 2D/3D
 toggle (2D canvas is the fallback when WebGL is unavailable). Important honesty
@@ -267,3 +283,7 @@ regenerated after UI changes:
 pip install -e ".[e2e]" && python -m playwright install chromium
 python tools/capture_screenshots.py    # writes docs/images/*.png
 ```
+
+The sample paths and `USER_ONE` label come from generated `sample-dataset.js`.
+Regenerate it with `python3 tools/build_dataset_catalog.py` from the repo root.
+Dataset assets require the Python server, which applies the publication allowlist.

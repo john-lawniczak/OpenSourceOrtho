@@ -23,11 +23,12 @@ data class SelectedScan(
     val fileName: String,
     val arch: String? = null, // "upper" | "lower" | null (unspecified)
     val byteCount: Int = 0,
-    val modality: String = "stl", // "cbct" | "stl" | "photo"
+    val modality: String = "stl", // "cbct" | "stl" | "scan" | "photo"
     val localUri: String? = null,
 ) {
+    val isSurfaceScan: Boolean get() = modality.lowercase() in setOf("stl", "scan") && ScanImport.supports(fileName)
     val isStl: Boolean
-        get() = modality.lowercase() == "stl" || fileName.lowercase().endsWith(".stl")
+        get() = modality.lowercase() in setOf("stl", "scan") && fileName.lowercase().endsWith(".stl")
 }
 
 /** Browser/full-engine review JSON retained on-device as an opaque artifact. */
@@ -145,7 +146,7 @@ object LitePlanBuilder {
                 add(buildJsonObject {
                     put("asset", buildJsonObject {
                         put("id", assetId(scan.fileName, index))
-                        put("format", engineFormat(scan.modality))
+                        put("format", if (scan.isSurfaceScan) scan.fileName.substringAfterLast('.').lowercase() else engineFormat(scan.modality))
                         put("provenance", "patient-derived")
                         put("units", "unverified")
                         put("vertex_count", 0)

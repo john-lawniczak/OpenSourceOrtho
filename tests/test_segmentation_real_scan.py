@@ -24,8 +24,9 @@ peak separation tightened to a third of an average tooth):
 
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_CASE_DIR
+
 import time
-from pathlib import Path
 
 import pytest
 
@@ -33,10 +34,10 @@ from orthoplan.io.stl_import import read_stl_geometry
 from orthoplan.segmentation.auto import load_local_segmenter
 from orthoplan.segmentation.heuristic import _MIN_DETECTED_TEETH, default_arch_order
 
-_SCAN_DIR = Path(__file__).resolve().parents[1] / "ui" / "example-scans" / "canonical-orthocad-001"
+_SCAN_DIR = SAMPLE_CASE_DIR
 _SCANS = [
-    ("sample-test-case-upper.stl", "maxillary"),
-    ("sample-test-case-lower.stl", "mandibular"),
+    ("initial-upper.stl", "maxillary"),
+    ("initial-lower.stl", "mandibular"),
 ]
 # Generous budget: the real read+segment is well under a second, so anything near
 # this means a pathological slowdown, not normal variance.

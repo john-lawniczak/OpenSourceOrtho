@@ -18,6 +18,10 @@ jobs:
         run: pip install -e ".[dev]"
       - name: Tests
         run: pytest -q
+      - name: Python lint and generated catalog
+        run: |
+          ruff check .
+          python tools/build_dataset_catalog.py --check
       - name: Maintainability
         run: python tools/check_maintainability.py --strict
 

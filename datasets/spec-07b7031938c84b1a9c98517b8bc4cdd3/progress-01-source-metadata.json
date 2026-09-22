@@ -1,0 +1,193 @@
+{
+  "schema": "opensource-ortho-progress-source-metadata-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "progress_record_id": "progress-01",
+  "reported_week": 7,
+  "reported_week_provenance": "User follow-up confirms week 7 and explains five-day tray changes; this is a progress label, not elapsed calendar weeks.",
+  "scan_acquisition": {
+    "date": "2026-09-17",
+    "source": "Source HTML explicitly labels Scanning Date; XML DueDate matches but is not independently an acquisition field",
+    "independently_verified": false
+  },
+  "export": {
+    "date": "2026-09-21",
+    "format": "iTeroExport",
+    "versions": [
+      "3.0",
+      "5.0"
+    ],
+    "scanner_software_version": "2.20.0.96",
+    "caas_version": "1.0.0.49",
+    "case_type": "Invisalign",
+    "procedure": "Invisalign Aligners",
+    "modeled": false,
+    "treatment_stage_code": "0",
+    "treatment_stage_interpretation": "Unmapped source code; does not establish tray or week number",
+    "scan_range_ada": {
+      "upper": [
+        1,
+        16
+      ],
+      "lower": [
+        17,
+        32
+      ]
+    },
+    "scan_range_note": "Export range metadata, not a verified inventory of teeth present"
+  },
+  "date_retention": "Case dates retained for the requested longitudinal record, following the existing case-specific date-retention exception.",
+  "units": {
+    "declared_in_stl": false,
+    "confirmed": false,
+    "likely_convention": "mm",
+    "note": "STL is unitless; no independent scale verification supplied for this update."
+  },
+  "surfaces": [
+    {
+      "repo_filename": "progress-01-upper.stl",
+      "object_type": "Surface",
+      "sub_type": "Jaw",
+      "jaw_id": "Upper",
+      "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+      "size_bytes": 16611434,
+      "stl_header": "80 ASCII spaces; no identifying text",
+      "geometry_bytes_unchanged": true,
+      "degenerate_faces": 7
+    },
+    {
+      "repo_filename": "progress-01-lower.stl",
+      "object_type": "Surface",
+      "sub_type": "Jaw",
+      "jaw_id": "Lower",
+      "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
+      "size_bytes": 13266534,
+      "stl_header": "80 ASCII spaces; no identifying text",
+      "geometry_bytes_unchanged": true,
+      "degenerate_faces": 0
+    }
+  ],
+  "coordinate_frame": {
+    "export_label": "shell_teethup",
+    "baseline_export_label": "shell_occlusion",
+    "shared_occlusion_frame_verified": false,
+    "baseline_registration_verified": false,
+    "actual_used_transforms": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.850683,
+        0.0,
+        -1.0,
+        0.0,
+        22.328377,
+        0.0,
+        0.0,
+        -1.0,
+        15.581484,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "transform_note": "Verbatim numeric arrays in XML order. Transform direction, matrix layout, and object association are unverified; do not reapply to exported STLs or use as cross-time registration.",
+    "separate_bite_stl_present": false
+  },
+  "images": [
+    {
+      "filename": "media/progress-01-gallery.jpg",
+      "view": "gallery",
+      "sha256": "898ca62e91cfd8ef633105a082cde4ab163e285e67f7d18234a9f6addd67a0f8",
+      "size_bytes": 491146,
+      "pixels": "1920x1080",
+      "content": "Source-rendered scan view; not a clinical photograph",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-01-front.jpg",
+      "view": "front",
+      "sha256": "1fddad06179132426a7c8a00133a7f43ba4c7416ac4e75cacbae44ee368258dd",
+      "size_bytes": 350170,
+      "pixels": "1920x1080",
+      "content": "Source-rendered scan view; not a clinical photograph",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-01-upper.jpg",
+      "view": "upper",
+      "sha256": "516881ed24fb3493ebd27716e7e338d31ef4646797ccd133dcaf926149383b51",
+      "size_bytes": 543663,
+      "pixels": "1920x1080",
+      "content": "Source-rendered scan view; not a clinical photograph",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-01-lower.jpg",
+      "view": "lower",
+      "sha256": "9a799c0a32c208cc12e7e84f4ec8a4f96fb9dd0295fe691c5ae2d2825426ee3f",
+      "size_bytes": 488810,
+      "pixels": "1920x1080",
+      "content": "Source-rendered scan view; not a clinical photograph",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-01-left.jpg",
+      "view": "left",
+      "sha256": "04c8c7b71feb99da0270a324cdda295cb16ce37efea8926aab85080b07acff2b",
+      "size_bytes": 281532,
+      "pixels": "1920x1080",
+      "content": "Source-rendered scan view; not a clinical photograph",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-01-right.jpg",
+      "view": "right",
+      "sha256": "ec71c35151e0ef17e5ccbcaba895acf436f873e3ced622b1a68ed580d981ecac",
+      "size_bytes": 282959,
+      "pixels": "1920x1080",
+      "content": "Source-rendered scan view; not a clinical photograph",
+      "bytes_unchanged": true
+    }
+  ],
+  "privacy_review": {
+    "neutral_filenames": true,
+    "stl_headers_checked": true,
+    "jpeg_metadata": "Only standard JFIF APP0; no EXIF, XMP, comments, or other APP records",
+    "visible_identifiers_in_images": false,
+    "excluded_source_artifacts": {
+      "xml": 2,
+      "html": 1,
+      "pdf": 1,
+      "vendor_logo_png": 1
+    },
+    "excluded_fields": [
+      "personal identifiers",
+      "record identifiers",
+      "provider identifiers",
+      "practice contact details",
+      "original identifying filenames"
+    ],
+    "raw_archive_committed": false
+  },
+  "reported_wear_interval_days": 5,
+  "wear_interval_provenance": "User follow-up; not source-export metadata. Schedule start date and adherence are unspecified."
+}

@@ -134,4 +134,7 @@ def _qa(verdict: str, message: str) -> dict[str, str]:
     return {"verdict": verdict, "message": message}
 
 
-from orthoplan.print_package import PrintPackageResult, export_print_package  # noqa: E402
+from orthoplan.print_package import (  # noqa: E402
+    PrintPackageResult as PrintPackageResult,
+    export_print_package as export_print_package,
+)

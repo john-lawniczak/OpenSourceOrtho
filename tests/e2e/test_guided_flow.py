@@ -37,7 +37,7 @@ def advance(page: Page, step: str) -> None:
           const top = panel?.getBoundingClientRect().top ?? -1;
           return document.activeElement === heading && top >= 55 && top < 180;
         }""",
-        panel,
+        arg=panel,
     )
 
 

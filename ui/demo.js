@@ -1,3 +1,5 @@
+import { sampleAssetReference, sampleAssetUrl } from "./sample-dataset.js";
+
 export const demoInitialOffsets = {
   13: { x: 0.35, y: -0.18, z: 0 },
   12: { x: 0.55, y: 0.28, z: 0 },
@@ -17,9 +19,9 @@ export const demoInitialOffsets = {
 // These are the exact models rendered in the sample's 3D preview.
 export const canonicalScanSources = [
   {
-    name: "sample-test-case-upper.stl",
-    url: "./example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
-    segmentReference: "./example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
+    name: "initial-upper.stl",
+    url: sampleAssetUrl("initial-upper.stl"),
+    segmentReference: sampleAssetUrl("initial-upper.stl"),
     arch: "maxillary",
     asset: {
       id: "76daf4068ec39fa2",
@@ -33,13 +35,13 @@ export const canonicalScanSources = [
         max_xyz: [32.407981872558594, 3.999868392944336, 15.583396911621094],
       },
       sha256: "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
-      reference: "example-scans/canonical-orthocad-001/sample-test-case-upper.stl",
+      reference: sampleAssetReference("initial-upper.stl"),
     },
   },
   {
-    name: "sample-test-case-lower.stl",
-    url: "./example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
-    segmentReference: "./example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
+    name: "initial-lower.stl",
+    url: sampleAssetUrl("initial-lower.stl"),
+    segmentReference: sampleAssetUrl("initial-lower.stl"),
     arch: "mandibular",
     asset: {
       id: "5e4b629904c481bf",
@@ -53,7 +55,7 @@ export const canonicalScanSources = [
         max_xyz: [32.569801330566406, 0.7881450653076172, 3.537170886993408],
       },
       sha256: "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
-      reference: "example-scans/canonical-orthocad-001/sample-test-case-lower.stl",
+      reference: sampleAssetReference("initial-lower.stl"),
     },
   },
 ];

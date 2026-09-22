@@ -37,7 +37,7 @@ as reviewed anatomy, and accepted by the relevant feature gate, root/bone-aware
 checks must remain unavailable or explicitly marked as unassessed. CBCT presence
 alone does not mean the volume was interpreted or that a plan is suitable.
 
-The bundled `canonical-orthocad-001` root/bone fixture is an engineering fixture
+The bundled `USER_ONE` root/bone fixture is an engineering fixture
 used to exercise this gate sequence in the UI and tests. It uses redacted CBCT
 metadata and safe derived anterior landmarks; it is not a clinical CBCT
 segmentation, diagnosis, clearance, treatment approval, or evidence that raw

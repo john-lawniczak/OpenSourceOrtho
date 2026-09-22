@@ -1,0 +1,7 @@
+OpenSource Ortho
+Copyright 2026 OpenSource Ortho contributors
+
+The project source is licensed under Apache-2.0; see LICENSE.
+Vendored Three.js r169 code is licensed under MIT; see ui/vendor/LICENSE.three.
+Contributed datasets and reference media retain their documented publication
+scope and third-party rights limitations; see datasets/ and docs/DATA_CONTRIBUTION.md.

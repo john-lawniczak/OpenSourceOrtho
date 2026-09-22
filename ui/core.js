@@ -26,13 +26,13 @@ export function inferArchFromName(name = "") {
     text.includes("top") ||
     text.includes("maxilla") ||
     text.includes("maxillary") ||
-    /(^|[-_\s])u(\.stl|[-_\s])/.test(text);
+    /(^|[-_\s])u(\.\w+|[-_\s])/.test(text);
   const mandibularMatch =
     text.includes("lower") ||
     text.includes("bottom") ||
     text.includes("mandible") ||
     text.includes("mandibular") ||
-    /(^|[-_\s])l(\.stl|[-_\s])/.test(text);
+    /(^|[-_\s])l(\.\w+|[-_\s])/.test(text);
   if (maxillaryMatch && mandibularMatch) return null;
   if (maxillaryMatch) {
     return "maxillary";

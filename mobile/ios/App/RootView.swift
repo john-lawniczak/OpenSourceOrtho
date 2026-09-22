@@ -7,6 +7,7 @@ struct RootView: View {
     @EnvironmentObject private var model: LiteFlowViewModel
     @AppStorage("liteAppearanceTheme") private var themeRawValue = AppTheme.system.rawValue
     @State private var isShowingSettings = false
+    @State private var isShowingSampleHistory = false
 
     var body: some View {
         NavigationStack {
@@ -35,6 +36,10 @@ struct RootView: View {
             }
             .navigationTitle("OpenSource Ortho")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                Button("Sample history") { isShowingSampleHistory = true }
+            }
+            .sheet(isPresented: $isShowingSampleHistory) { SampleHistoryView() }
         }
         .preferredColorScheme(AppTheme(rawValue: themeRawValue)?.colorScheme)
     }

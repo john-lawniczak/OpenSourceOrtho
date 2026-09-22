@@ -10,8 +10,7 @@ journey is equally mature. The end-to-end workflow is approximately **6.5/10**
 because arbitrary-record intake, segmentation correction, practical CBCT
 handoff, structured AI actions, case recovery, and nondeveloper distribution
 remain weaker than the individual engine surfaces. See
-[NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md) and the active phases in
-`TODO.md`.
+[NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md).
 
 A 10/10 is intentionally NOT a target for the geometry tracks: it would
 require material deformation, thermoforming fit, printer calibration, and
@@ -43,7 +42,7 @@ still encounters material gaps:
 - installation remains oriented toward developers
 
 These are active implementation areas, not evidence that the existing safety
-boundaries should be relaxed. The prioritized plan is maintained in `TODO.md`.
+boundaries should be relaxed. The shared priorities are recorded in [NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md).
 
 ## Track 1: Upload -> Printable Aligner Artifacts
 
@@ -210,7 +209,7 @@ What exists:
 - Synthetic volume benchmarks and fail-closed tests proving unaccepted
   registration, proposed anatomy, optional-extra absence, and rejected anatomy do
   not promote a plan to trusted root/bone-aware behavior.
-- Canonical `canonical-orthocad-001` redacted CBCT metadata and root/bone
+- Canonical `USER_ONE` redacted CBCT metadata and root/bone
   engineering fixture exercise accepted registrations, trusted derived landmarks,
   anatomical frames, root/bone review, and CBCT boundary priors without
   committing raw DICOM bytes.
@@ -233,8 +232,7 @@ Why it is not higher:
 
 What reaching the ≥9/10 target requires:
 
-- No remaining Phase 12 implementation item is tracked in `TODO.md`; the
-  safety-gated proposal workflow is complete for the current scope.
+- The Phase 12 safety-gated proposal workflow is complete for the current scope.
 - Keep raw-volume proposal, auto-registration, and fail-closed benchmark tests
   green as the model contracts evolve.
 - Expand reviewed non-PHI/open-volume benchmark cases with clear provenance.

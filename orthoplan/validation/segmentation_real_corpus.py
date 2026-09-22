@@ -13,7 +13,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from orthoplan.io.stl_import import read_stl_geometry
+from orthoplan.io.mesh_import import read_mesh_geometry
 from orthoplan.model.assets import ArchName
 from orthoplan.segmentation.auto import SegmentationModel, load_local_segmenter
 from orthoplan.segmentation.heuristic import _facets
@@ -134,7 +134,7 @@ def _manifest_summary_metrics(license_clear: int, scored: int) -> list[Benchmark
 
 
 def _load_labelled_arch(scan_path: Path, labels_path: Path) -> LabelledRealArch:
-    _asset, vertices = read_stl_geometry(scan_path)
+    _asset, vertices = read_mesh_geometry(scan_path)
     facets = _facets(vertices)
     payload = json.loads(labels_path.read_text(encoding="utf-8"))
     labels = payload.get("triangle_labels")

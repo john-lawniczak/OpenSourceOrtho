@@ -12,6 +12,17 @@ targets:
     platform: iOS
     sources:
       - path: App
+      - path: ../sample-history
+        type: folder
+        buildPhase: resources
+      - path: ../../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/initial-upper.stl
+        buildPhase: resources
+      - path: ../../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/initial-lower.stl
+        buildPhase: resources
+      - path: ../../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/progress-01-upper.stl
+        buildPhase: resources
+      - path: ../../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/progress-01-lower.stl
+        buildPhase: resources
     dependencies:
       - package: OpenSourceOrthoLite
         product: OpenSourceOrthoLiteKit
@@ -20,14 +31,25 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.opensourceortho.lite
         PRODUCT_NAME: OpenSourceOrthoLite
         INFOPLIST_FILE: App/Info.plist
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.4.0"
+        CURRENT_PROJECT_VERSION: "4"
         DEVELOPMENT_TEAM: ""
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: NO
+  ScanViewerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: OpenSourceOrthoLite
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.opensourceortho.lite.uitests
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   OpenSourceOrthoLite:
     build:
@@ -37,4 +59,5 @@ schemes:
       config: Debug
     test:
       config: Debug
-      targets: []
+      targets:
+        - ScanViewerUITests

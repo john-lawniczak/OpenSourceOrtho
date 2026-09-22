@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_SPECIMEN_ID
+
 import json
 import sys
 
@@ -99,7 +101,7 @@ def test_reviewed_benchmark_corpus_records_non_phi_provenance() -> None:
 
     assert cases
     case = cases[0]
-    assert case.case_id == "canonical-orthocad-001"
+    assert case.case_id == SAMPLE_SPECIMEN_ID
     assert case.reviewed is True
     assert case.phi_removed is True
     assert case.consent_acknowledged is True

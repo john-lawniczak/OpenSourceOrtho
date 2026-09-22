@@ -79,8 +79,8 @@ export const glossaryTerms = [
     definition: "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion.",
   },
   {
-    term: "Mesh / STL",
-    definition: "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed.",
+    term: "Mesh / scan file",
+    definition: "A 3D model of your teeth from a scanner. STL, PLY, OBJ, 3MF, glTF/GLB and FBX describe triangle surfaces; ASC, XYZ and PTS hold bare points with no surface. Most carry no units - a few declare one, which still needs confirming - so units start unverified.",
   },
   {
     term: "Molar",

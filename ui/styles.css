@@ -2899,3 +2899,43 @@ td input {
 .qa-ok { color: var(--accent); }
 .qa-issue { color: var(--warn); font-weight: 600; }
 .qa-na { color: var(--muted); }
+
+.intake-readiness {
+  margin-top: 1rem;
+  padding: 0 12px 12px;
+  overflow-wrap: anywhere;
+}
+.intake-readiness summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.intake-records {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: .75rem;
+  list-style: none;
+  padding: 0;
+}
+.intake-records li {
+  border: 1px solid var(--line);
+  border-radius: .5rem;
+  padding: .75rem;
+}
+.intake-records span {
+  display: block;
+  color: var(--muted);
+  font-size: .85em;
+}
+.intake-records p {
+  margin: .5rem 0;
+}
+
+/* The chat and navigation sidebars can leave much less space than the viewport. */
+.workspace {
+  container-type: inline-size;
+}
+@container (max-width: 850px) {
+  .review-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

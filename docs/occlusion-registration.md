@@ -27,7 +27,7 @@ registration. This is that substrate.
 
 A real intraoral export (e.g. iTero/OrthoCAD) registers the upper and lower arches
 into a single bite frame using the scanner's **buccal-bite capture**. We confirmed
-this on the bundled `canonical-orthocad-001` scans: both arches share x/y centring
+this on the bundled `USER_ONE` scans: both arches share x/y centring
 (midline at x≈0) and interleave in z (upper down to ≈−1.5, lower up to ≈+3.5) - they
 are already occluding in one frame.
 

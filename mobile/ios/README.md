@@ -27,8 +27,10 @@ ios/
     Info.plist                        app metadata + version placeholders
     AppIdentity.swift                 bundle version/build reader for About
     LiteFlowViewModel.swift           view state, delegates to the kit
-    RootView.swift                    nav + non-dismissible safety banner
-    Screens.swift                     Upload / Teeth + Time / Review / Print + Send
+    RootView.swift                    nav + collapsible safety summary
+    Screens.swift                     Upload / Review / Print + Send
+    TeethAndTimeView.swift             observed sample / imported scan selection
+    ScanSurfaceView.swift             full-resolution SceneKit surface viewer
     SettingsView.swift                Settings / About / Glossary / Teeth map
 ```
 
@@ -54,7 +56,18 @@ xcodegen generate
 
 The app target keeps `CFBundleShortVersionString` as `$(MARKETING_VERSION)` and
 `CFBundleVersion` as `$(CURRENT_PROJECT_VERSION)`. `SettingsView` displays those
-bundle values as `Version 1.5 (5)`.
+bundle values as `Version 0.4.0 (4)`.
+
+The **Teeth** tab defaults to interactive USER_ONE scans, with both arches and a continuous
+baseline/week-7 reveal. [Native scanner imports](../SCAN_IMPORT.md) support
+STL, OBJ, PLY, ASC, XYZ, and PTS. Four original STLs are copied directly from `datasets/` by the
+Xcode resource phase; unrelated case files are excluded. The UI test target
+checks all four scans and captures screenshots. Run it with Xcode Test or
+`xcodebuild test -scheme OpenSourceOrthoLite -destination 'platform=iOS Simulator,name=iPhone 17 Pro'`.
+
+The top-bar **Sample history** button opens an offline baseline/week-7 viewer.
+Its shared JSON and arch images are included as the `sample-history` resource
+folder; regenerate the Xcode project from `project.yml` after resource changes.
 
 Start the engine before generating a plan: `python3 -m orthoplan.server` (host
 loopback `127.0.0.1:8000`, which the Simulator reaches directly - see
@@ -62,13 +75,13 @@ loopback `127.0.0.1:8000`, which the Simulator reaches directly - see
 
 ## What still has to be built (lite v1 -> shippable)
 
-- **Mesh registration**: `UploadView` accepts `.stl`, CBCT/DICOM attachments,
+- **Mesh registration**: `UploadView` accepts scanner geometry exports, CBCT/DICOM attachments,
   photos from the library or Files/iCloud/Drive providers, and browser-generated
   JSON reviews/packages; the next step is uploading/registering STL bytes with
   the engine mesh workspace instead of sending metadata only.
 - **Persistent review library**: browser JSON can be imported and included in
   the exported mobile package; add durable app storage and deletion/rename UI.
-- **Per-tooth 3D renderer**: `TeethAndTimeView` now renders selected STL scan
+- **Per-tooth 3D renderer**: `TeethAndTimeView` now renders selected scanner-export
   geometry in SceneKit when local bytes are available. The next step is replacing
   whole-arch STL preview with segmented per-tooth meshes from `GET /api/mesh/<id>`
   and rendering engine stage transforms on those meshes.
@@ -83,7 +96,7 @@ loopback `127.0.0.1:8000`, which the Simulator reaches directly - see
 
 ## Safety
 
-The non-dismissible banner (`SafetyText.disclaimer`) and `CONSISTENT`/`ISSUES`
+The safety summary (`SafetyText.disclaimer`) and `CONSISTENT`/`ISSUES`
 verdict labels are mandatory. Never present a plan, generated package, printed
 model, aligner, or other appliance as safe, approved, cleared, complete, suitable,
 or ready for treatment or physical use. Any physical use is the user's own

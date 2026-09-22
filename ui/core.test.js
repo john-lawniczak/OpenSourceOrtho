@@ -268,7 +268,7 @@ test("arch helpers normalize labels, file names, and FDI quadrants", () => {
   assert.equal(normalizeArchLabel("upper"), "maxillary");
   assert.equal(normalizeArchLabel("mandibular"), "mandibular");
   assert.equal(normalizeArchLabel("unknown"), null);
-  assert.equal(inferArchFromName("sample-test-case-upper.stl"), "maxillary");
+  assert.equal(inferArchFromName("initial-upper.stl"), "maxillary");
   assert.equal(inferArchFromName("scan_l.stl"), "mandibular");
   assert.equal(inferArchFromName("scan.stl"), null);
   assert.equal(archFromTooth("11"), "maxillary");

@@ -17,7 +17,6 @@ import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.print.PrintManager
 import android.provider.OpenableColumns
-import android.view.MotionEvent
 import android.view.View
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,12 +40,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,17 +55,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.io.FileOutputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.Locale
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sin
-
 // Lite-flow screens. Mobile can synthesize a limited STL-only review if the
 // engine is offline; CBCT/DICOM and mesh-backed edits remain browser/full-engine work.
-
 /** Step 1: pick scan records, supporting photos, or browser-generated review packages. */
 @Composable
 fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
@@ -85,7 +74,8 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                     .onSuccess(model::importBrowserReview)
                     .onFailure { model.reportImportError("Could not import browser review: ${it.message}") }
             } else {
-                model.addScan(context.selectedScan(uri, pendingModality))
+                runCatching { context.selectedScan(uri, pendingModality) }.onSuccess(model::addScan)
+                    .onFailure { model.reportImportError("Could not read selected file: ${it.message}") }
             }
         }
     }
@@ -97,7 +87,7 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
     ) {
         Text("Upload patient files", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Mobile renders selected STL scans for review. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.",
+            "Open STL, OBJ, PLY, ASC, XYZ, or PTS scanner exports on-device. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
@@ -127,6 +117,7 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                 }, modifier = Modifier.fillMaxWidth()) { Text(selectedImport.actionTitle) }
             }
         }
+        state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         if (state.storedReviews.isNotEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -158,7 +149,7 @@ private data class ImportOption(
 )
 
 private val importOptions = listOf(
-    ImportOption("STL scans", "3D surface files", "Choose STL scans", "stl", arrayOf("model/stl", "application/sla", "application/octet-stream", "*/*")),
+    ImportOption("3D scans", "STL · OBJ · PLY · ASC · XYZ · PTS", "Choose 3D scans", "scan", arrayOf("model/stl", "application/sla", "application/octet-stream", "*/*")),
     ImportOption("CBCT / DICOM", "Attach for handoff", "Choose CBCT / DICOM", "cbct", arrayOf("application/zip", "application/dicom", "application/octet-stream", "*/*")),
     ImportOption("Photos", "Images from device", "Choose photos", "photo", arrayOf("image/*", "application/octet-stream", "*/*")),
     ImportOption("Browser review", "Case JSON", "Import review JSON", "browser-review", arrayOf("application/json", "text/json", "text/plain", "*/*")),
@@ -179,68 +170,6 @@ private fun ImportOptionCard(option: ImportOption, selected: Boolean, modifier: 
     ) {
         Text(option.title, style = MaterialTheme.typography.bodyMedium)
         Text(option.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-/** Step 2: staged teeth preview and timeline controls. */
-@Composable
-fun TeethAndTimeScreen(state: LiteUiState, model: LiteFlowViewModel) {
-    val context = LocalContext.current
-    var stage by remember { mutableFloatStateOf(0f) }
-    var showDemoSample by remember { mutableStateOf(false) }
-    val hasSelectedStl = state.scans.any { it.isStl }
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-    ) {
-        Text("Teeth + time", style = MaterialTheme.typography.titleLarge)
-        AndroidView(
-            factory = { DentalPreview3dView(it) },
-            update = {
-                it.stage = stage
-                it.scans = state.scans
-            },
-            modifier = Modifier.fillMaxWidth().height(340.dp),
-        )
-        if (!hasSelectedStl) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Button(onClick = { showDemoSample = !showDemoSample }) {
-                    Text(if (showDemoSample) "Hide demo sample" else "Demo sample")
-                }
-                if (showDemoSample) {
-                    Button(onClick = {
-                        model.addDevSample(context.devSampleScans())
-                        showDemoSample = false
-                    }) { Text("Use full-arch dev sample") }
-                    Text(
-                        "Loads bundled upper and lower STL scans for a full mobile rendering preview.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
-        }
-        Slider(value = stage, onValueChange = { stage = it }, valueRange = 0f..12f, steps = 11)
-        Text("Stage ${stage.toInt()} of 12", style = MaterialTheme.typography.bodyMedium)
-        Text("${state.scans.size} file(s) selected", style = MaterialTheme.typography.titleMedium)
-        Text(
-            "STL scans render from the selected file when available. CBCT/DICOM is attached for engine/browser review; native volume rendering is not in lite yet.",
-            style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center,
-        )
-        state.errorMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
-        }
-        Button(onClick = model::generate, enabled = !state.isGenerating) {
-            if (state.isGenerating) CircularProgressIndicator(Modifier.height(20.dp))
-            else Text("Generate for review")
-        }
     }
 }
 
@@ -620,34 +549,6 @@ private fun Context.openHandoff(target: String) {
     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
 }
 
-private fun Context.devSampleScans(): List<SelectedScan> =
-    listOf(
-        devSampleScan(
-            fileName = "dev-sample-upper.stl",
-            arch = "upper",
-            resourceId = R.raw.dev_sample_upper,
-        ),
-        devSampleScan(
-            fileName = "dev-sample-lower.stl",
-            arch = "lower",
-            resourceId = R.raw.dev_sample_lower,
-        ),
-    )
-
-private fun Context.devSampleScan(fileName: String, arch: String, resourceId: Int): SelectedScan =
-    SelectedScan(
-        fileName = fileName,
-        arch = arch,
-        byteCount = rawResourceByteCount(resourceId),
-        modality = "stl",
-        localUri = "android.resource://$packageName/$resourceId",
-    )
-
-private fun Context.rawResourceByteCount(resourceId: Int): Int =
-    resources.openRawResourceFd(resourceId)?.use { descriptor ->
-        descriptor.length.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-    } ?: 0
-
 private fun android.content.ContentResolver.displayName(uri: Uri): String? =
     query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
         if (cursor.moveToFirst()) cursor.getString(0) else null
@@ -743,294 +644,6 @@ private class JsonPrintDocumentAdapter(private val packageJson: String) : PrintD
     }
 }
 
-private class DentalPreview3dView(context: Context) : View(context) {
-    var stage: Float = 0f
-        set(value) {
-            field = value
-            invalidate()
-        }
-    var scans: List<SelectedScan> = emptyList()
-        set(value) {
-            if (field == value) return
-            field = value
-            meshTriangles = loadFirstStlMesh(value)
-            invalidate()
-        }
-
-    private var rotation = 0f
-    private var lastX = 0f
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private var meshTriangles: List<StlTriangle> = emptyList()
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> lastX = event.x
-            MotionEvent.ACTION_MOVE -> {
-                rotation += (event.x - lastX) * 0.01f
-                lastX = event.x
-                invalidate()
-            }
-        }
-        return true
-    }
-
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        canvas.drawColor(AndroidColor.rgb(248, 250, 252))
-        paint.textAlign = Paint.Align.CENTER
-        paint.textSize = 34f
-        paint.color = AndroidColor.rgb(30, 41, 59)
-        canvas.drawText("Drag to rotate. Scrub stages below.", width / 2f, 46f, paint)
-
-        if (meshTriangles.isNotEmpty()) {
-            drawMesh(canvas, meshTriangles)
-            paint.textSize = 24f
-            paint.color = AndroidColor.rgb(71, 85, 105)
-            canvas.drawText("Rendering selected STL surface", width / 2f, height - 22f, paint)
-        } else {
-            drawSampleDentalCast(canvas)
-            paint.textSize = 24f
-            paint.color = AndroidColor.rgb(71, 85, 105)
-            val caption = if (scans.any { it.modality == "cbct" }) {
-                "CBCT attached; open browser/full engine for volume rendering"
-            } else if (scans.any { it.isStl }) {
-                "Showing sample teeth preview"
-            } else {
-                "Add an STL scan to render patient geometry"
-            }
-            canvas.drawText(caption, width / 2f, height - 22f, paint)
-        }
-    }
-
-    private fun loadFirstStlMesh(scans: List<SelectedScan>): List<StlTriangle> {
-        val triangles = ArrayList<StlTriangle>()
-        scans.filter { it.isStl && it.localUri != null }.forEach { scan ->
-            val bytes = context.contentResolver.openInputStream(Uri.parse(scan.localUri))?.use { it.readBytes() }
-                ?: return@forEach
-            triangles += parseStlTriangles(bytes).take(14000)
-        }
-        return triangles.take(28000)
-    }
-
-    private fun drawMesh(canvas: Canvas, triangles: List<StlTriangle>) {
-        val bounds = meshBounds(triangles)
-        val span = max(bounds[3] - bounds[0], max(bounds[4] - bounds[1], bounds[5] - bounds[2])).coerceAtLeast(1f)
-        val scale = min(width, height) * 0.62f / span
-        val cx = (bounds[0] + bounds[3]) / 2f
-        val cy = (bounds[1] + bounds[4]) / 2f
-        val cz = (bounds[2] + bounds[5]) / 2f
-        val centerX = width / 2f
-        val centerY = height / 2f
-
-        val projected = triangles.mapNotNull { triangle ->
-            val a = project(triangle.a, cx, cy, cz, scale, centerX, centerY)
-            val b = project(triangle.b, cx, cy, cz, scale, centerX, centerY)
-            val c = project(triangle.c, cx, cy, cz, scale, centerX, centerY)
-            val light = (kotlin.math.abs(screenNormalZ(a, b, c)) / 1800f).coerceIn(0.18f, 1f)
-            ProjectedTriangle(a, b, c, (a[2] + b[2] + c[2]) / 3f, light)
-        }.sortedBy { it.depth }
-
-        paint.style = Paint.Style.FILL
-        projected.forEach { triangle ->
-            val shade = (196 + (triangle.light * 48f).toInt()).coerceIn(170, 244)
-            paint.color = AndroidColor.rgb(shade, shade - 4, shade - 18)
-            val path = Path().apply {
-                moveTo(triangle.a[0], triangle.a[1])
-                lineTo(triangle.b[0], triangle.b[1])
-                lineTo(triangle.c[0], triangle.c[1])
-                close()
-            }
-            canvas.drawPath(path, paint)
-        }
-
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 0.45f
-        paint.color = AndroidColor.argb(56, 99, 90, 70)
-        projected.take(6000).forEach { triangle ->
-            val path = Path().apply {
-                moveTo(triangle.a[0], triangle.a[1])
-                lineTo(triangle.b[0], triangle.b[1])
-                lineTo(triangle.c[0], triangle.c[1])
-                close()
-            }
-            canvas.drawPath(path, paint)
-        }
-    }
-
-    private fun project(point: FloatArray, cx: Float, cy: Float, cz: Float, scale: Float, centerX: Float, centerY: Float): FloatArray {
-        val x = point[0] - cx
-        val y = point[1] - cy
-        val z = point[2] - cz
-        val rotatedX = x * cos(rotation) - z * sin(rotation)
-        val rotatedZ = x * sin(rotation) + z * cos(rotation)
-        val tiltedY = y * 0.72f + rotatedZ * 0.18f
-        return floatArrayOf(centerX + rotatedX * scale, centerY - tiltedY * scale, rotatedZ)
-    }
-
-    private fun screenNormalZ(a: FloatArray, b: FloatArray, c: FloatArray): Float {
-        val abX = b[0] - a[0]
-        val abY = b[1] - a[1]
-        val acX = c[0] - a[0]
-        val acY = c[1] - a[1]
-        return abX * acY - abY * acX
-    }
-
-    private fun meshBounds(triangles: List<StlTriangle>): FloatArray {
-        var minX = Float.POSITIVE_INFINITY
-        var minY = Float.POSITIVE_INFINITY
-        var minZ = Float.POSITIVE_INFINITY
-        var maxX = Float.NEGATIVE_INFINITY
-        var maxY = Float.NEGATIVE_INFINITY
-        var maxZ = Float.NEGATIVE_INFINITY
-        triangles.forEach { triangle ->
-            listOf(triangle.a, triangle.b, triangle.c).forEach {
-                minX = min(minX, it[0]); minY = min(minY, it[1]); minZ = min(minZ, it[2])
-                maxX = max(maxX, it[0]); maxY = max(maxY, it[1]); maxZ = max(maxZ, it[2])
-            }
-        }
-        return floatArrayOf(minX, minY, minZ, maxX, maxY, maxZ)
-    }
-
-    private fun drawSampleDentalCast(canvas: Canvas) {
-        val centerX = width / 2f
-        val centerY = height / 2f - 8f
-        drawCastBase(canvas, centerX, centerY - 66f, upper = true)
-        drawCastBase(canvas, centerX, centerY + 66f, upper = false)
-        drawBiteArch(canvas, centerX, centerY - 16f, upper = true)
-        drawBiteArch(canvas, centerX, centerY + 16f, upper = false)
-    }
-
-    private fun drawCastBase(canvas: Canvas, centerX: Float, baseY: Float, upper: Boolean) {
-        paint.style = Paint.Style.FILL
-        paint.color = AndroidColor.rgb(205, 200, 181)
-        val band = RectF(centerX - 244f, baseY - 44f, centerX + 244f, baseY + 44f)
-        canvas.drawRoundRect(band, 26f, 26f, paint)
-
-        paint.color = AndroidColor.rgb(228, 224, 208)
-        for (index in 0..10) {
-            val centered = index - 5f
-            val ridgeWidth = 76f - kotlin.math.abs(centered) * 4f
-            val ridgeHeight = 34f - kotlin.math.abs(centered) * 1.4f
-            val x = centerX + centered * 44f
-            val y = baseY + if (upper) 18f else -18f
-            canvas.drawOval(RectF(x - ridgeWidth / 2f, y - ridgeHeight / 2f, x + ridgeWidth / 2f, y + ridgeHeight / 2f), paint)
-        }
-
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 1.2f
-        paint.color = AndroidColor.argb(120, 148, 139, 112)
-        canvas.drawRoundRect(band, 26f, 26f, paint)
-    }
-
-    private fun drawBiteArch(canvas: Canvas, centerX: Float, centerY: Float, upper: Boolean) {
-        val progress = stage / 12f
-        for (index in 0 until 16) {
-            val centered = index - 7.5f
-            val normalized = kotlin.math.abs(centered) / 7.5f
-            val curve = (1f - normalized * normalized) * 42f
-            val rotated = centered * cos(rotation) * 30f
-            val stageOffset = if (centered >= 0f) progress * 12f else -progress * 12f
-            val x = centerX + rotated + stageOffset
-            val y = centerY + curve * if (upper) 1f else -1f
-            val halfWidth = 15f + normalized * 9f
-            val halfHeight = 32f - normalized * 9f
-            drawSampleTooth(canvas, x, y, halfWidth, halfHeight, upper, normalized)
-        }
-    }
-
-    private fun drawSampleTooth(canvas: Canvas, x: Float, y: Float, halfWidth: Float, halfHeight: Float, upper: Boolean, normalized: Float) {
-        val rect = RectF(x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight)
-        paint.style = Paint.Style.FILL
-        paint.color = AndroidColor.rgb(232, 228, 210)
-        canvas.drawRoundRect(rect, 10f + normalized * 6f, 10f + normalized * 6f, paint)
-
-        paint.color = AndroidColor.argb(110, 255, 255, 255)
-        val shineX = x - halfWidth * 0.35f
-        canvas.drawRoundRect(
-            RectF(shineX - 3f, y - halfHeight * 0.55f, shineX + 3f, y + halfHeight * 0.08f),
-            3f,
-            3f,
-            paint,
-        )
-
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 1.4f
-        paint.color = AndroidColor.argb(150, 133, 124, 95)
-        canvas.drawRoundRect(rect, 10f + normalized * 6f, 10f + normalized * 6f, paint)
-
-        if (normalized < 0.34f) {
-            paint.style = Paint.Style.FILL
-            paint.color = AndroidColor.rgb(202, 194, 168)
-            val rootY = if (upper) rect.top - 18f else rect.bottom + 18f
-            val tipY = if (upper) rect.top else rect.bottom
-            val path = Path().apply {
-                moveTo(x - halfWidth * 0.34f, tipY)
-                lineTo(x, rootY)
-                lineTo(x + halfWidth * 0.34f, tipY)
-                close()
-            }
-            canvas.drawPath(path, paint)
-        }
-    }
-
-    private fun parseStlTriangles(bytes: ByteArray): List<StlTriangle> {
-        val text = bytes.decodeToString(endIndex = min(bytes.size, 4 * 1024 * 1024))
-        if (text.contains("vertex")) {
-            val vertices = text.lineSequence()
-                .mapNotNull { line ->
-                    val parts = line.trim().split(Regex("\\s+"))
-                    if (parts.size >= 4 && parts[0] == "vertex") {
-                        val x = parts[1].toFloatOrNull()
-                        val y = parts[2].toFloatOrNull()
-                        val z = parts[3].toFloatOrNull()
-                        if (x != null && y != null && z != null) floatArrayOf(x, y, z) else null
-                    } else {
-                        null
-                    }
-                }
-                .toList()
-            return vertices
-                .chunked(3)
-                .filter { it.size == 3 }
-                .map { StlTriangle(it[0], it[1], it[2]) }
-        }
-        if (bytes.size < 84) return emptyList()
-        val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-        val triangleCount = buffer.getInt(80).coerceAtLeast(0)
-        val triangles = ArrayList<StlTriangle>(min(triangleCount, 20000))
-        var offset = 84
-        repeat(min(triangleCount, 20000)) {
-            if (offset + 50 > bytes.size) return@repeat
-            offset += 12
-            val points = ArrayList<FloatArray>(3)
-            repeat(3) {
-                val x = buffer.getFloat(offset)
-                val y = buffer.getFloat(offset + 4)
-                val z = buffer.getFloat(offset + 8)
-                points.add(floatArrayOf(x, y, z))
-                offset += 12
-            }
-            triangles.add(StlTriangle(points[0], points[1], points[2]))
-            offset += 2
-        }
-        return triangles
-    }
-
-    private data class StlTriangle(
-        val a: FloatArray,
-        val b: FloatArray,
-        val c: FloatArray,
-    )
-
-    private data class ProjectedTriangle(
-        val a: FloatArray,
-        val b: FloatArray,
-        val c: FloatArray,
-        val depth: Float,
-        val light: Float,
-    )
-}
-
 // BEGIN GENERATED GLOSSARY TERMS
 private val fullGlossaryTerms = listOf(
     "Arch" to "One jaw's row of teeth: maxillary (upper) or mandibular (lower).",
@@ -1052,7 +665,7 @@ private val fullGlossaryTerms = listOf(
     "Intrusion" to "Pushing a tooth into the bone.",
     "IPR" to "Interproximal reduction: planned enamel reduction between adjacent teeth to create space.",
     "Malocclusion" to "A bad bite or misalignment. Class I, II, and III are broad bite-relationship categories, not treatment instructions. The app does not diagnose malocclusion.",
-    "Mesh / STL" to "A 3D surface model. STL stands for stereolithography; STL files describe triangle surfaces and carry no units, so units start unverified until confirmed.",
+    "Mesh / scan file" to "A 3D model of your teeth from a scanner. STL, PLY, OBJ, 3MF, glTF/GLB and FBX describe triangle surfaces; ASC, XYZ and PTS hold bare points with no surface. Most carry no units - a few declare one, which still needs confirming - so units start unverified.",
     "Molar" to "A large back chewing tooth, positions 6 through 8.",
     "Movement cap" to "A per-stage review threshold for linear, vertical, angular, and rotation movement.",
     "Occlusion" to "How upper and lower teeth meet when biting.",

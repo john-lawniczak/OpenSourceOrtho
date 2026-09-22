@@ -8,7 +8,6 @@ from orthoplan.planning.biomechanics import (
     apply_pose_to_vertex,
     trusted_movement_frames,
 )
-from orthoplan.planning.transforms import ToothPose
 from orthoplan.viz.progress import build_stage_progress_frames
 
 Vec3 = tuple[float, float, float]

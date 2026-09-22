@@ -117,3 +117,20 @@ def test_cli_register_contribution_rejects_phi_in_outcome_notes(
     assert cli.main() == 2
     captured = capsys.readouterr()
     assert "outcome notes contain patient-identifying" in captured.err
+
+
+def test_cli_reuses_case_identity_and_pseudonym_for_later_visits(monkeypatch, tmp_path):
+    from orthoplan.datasets import SAMPLE_SPECIMEN_ID
+
+    case, scans, _, _ = _case_bundle(tmp_path)
+    output = case / "manifest.json"
+    monkeypatch.setattr(sys, "argv", [
+        "orthoplan", "register-contribution", *map(str, scans),
+        "--specimen-id", SAMPLE_SPECIMEN_ID, "--pseudonym", "USER_ONE",
+        "--i-confirm-no-phi", "--out", str(output),
+    ])
+    assert cli.main() == 0
+    manifest = json.loads(output.read_text())
+    assert manifest["specimen_id"] == SAMPLE_SPECIMEN_ID
+    assert manifest["pseudonym"] == "USER_ONE"
+    assert len(manifest["scans"]) == 4

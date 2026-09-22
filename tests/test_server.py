@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from orthoplan.datasets import SAMPLE_URL_ROOT
+
 import json
 import threading
 import urllib.error
@@ -218,7 +220,7 @@ def test_demo_crown_meshes_are_served(server: int) -> None:
 
 def test_canonical_orthocad_scans_are_served(server: int) -> None:
     for arch in ("upper", "lower"):
-        status, body = _get(server, f"/example-scans/canonical-orthocad-001/sample-test-case-{arch}.stl")
+        status, body = _get(server, f"{SAMPLE_URL_ROOT}/initial-{arch}.stl")
         assert status == 200, arch
         assert len(body) > 10_000_000
 

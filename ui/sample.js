@@ -1,3 +1,4 @@
+import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 // Sample test case: an isolated, self-contained walkthrough that reuses the real
 // guided wizard UI (same step chips: upload -> teeth & time -> details -> review
 // -> 3D preview -> print) so a first-time viewer sees exactly what a guided user
@@ -27,7 +28,7 @@ const SNAPSHOT_STATE_KEYS = [
   "simpleAcknowledged", "dim", "sampleStatus", "scanRenderStatus", "availability",
 ];
 
-const ROOT_BONE_FIXTURE_URL = "./example-scans/canonical-orthocad-001/root-bone-fixture.json";
+const ROOT_BONE_FIXTURE_URL = sampleAssetUrl("fixtures/root-bone-fixture.json");
 // DOM field values the sample overwrites and must restore.
 const SNAPSHOT_FIELDS = ["planTitle", "planId", "wearInterval", "exaggeration", "scanUnits", "scanArch", "simpleGoal"];
 
@@ -101,7 +102,7 @@ export function enterSample() {
     "Loading the root/bone-aware sample fixture, then segmenting the bundled scans into "
     + "individual 3D teeth on this machine (a few seconds)... "
     + "Not a real patient and not a medical device.";
-  el("planTitle").value = "Sample test case";
+  el("planTitle").value = `Sample test case · ${sampleDataset.pseudonym}`;
   el("planId").value = "sample-test-case";
   el("wearInterval").value = "10";
   // x8 keeps the segmented real crowns visibly moving without flinging them off

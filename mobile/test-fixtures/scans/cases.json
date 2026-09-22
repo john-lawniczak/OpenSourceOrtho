@@ -1,0 +1,192 @@
+[
+  {
+    "filename": "triangle.OBJ",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "quad.obj",
+    "triangles": 2,
+    "points": null
+  },
+  {
+    "filename": "clockwise.obj",
+    "triangles": 2,
+    "points": null
+  },
+  {
+    "filename": "vertices.obj",
+    "triangles": null,
+    "points": 3
+  },
+  {
+    "filename": "colors.obj",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "invalid-index.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "zero-index.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "duplicate-index.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "truncated.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "nonfinite.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "large-coordinate.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "weighted.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "curves.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "concave.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "nonplanar.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "star.obj",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "cloud.asc",
+    "triangles": null,
+    "points": 2
+  },
+  {
+    "filename": "cloud.xyz",
+    "triangles": null,
+    "points": 2
+  },
+  {
+    "filename": "cloud.pts",
+    "triangles": null,
+    "points": 2
+  },
+  {
+    "filename": "count-mismatch.pts",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "negative-count.pts",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "single.xyz",
+    "triangles": null,
+    "points": 1
+  },
+  {
+    "filename": "empty.xyz",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "not-supported.glb",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "mesh-ascii.ply",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "cloud.ply",
+    "triangles": null,
+    "points": 3
+  },
+  {
+    "filename": "comments.ply",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "crlf.ply",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "mesh-little.ply",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "truncated-little.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "mesh-big.ply",
+    "triangles": 1,
+    "points": null
+  },
+  {
+    "filename": "truncated-big.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "huge-count.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "out-of-range.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "bad-scalar.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "extra-body.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "duplicate-property.ply",
+    "triangles": null,
+    "points": null
+  },
+  {
+    "filename": "float-indices.ply",
+    "triangles": null,
+    "points": null
+  }
+]

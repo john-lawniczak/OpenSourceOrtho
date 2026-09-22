@@ -6,8 +6,10 @@ Privacy posture (Phase 1):
   and an optional relative/local reference are kept.
 - Absolute paths and parent-directory traversal are rejected, because file paths
   can embed patient names or DOB.
-- STL files carry no units; units default to ``UNVERIFIED`` and must be
-  confirmed by the user before cap evaluation runs.
+- Most scan formats carry no units; units default to ``UNVERIFIED`` and must be
+  confirmed by the user before cap evaluation runs. Formats that DO declare a
+  unit (3MF, glTF, FBX) record it in ``declared_units`` as a hint only - a
+  file's own claim never satisfies the confirmation gate.
 """
 
 from __future__ import annotations
@@ -23,6 +25,9 @@ from orthoplan.model.dicom import DicomMetadata
 
 ArchName = Literal["maxillary", "mandibular"]
 CaseRecordKind = Literal["cbct", "dicom", "photo", "radiograph", "note", "document"]
+# A scanner can export a surface mesh or a raw point cloud; only a mesh has a
+# surface, so anything surface-dependent must check this before running.
+GeometryKind = Literal["mesh", "points"]
 
 
 class MeshUnits(StrEnum):
@@ -81,8 +86,12 @@ class MeshAsset(BaseModel):
 
     id: str
     format: str
+    geometry_kind: GeometryKind = "mesh"
     provenance: MeshProvenance = MeshProvenance.PATIENT_DERIVED
     units: MeshUnits = MeshUnits.UNVERIFIED
+    # What the file itself claimed, when its format carries a unit. A hint for
+    # the units prompt only - it never counts as user confirmation.
+    declared_units: MeshUnits | None = None
     vertex_count: int = Field(ge=0)
     face_count: int = Field(ge=0)
     bounds: BoundingBox | None = None
@@ -107,6 +116,12 @@ class MeshAsset(BaseModel):
     @property
     def units_confirmed(self) -> bool:
         return self.units != MeshUnits.UNVERIFIED
+
+    @property
+    def has_surface(self) -> bool:
+        """True when the asset carries faces, not just a cloud of points."""
+
+        return self.geometry_kind == "mesh" and self.face_count > 0
 
 
 class UploadedScan(BaseModel):

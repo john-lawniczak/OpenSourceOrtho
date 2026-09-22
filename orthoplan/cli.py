@@ -15,7 +15,7 @@ from orthoplan.cli_cases import (
 )
 from orthoplan.cli_contribution import add_contribution_parser, cmd_register_contribution
 from orthoplan.cli_landmarks import add_landmarks_parser, cmd_landmarks_template
-from orthoplan.cli_mesh import add_mesh_parsers, cmd_inspect_stl, cmd_register_mesh
+from orthoplan.cli_mesh import add_mesh_parsers, cmd_inspect_scan, cmd_register_mesh
 from orthoplan.cli_packages import (
     add_measurement_lab_parser,
     add_print_package_parser,
@@ -240,7 +240,8 @@ def _cmd_acquisition(args: argparse.Namespace) -> int:
 
 _COMMANDS = {
     "new-plan": _cmd_new_plan,
-    "inspect-stl": cmd_inspect_stl,
+    "inspect-scan": cmd_inspect_scan,
+    "inspect-stl": cmd_inspect_scan,
     "register-mesh": cmd_register_mesh,
     "register-contribution": cmd_register_contribution,
     "plan-summary": _cmd_plan_summary,

@@ -29,7 +29,7 @@ def test_arch_contract_normalizes_shared_labels_and_filenames() -> None:
     assert normalize_arch_label("maxillary") == "maxillary"
     assert normalize_arch_label("mandibular") == "mandibular"
     assert normalize_arch_label("unknown") is None
-    assert infer_arch_from_name("sample-test-case-upper.stl") == "maxillary"
+    assert infer_arch_from_name("initial-upper.stl") == "maxillary"
     assert infer_arch_from_name("scan_l.stl") == "mandibular"
     assert infer_arch_from_name("upper-lower.stl") is None
     assert infer_arch_from_name("scan.stl") is None
