@@ -48,7 +48,9 @@ gradle wrapper --gradle-version 8.9   # one-time: creates ./gradlew + wrapper ja
 Open the `mobile/android/` folder in Android Studio to run on an emulator.
 The Settings About card reads `BuildConfig.VERSION_NAME` and
 `BuildConfig.VERSION_CODE`; keep version metadata in `app/build.gradle.kts`.
-Version 0.3.0-scaffold (3) adds the interactive USER_ONE scan viewer in **Teeth**.
+Version 0.4.0-scaffold (4) shows both USER_ONE arches and a continuous
+baseline/week-7 reveal in **Teeth**. [Native scanner imports](../SCAN_IMPORT.md)
+support STL, OBJ, PLY, ASC, XYZ, and PTS.
 The Gradle `bundleSampleScans` task copies only the four originals listed in the
 shared history; private records and reference video are excluded. The offline
 baseline/week-7 viewer reads the shared `mobile/sample-history` assets configured
@@ -66,13 +68,13 @@ engine.
 ## What still has to be built (lite v1 -> shippable)
 
 - **Mesh registration**: `UploadScreen` uses the Storage Access Framework for
-  `.stl` files, CBCT/DICOM attachments, photos from local/cloud providers, and
+  scanner geometry files, CBCT/DICOM attachments, photos from local/cloud providers, and
   browser-generated JSON reviews/packages; the next step is uploading/registering
   STL bytes with the engine mesh workspace instead of sending metadata only.
 - **Persistent review library**: browser JSON can be imported and included in
   the exported mobile package; add durable app storage and deletion/rename UI.
 - **Per-tooth 3D renderer**: `TeethAndTimeScreen` now renders a complete, depth-tested OpenGL ES
-  surface from selected STL geometry when URI access is available. The next step
+  surface or point cloud from selected scanner geometry when URI access is available. The next step
   is segmented per-tooth meshes from
   `GET /api/mesh/<id>` and engine stage transforms.
 - **Destination-specific print/send handoff**: `PrintAndSendScreen` writes a JSON

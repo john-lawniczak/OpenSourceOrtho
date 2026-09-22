@@ -56,10 +56,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.io.FileOutputStream
 import java.util.Locale
-
 // Lite-flow screens. Mobile can synthesize a limited STL-only review if the
 // engine is offline; CBCT/DICOM and mesh-backed edits remain browser/full-engine work.
-
 /** Step 1: pick scan records, supporting photos, or browser-generated review packages. */
 @Composable
 fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
@@ -76,7 +74,8 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                     .onSuccess(model::importBrowserReview)
                     .onFailure { model.reportImportError("Could not import browser review: ${it.message}") }
             } else {
-                model.addScan(context.selectedScan(uri, pendingModality))
+                runCatching { context.selectedScan(uri, pendingModality) }.onSuccess(model::addScan)
+                    .onFailure { model.reportImportError("Could not read selected file: ${it.message}") }
             }
         }
     }
@@ -88,7 +87,7 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
     ) {
         Text("Upload patient files", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Mobile renders selected STL scans for review. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.",
+            "Open STL, OBJ, PLY, ASC, XYZ, or PTS scanner exports on-device. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
@@ -118,6 +117,7 @@ fun UploadScreen(state: LiteUiState, model: LiteFlowViewModel) {
                 }, modifier = Modifier.fillMaxWidth()) { Text(selectedImport.actionTitle) }
             }
         }
+        state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         if (state.storedReviews.isNotEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -149,7 +149,7 @@ private data class ImportOption(
 )
 
 private val importOptions = listOf(
-    ImportOption("STL scans", "3D surface files", "Choose STL scans", "stl", arrayOf("model/stl", "application/sla", "application/octet-stream", "*/*")),
+    ImportOption("3D scans", "STL · OBJ · PLY · ASC · XYZ · PTS", "Choose 3D scans", "scan", arrayOf("model/stl", "application/sla", "application/octet-stream", "*/*")),
     ImportOption("CBCT / DICOM", "Attach for handoff", "Choose CBCT / DICOM", "cbct", arrayOf("application/zip", "application/dicom", "application/octet-stream", "*/*")),
     ImportOption("Photos", "Images from device", "Choose photos", "photo", arrayOf("image/*", "application/octet-stream", "*/*")),
     ImportOption("Browser review", "Case JSON", "Import review JSON", "browser-review", arrayOf("application/json", "text/json", "text/plain", "*/*")),

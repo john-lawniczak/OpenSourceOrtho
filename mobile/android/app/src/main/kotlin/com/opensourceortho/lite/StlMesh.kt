@@ -6,7 +6,8 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 /** Complete STL surface with derived face normals; no sampling or truncation. */
-data class StlMesh(val vertices: FloatArray, val triangleCount: Int, val center: FloatArray, val span: Float) {
+data class StlMesh(val vertices: FloatArray, val triangleCount: Int, val center: FloatArray, val span: Float, val isPointCloud: Boolean = false) {
+    val vertexCount: Int get() = vertices.size / 6
     companion object {
         const val MAX_TRIANGLES = 1_000_000
         const val MAX_BYTES = 80 * 1024 * 1024
@@ -28,9 +29,10 @@ data class StlMesh(val vertices: FloatArray, val triangleCount: Int, val center:
         }
 
         private fun parseAscii(bytes: ByteArray, checkCancellation: () -> Unit): FloatArray {
+            ScanImport.validateTextLines(bytes, 0, checkCancellation)
             val text = bytes.toString(Charsets.UTF_8)
             require(text.trimStart().startsWith("solid") && text.contains("endsolid")) { "Incomplete or invalid STL." }
-            val values = ArrayList<Float>()
+            val values = FloatValues()
             text.lineSequence().forEach { line ->
                 if (values.size % 4096 == 0) checkCancellation()
                 val parts = line.trim().split(Regex("\\s+"))
@@ -43,14 +45,24 @@ data class StlMesh(val vertices: FloatArray, val triangleCount: Int, val center:
             return values.toFloatArray()
         }
 
-        private fun build(positions: FloatArray, checkCancellation: () -> Unit): StlMesh {
-            require(positions.isNotEmpty() && positions.size % 9 == 0) { "Empty or incomplete STL." }
+        fun build(positions: FloatArray, checkCancellation: () -> Unit = {}, pointCloud: Boolean = false): StlMesh {
+            require(positions.size <= MAX_TRIANGLES * (if (pointCloud) 3 else 9)) { "Too much geometry for mobile preview." }
+            require(positions.isNotEmpty() && positions.size % (if (pointCloud) 3 else 9) == 0) { "Empty or incomplete STL." }
             require(positions.all { it.isFinite() && abs(it) <= 1_000_000f }) { "Invalid STL coordinates." }
             val low = FloatArray(3) { Float.POSITIVE_INFINITY }
             val high = FloatArray(3) { Float.NEGATIVE_INFINITY }
             val vertices = FloatArray(positions.size * 2)
-            for (start in positions.indices step 9) {
+            for (start in positions.indices step (if (pointCloud) 3 else 9)) {
                 if (start % 4096 == 0) checkCancellation()
+                if (pointCloud) {
+                    for (axis in 0..2) {
+                        val value = positions[start + axis]
+                        low[axis] = minOf(low[axis], value); high[axis] = maxOf(high[axis], value)
+                        vertices[start * 2 + axis] = value
+                    }
+                    vertices[start * 2 + 5] = 1f
+                    continue
+                }
                 val a = FloatArray(3) { positions[start + 3 + it] - positions[start + it] }
                 val b = FloatArray(3) { positions[start + 6 + it] - positions[start + it] }
                 val n = floatArrayOf(a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0])
@@ -67,8 +79,8 @@ data class StlMesh(val vertices: FloatArray, val triangleCount: Int, val center:
                 }
             }
             val span = (0..2).maxOf { high[it] - low[it] }
-            require(span > 0) { "STL has no spatial extent." }
-            return StlMesh(vertices, positions.size / 9, FloatArray(3) { (low[it]+high[it])/2 }, span)
+            require(span > 0 || pointCloud) { "STL has no spatial extent." }
+            return StlMesh(vertices, if (pointCloud) 0 else positions.size / 9, FloatArray(3) { (low[it]+high[it])/2 }, maxOf(span, 0.0001f), pointCloud)
         }
     }
 }

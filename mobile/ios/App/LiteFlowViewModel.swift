@@ -13,6 +13,7 @@ final class LiteFlowViewModel: ObservableObject {
     @Published var storedReviews: [StoredPlanReview] = []
     @Published var previewScans: [PreviewScan] = []
 
+    private var importTasks: [UUID: Task<Void, Never>] = [:]
     private let client: EngineClient
 
     init(client: EngineClient) {
@@ -29,38 +30,39 @@ final class LiteFlowViewModel: ObservableObject {
     }
 
     func addFile(url: URL, modality: String) {
-        let shouldStopAccessing = url.startAccessingSecurityScopedResource()
-        defer {
-            if shouldStopAccessing {
-                url.stopAccessingSecurityScopedResource()
+        let surface = ["stl", "scan"].contains(modality)
+        if surface && !ScanImport.supports(url.lastPathComponent) {
+            errorMessage = "Unsupported scan. Export \(ScanImport.formats) from your scanner."
+            return
+        }
+        // Retained upload bytes are bounded independently of the decoded surface budget.
+        if surface && previewScans.filter({ ["stl", "scan"].contains($0.modality) }).count >= 2 {
+            errorMessage = "Two scan files can be previewed together. Reset the case to replace them."
+            return
+        }
+        let access = url.startAccessingSecurityScopedResource()
+        let byteCount = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        addScan(SelectedScan(fileName: url.lastPathComponent, arch: inferredArch(from: url.lastPathComponent),
+                             byteCount: byteCount, modality: modality))
+        guard surface else {
+            if access { url.stopAccessingSecurityScopedResource() }
+            return
+        }
+        let preview = PreviewScan(fileName: url.lastPathComponent, modality: modality)
+        previewScans.append(preview)
+        importTasks[preview.id] = Task {
+            defer { importTasks[preview.id] = nil }
+            let reader = Task.detached(priority: .userInitiated) {
+                defer { if access { url.stopAccessingSecurityScopedResource() } }
+                return Result { try ScanImport.readBounded(url) }
             }
-        }
-
-        let byteCount = ((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
-        let previewData: Data?
-        if modality == "stl" && byteCount <= STLMesh.maxBytes {
-            previewData = try? Data(contentsOf: url, options: .mappedIfSafe)
-            if previewData == nil { errorMessage = "The selected STL could not be read. Choose the file again." }
-        } else {
-            previewData = nil
-            if modality == "stl" { errorMessage = "Scan exceeds the mobile preview limit. Open it in the browser." }
-        }
-        addScan(
-            SelectedScan(
-                fileName: url.lastPathComponent,
-                arch: inferredArch(from: url.lastPathComponent),
-                byteCount: byteCount,
-                modality: modality
-            )
-        )
-        if let previewData {
-            previewScans.append(
-                PreviewScan(
-                    fileName: url.lastPathComponent,
-                    modality: modality,
-                    data: previewData
-                )
-            )
+            let result = await withTaskCancellationHandler { await reader.value } onCancel: { reader.cancel() }
+            // Reset or replacement must never resurrect a stale upload.
+            guard let index = previewScans.firstIndex(where: { $0.id == preview.id }) else { return }
+            switch result {
+            case .success(let data): previewScans[index].data = data
+            case .failure(let error): previewScans[index].error = "Could not read scan: \(error.localizedDescription)"
+            }
         }
     }
 
@@ -78,6 +80,10 @@ final class LiteFlowViewModel: ObservableObject {
     /// Posts selected records to the engine and advances to Review.
     func generate() async {
         guard !scans.isEmpty else { return }
+        guard !scans.contains(where: { $0.isSurfaceScan && !$0.isSTL }) else {
+            errorMessage = "Use the browser/full engine for review of other scan formats."
+            return
+        }
         isGenerating = true
         errorMessage = nil
         defer { isGenerating = false }
@@ -138,6 +144,8 @@ final class LiteFlowViewModel: ObservableObject {
     }
 
     func reset() {
+        importTasks.values.forEach { $0.cancel() }
+        importTasks = [:]
         scans = []
         previewScans = []
         result = nil
@@ -171,7 +179,8 @@ struct PreviewScan: Identifiable {
     let id = UUID()
     var fileName: String
     var modality: String
-    var data: Data
+    var data: Data? = nil
+    var error: String? = nil
 }
 
 private struct MobileExportPackage: Codable {

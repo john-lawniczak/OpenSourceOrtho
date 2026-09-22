@@ -34,9 +34,9 @@ matching the repo's no-heavy-framework, auditable, offline-leaning posture.
 
 ## The lite flow
 
-The **Teeth** tab opens a real, interactive `USER_ONE` scan by default. Choose
-**Baseline / Week 7** and **Upper / Lower**, drag to rotate, pinch to zoom, or
-reset the view. Every source triangle is rendered with depth and surface lighting;
+The **Teeth** tab opens both real `USER_ONE` arches by default. Drag the
+**Baseline → Week 7** slider for a continuous before/after reveal. Select
+**Both / Upper / Lower**, drag to rotate, pinch to zoom, or reset the view. Every source triangle is rendered with depth and surface lighting;
 there are no box/pyramid teeth, fabricated intermediate stages, or synthetic
 fallback surfaces. Failed or oversized imports show an explicit error.
 
@@ -53,7 +53,9 @@ These are independent, fitted whole-arch views. Display orientation is recorded
 in the shared history metadata; it is not a bite or cross-time registration.
 Progress scale is unverified and no per-tooth movement is inferred. Viewing the
 sample never adds it to uploaded files or sends it for plan generation. Imported
-STLs have a separate file selector and retain the existing review workflow.
+STL, OBJ, PLY, ASC, XYZ, and PTS files have a separate selector. Point clouds stay
+as points; only STL retains the existing review workflow. See the
+[format matrix, limits, and comparison semantics](SCAN_IMPORT.md).
 
 **Sample history** in the top bar retains the offline timeline, dates, quality
 inventory, and fixed orthographic PNG views. Both targets package the shared
@@ -64,14 +66,15 @@ update with the optional NumPy and Matplotlib dependencies installed:
 python3 tools/build_mobile_sample_history.py
 ```
 
-Both app versions are 0.3.0 (build 3); Android retains its `-scaffold` suffix.
+Both app versions are 0.4.0 (build 4); Android retains its `-scaffold` suffix.
 
 Both apps implement the same four-step phone flow. The full clinician workspace
 (records, caps editor, staged-movement table, plan versions) is intentionally
 **out of scope** for lite, but the phone scaffold now mirrors the expected user
 path.
 
-1. **Upload files** - STL scans for mobile preview/review, CBCT/DICOM and photos
+1. **Upload files** - scanner mesh/point-cloud exports for local preview, STL for
+   metadata-only review, CBCT/DICOM and photos
    as attached context, plus browser/full-engine JSON reviews/packages imported
    for on-device storage and sharing.
 2. **Teeth + time** - inspect real observed scans. For imported files, the review

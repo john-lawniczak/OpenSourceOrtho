@@ -56,10 +56,11 @@ xcodegen generate
 
 The app target keeps `CFBundleShortVersionString` as `$(MARKETING_VERSION)` and
 `CFBundleVersion` as `$(CURRENT_PROJECT_VERSION)`. `SettingsView` displays those
-bundle values as `Version 0.3.0 (3)`.
+bundle values as `Version 0.4.0 (4)`.
 
-The **Teeth** tab defaults to interactive USER_ONE scans, with recorded visit and
-arch selection. Four original STLs are copied directly from `datasets/` by the
+The **Teeth** tab defaults to interactive USER_ONE scans, with both arches and a continuous
+baseline/week-7 reveal. [Native scanner imports](../SCAN_IMPORT.md) support
+STL, OBJ, PLY, ASC, XYZ, and PTS. Four original STLs are copied directly from `datasets/` by the
 Xcode resource phase; unrelated case files are excluded. The UI test target
 checks all four scans and captures screenshots. Run it with Xcode Test or
 `xcodebuild test -scheme OpenSourceOrthoLite -destination 'platform=iOS Simulator,name=iPhone 17 Pro'`.
@@ -74,13 +75,13 @@ loopback `127.0.0.1:8000`, which the Simulator reaches directly - see
 
 ## What still has to be built (lite v1 -> shippable)
 
-- **Mesh registration**: `UploadView` accepts `.stl`, CBCT/DICOM attachments,
+- **Mesh registration**: `UploadView` accepts scanner geometry exports, CBCT/DICOM attachments,
   photos from the library or Files/iCloud/Drive providers, and browser-generated
   JSON reviews/packages; the next step is uploading/registering STL bytes with
   the engine mesh workspace instead of sending metadata only.
 - **Persistent review library**: browser JSON can be imported and included in
   the exported mobile package; add durable app storage and deletion/rename UI.
-- **Per-tooth 3D renderer**: `TeethAndTimeView` now renders selected STL scan
+- **Per-tooth 3D renderer**: `TeethAndTimeView` now renders selected scanner-export
   geometry in SceneKit when local bytes are available. The next step is replacing
   whole-arch STL preview with segmented per-tooth meshes from `GET /api/mesh/<id>`
   and rendering engine stage transforms on those meshes.

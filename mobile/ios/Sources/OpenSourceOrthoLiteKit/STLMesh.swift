@@ -4,6 +4,8 @@ import Foundation
 public struct STLMesh: Sendable {
     public let vertices: [Float] // interleaved position xyz, normal xyz
     public let triangleCount: Int
+    public let isPointCloud: Bool
+    public var vertexCount: Int { vertices.count / 6 }
     public let center: [Float]
     public let span: Float
     public static let maxTriangles = 1_000_000
@@ -13,7 +15,7 @@ public struct STLMesh: Sendable {
         case invalid, tooLarge
         public var errorDescription: String? {
             switch self {
-            case .invalid: return "This STL is empty, incomplete, or contains invalid coordinates."
+            case .invalid: return "This scan is empty, incomplete, unsupported, or contains invalid coordinates."
             case .tooLarge: return "This scan exceeds the mobile preview limit. Open it in the browser."
             }
         }
@@ -34,6 +36,7 @@ public struct STLMesh: Sendable {
                 }
             }
         } else {
+            try ScanImport.validateTextLines(data)
             guard let text = String(data: data, encoding: .utf8),
                   text.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("solid"),
                   text.contains("endsolid") else { throw LoadError.invalid }
@@ -52,8 +55,9 @@ public struct STLMesh: Sendable {
         return try build(positions)
     }
 
-    private static func build(_ positions: [Float]) throws -> STLMesh {
-        guard !positions.isEmpty, positions.count % 9 == 0,
+    static func build(_ positions: [Float], pointCloud: Bool = false) throws -> STLMesh {
+        guard positions.count <= maxTriangles * (pointCloud ? 3 : 9) else { throw LoadError.tooLarge }
+        guard !positions.isEmpty, positions.count % (pointCloud ? 3 : 9) == 0,
               positions.allSatisfy({ $0.isFinite && abs($0) <= 1_000_000 }) else {
             throw LoadError.invalid
         }
@@ -61,8 +65,17 @@ public struct STLMesh: Sendable {
         var high = [Float](repeating: -.infinity, count: 3)
         var vertices: [Float] = []
         vertices.reserveCapacity(positions.count * 2)
-        for start in stride(from: 0, to: positions.count, by: 9) {
+        for start in stride(from: 0, to: positions.count, by: pointCloud ? 3 : 9) {
             if start % 4096 == 0 { try Task.checkCancellation() }
+            if pointCloud {
+                for axis in 0..<3 {
+                    let value = positions[start + axis]
+                    low[axis] = min(low[axis], value); high[axis] = max(high[axis], value)
+                    vertices.append(value)
+                }
+                vertices.append(contentsOf: [0, 0, 1])
+                continue
+            }
             let a = (0..<3).map { positions[start + 3 + $0] - positions[start + $0] }
             let b = (0..<3).map { positions[start + 6 + $0] - positions[start + $0] }
             let n = [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]]
@@ -79,9 +92,9 @@ public struct STLMesh: Sendable {
             }
         }
         let span = (0..<3).map { high[$0] - low[$0] }.max() ?? 0
-        guard span > 0 else { throw LoadError.invalid }
-        return STLMesh(vertices: vertices, triangleCount: positions.count / 9,
-                       center: (0..<3).map { (low[$0] + high[$0]) / 2 }, span: span)
+        guard span > 0 || pointCloud else { throw LoadError.invalid }
+        return STLMesh(vertices: vertices, triangleCount: pointCloud ? 0 : positions.count / 9, isPointCloud: pointCloud,
+                       center: (0..<3).map { (low[$0] + high[$0]) / 2 }, span: max(span, 0.0001))
     }
 
     private static func uint32(_ data: Data, _ offset: Int) -> UInt32 {

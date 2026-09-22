@@ -1,5 +1,9 @@
 # Release readiness review — 2026-09-21
 
+**Latest mobile changes:** [2026-09-22 implementation audit](MOBILE_AUDIT_2026-09-22.md)
+supersedes the viewer behavior and native validation counts below. Public
+publication remains on hold.
+
 This candidate improves mobile scan rendering and repository hygiene. Public
 publication is on hold at the maintainer's request. The intended destination is
 a new feature branch in the verified private `OpenSourceOrtho-dev` repository;

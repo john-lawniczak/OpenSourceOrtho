@@ -3,7 +3,6 @@ import UIKit
 import UniformTypeIdentifiers
 import PhotosUI
 import OpenSourceOrthoLiteKit
-
 // Lite-flow screens. These are scaffolding: they wire the flow and render engine
 // output. Mobile can synthesize a limited STL-only review if the engine is
 // offline; CBCT/DICOM and mesh-backed edits remain browser/full-engine work.
@@ -22,7 +21,7 @@ struct UploadView: View {
 
         var title: String {
             switch self {
-            case .stl: return "STL scans"
+            case .stl: return "3D scans"
             case .cbct: return "CBCT / DICOM"
             case .photoFiles: return "Photos"
             case .browserReview: return "Browser review"
@@ -40,7 +39,7 @@ struct UploadView: View {
 
         var actionTitle: String {
             switch self {
-            case .stl: return "Choose STL scans"
+            case .stl: return "Choose 3D scans"
             case .cbct: return "Choose CBCT / DICOM"
             case .photoFiles: return "Choose photos"
             case .browserReview: return "Import review JSON"
@@ -58,7 +57,7 @@ struct UploadView: View {
 
         var modality: String {
             switch self {
-            case .stl: return "stl"
+            case .stl: return "scan"
             case .cbct: return "cbct"
             case .photoFiles: return "photo"
             case .browserReview: return "browser-review"
@@ -68,7 +67,7 @@ struct UploadView: View {
         var allowedTypes: [UTType] {
             switch self {
             case .stl:
-                return [UTType(filenameExtension: "stl") ?? .data]
+                return ScanImport.extensions.compactMap { UTType(filenameExtension: $0) } + [.data]
             case .cbct:
                 var types: [UTType] = [.zip, .data]
                 if let dicom = UTType(filenameExtension: "dcm") {
@@ -90,7 +89,7 @@ struct UploadView: View {
                 .foregroundStyle(.tint)
             Text("Upload patient files")
                 .font(.title3.bold())
-            Text("Mobile renders selected STL scans for review. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.")
+            Text("Open STL, OBJ, PLY, ASC, XYZ, or PTS scanner exports on-device. CBCT/DICOM can be attached for engine/browser handoff; full volume review still needs the browser/full engine.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -135,6 +134,7 @@ struct UploadView: View {
             .padding(12)
             .background(.thinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            if let error = model.errorMessage { Text(error).font(.caption).foregroundStyle(.red) }
             if !model.storedReviews.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Stored browser reviews")
@@ -179,12 +179,12 @@ struct UploadView: View {
             allowedContentTypes: importer?.allowedTypes ?? [.data],
             allowsMultipleSelection: true
         ) { result in
-            guard let importer else { return }
+            let chosenImport = importer ?? selectedImport
             if case let .success(urls) = result {
                 for url in urls {
-                    switch importer {
+                    switch chosenImport {
                     case .stl, .cbct, .photoFiles:
-                        model.addFile(url: url, modality: importer.modality)
+                        model.addFile(url: url, modality: chosenImport.modality)
                     case .browserReview:
                         model.importBrowserReview(url: url)
                     }
