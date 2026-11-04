@@ -26,7 +26,7 @@ export function guidedAnatomyMarkup(anatomy) {
       <li>${counts.tooth_axes} tooth axes</li>
       <li>${counts.alveolar_bone} alveolar-bone record(s)</li>
     </ul>
-    <button class="anatomy-detail-action" data-user-mode="advanced" type="button">Review anatomy in Technician mode</button>
+    <p class="review-tier-note">Full review: Settings → Technician mode.</p>
   `;
 }
 

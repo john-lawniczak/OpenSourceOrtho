@@ -6,9 +6,6 @@ Run with `pytest tests/e2e -q`.
 
 from __future__ import annotations
 
-import threading
-from collections.abc import Iterator
-from http.server import ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -17,22 +14,7 @@ pytest.importorskip("playwright.sync_api")
 
 from playwright.sync_api import expect, sync_playwright  # noqa: E402
 
-from orthoplan.server import Handler  # noqa: E402
-
-
-@pytest.fixture(scope="module")
-def server_url() -> Iterator[str]:
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    port = httpd.server_address[1]
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    try:
-        yield f"http://127.0.0.1:{port}"
-    finally:
-        httpd.shutdown()
-        httpd.server_close()
-        thread.join(timeout=2)
-
+from test_chat_workspace import server_url  # noqa: E402,F401
 
 def test_viewer_renders_3d_canvas(server_url: str) -> None:
     with sync_playwright() as pw:
@@ -45,7 +27,9 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
         errors: list[str] = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             # Go to the Review step so the viewer container is visible and sized.
             page.click('button.step[data-step="review"]')
@@ -74,21 +58,24 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
         errors: list[str] = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.wait_for_selector("#panel-upload.is-active", timeout=15000)
-            assert "Open sample" not in page.locator(".journey-nav").inner_text()
+            assert page.locator(".journey-nav").count() == 0
             page.click(".sample-launch")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#panel-review.is-active", timeout=15000)
             page.wait_for_selector("#findingList li", timeout=15000)
 
             page.wait_for_function(
-                "() => document.querySelector('#sampleStatusChip')?.innerText.includes('walkthrough')"
+                "() => document.querySelector('#sampleStatusChip')?.textContent.includes('Sample ready')"
             )
             chip = page.locator("#sampleStatusChip").inner_text()
-            assert "walkthrough" in chip.lower()
+            assert "Sample ready" in chip
             assert page.locator("#planTitle").input_value() == "Sample test case · USER_ONE"
             assert page.locator("#scanUnits").input_value() == "mm"
 
@@ -123,13 +110,16 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
         errors: list[str] = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click(".sample-launch")
-            page.wait_for_selector('#guided .gstep[data-gstep="upload"].is-active', timeout=15000)
+            page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
 
             page.click('[data-gstep-nav="plan"]')
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
+            page.wait_for_selector('#guidedTeeth [data-select-tooth="11"]', timeout=90000)
             page.click("#guidedBuild")
             page.wait_for_function(
                 """() => document.querySelector('#guidedBuildStatus')?.innerText.includes('CONSISTENT')"""
@@ -172,11 +162,14 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
         errors: list[str] = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#findingList li", timeout=15000)
 
+            page.get_by_text("Suggested records", exact=True).click()
             acquisition = page.locator("#acquisitionList").inner_text()
             assert "Root data" in acquisition or "CBCT" in acquisition
 
@@ -221,7 +214,9 @@ def test_acquisition_print_export_and_visual_screenshots(
         errors: list[str] = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
 
             page.click('button.step[data-step="availability"]')
@@ -235,9 +230,11 @@ def test_acquisition_print_export_and_visual_screenshots(
             page.click('button.step[data-step="review"]')
             page.wait_for_selector("#findingList li", timeout=15000)
 
+            page.get_by_text("Suggested records", exact=True).click()
             acquisition = page.locator("#acquisitionList").inner_text()
             assert "Treatment notes" in acquisition or "CBCT" in acquisition
 
+            page.get_by_text("Technical output", exact=True).click()
             expect(page.locator("#printExportStatus")).to_contain_text("Inputs complete")
             print_status = page.locator("#printExportStatus").inner_text()
             assert "user's own responsibility" in print_status
@@ -267,7 +264,9 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
         errors: list[str] = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             response = page.evaluate(
                 """async () => {

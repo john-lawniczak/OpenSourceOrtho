@@ -114,6 +114,8 @@ export function rowsFromPlan(plan) {
         tip: delta.rotate_tip_deg,
         torque: delta.rotate_torque_deg,
         rotation: delta.rotate_rotation_deg,
+        ...(delta.source ? { source: delta.source } : {}),
+        ...(delta.mesh_asset_id ? { mesh_asset_id: delta.mesh_asset_id } : {}),
       });
     }
   }

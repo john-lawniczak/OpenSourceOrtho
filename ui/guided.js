@@ -13,12 +13,7 @@
 import { el, state } from "./state.js";
 import { planJson } from "./plan.js";
 import { requestPrintPackage } from "./state.js";
-import {
-  scaleConfirmed,
-  targetFor,
-  targetStatusText,
-  targetWarningTier,
-} from "./manual_edit.js";
+import { renderToothWorkspace } from "./tooth_workspace.js";
 import { guidedReviewDashboard } from "./guided_review.js";
 export { guidedReviewDashboard } from "./guided_review.js";
 
@@ -34,19 +29,6 @@ export const GUIDED_STEPS = [
 ];
 
 let pendingStepFocus = false;
-
-const TOOTH_NAMES = {
-  1: "central incisor", 2: "lateral incisor", 3: "canine", 4: "first premolar",
-  5: "second premolar", 6: "first molar", 7: "second molar", 8: "third molar",
-};
-
-const ARCH_NAMES = { 1: "upper right", 2: "upper left", 3: "lower left", 4: "lower right" };
-
-function toothLabel(value) {
-  const quadrant = ARCH_NAMES[Number(String(value)[0])] || "tooth";
-  const name = TOOTH_NAMES[Number(String(value)[1])] || "tooth";
-  return `${value} · ${quadrant} ${name}`;
-}
 
 function stepIndex(id) {
   const idx = GUIDED_STEPS.findIndex((step) => step.id === id);
@@ -76,7 +58,6 @@ function focusActiveGuidedStep() {
     if (!panel || !heading) return;
     heading.setAttribute("tabindex", "-1");
     heading.focus({ preventScroll: true });
-    panel.scrollIntoView({ block: "start", behavior: "auto" });
   });
 }
 
@@ -118,6 +99,7 @@ function relocate(blockId, hostId) {
 // "preview". Only one step is visible at a time, so relocating the one WebGL
 // instance into the active step's host is safe.
 const VIEWER_STEP_HOSTS = {
+  upload: "guidedUploadViewerHost",
   plan: "guidedPlanViewerHost",
   details: "guidedDetailsViewerHost",
   preview: "guidedPreviewHost",
@@ -129,11 +111,16 @@ const VIEWER_STEP_HOSTS = {
 export function placeSharedBlocks() {
   if (state.userMode === "simple") {
     relocate("simpleUpload", "guidedUploadHost");
+    relocate("scanUnitControls", "guidedScanMetadataHost");
+    relocate("segmentationBlock", "guidedSegmentationHost");
     relocate("viewerBlock", VIEWER_STEP_HOSTS[currentGuidedStep()] || "guidedPreviewHost");
   } else {
     relocate("simpleUpload", "techUploadHost");
+    relocate("scanUnitControls", "techScanMetadataHost");
+    relocate("segmentationBlock", "techSegmentationHost");
     relocate("viewerBlock", "techViewerHost");
   }
+  if (state.activeStep === "photos") relocate("viewerBlock", "imagingViewerHost");
 }
 
 export function renderGuided() {
@@ -147,6 +134,7 @@ export function renderGuided() {
     const done = stepIndex(dot.dataset.gstepNav) < stepIndex(active);
     dot.classList.toggle("is-active", dot.dataset.gstepNav === active);
     dot.classList.toggle("is-done", done);
+    dot.querySelector("button")?.setAttribute("aria-current", dot.dataset.gstepNav === active ? "step" : "false");
   });
   document.querySelectorAll("[data-guided-view]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.guidedView === state.view);
@@ -166,11 +154,11 @@ export function renderGuided() {
   if (heading) {
     heading.textContent = state.sample.active
       ? "Sample test case — guided walkthrough"
-      : "Plan your aligners, step by step";
+      : "Explore your scans, step by step";
   }
 
   renderGuidedTeeth();
-  renderGuidedEdit();
+  renderToothWorkspace();
   renderGuidedBuildStatus();
   renderGuidedReview();
   renderGuidedPrint();
@@ -190,65 +178,12 @@ function renderGuidedBuildStatus() {
   status.textContent = text;
   const button = el("guidedBuild");
   if (button) {
-    button.textContent = sampleLoaded ? "Rebuild sample plan" : "Build my plan";
+    button.textContent = sampleLoaded ? "Regenerate sample stages" : "Generate staged preview";
     button.dataset.preloaded = sampleLoaded ? "1" : "";
   }
 }
 
-function renderGuidedEdit() {
-  const title = el("guidedEditTitle");
-  if (!title) return;
-  const selected = state.manualEdit.selectedTooth;
-  const confirmed = scaleConfirmed(state.scanUnits);
-  const target = selected ? targetFor(state.rows, selected) : { x: 0, y: 0 };
-  const tier = targetWarningTier(target);
-  const canEdit = Boolean(selected && confirmed);
-
-  title.textContent = selected ? `Tooth ${selected}` : "No tooth selected";
-  const status = el("guidedEditStatus");
-  if (status) {
-    status.dataset.tier = selected && confirmed ? tier : "muted";
-    status.textContent = !selected
-      ? "Select a tooth in the 3D view."
-      : (!confirmed
-          ? "Set scan units to mm before nudging."
-          : targetStatusText(target));
-  }
-
-  const readout = el("guidedEditReadout");
-  if (readout) {
-    readout.textContent = selected
-      ? `x ${target.x.toFixed(2)} mm · y ${target.y.toFixed(2)} mm`
-      : "";
-  }
-
-  document.querySelectorAll(".guided-nudge-pad button").forEach((button) => {
-    button.disabled = !canEdit;
-  });
-  const undo = el("guidedEditUndo");
-  if (undo) undo.disabled = !(state.manualEdit.undoStack || []).length;
-  const rebuild = el("guidedRebuild");
-  if (rebuild) rebuild.disabled = !state.rows.length;
-  const reset = el("guidedTargetReset");
-  if (reset) reset.disabled = !canEdit;
-  const clear = el("guidedClearSelection");
-  if (clear) clear.disabled = !selected;
-}
-
 function renderGuidedTeeth() {
-  const host = el("guidedTeeth");
-  if (!host) return;
-  const teeth = planTeeth();
-  const excluded = new Set(state.guided.excludedTeeth);
-  host.innerHTML = teeth.length
-    ? teeth.map((tooth) => `
-        <label class="guided-tooth ${excluded.has(tooth) ? "is-excluded" : ""}">
-          <input type="checkbox" data-guided-tooth="${tooth}" ${excluded.has(tooth) ? "" : "checked"} />
-          <span>${toothLabel(tooth)}</span>
-        </label>
-      `).join("")
-    : "<p class=\"guided-hint\">Upload scans or load the sample, then build your plan to see which teeth move.</p>";
-
   const wear = Number(el("wearInterval")?.value || 0);
   document.querySelectorAll("#guidedDuration [data-wear]").forEach((button) => {
     button.classList.toggle("is-active", Number(button.dataset.wear) === wear);

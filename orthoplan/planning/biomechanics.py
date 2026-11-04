@@ -57,7 +57,7 @@ def apply_pose_to_vertex(vertex: Vec3, pose: ToothPose, frame: RootAwareMovement
         vertex[1] + pose.translate_y_mm,
         vertex[2] + pose.translate_z_mm,
     )
-    if frame is None:
+    if frame is None or not (pose.rotate_tip_deg or pose.rotate_torque_deg or pose.rotate_rotation_deg):
         return translated
     rotated = _rotate_root_aware(vertex, pose, frame)
     return (

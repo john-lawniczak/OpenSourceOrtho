@@ -80,21 +80,21 @@ WebGL context.
 
 ## Plan AI
 
-The Review surface includes a prominent **Ask AI about your plan** box. It posts
-the current plan-shaped JSON to `POST /api/chat`. A single model dropdown picks
-both the model and its provider, and the chat always sends the full plan context.
-The default `local` helper produces an educational explanation without leaving the
-local server. External models (OpenAI GPT, Claude, and open-source / self-hosted
-endpoints) perform live completions once a model is selected, a key/endpoint is
-supplied, and per-session egress consent (`share_acknowledged`) is given.
+The **Plan assistant** opens from **Ask AI** and can expand into a larger
+conversation workspace. Ordered prompts and replies stay in tab memory; New chat
+clears the thread. The latest 16 non-error messages accompany follow-ups. Replies
+render as text, including streamed updates, without interpreting model HTML.
 
-The **single model dropdown** (each option carries its provider) and a
-**session-only API-key field** are shown directly in the AI box with
-provider-specific, plain-language help (the key field is hidden for the no-key
-local helper); the model endpoint (for an open-source / self-hosted model) and the
-egress consent live under **Connector settings**. API keys are read only at send
-time and are not written into plan JSON, case snapshots, `localStorage`, or
-exported reports.
+**Settings** contains separate provider/model selectors, a session-only key,
+compatible-host endpoint, and sharing consent. Done closes the dialog without
+sending a request. Switching providers clears the key, endpoint, and consent.
+The local helper stays offline. External models receive full plan context and
+conversation only with explicit consent when sending a message or requesting an
+optional AI generation review. Keys are never saved in browser storage or plans.
+
+`chat_controller.js` owns requests, `chat_view.js` owns connection presentation,
+`chat_thread.js` owns transcript updates, and `chat_settings.js` owns settings
+changes. The server retains its existing output lint gate.
 
 The assistant always works from the **full plan context** (findings, data gaps,
 timeline, clinical controls, mesh metadata, and the plan snapshot); there is no

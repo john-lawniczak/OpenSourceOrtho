@@ -145,7 +145,7 @@ function deltaPayload(row) {
     rotate_torque_deg: row.torque,
     rotate_rotation_deg: row.rotation,
     coordinate_frame: "scan-local",
-    source: "manual",
-    mesh_asset_id: null,
+    source: row.source || "manual",
+    mesh_asset_id: row.mesh_asset_id || null,
   };
 }

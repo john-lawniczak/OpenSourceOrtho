@@ -1,3 +1,4 @@
+import { geometryJob } from "./geometry_jobs.js";
 import { scanUploadContentType } from "./scan_formats.js";
 
 export const state = {
@@ -68,8 +69,8 @@ export const state = {
       {
         kind: "openai",
         label: "OpenAI",
-        model: "gpt-5.5",
-        models: ["gpt-5.5", "gpt-5.4", "gpt-4.1"],
+        model: "gpt-6.1-sol",
+        models: ["gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna"],
         shares_patient_data: true,
         requires_api_key: true,
         supports_streaming: true,
@@ -77,14 +78,14 @@ export const state = {
       {
         kind: "claude-code",
         label: "Claude Code",
-        model: "claude-opus-4-8",
-        models: ["claude-opus-4-8", "claude-sonnet-4-7", "claude-code-default"],
+        model: "claude-code-default",
+        models: ["claude-code-default", "opus", "sonnet", "haiku"],
         shares_patient_data: true,
         requires_api_key: true,
       },
       {
         kind: "mcp",
-        label: "MCP-compatible model host",
+        label: "OpenAI-compatible host",
         model: "mcp-model",
         models: ["mcp-model"],
         shares_patient_data: true,
@@ -94,9 +95,9 @@ export const state = {
       },
       {
         kind: "open-source",
-        label: "Open-source local model",
+        label: "Local / open-weight model",
         model: "local-model",
-        models: ["local-model", "llama-3.1", "qwen2.5"],
+        models: ["local-model"],
         shares_patient_data: true,
         requires_api_key: false,
         allow_custom_model: true,
@@ -104,8 +105,8 @@ export const state = {
     ],
     modelByProvider: {
       local: "local-educational-helper",
-      openai: "gpt-5.5",
-      "claude-code": "claude-opus-4-8",
+      openai: "gpt-6.1-sol",
+      "claude-code": "claude-code-default",
       mcp: "mcp-model",
       "open-source": "local-model",
     },
@@ -293,17 +294,8 @@ export function maxStage() {
   return Math.max(0, ...stages());
 }
 
-export async function evaluatePlan(payload) {
-  const response = await fetch("/api/evaluate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    const detail = await response.json().catch(() => ({}));
-    throw new Error((detail.errors || ["engine request failed"]).join("; "));
-  }
-  return response.json();
+export async function evaluatePlan(payload, options) {
+  return geometryJob("evaluate", payload, options);
 }
 
 export async function requestPlanGeneration(payload) {
@@ -417,17 +409,8 @@ export async function requestOcclusion(payload) {
   return response.json();
 }
 
-export async function requestSegmentation(payload) {
-  const response = await fetch("/api/segment", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    const detail = await response.json().catch(() => ({}));
-    throw new Error((detail.errors || ["segmentation request failed"]).join("; "));
-  }
-  return response.json();
+export async function requestSegmentation(payload, options) {
+  return geometryJob("segment", payload, options);
 }
 
 export async function requestCbctAnatomyProposal(payload) {

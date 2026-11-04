@@ -69,6 +69,8 @@ def labelled_real_scan_report(
 ) -> LabelledSegmentationBenchmarkReport:
     """Score active/local segmentation against labelled real-scan truth."""
 
+    if min_cases < 1 or any(not 0 < value <= 1 for value in (min_triangle_label_accuracy, min_region_purity)):
+        raise ValueError("Require at least one case and accuracy/purity floors in (0, 1]")
     path = Path(manifest_path)
     payload = json.loads(path.read_text(encoding="utf-8"))
     cases = payload.get("cases", [])

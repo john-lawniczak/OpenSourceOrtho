@@ -1,0 +1,61 @@
+/* Persistent orientation and compact, approachable reference tools. */
+.topbar-settings { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; font-size: 22px; }
+.topbar-settings span { display: inline !important; }
+.profile-launch { display: grid; gap: 6px; padding: 14px; background: #203d3b; color: #e5f7f3; border: 1px solid #44605e; text-align: left; cursor: pointer; }
+.profile-launch small { color: #b0cac5; font-size: 11px; font-weight: 400; }
+#guidedRail { position: sticky; top: 60px; z-index: 30; background: var(--panel); padding: 12px; border: 1px solid var(--line); border-radius: 12px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; margin-bottom: 18px; }
+#guidedRail li { flex: 1 0 auto; justify-content: center; font-size: 12px; cursor: pointer; white-space: nowrap; }
+#guidedRail li { padding: 0; }
+#guidedRail li > button { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 36px; padding: 6px 12px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; border-radius: inherit; }
+body[data-mode="advanced"] #guidedRail { display: none; }
+body[data-sample="1"] .upload-target,
+body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-uploads] { display: none; }
+.tooth-reference-layout { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 18px; }
+.tooth-reference-controls { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-alt); }
+.tooth-reference-controls .tooth-explorer-form { margin: 0; gap: 6px; }
+.tooth-reference-controls .tooth-explorer-form label { flex-basis: 100%; font-size: 12px; }
+.tooth-reference-controls input { max-width: 100%; }
+.tooth-reference-controls .tooth-explorer-actions { flex-direction: column; align-items: stretch; }
+.tooth-reference-controls button { font-size: 12px; padding: 7px 10px; }
+.selection-color { display: grid; gap: 6px; font-size: 12px; margin-top: 18px; }
+.selection-color select { width: 100%; }
+.tooth-reference-mouth { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.tooth-reference-mouth .tooth-explorer-canvas { grid-area: 1 / 1; margin: 62px 0; }
+.tooth-reference-mouth .tooth-explorer-grid { grid-area: 1 / 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto 1fr auto; gap: 8px 16px; pointer-events: none; z-index: 1; }
+.tooth-explorer-grid fieldset { background: var(--panel); pointer-events: auto; padding: 6px; align-self: start; }
+.tooth-explorer-grid fieldset[data-quadrant="4"], .tooth-explorer-grid fieldset[data-quadrant="3"] { grid-row: 3; align-self: end; }
+.tooth-explorer-grid legend { font-size: 11px; }
+.tooth-reference-mouth > .viewer-caveat { grid-row: 2; font-size: 11px; }
+.tooth-explorer-viewer { height: clamp(340px, 46vh, 500px); }
+#guidedTeeth { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: none; gap: 12px; overflow: visible; }
+#guidedTeeth fieldset { min-width: 0; display: flex; gap: 5px; flex-wrap: wrap; border: 0; margin: 0; padding: 0; }
+#guidedTeeth legend { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+#guidedTeeth button { justify-content: center; min-width: 34px; min-height: 36px; padding: 6px; font-size: 13px; flex: 1; }
+.glossary-categories { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+.glossary-categories button { padding: 8px 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 12px; cursor: pointer; }
+.glossary-categories [aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#glossaryTerms { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px; margin: 0; }
+#glossaryTerms > div { border: 1px solid var(--line); padding: 18px; border-radius: 12px; background: var(--panel-alt); }
+#glossaryTerms > div[hidden] { display: none; }
+#glossaryTerms dt { margin: 0 0 10px; font-size: 16px; line-height: 1.5; }
+#glossaryTerms dt small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; font-weight: 500; }
+#glossaryTerms dd { margin: 0; font-size: 13px; line-height: 1.65; color: var(--muted); }
+.chat-context-summary { font-size: 11px; color: var(--muted); margin-top: 10px; }
+.chat-context-summary p { line-height: 1.5; }
+@media (max-width: 1100px) {
+  .tooth-reference-layout { grid-template-columns: 1fr; }
+  .tooth-reference-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+  .tooth-reference-controls .tooth-explorer-form { flex: 1 1 180px; }
+  .tooth-reference-controls .tooth-explorer-form label { flex: 1 1 90px; }
+  .selection-color { margin: 0; }
+  .tooth-reference-controls .tooth-explorer-actions { flex-direction: row; flex-wrap: wrap; margin: 0; }
+  .tooth-reference-controls > .viewer-caveat { flex-basis: 100%; margin: 0; }
+}
+@media (max-width: 600px) {
+  .sidebar .profile-launch { grid-column: 1 / -1; }
+  #guidedRail { margin-inline: -8px; padding: 8px; border-radius: 0; }
+  .tooth-explorer-grid fieldset { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tooth-reference-mouth .tooth-explorer-canvas { margin-block: 114px; }
+  .tooth-explorer-grid button { min-height: 36px; }
+  .tooth-explorer-viewer { height: 300px; }
+}

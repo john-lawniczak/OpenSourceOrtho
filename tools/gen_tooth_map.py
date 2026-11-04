@@ -25,11 +25,11 @@ from pathlib import Path
 import tooth_map_draw as draw
 
 # ── Canvas ────────────────────────────────────────────────────────────────
-W, H = 720, 560
-CX = 360.0
-UP_CY, UP_RX, UP_RY = 240.0, 236.0, 174.0     # upper arch (opens downward)
-LO_CY, LO_RX, LO_RY = 320.0, 236.0, 174.0     # lower arch (mirror)
-W_SCALE, D_SCALE = 3.9, 2.85                   # mm -> px crown scaling
+W, H = 640, 760
+CX = 320.0
+UP_CY, UP_RX, UP_RY = 340.0, 155.0, 240.0     # upper arch (opens downward)
+LO_CY, LO_RX, LO_RY = 420.0, 155.0, 240.0     # lower arch (mirror)
+W_SCALE, D_SCALE = 3.9, 3.0                   # mm -> px crown scaling
 GUM_OUT = 18                                   # gum pad reach past the teeth (px)
 GUM_INNER_F = 0.24                             # inner gum radius / arch radius
 
@@ -76,22 +76,31 @@ class Tooth:
 
 def arch_point(f, a: Arch, dr=0.0):
     """Point on an arch curve; f in [0,1] runs left -> right. dr scales radius."""
-    angle = math.pi * (1 - f)
-    rx, ry = a.rx + dr, a.ry + dr
-    px = CX + rx * math.cos(angle)
-    py = (a.cy + ry * math.sin(angle)) if a.lower else (a.cy - ry * math.sin(angle))
-    return px, py
+    # A parabolic U: posterior rows straighten instead of closing into an oval.
+    u = 2 * f - 1
+    x = (a.rx + dr) * math.sin(u * math.pi / 2)
+    depth = (a.ry + dr) * (1 - abs(u) ** 1.7)
+    return CX + x, a.cy + (depth if a.lower else -depth)
 
 
 def layout(a: Arch, widths_mm, depths_mm, universal, fdi):
     widths_px = [widths_mm[p] * W_SCALE for p in POSITIONS]
     total = sum(widths_px)
+    samples = [arch_point(i / 1000, a) for i in range(1001)]
+    lengths = [0.0]
+    for first, second in zip(samples, samples[1:]):
+        lengths.append(lengths[-1] + math.dist(first, second))
     teeth, run = [], 0.0
     for i, pos in enumerate(POSITIONS):
         f = (run + widths_px[i] / 2) / total
         run += widths_px[i]
+        target = f * lengths[-1]
+        f = next(j for j, length in enumerate(lengths) if length >= target) / 1000
         px, py = arch_point(f, a)
-        rot = math.degrees(math.atan2(-(CX - px), a.cy - py))
+        before, after = arch_point(max(0, f - .001), a), arch_point(min(1, f + .001), a)
+        rot = math.degrees(math.atan2(after[1] - before[1], after[0] - before[0]))
+        if a.lower:
+            rot += 180
         teeth.append(Tooth(px, py, rot, widths_px[i], depths_mm[pos] * D_SCALE,
                            KIND[pos], universal[i], fdi[i]))
     return teeth
@@ -99,7 +108,7 @@ def layout(a: Arch, widths_mm, depths_mm, universal, fdi):
 
 def _gum_points(a: Arch):
     pts = [arch_point(k / 40, a, GUM_OUT) for k in range(41)]
-    inner = a.rx * GUM_INNER_F - a.rx
+    inner = -20
     pts += [arch_point(1 - k / 40, a, inner) for k in range(41)]
     return pts
 
@@ -108,15 +117,9 @@ def _scene(a: Arch, cavity):
     """Mucosa frame, gum pad, gingival collar and the inner soft-tissue."""
     gp = _gum_points(a)
     mucosa = [arch_point(k / 40, a, GUM_OUT + 9) for k in range(41)]
-    mucosa += [arch_point(1 - k / 40, a, a.rx * 0.18 - a.rx) for k in range(41)]
+    mucosa += [arch_point(1 - k / 40, a, -25) for k in range(41)]
     collar = [arch_point(k / 60, a) for k in range(61)]
-    inner_cy = a.cy + (a.ry * 0.40) * (1 if a.lower else -1)
-    body = (draw.mucosa(mucosa) + draw.gum_pad(gp) + draw.gingival_collar(collar))
-    if cavity == "palate":
-        body += draw.palate(CX, inner_cy, a.rx * 0.40, a.ry * 0.44)
-    else:
-        body += draw.tongue(CX, inner_cy, a.rx * 0.44, a.ry * 0.48)
-    return body
+    return draw.mucosa(mucosa) + draw.gum_pad(gp) + draw.gingival_collar(collar)
 
 
 def _tooth_svg(t: Tooth) -> str:
@@ -131,14 +134,14 @@ def _tooth_svg(t: Tooth) -> str:
 
 def _labels() -> str:
     out = []
-    for lx, ly, big, small in [(CX, 216, "UPPER ARCH", "(maxillary)"),
-                               (CX, 366, "LOWER ARCH", "(mandibular)")]:
+    for lx, ly, big, small in [(CX, 240, "UPPER ARCH", "(maxillary)"),
+                               (CX, 530, "LOWER ARCH", "(mandibular)")]:
         out.append(f'<text x="{lx}" y="{ly}" text-anchor="middle" font-size="12" '
-                   f'fill="#ffffff" opacity="0.92" letter-spacing="1">{big}</text>')
+                   f'fill="#496965" opacity="0.92" letter-spacing="1">{big}</text>')
         out.append(f'<text x="{lx}" y="{ly+14}" text-anchor="middle" font-size="9.5" '
-                   f'fill="#ffffff" opacity="0.8">{small}</text>')
-    for cxq, cyq, txt in [(78, 96, "Upper right"), (642, 96, "Upper left"),
-                          (78, 476, "Lower right"), (642, 476, "Lower left")]:
+                   f'fill="#496965" opacity="0.8">{small}</text>')
+    for cxq, cyq, txt in [(80, 230, "Upper right"), (560, 230, "Upper left"),
+                          (80, 530, "Lower right"), (560, 530, "Lower left")]:
         out.append(f'<text x="{cxq}" y="{cyq}" text-anchor="middle" font-size="10.5" '
                    f'font-weight="600" fill="{draw.MUTED}">{txt}</text>')
     return "".join(out)
@@ -146,12 +149,12 @@ def _labels() -> str:
 
 def _legend() -> str:
     return (
-        f'<text x="{CX}" y="536" text-anchor="middle" font-size="11" '
+        f'<text x="{CX}" y="720" text-anchor="middle" font-size="11" '
         f'fill="{draw.INK}"><tspan font-weight="700">Circled number</tspan> = '
         f'Universal (US 1&#8211;32) &#183; <tspan font-weight="700">small number'
         f'</tspan> = FDI (used by this app)</text>'
-        f'<text x="{CX}" y="551" text-anchor="middle" font-size="10" '
-        f'fill="{draw.MUTED}">Patient\'s view: their right side is on your left. '
+        f'<text x="{CX}" y="740" text-anchor="middle" font-size="10" '
+        f'fill="{draw.MUTED}">Their right side is on your left. '
         f'FDI = quadrant digit (1 UR &#183; 2 UL &#183; 3 LL &#183; 4 LR) + tooth '
         f'from midline (1 front &#8594; 8 back).</text>'
     )

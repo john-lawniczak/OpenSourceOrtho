@@ -5,7 +5,25 @@ import { el, requestPlanGeneration, state } from "./state.js";
 
 export async function generatePlan() {
   if (state.generation.busy) return;
-  state.generation.busy = true;
+  if (state.goalPreview || state.goalBusy) {
+    state.generation.status = "Apply or discard the tooth preview first.";
+    renderAll();
+    return;
+  }
+  if (state.userMode === "simple" && (state.scanUnits !== "mm" || !state.segmentation.applied)) {
+    state.generation.status = "Confirm mm units and review individual teeth in Upload first.";
+    state.guided.step = "upload";
+    renderAll();
+    return;
+  }
+  const generation = state.generation;
+  const segmentation = state.segmentation;
+  const baseline = JSON.stringify(planJson());
+  const parameters = () => JSON.stringify([generation.landmarks, generation.notes, state.simpleGoal]);
+  const initialParameters = parameters();
+  const isCurrent = () => state.generation === generation && state.segmentation === segmentation
+    && JSON.stringify(planJson()) === baseline && parameters() === initialParameters;
+  generation.busy = true;
   state.generation.status = "Reviewing scan, generating, and orchestrating checks...";
   renderGeneration();
   try {
@@ -14,16 +32,21 @@ export async function generatePlan() {
     // optional model review step; without it the pipeline runs fully offline.
     const apiKey = el("chatApiKey").value.trim();
     const result = await requestPlanGeneration({
-      plan: planJson(),
+      plan: JSON.parse(baseline),
       landmarks: state.generation.landmarks || undefined,
       acknowledge_educational: state.generation.acknowledged,
-      notes: state.generation.notes.trim() || undefined,
+      notes: [state.userMode === "simple" ? `Exploration focus: ${state.simpleGoal.replaceAll("-", " ")}.` : "",
+        state.generation.notes.trim()].filter(Boolean).join(" ") || undefined,
       provider: state.chat.provider,
       model: state.chat.model,
       api_key: apiKey || undefined,
       endpoint: state.chat.agentEndpoint.trim() || undefined,
       share_acknowledged: state.chat.agentAccessEnabled,
     });
+    if (!isCurrent()) {
+      generation.status = "The working plan changed; generate a new preview.";
+      return;
+    }
     if (result.ok === false) {
       state.generation.result = null;
       state.generation.status = (result.errors || ["Generation failed."]).join("; ");
@@ -35,14 +58,15 @@ export async function generatePlan() {
       if (result.plan?.stages?.length) {
         state.rows = rowsFromPlan(result.plan);
         state.activeStep = "review";
+        if (state.userMode === "simple") state.guided.step = "plan";
         state.view = "overlay";
       }
     }
   } catch (error) {
-    state.generation.result = null;
-    state.generation.status = error.message;
+    generation.result = null;
+    generation.status = error.message;
   } finally {
-    state.generation.busy = false;
+    generation.busy = false;
     renderAll();
   }
 }

@@ -10,6 +10,10 @@
     <link rel="apple-touch-icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./tooth_explorer.css" />
+    <link rel="stylesheet" href="./workspace.css" />
+    <link rel="stylesheet" href="./tooth_workspace.css" />
+    <link rel="stylesheet" href="./chat.css" />
+    <link rel="stylesheet" href="./reference_workspace.css" />
     <script type="importmap">
       { "imports": { "three": "./vendor/three.module.js" } }
     </script>
@@ -24,23 +28,22 @@
         </span>
         <div>
           <h1>OpenSource Ortho</h1>
-          <p>Open aligner-planning workspace</p>
+          <p>Clear-aligner research toolkit</p>
         </div>
       </div>
+      <div class="topbar-actions"><button id="openChatSettings" class="topbar-settings" type="button" aria-haspopup="dialog" aria-label="Open settings" title="Settings"><span aria-hidden="true">⚙</span></button>
       <button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle light / dark mode">
         <span class="theme-toggle-track" aria-hidden="true">
           <span class="theme-toggle-glyph sun">☀</span>
           <span class="theme-toggle-glyph moon">☾</span>
           <span class="theme-toggle-thumb"></span>
         </span>
-      </button>
+      </button></div>
     </header>
     <main class="app-shell">
       <aside class="sidebar" aria-label="Plan workflow">
-        <div class="mode-switch" aria-label="Workspace mode">
-          <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
-          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Technician</button>
-        </div>
+
+        <button class="profile-launch" id="teethProfile" type="button">Your Teeth Profile<small id="teethProfileStatus">Start with your scan</small></button>
         <button class="sample-launch" id="sampleLaunch" type="button">Sample Test Case</button>
 
         <nav class="step-list" aria-label="Workflow steps">
@@ -53,36 +56,44 @@
 
         <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Tooth Map</button>
         <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open the glossary of key terms">Glossary</button>
-        <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging &amp; Photos Guide</button>
+        <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging guide</button>
 
         <section class="review-tier-panel" aria-label="Review tier">
           <h2>Review Tier</h2>
           <div id="reviewTierBanner" class="review-tier-banner"></div>
         </section>
 
-        <section class="review-tier-panel" aria-label="CBCT status" id="cbctPanel" hidden>
-          <h2>CBCT</h2>
+        <details class="review-tier-panel" aria-label="CBCT status" id="cbctPanel" hidden>
+          <summary>CBCT details</summary>
           <div id="cbctBanner" class="review-tier-banner"></div>
-        </section>
+        </details>
 
-        <section class="review-tier-panel" aria-label="Derived anatomy review" id="anatomyPanel" hidden>
-          <h2>CBCT-Derived Anatomy</h2>
+        <details class="review-tier-panel" aria-label="Derived anatomy review" id="anatomyPanel" hidden>
+          <summary>Anatomy review</summary>
           <div id="anatomyReviewList" class="upload-file-list"></div>
-        </section>
+        </details>
 
-        <section class="data-gap-panel" aria-label="Data gaps">
-          <h2>Data Gaps</h2>
+        <details class="data-gap-panel" aria-label="Data gaps">
+          <summary>Data gaps</summary>
           <ul id="dataGapList"></ul>
-        </section>
+        </details>
 
-        <section class="data-gap-panel" aria-label="Acquisition advisor">
-          <h2>Acquire Next</h2>
+        <details class="data-gap-panel" aria-label="Acquisition advisor">
+          <summary>Suggested records</summary>
           <p id="acquisitionCaveat"></p>
           <ul id="acquisitionList"></ul>
-        </section>
+        </details>
       </aside>
 
       <section class="workspace">
+          <ol class="guided-rail" id="guidedRail">
+            <li data-gstep-nav="upload"><button type="button"><span>1</span> Upload</button></li>
+            <li data-gstep-nav="plan"><button type="button"><span>2</span> Teeth &amp; time</button></li>
+            <li data-gstep-nav="details"><button type="button"><span>3</span> Details</button></li>
+            <li data-gstep-nav="review"><button type="button"><span>4</span> Review</button></li>
+            <li data-gstep-nav="preview"><button type="button"><span>5</span> 3D preview</button></li>
+            <li data-gstep-nav="print"><button type="button"><span>6</span> Print / send</button></li>
+          </ol>
         <header class="topbar">
           <div>
             <label for="planTitle">Plan Title</label>
@@ -101,24 +112,7 @@
           <span>Technician view — full controls</span>
           <button class="ghost-toggle" data-user-mode="simple" type="button">← Back to guided</button>
         </div>
-        <nav class="journey-nav" aria-label="Guided workflow">
-          <button class="is-active" data-journey-step="upload" type="button">
-            <strong>1</strong>
-            <span>Load scans</span>
-          </button>
-          <button data-journey-step="review" type="button">
-            <strong>2</strong>
-            <span>Review preview</span>
-          </button>
-          <button data-journey-step="stages" type="button">
-            <strong>3</strong>
-            <span>Refine stages</span>
-          </button>
-          <button data-journey-step="settings" type="button">
-            <strong>4</strong>
-            <span>Export handoff</span>
-          </button>
-        </nav>
+
 
         <!-- Guided wizard: the primary, simplified flow for first-time users.
              Heavy singletons (upload stack and 3D viewer) are relocated
@@ -127,27 +121,20 @@
           <div class="guided-head">
             <div>
               <h2 id="guidedHeading">Review aligner geometry, step by step</h2>
-              <p class="guided-sub">Safety playground only &mdash; this does not diagnose, prescribe, create a complete treatment plan, authorize physical use, or say whether treatment is safe.</p>
+              <p class="guided-sub">Upload your scan, select a tooth, and explore a staged preview.</p>
             </div>
           </div>
 
           <div class="sample-banner" id="sampleBanner" hidden>
-            <span>Sample test case — a simulated walkthrough so you can see every step. Your own work is untouched.</span>
+            <span>Sample STL case · Upper and lower scans are already supplied. Your own profile is saved separately.</span>
             <button class="ghost-toggle" id="sampleExit" type="button">Exit sample</button>
           </div>
 
-          <ol class="guided-rail" id="guidedRail">
-            <li data-gstep-nav="upload"><span>1</span> Upload</li>
-            <li data-gstep-nav="plan"><span>2</span> Teeth &amp; time</li>
-            <li data-gstep-nav="details"><span>3</span> Details</li>
-            <li data-gstep-nav="review"><span>4</span> Review</li>
-            <li data-gstep-nav="preview"><span>5</span> 3D preview</li>
-            <li data-gstep-nav="print"><span>6</span> Print / send</li>
-          </ol>
+
 
           <section class="gstep" data-gstep="upload">
-            <h3>1 · Upload your scan files</h3>
-            <p>These are the 3D surface scan models of your teeth, exported by an intraoral or desktop scanner. STL, PLY, OBJ, 3MF, glTF/GLB, FBX, and ASC/XYZ/PTS point clouds are all accepted. Add your upper and/or lower scans.</p>
+            <h3 id="uploadHeading">1 · Upload your scan files</h3>
+            <p id="uploadIntroduction">Add upper or lower 3D scans. Common mesh and point-cloud formats are supported.</p>
             <div id="guidedUploadHost">
               <div id="simpleUpload" class="upload-stack">
                 <label class="upload-target" for="simpleStlFile">
@@ -158,6 +145,18 @@
                 <div id="simpleUploadFileList" class="upload-file-list"></div>
               </div>
             </div>
+            <div id="guidedScanMetadataHost"></div>
+            <div id="guidedUploadViewerHost" class="guided-viewer-host"></div>
+            <div id="guidedSegmentationHost"></div>
+            <button id="uploadGeneratePreview" class="primary-action" type="button" disabled>Generate staged preview</button>
+            <p class="guided-hint">Confirm mm units and use reviewed teeth to enable the geometry proposal. Your AI connection can review it.</p>
+            <details class="guided-help"><summary>See the upload-to-preview workflow</summary>
+              <video controls preload="none" poster="./workflow-poster.jpg" aria-label="Sample workflow: select, edit, and preview stages">
+                <source src="./workflow-demo.webm" type="video/webm" />
+                <track kind="captions" src="./workflow-demo.vtt" srclang="en" label="English" default />
+              </video>
+              <p>Sample demonstration: select a reviewed tooth, preview a change, then drag through projected weeks.</p>
+            </details>
             <label class="toggle">
               <span>I understand this is a safety-review playground only and does not say whether treatment is needed, possible, safe, complete, or ready for physical use.</span>
               <input id="simpleAcknowledged" type="checkbox" />
@@ -165,13 +164,13 @@
           </section>
 
           <section class="gstep" data-gstep="plan">
-            <h3>2 · Which teeth move, and how long</h3>
+            <h3>2 · Explore teeth &amp; stages</h3>
             <div class="guided-action-strip">
-              <span>Click a tooth in 3D to hold or release it.</span>
-              <span>Held teeth turn blue-grey.</span>
+              <span>Select a tooth below, then nudge it or describe a change in chat.</span>
+
             </div>
             <div class="guided-build">
-              <label>What are you exploring?
+              <label>AI review focus
                 <select id="simpleGoal">
                   <option value="general-alignment" selected>General alignment</option>
                   <option value="crowding">Crowding</option>
@@ -180,18 +179,18 @@
                   <option value="bite">Bite concern</option>
                 </select>
               </label>
-              <button class="primary-action" id="guidedBuild" type="button">Build my plan</button>
+              <button class="primary-action" id="guidedBuild" type="button">Generate staged preview</button>
             </div>
             <p id="guidedBuildStatus" class="guided-status" hidden></p>
-            <div id="guidedTeeth" class="guided-teeth"></div>
+
             <div id="guidedPlanViewerHost" class="guided-viewer-host"></div>
-            <h4>How long should each tray be worn?</h4>
+            <h4>Timeline spacing</h4>
             <div id="guidedDuration" class="guided-duration">
-              <button data-wear="10" type="button">Balanced · 10-day trays</button>
+              <button data-wear="10" type="button">10 days per stage</button>
               <details class="guided-duration-more" id="guidedDurationMore">
                 <summary>Other pacing options</summary>
-                <button data-wear="7" type="button">Faster · 7-day trays</button>
-                <button data-wear="14" type="button">Gentle · 14-day trays</button>
+                <button data-wear="7" type="button">7 days per stage</button>
+                <button data-wear="14" type="button">14 days per stage</button>
               </details>
             </div>
             <p id="guidedDurationSummary" class="guided-hint"></p>
@@ -203,41 +202,16 @@
 
           <section class="gstep" data-gstep="details">
             <h3>3 · Small edits</h3>
-            <div class="guided-edit-layout">
+            <div class="guided-edit-layout single-viewer">
               <div>
                 <div class="guided-action-strip">
                   <span>Click a tooth to select it.</span>
                   <span>Nudge in 0.2 mm steps.</span>
                 </div>
                 <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
-                <label class="guided-range">Stage preview
-                  <input id="guidedStagePreview" type="range" min="0" max="0" step="1" value="0" />
-                  <span id="guidedStagePreviewValue">Stage 0</span>
-                </label>
+
               </div>
-              <aside class="guided-edit-card" aria-label="Guided tooth edit controls">
-                <div class="guided-edit-top">
-                  <h4 id="guidedEditTitle">No tooth selected</h4>
-                  <button id="guidedEditUndo" type="button" aria-label="Undo last guided edit" disabled>Undo</button>
-                </div>
-                <p id="guidedEditStatus" class="guided-edit-status">Select a tooth in the 3D view.</p>
-                <div class="guided-nudge-pad" role="group" aria-label="Nudge selected tooth">
-                  <button data-manual-nudge="y+" type="button" aria-label="Nudge selected tooth forward">↑</button>
-                  <button data-manual-nudge="x-" type="button" aria-label="Nudge selected tooth left">←</button>
-                  <button data-manual-nudge="x+" type="button" aria-label="Nudge selected tooth right">→</button>
-                  <button data-manual-nudge="y-" type="button" aria-label="Nudge selected tooth back">↓</button>
-                </div>
-                <div class="guided-edit-actions">
-                  <button id="guidedTargetReset" type="button" disabled>Reset tooth</button>
-                  <button id="guidedClearSelection" type="button" disabled>Deselect</button>
-                </div>
-                <div id="guidedEditReadout" class="guided-edit-readout"></div>
-                <button class="primary-action" id="guidedRebuild" type="button">Rebuild plan</button>
-                <details class="guided-help">
-                  <summary>What these edits do</summary>
-                  <p>Guided edits author crown translation only. The engine rebuilds stages and warnings after you rebuild the plan.</p>
-                </details>
-              </aside>
+
             </div>
           </section>
 
@@ -250,11 +224,7 @@
 
           <section class="gstep" data-gstep="preview">
             <h3>5 · See the full 3D plan</h3>
-            <div class="guided-compare" aria-label="Compare before and after">
-              <button data-guided-view="current" type="button">Before</button>
-              <button data-guided-view="planned" type="button">After</button>
-              <button data-guided-view="overlay" type="button">Overlay</button>
-            </div>
+
             <div id="guidedPreviewHost"></div>
             <details class="guided-help">
               <summary>Stage slider</summary>
@@ -306,9 +276,9 @@
               </label>
               <div id="uploadFileList" class="upload-file-list"></div>
             </div>
-            <div class="field-grid compact">
+            <div id="techScanMetadataHost"><div id="scanUnitControls" class="field-grid compact">
               <label>
-                Units
+                Confirm scan units
                 <select id="scanUnits">
                   <option value="unverified">Unverified</option>
                   <option value="mm">mm</option>
@@ -320,16 +290,16 @@
               <label>
                 Arch
                 <select id="scanArch">
-                  <option value="">Unknown</option>
-                  <option value="maxillary">Maxillary</option>
-                  <option value="mandibular">Mandibular</option>
+                  <option value="">Detect from filenames</option>
+                  <option value="maxillary">Upper (all uploaded files)</option>
+                  <option value="mandibular">Lower (all uploaded files)</option>
                 </select>
               </label>
-            </div>
+            </div></div>
           </div>
           <dl class="metadata-grid" id="scanMetadata"></dl>
-          <div class="workflow-card">
-            <h2>Enhanced Review Records</h2>
+          <details class="workflow-card disclosure">
+            <summary>Additional records · optional</summary>
             <p>Attach CBCT/DICOM, photos, X-rays, documents, or notes as local case context. These records do not make the plan root/bone-aware until registration and reviewed anatomy exist.</p>
             <div class="record-upload-grid">
               <label class="upload-target compact-upload" for="dicomFile">
@@ -349,9 +319,9 @@
             </label>
             <button id="addRecordNote" type="button">Add note</button>
             <div id="caseRecordList" class="upload-file-list"></div>
-          </div>
-          <div class="workflow-card">
-            <h2>CBCT-to-Reviewed Anatomy</h2>
+          </details>
+          <details class="workflow-card disclosure">
+            <summary>Root & bone workflow · advanced</summary>
             <div class="record-upload-grid">
               <label class="upload-target compact-upload" for="cbctMaskFile">
                 <span class="upload-icon" aria-hidden="true">↑</span>
@@ -375,7 +345,7 @@
               <button id="proposeCbctAnatomy" type="button">Propose Anatomy</button>
             </div>
             <p id="cbctWorkflowStatus" class="viewer-caveat"></p>
-          </div>
+          </details>
           <div class="workflow-actions">
             <button class="primary-action next-action" id="uploadNext" type="button">Next: Data Availability</button>
           </div>
@@ -556,6 +526,51 @@
                       <input id="stageSlider" type="range" min="0" max="0" value="0" />
                     </label>
                   </div>
+                  <div class="viewer3d-wrap">
+                    <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
+                    <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
+                      <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                      <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
+                      <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                    </div>
+                  </div>
+                  <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
+                  <section id="toothWorkspace" class="tooth-workspace">
+                    <div class="tooth-selection-heading"><h4>Select a tooth</h4><span id="toothSelectionStatus" role="status"></span></div>
+                    <p class="guided-hint">Click a crown or its number. Selected = amber · held = blue-grey.</p>
+                    <div id="guidedTeeth" class="guided-teeth" aria-label="Select a scan tooth"></div>
+              <aside class="guided-edit-card" aria-label="Guided tooth edit controls">
+                <div class="guided-edit-top">
+                  <h4 id="guidedEditTitle">No tooth selected</h4>
+                  <button id="guidedEditUndo" type="button" aria-label="Undo last guided edit" disabled>Undo</button>
+                </div>
+                <label class="hold-tooth"><input id="holdSelectedTooth" type="checkbox" /> Hold this tooth in place</label>
+                <p id="guidedEditStatus" class="guided-edit-status">Select a tooth in the 3D view.</p>
+                <div class="guided-nudge-pad" role="group" aria-label="Nudge selected tooth">
+                  <button data-manual-nudge="y+" type="button" aria-label="Nudge selected tooth forward">↑</button>
+                  <button data-manual-nudge="x-" type="button" aria-label="Nudge selected tooth left">←</button>
+                  <button data-manual-nudge="x+" type="button" aria-label="Nudge selected tooth right">→</button>
+                  <button data-manual-nudge="y-" type="button" aria-label="Nudge selected tooth back">↓</button>
+                </div>
+                <div class="guided-edit-actions">
+                  <button id="askSelectedTooth" type="button">Ask AI about this tooth</button>
+                  <button id="guidedTargetReset" type="button" disabled>Reset tooth</button>
+                  <button id="guidedClearSelection" type="button" disabled>Deselect</button>
+                </div>
+                <div id="guidedEditReadout" class="guided-edit-readout"></div>
+                <button class="primary-action" id="guidedRebuild" type="button">Rebuild plan</button>
+                <details class="guided-help">
+                  <summary>What these edits do</summary>
+                  <p>Each nudge proposes a final crown translation in scan-local axes. The engine splits it into stages. Apply to keep it, or Discard to return to the current plan.</p>
+                </details>
+              </aside>                  </section>
+                  <section id="goalPreviewPanel" class="goal-preview-panel" hidden aria-live="polite">
+                    <strong>Proposed change · not applied</strong><p id="goalPreviewText"></p>
+                    <button id="applyGoalPreview" type="button">Apply change</button>
+                    <button id="discardGoalPreview" type="button">Discard</button>
+                  </section>
+
+                  <details class="viewer-diagnostics"><summary>Scan details &amp; checks</summary>
                   <section id="trustStatusStrip" class="trust-status-strip" aria-label="What can I trust here?" aria-live="polite"></section>
                   <p id="movementFidelityStatus" class="scan-status"></p>
                   <p id="scanRenderStatus" class="scan-status"></p>
@@ -567,16 +582,7 @@
                   </div>
                   <p id="proximityStatus" class="scan-status" hidden></p>
                   <p id="scaleStatus" class="scan-status" hidden></p>
-                  <div class="viewer3d-wrap">
-                    <div id="viewer3d" class="viewer3d" aria-label="3D tooth progress preview"></div>
-                    <div id="viewerZoom" class="viewer-zoom" role="group" aria-label="3D zoom controls">
-                      <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
-                      <button id="zoomReset" type="button" aria-label="Recenter view">⌂</button>
-                      <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
-                    </div>
-                  </div>
-                  <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
-                  <p class="viewer-caveat">Uploaded scans render as scan geometry. Stage movement is schematic unless segmented per-tooth render meshes are available. The exaggeration factor only makes sub-mm movement visible.</p>
+                  </details>
                   <section id="manualEdit" class="manual-edit" aria-label="Manual target authoring">
                     <h3>Manual target</h3>
                     <p id="manualEditGate" class="viewer-caveat"></p>
@@ -625,42 +631,33 @@
                 <button class="primary-action" id="generatePlan" type="button">Generate Plan</button>
                 <div id="generationReport" class="status-block"></div>
               </section>
-              <section class="generate-panel segment-panel advanced-only" aria-label="Auto-segmentation">
-                <div class="ai-chat-heading">
-                  <h2>Auto-Segmentation (experimental)</h2>
-                  <span id="segmentStatus"></span>
-                </div>
-                <p class="viewer-caveat">Proposes per-tooth regions from a whole-arch scan, on this machine (your data stays local). Drafts only: review and correct each tooth number, then apply explicitly. Never auto-applied, and not a diagnosis or a sign that treatment is needed, possible, or complete.</p>
+              <div id="techSegmentationHost"><details id="segmentationBlock" class="generate-panel segment-panel" aria-label="Auto-segmentation">
+                <summary>Identify individual teeth<span id="segmentStatus" class="disclosure-status"></span></summary>
+                <p class="viewer-caveat">Identify teeth locally, check the numbers and boundaries, then apply them to enable selection.</p>
                 <label class="chat-input">
                   Missing teeth (FDI, optional)
                   <input id="segmentMissingTeeth" type="text" placeholder="e.g. 15, 38" autocomplete="off" />
                 </label>
-                <p class="viewer-caveat">If a tooth is absent, list its FDI number(s) here so the proposed tooth numbers line up around the gap &mdash; the scan's shape alone cannot tell which tooth is missing.</p>
-                <button class="primary-action" id="proposeSegment" type="button">Propose tooth segmentation</button>
+                <p class="viewer-caveat">List missing teeth so numbering can account for gaps.</p>
+                <button class="primary-action" id="proposeSegment" type="button">Identify teeth</button>
                 <button id="reanchorSegment" type="button" hidden>Re-anchor labels around missing teeth</button>
                 <ul id="segmentFindings" class="segment-findings"></ul>
                 <div id="segmentList" class="segment-list"></div>
-                <button class="primary-action" id="applySegment" type="button" hidden>Apply accepted segmentation to plan &rarr;</button>
+                <button class="primary-action" id="applySegment" type="button" hidden>Use reviewed teeth &rarr;</button>
                 <p id="segmentApplied" class="viewer-caveat"></p>
-              </section>
-              <section class="generate-panel" aria-label="Plan versions">
-                <div class="ai-chat-heading">
-                  <h2>Versions</h2>
-                  <span id="versionStatus"></span>
-                </div>
-                <p class="viewer-caveat">Save named snapshots of this plan (the case is keyed by Plan ID). Versions are stored locally by the dev server and can be restored into the editor.</p>
+              </details></div>
+              <details class="generate-panel" aria-label="Plan versions">
+                <summary>Saved versions<span id="versionStatus" class="disclosure-status"></span></summary>
+                <p class="viewer-caveat">Save a local snapshot to revisit later.</p>
                 <label class="chat-input">
                   Note
                   <textarea id="versionNote" rows="2" placeholder="e.g. after IPR pass"></textarea>
                 </label>
                 <button class="primary-action" id="saveVersion" type="button">Save Version</button>
                 <ul id="versionList" class="version-list"></ul>
-              </section>
-              <section class="generate-panel" aria-label="Setup comparison">
-                <div class="ai-chat-heading">
-                  <h2>Setup Compare</h2>
-                  <span id="setupCompareStatus"></span>
-                </div>
+              </details>
+              <details class="generate-panel" aria-label="Setup comparison">
+                <summary>Compare setups<span id="setupCompareStatus" class="disclosure-status"></span></summary>
                 <p class="viewer-caveat">Compare a saved or captured setup against the current editor. Live restage rebuilds the edited setup for preview only.</p>
                 <div class="setup-compare-actions">
                   <button id="captureSetupBaseline" type="button">Capture Current</button>
@@ -677,9 +674,9 @@
                 <div class="setup-compare-actions">
                   <button id="promoteSetupCandidate" type="button">Promote compared setup</button>
                 </div>
-              </section>
-              <section class="download-actions" aria-label="Downloads">
-                <h2>Downloads</h2>
+              </details>
+              <details class="download-actions" aria-label="Downloads">
+                <summary>Export & handoff</summary>
                 <div id="movementReadinessChecklist" class="movement-readiness"></div>
                 <button class="primary-action" id="downloadPlan" type="button">Download Plan JSON</button>
                 <button id="downloadEvaluation" type="button">Download Evaluation JSON</button>
@@ -687,16 +684,18 @@
                 <button id="exportCaseReview" type="button">Export case review (mobile handoff)</button>
                 <p id="caseHandoffStatus" class="guided-hint"></p>
                 <div id="caseHandoffQr" class="case-handoff-qr" aria-live="polite"></div>
-              </section>
+              </details>
               <h2>Findings</h2>
               <p class="findings-caveat">Observational cap checks only. Interpret them against the listed data gaps; nothing here indicates a plan is safe, approved, or acceptable.</p>
               <ul id="findingList"></ul>
+              <details class="disclosure advanced-only"><summary>Technical output</summary>
               <h2 class="advanced-only">Print Export</h2>
               <div id="printExportStatus" class="status-block advanced-only"></div>
               <h2 class="advanced-only">Optimized Staging</h2>
               <div id="optimizedStaging" class="status-block advanced-only"></div>
               <h2 class="advanced-only">Plan JSON</h2>
               <textarea id="planJson" class="advanced-only" readonly></textarea>
+              </details>
             </aside>
           </div>
         </section>
@@ -705,37 +704,46 @@
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Tooth Map &amp; Numbering</h2>
-            <p>How teeth are numbered here. Educational only; not a diagnosis.</p>
+            <p>Explore tooth shapes and numbering.</p>
           </div>
           <section id="toothExplorer" class="workflow-card tooth-explorer" aria-labelledby="toothExplorerTitle">
-            <h2 id="toothExplorerTitle">Find teeth in 3D</h2>
-            <p>Type FDI numbers, choose numbered buttons, or click teeth in the model. Choose a color to highlight your selection.</p>
+            <h2 id="toothExplorerTitle">Learn tooth numbers</h2>
+            <p>Tap a number or a tooth. This reference map is separate from your scan.</p>
+            <div class="tooth-reference-layout"><aside class="tooth-reference-controls">
             <form id="toothExplorerForm" class="tooth-explorer-form">
               <label for="toothExplorerInput">FDI tooth numbers
-                <input id="toothExplorerInput" placeholder="11 12 33 34 43 44" autocomplete="off" aria-describedby="toothExplorerHint toothExplorerError" />
+                <input id="toothExplorerInput" placeholder="11, 21" autocomplete="off" aria-describedby="toothExplorerHint toothExplorerError" />
               </label>
-              <button type="submit" class="primary-action">Highlight teeth</button>
+              <button type="submit" class="primary-action">Find</button>
               <button id="toothExplorerClear" type="button">Clear</button>
             </form>
-            <p id="toothExplorerHint" class="viewer-caveat">Separate numbers with spaces, commas, or semicolons. Permanent teeth: 11–18, 21–28, 31–38, 41–48.</p>
+            <p id="toothExplorerHint" class="viewer-caveat">Use spaces or commas, e.g. 11, 21.</p>
             <p id="toothExplorerError" class="tooth-explorer-error" role="alert"></p>
-            <div class="tooth-explorer-colors" role="group" aria-label="Tooth highlight color">
-              <span>Highlight color</span>
-              <button type="button" data-highlight-color="#2563eb" aria-pressed="true">Blue</button>
-              <button type="button" data-highlight-color="#dc2626" aria-pressed="false">Red</button>
-              <button type="button" data-highlight-color="#facc15" aria-pressed="false">Yellow</button>
-              <label for="toothExplorerColor">Custom <input id="toothExplorerColor" type="color" value="#2563eb" /></label>
-            </div>
+            <label class="selection-color" for="toothExplorerColor">Selection color
+              <select id="toothExplorerColor"><option value="#2563eb">Blue</option><option value="#dc2626">Red</option><option value="#facc15">Yellow</option></select>
+            </label>
+            <p class="viewer-caveat">Color only marks your selection. It has no clinical meaning and does not move teeth.</p>
             <div class="tooth-explorer-actions">
-              <button id="toothExplorerExample" type="button">Try 11, 12, 33, 34, 43, 44</button>
+              <button id="toothExplorerExample" type="button">Try an example</button>
+              <button id="toothExplorerRotate" type="button" aria-pressed="false">Auto-rotate</button>
               <button id="toothExplorerResetView" type="button">Reset view</button>
             </div>
+            </aside><div class="tooth-reference-mouth">
+            <div class="tooth-explorer-canvas">
             <div id="toothExplorerViewer" class="tooth-explorer-viewer" role="img" aria-label="Interactive schematic 3D permanent teeth; numbered buttons below provide keyboard selection"></div>
-            <p class="viewer-caveat">Schematic tooth map, not your scan. Right and left refer to the person’s own sides. Drag to rotate; scroll or pinch to zoom. Selected teeth show FDI number badges.</p>
-            <p id="toothExplorerSummary" role="status" aria-live="polite"></p>
+            <div class="viewer-zoom" role="group" aria-label="Tooth map zoom">
+              <button id="toothExplorerZoomIn" type="button" aria-label="Zoom in on tooth map">+</button>
+              <button id="toothExplorerZoomOut" type="button" aria-label="Zoom out of tooth map">−</button>
+            </div></div>
+
+            <p class="viewer-caveat">Facing the person: their right is on your left. Drag to rotate; scroll or pinch to zoom.</p>
+
             <div id="toothExplorerGrid" class="tooth-explorer-grid" aria-label="Select permanent teeth by FDI number"></div>
+            </div></div>
+            <p id="toothExplorerSummary" role="status" aria-live="polite"></p>
             <ul id="toothExplorerList" class="tooth-explorer-list" aria-label="Selected tooth names"></ul>
           </section>
+          <details class="workflow-card disclosure"><summary>Numbering reference · FDI &amp; Universal</summary>
           <div class="workflow-card">
             <h2>Two ways to number teeth</h2>
             <p>Adults have 32 teeth, and dentists give each one a number so everyone is talking about the same tooth. There are two common numbering systems, so the chart below shows both:</p>
@@ -764,6 +772,7 @@
               <ul><li>31 central incisor</li><li>32 lateral incisor</li><li>33 canine</li><li>34 first premolar</li><li>35 second premolar</li><li>36 first molar</li><li>37 second molar</li><li>38 third molar</li></ul>
             </div>
           </div>
+          </details>
         </section>
 
         <section class="panel" id="panel-glossary">
@@ -778,7 +787,7 @@
             <p id="glossaryEmpty" class="chat-empty" hidden>No terms match your search.</p>
           </div>
           <div class="glossary">
-            <h2>Key Terms (A&ndash;Z)</h2>
+            <nav id="glossaryCategories" class="glossary-categories" aria-label="Glossary categories"></nav>
             <dl id="glossaryTerms"></dl>
             <p class="viewer-caveat">Full glossary, the FDI&harr;Universal&harr;Palmer table, and the tooth-map diagram live in <code>docs/GLOSSARY.md</code>.</p>
           </div>
@@ -788,9 +797,16 @@
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
             <h2>Imaging &amp; Photos Guide</h2>
-            <p>A quick guide to the records you can bring and how much each one helps. This is safety-review context, not a diagnosis, and it does not tell you what care you need.</p>
+            <p>Inspect your uploaded 3D files and see which records contain usable geometry.</p>
+          </div>
+          <div class="workflow-card"><h3>Your uploaded scans</h3>
+            <p id="imagingScanList">Upload a scan in step 1 or open the sample.</p>
+            <div id="imagingViewerHost" class="guided-viewer-host"></div>
+            <p>STL, PLY, OBJ, 3MF, glTF/GLB and FBX: surface meshes. ASC, XYZ and PTS: point clouds; tooth editing needs a surface mesh.</p>
+            <p>OrthoCAD exports: choose the upper/lower mesh files. Rx HTML/PDF/XML and JPG photos are supporting records, not 3D geometry.</p>
           </div>
 
+          <details class="workflow-card disclosure"><summary>More about scans, photos &amp; records</summary>
           <div class="workflow-card">
             <h2>What the engine actually uses</h2>
             <p>The current planner works on the <strong>crown-surface geometry</strong> of an intraoral <strong>surface scan</strong> &mdash; STL, PLY, OBJ, 3MF, glTF/GLB, or FBX, and point clouds (ASC/XYZ/PTS) for the geometry-only steps: it segments the arch into per-tooth meshes and proposes movement for review. That is the <strong>Surface Review</strong> tier, not a complete treatment plan. CBCT/DICOM is the planned higher-fidelity path for root/bone-aware checks after local ingestion, STL registration, and reviewed anatomy segmentation. X-rays and CBCT are ionizing radiation and are ordered and interpreted by a licensed professional.</p>
@@ -863,19 +879,47 @@
           </div>
 
           <p class="viewer-caveat">Costs are rough US estimates and vary widely by region, provider, and whether imaging is bundled with a visit. The relative-value scores describe how much each input helps <em>this engine</em> close data gaps &mdash; they are not medical advice and do not rank treatments.</p>
+        </details>
         </section>
       </section>
       <aside class="ai-rail" aria-label="Plan AI assistant">
         <section class="ai-chat" id="aiChatBlock" aria-label="Plan AI chat">
           <div class="ai-chat-heading">
             <div>
-              <h2>Ask AI About Your Plan</h2>
+              <h2>Plan assistant</h2>
+              <p id="chatConnection" class="chat-stage-context">Local helper · offline</p>
               <p id="chatStageContext" class="chat-stage-context"></p>
             </div>
-            <button id="toggleChatPanel" class="chat-collapse" type="button" aria-expanded="true" aria-label="Collapse AI chat" title="Show or hide AI chat">Hide</button>
+            <div class="chat-actions"><button id="expandChat" type="button" aria-pressed="false" aria-label="Expand or dock chat">Expand</button>
+            <button id="toggleChatPanel" class="chat-collapse" type="button" aria-expanded="true" aria-label="Collapse AI chat" title="Show or hide AI chat">Hide</button></div>
           </div>
           <div class="ai-chat-body">
-            <span id="chatStatus" class="chat-status">Local helper ready</span>
+            <div class="chat-session-bar"><span id="chatStatus" class="chat-status" role="status">Ready</span><button id="newChat" type="button">New chat</button></div>
+            <div id="chatMessages" class="chat-messages" role="log" aria-label="Conversation history" aria-live="polite" aria-relevant="additions text"></div>
+            <div id="chatStarters" class="chat-starters"><button type="button">What are the main limitations?</button><button type="button">Explain the data gaps</button></div>
+            <div class="chat-composer">
+            <label class="chat-input">
+              <span class="sr-only">Message the plan assistant</span>
+              <textarea id="chatInput" rows="3" maxlength="2000" placeholder="Ask about your plan…"></textarea>
+            </label>
+            <label class="chat-edit-mode"><input id="chatEditMode" type="checkbox" /> Preview a change to <span id="chatSelectedTooth">a selected tooth</span></label>
+            <div class="chat-composer-footer"><small>Enter to send · Shift + Enter for a new line</small><button class="primary-action" id="sendChat" type="button">Send ↑</button></div>
+            </div>
+            <details class="chat-context-summary"><summary>What the assistant can see</summary>
+              <p>Your plan, scan formats and dimensions, tooth regions, stages, checks, current step and selected tooth. Raw scan surfaces and images stay local. Changes require Preview and Apply.</p>
+            </details><p class="chat-boundary">History stays in this tab.</p>
+          </div>
+        </section>
+        <button id="chatReopenTab" class="chat-reopen-tab" type="button" hidden aria-label="Show AI chat">Ask AI</button>
+      </aside>
+    </main>
+    <dialog id="chatSettingsDialog" class="chat-settings-dialog" aria-labelledby="chatSettingsTitle">
+      <form method="dialog">
+        <div class="ai-chat-heading"><div><h2 id="chatSettingsTitle">Settings</h2><p>Workspace and AI connection.</p></div><button aria-label="Close settings" value="close">×</button></div>
+        <fieldset class="workspace-mode-settings"><legend>Workspace</legend>        <div class="mode-switch" aria-label="Workspace mode">
+          <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
+          <button class="mode-choice is-active" data-user-mode="advanced" type="button">Technician</button>
+        </div><p>Guided keeps the focus on your scan. Technician adds advanced controls.</p></fieldset>
             <div class="ai-connector">
               <label>Provider
                 <select id="chatProvider"></select>
@@ -891,28 +935,19 @@
               </label>
               <p class="ai-key-help" id="aiKeyHelp"></p>
             </div>
-            <div id="chatMessages" class="chat-messages"></div>
-            <label class="chat-input">
-              Ask about this plan
-              <textarea id="chatInput" rows="3" placeholder="What are the biggest limitations in this preview?"></textarea>
-            </label>
-            <button class="primary-action" id="sendChat" type="button">Ask AI</button>
-            <details class="ai-settings">
-              <summary>Connector settings (endpoint &amp; data sharing)</summary>
-              <label class="toggle">
-                <span>Allow an external AI model to receive your full plan context</span>
-                <input id="agentAccessEnabled" type="checkbox" />
-              </label>
-              <label>Model endpoint (for an open-source / self-hosted model)
-                <input id="agentEndpoint" placeholder="http://127.0.0.1:PORT or mcp://..." />
-              </label>
-            </details>
-            <p class="viewer-caveat">The assistant always works from your full plan context. With the local helper that context never leaves this machine. With an external model you must tick the sharing box above: your plan context and API key are then sent only to the model you pick, only when you press Ask AI, and the key is never saved to disk. AI answers are educational only.</p>
-          </div>
-        </section>
-        <button id="chatReopenTab" class="chat-reopen-tab" type="button" hidden aria-label="Show AI chat">Ask AI</button>
-      </aside>
-    </main>
+        <label id="chatEndpointField">Model endpoint
+          <input id="agentEndpoint" type="url" placeholder="http://127.0.0.1:PORT" />
+        </label>
+        <label class="toggle" id="chatSharingField">
+          <span>Allow sharing my full plan and conversation with this provider.</span>
+          <input id="agentAccessEnabled" type="checkbox" />
+        </label>
+        <p class="viewer-caveat">Keys stay in this tab and are never saved. External requests use the selected provider when you send a message or request an AI plan review.</p>
+        <button class="primary-action" value="done">Done</button>
+      </form>
+    </dialog>
+    <script type="module" src="./chat_settings.js"></script>
+    <script type="module" src="./disclosure.js"></script>
     <script type="module" src="./app.js"></script>
     <script type="module" src="./tooth_explorer.js"></script>
   </body>

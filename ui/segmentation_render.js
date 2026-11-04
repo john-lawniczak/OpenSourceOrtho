@@ -11,7 +11,7 @@ export function segmentRowMarkup(tooth, edit) {
     <div class="segment-row">
       <input type="checkbox" data-segment-include="${escapeHtml(tooth.mesh_asset_id)}" ${effectiveEdit.included ? "checked" : ""} aria-label="Include this tooth" />
       <input class="segment-tooth" data-segment-tooth="${escapeHtml(tooth.mesh_asset_id)}" value="${escapeHtml(effectiveEdit.tooth)}" maxlength="2" aria-label="FDI tooth number" />
-      <span class="segment-arch">${escapeHtml(tooth.arch)}</span>
+      <button type="button" class="segment-arch" data-select-tooth="${escapeHtml(effectiveEdit.tooth)}" aria-label="Inspect tooth ${escapeHtml(effectiveEdit.tooth)}">View ${escapeHtml(tooth.arch)}</button>
       <span class="segment-conf" data-tier="${tier}"><span class="segment-conf-bar" style="width:${pct}%"></span></span>
       <span class="segment-conf-num" data-tier="${tier}">${pct}%${review ? ` · ${review}` : ""}</span>
     </div>`;
@@ -22,7 +22,9 @@ export function renderSegmentation() {
   const status = el("segmentStatus");
   if (!status) return;
   status.textContent = seg.busy ? "Working..." : "";
-  el("proposeSegment").disabled = seg.busy;
+  el("proposeSegment").disabled = false;
+  el("proposeSegment").textContent = seg.busy ? "Cancel segmentation" : "Identify teeth";
+  el("applySegment").disabled = seg.busy || state.scanUnits !== "mm";
 
   const proposal = seg.proposal;
   el("segmentFindings").innerHTML = proposal?.advisory_findings?.length
@@ -54,5 +56,5 @@ export function renderSegmentation() {
   el("applySegment").hidden = false;
   el("segmentApplied").textContent = seg.applied
     ? `Applied: ${seg.applied.tooth_meshes.length} tooth mesh(es) merged into the plan (draft).`
-    : "Not applied yet.";
+    : (state.scanUnits !== "mm" ? "Confirm scan units as mm before using reviewed teeth." : "Not applied yet.");
 }

@@ -25,7 +25,7 @@ def test_claude_provider_converts_command_failure_to_runtime_error(monkeypatch) 
 
     monkeypatch.setattr(subprocess, "run", fail_run)
 
-    with pytest.raises(RuntimeError, match="authentication failed"):
+    with pytest.raises(RuntimeError, match="check CLI version"):
         ClaudeCodeProvider().complete(_request())
 
 
@@ -38,10 +38,43 @@ def test_openai_provider_converts_sdk_failure_to_runtime_error(monkeypatch) -> N
         def __init__(self, **kwargs) -> None:  # noqa: ANN003 - SDK-shaped test stub
             self.responses = FakeResponses()
 
+        def close(self):
+            pass
+
     fake_module = ModuleType("openai")
     fake_module.OpenAI = FakeOpenAI
     monkeypatch.setitem(sys.modules, "openai", fake_module)
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-    with pytest.raises(RuntimeError, match="OpenAIProvider request failed: rate limit"):
+    with pytest.raises(RuntimeError, match="OpenAIProvider request failed"):
         OpenAIProvider().complete(_request())
+
+
+def test_claude_is_text_only_ephemeral_and_receives_context_on_stdin(monkeypatch):
+    seen = {}
+
+    def run(command, **kwargs):
+        seen.update(command=command, **kwargs)
+        return subprocess.CompletedProcess(command, 0, stdout="Explanation")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    ClaudeCodeProvider().complete(ModelRequest(system="boundary", prompt="private scan context"))
+    assert "private scan context" not in seen["command"]
+    assert seen["input"] == "private scan context"
+    assert seen["timeout"] == 120
+    command = seen["command"]
+    assert command[command.index("--tools") + 1] == ""
+    assert command[command.index("--disallowedTools") + 1] == "*"
+    assert "--bare" in command and "--no-session-persistence" in command
+
+
+def test_claude_timeout_and_stderr_do_not_leak_context(monkeypatch):
+    for error in [subprocess.TimeoutExpired("claude", 120, output="private scan"),
+                  subprocess.CalledProcessError(1, "claude", stderr="secret-key private scan")]:
+        def fail(*args, **kwargs):
+            raise error
+        monkeypatch.setattr(subprocess, "run", fail)
+        with pytest.raises(RuntimeError) as caught:
+            ClaudeCodeProvider().complete(_request())
+        assert "private scan" not in str(caught.value)
+        assert "secret-key" not in str(caught.value)

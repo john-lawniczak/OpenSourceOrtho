@@ -1,0 +1,100 @@
+/* Shared workspace presentation. Domain-specific chat and tooth-map styles
+   live in their own stylesheets; workflow state remains in the existing modules. */
+:root { --line: #dce3e7; --bg: #f6f8fa; }
+body { -webkit-font-smoothing: antialiased; }
+.app-topbar { padding-inline: 22px; }
+.sidebar { position: sticky; top: 60px; height: calc(100dvh - 60px); overflow-y: auto; gap: 14px; padding: 22px 18px; scrollbar-width: thin; }
+.sidebar .mode-switch { background: #202f35; border-radius: 12px; padding: 4px; gap: 4px; }
+.sidebar .mode-choice { background: transparent; color: #bdcbd1; border: 0; border-radius: 8px; font-size: 12px; padding: 0 6px; }
+.sidebar .mode-choice.is-active { background: #e9f4f2; color: #165950; box-shadow: 0 2px 5px #0002; }
+.sidebar .sample-launch { border-radius: 10px; background: #203c39; color: #ccebe5; border: 1px solid #335851; font-size: 13px; margin-bottom: 10px; }
+.sidebar .sample-launch.is-active-sample { background: #4a3d1d; color: #ffdf8b; border-color: #8f773a; }
+.sidebar .glossary-link { margin: 0; border-color: transparent; padding: 10px 12px; min-height: 40px; font-size: 13px; }
+.sidebar .glossary-link:hover { background: #203038; }
+.sidebar .step { border: 0; min-height: 40px; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
+.sidebar .step.is-active { background: #203d3b; color: #a6eee0; box-shadow: inset 3px 0 #58cdbb; }
+.sidebar .step-list { gap: 4px; margin-bottom: 8px; }
+.sidebar .review-tier-panel, .sidebar .data-gap-panel { padding-top: 14px; }
+.sidebar .review-tier-panel h2 { margin-top: 0; font-size: 11px; color: #96adb7; text-transform: uppercase; letter-spacing: .08em; }
+.sidebar .review-tier-banner { border-left-width: 2px; padding: 12px; border-radius: 8px; }
+.sidebar .review-tier-label { margin: 0; }
+.review-scope-details { margin-top: 8px; }
+.sidebar .review-scope-details > summary { font-size: 11px; font-weight: 400; color: #a8bac2; }
+.workspace { padding: 24px; }
+#guided, .panel { border-radius: 16px; background: var(--panel); box-shadow: 0 4px 20px #00000003; }
+#guided { padding: 26px; }
+.guided-head { margin-bottom: 24px; }
+.guided-head h2, .panel-heading h2 { font-size: 21px; letter-spacing: -.45px; }
+.guided-sub { font-size: 12px; max-width: 640px; line-height: 1.6; }
+.gstep > h3 { font-size: 18px; letter-spacing: -.3px; margin: 24px 0 8px; }
+.gstep > p { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+button, input, select, textarea { border-radius: 8px; }
+button, input, select, textarea, summary, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea { border-color: var(--line); }
+.upload-target { border-radius: 12px; background: var(--canvas); border-color: #aebfc7; }
+.upload-target:hover { border-color: var(--accent); background: var(--panel-alt); }
+.upload-file-list { border-radius: 10px; }
+.workflow-card, .generate-panel, .download-actions, .status-block, .print-settings { border-radius: 12px; }
+details.workflow-card { display: block; background: var(--panel); }
+details.workflow-card[open] > :not(summary) { margin-top: 12px; }
+.review-side { min-width: 0; }
+.review-side > details { background: var(--panel); margin-bottom: 12px; }
+.review-side > details[open] { background: var(--panel-alt); }
+.tech-banner { border-radius: 10px; margin-bottom: 18px; }
+.topbar label { font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+.topbar input { min-height: 40px; }
+.tooth-explorer { background: var(--panel); padding: 20px; }
+.tooth-explorer-form { margin-top: 18px; }
+.tooth-explorer-actions { gap: 8px; }
+.tooth-explorer-actions button, .tooth-explorer-colors button, .tooth-explorer-form button:not(.primary-action), .tooth-explorer-grid button {
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 8px 12px; cursor: pointer;
+}
+.tooth-explorer-grid button { padding: 4px; }
+.tooth-explorer [aria-pressed="true"] { background: var(--tooth-highlight); color: var(--tooth-highlight-text); border-color: var(--tooth-highlight); }
+.tooth-explorer-actions button:hover, .tooth-explorer-grid button:hover { border-color: var(--accent); }
+#toothExplorerSummary { margin: 16px 0 10px; font-size: 13px; }
+@media (max-width: 920px) {
+  .sidebar { position: static; height: auto; overflow: visible; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 14px 18px; }
+  .sidebar .mode-switch { grid-column: span 2; }
+  .sidebar .sample-launch { margin: 0; }
+  .sidebar .step-list { grid-column: 1 / -1; display: flex; flex-wrap: wrap; }
+  .sidebar .step-list button { flex: 1; }
+  .sidebar .review-tier-panel, .sidebar .data-gap-panel { grid-column: 1 / -1; }
+  .sidebar .glossary-link { text-align: center; padding: 8px; background: #1a2a31; font-size: 12px; }
+  .workspace { padding: 16px; }
+  #guided, .panel { padding: 18px; }
+  .topbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .topbar > :first-child { grid-column: 1 / -1; }
+  .tooth-explorer { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; }
+}
+/* Keep invisible file controls keyboard-accessible without widening the page. */
+.upload-target { position: relative; }
+.upload-target input[type="file"] { width: 1px; height: 1px; inset: 0 auto auto 0; overflow: hidden; clip-path: inset(50%); }
+.upload-target:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.topbar-actions { display: flex; align-items: center; gap: 16px; }
+.topbar-settings { background: transparent; border: 1px solid #344951; color: #e6f1f2; padding: 8px 12px; cursor: pointer; }
+.workspace-mode-settings { border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+.workspace-mode-settings legend { font-size: 12px; color: var(--muted); padding: 0 6px; }
+.workspace-mode-settings p { font-size: 12px; margin-top: 10px; }
+.workspace, #guided { overflow-anchor: none; }
+.sidebar > *, .sidebar .upload-file-list, .sidebar li, .sidebar li > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.sidebar .anatomy-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.sidebar .anatomy-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.sidebar .anatomy-actions button { flex: 1 1 60px; min-width: 0; max-width: 100%; padding: 7px; }
+.sidebar details > summary { font-size: 12px; }
+.sidebar details[open] > summary { margin-bottom: 12px; }
+@media (max-width: 600px) {
+  .app-topbar { padding-inline: 12px; }
+  .brand-block h1 { font-size: 15px; }
+  .app-topbar .brand-block p { font-size: 10px; }
+  .topbar-actions { gap: 8px; }
+  .topbar-settings span { display: none; }
+  .sidebar .sample-launch { grid-column: 1 / -1; }
+}
+
+.tooth-explorer-canvas { position: relative; min-width: 0; }
