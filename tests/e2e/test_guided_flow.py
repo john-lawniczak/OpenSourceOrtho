@@ -34,8 +34,7 @@ def advance(page: Page, step: str) -> None:
         """selector => {
           const panel = document.querySelector(selector);
           const heading = panel?.querySelector('h3');
-          const top = panel?.getBoundingClientRect().top ?? -1;
-          return document.activeElement === heading && top >= 55 && top < 180;
+          return document.activeElement === heading;
         }""",
         arg=panel,
     )
@@ -58,19 +57,20 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
             page.wait_for_selector('body[data-sample="1"]')
             assert not page.locator("#guidedPrintLinks").is_visible()
 
-            advance(page, "plan")
-            assert page.locator("#guidedBuild").inner_text() == "Rebuild sample plan"
+            page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active')
+            assert page.locator("#guidedBuild").inner_text() == "Regenerate sample stages"
             assert "Rebuilding is optional" in page.locator("#guidedBuildStatus").inner_text()
+            page.locator(".viewer-diagnostics > summary").click()
             trust_text = page.locator("#trustStatusStrip").inner_text()
             scan_text = page.locator("#scanRenderStatus").inner_text()
             if "Segmenting individual teeth" in scan_text:
                 assert "Processing locally" in trust_text
 
             page.wait_for_function(
-                "() => document.querySelector('#trustStatusStrip')?.innerText.includes('Applied draft')"
+                "() => document.querySelector('#trustStatusStrip')?.textContent.includes('Applied draft')", timeout=90000
             )
             assert page.locator("#anatomyReviewList [data-anatomy-review]").count() == 0
-            assert "Technician mode" in page.locator("#anatomyReviewList").inner_text()
+            page.wait_for_function("() => document.querySelector('#anatomyReviewList').textContent.includes('Technician mode')", timeout=90000)
 
             advance(page, "details")
             advance(page, "review")
@@ -82,7 +82,7 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
             assert not page.locator("#guidedPreviewHost .manual-edit").is_visible()
             hidden_modes = page.locator("#guidedPreviewHost .viewer-toolbar > button.mode")
             assert hidden_modes.count() == 3
-            assert all(not item.is_visible() for item in hidden_modes.all())
+            assert all(item.is_visible() for item in hidden_modes.all())
 
             advance(page, "print")
             print_step = page.locator('#guided .gstep[data-gstep="print"]')

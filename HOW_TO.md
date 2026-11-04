@@ -34,8 +34,8 @@ recreate `.venv` with Python 3.11 or 3.12 instead.
 ## 2. Basic Workflow
 
 The app opens in **Guided** mode by default. Switch between modes with the
-**Guided / Technician** toggle on the left sidebar (a light/dark switch sits in
-the top bar):
+**Guided / Technician** control in **Settings**, beside the light/dark switch
+in the top bar:
 
 - **Guided**: a six-step wizard for non-technical users -
   **Upload → Teeth & time → Details → Review → 3D preview → Print / send** -
@@ -49,13 +49,18 @@ the top bar):
 To see a complete, isolated example, click **Sample Test Case** in the left
 sidebar: it runs the guided wizard pre-loaded with the two bundled test-case STL
 scans, redacted CBCT metadata, a safe root/bone engineering fixture, and a
-Balanced 10-day pace, starting at step 1 so you can walk the whole flow. The 3D
+10-day stage spacing. It opens directly on the shared scan viewer. The 3D
 preview shows the real scans with sample-only per-tooth segmentation and the
 root/bone-aware fixture path: accepted fixture STL-to-CBCT registration, trusted
 derived root/axis landmarks, anatomical frames, root/bone context, and CBCT
 boundary priors. This is a workflow fixture, not clinical interpretation of raw
 CBCT. It snapshots and restores your own work, so nothing leaks into your
 editors; use **Exit Sample Test Case** to return.
+
+Optional tools start collapsed to keep the workspace focused. Open a section
+heading for additional records, segmentation, saved versions, setup comparison,
+exports, or technical output. Readiness links open the relevant controls for you.
+Findings and required acknowledgements remain visible in their workflow steps.
 
 The Technician workflow:
 
@@ -134,15 +139,12 @@ in millimeters from the scan, then import it with the *Import landmarks* control
 in the Generate Plan panel. With landmarks present, generation is
 "landmark-derived" (real arch-form targets + IPR space budget + collision check).
 
-**Connecting an AI model / API key**: the optional review reuses the connector you
-configure in the **Plan AI** box (same Review surface). The provider selector and
-the **API key** field are shown directly in that box - pick a provider (OpenAI,
-Claude, MCP/Odysseus/open-source) and paste a session-only key; the key field is
-hidden for the no-key local helper. Agent/MCP-endpoint and the
-*Allow an external AI agent…* consent live under **Advanced connector settings**.
-The Generate Plan panel shows which connector is active. With the default
-**local helper** (or no consent), the AI review is skipped and generation runs
-**fully offline** - the deterministic plan is still produced.
+**Connecting an AI model / API key**: open **Settings** in the top bar beside the theme toggle, choose
+provider and model, then enter a session-only key. Compatible hosts also need an
+endpoint. Enable full-plan and conversation sharing for external models, then
+click **Done** to return to chat. Settings remain accessible in the top bar.
+Switching providers clears the key, endpoint, and consent. Generate Plan reuses
+this connection for optional review. The local helper needs no key and stays offline.
 
 ## 3. Render Local Per-Tooth Meshes
 
@@ -170,25 +172,15 @@ from the CLI with `case-save`, `case-list`, and `case-versions`.
 
 ## 4. Plan AI And MCP Connectors
 
-The Review surface includes **Plan AI**. The default connector is a local
-educational helper that does not call an external service. The **provider
-selector and a session-only API-key field are shown directly in the AI box**
-(with provider-specific instructions; the key field is hidden for the local
-helper, which needs none). The app does not write that key into plan JSON, case
-snapshots, or `localStorage`. Use the context selector deliberately:
+Open **Ask AI** to show the Plan assistant. Prompts and replies stay in order
+for the open tab. Use **Expand** for a larger conversation or **New chat** to
+clear it. Enter sends; Shift + Enter adds a line. Closing the tab clears history. **Settings** contains the provider,
+model, key, endpoint, and external-sharing consent. Keys last only for the open
+tab and are never saved in plan JSON, case snapshots, or browser storage.
 
-- **Summary** shares findings, data gaps, timeline, and clinical controls.
-- **Clinical metadata** also shares mesh/tooth-mesh metadata.
-- **Full plan snapshot** includes the full plan payload.
-
-External connectors for OpenAI, Claude (Anthropic), MCP hosts, Odysseus, and
-open-source models perform live completions once you select the provider, paste a
-key/endpoint, and grant per-session egress consent (`share_acknowledged`); the
-key is transmitted only to the selected connector and only when you press
-**Ask AI**. The future account-linking path should prefer OAuth or an MCP
-permission handshake where a user grants a trusted agent scoped access to plan
-tools rather than pasting long-lived raw keys into the app.
-See `docs/AI_CHAT_MCP.md`.
+The local helper is offline. External models receive full plan context and
+conversation only with explicit sharing consent when you send a message or
+request an optional AI generation review. See `docs/AI_CHAT_MCP.md`.
 
 ## 5. Printing And Aligner Manufacturing Boundary
 
@@ -248,3 +240,84 @@ pytest
 - It does not authorize printing, wearing, or physically applying any output.
 - It does not let AI chat diagnose, approve treatment, or replace a licensed
   dental professional.
+
+
+### Select a scan tooth and preview a change
+
+1. Upload your upper/lower mesh files in **Upload**. The scan appears immediately;
+   confirm **mm** and check the arch labels. Open **Identify individual teeth**,
+   run **Identify teeth**, review/correct the proposed FDI numbers and boundaries,
+   then choose **Use reviewed teeth**. Point clouds need a surface mesh for tooth editing.
+2. Choose **Generate staged preview** for an initial geometry-derived proposal.
+   This uses the deterministic generator; **AI review focus** guides the optional
+   model explanation, not movement. A connected AI can add a linted review.
+   It does not infer a clinical treatment recommendation from the scan.
+3. Click a segmented crown or its number **under the viewer**, such as
+   **11 · Upper right central incisor**. Amber marks the selection. A separate
+   **Hold this tooth in place** checkbox keeps it fixed and colors it blue-grey.
+4. Nudge in 0.2 mm steps, or choose **Ask AI about this tooth**. With **Preview a
+   change** enabled, try `move 0.2 mm right`. The local helper accepts explicit
+   amounts/directions; configured AI providers can interpret geometric phrasing.
+   X/Y refer to scan-local axes. Rotation and vertical translation are not
+   available through this guided preview action.
+5. Drag the stage slider or press **Play** to inspect projected weeks. **Apply
+   change** keeps the candidate; **Discard** leaves the plan unchanged. **Undo**
+   restores the previous applied rows. Exports contain only applied changes.
+
+**Imaging guide** includes the same live rendering of your uploaded files, format
+examples and collapsed reference material. The expandable walkthrough in Upload
+includes a captioned video recorded from the bundled sample, not an outcome prediction.
+
+### Your profile, sample, and reference tools
+
+Use **Your Teeth Profile** above **Sample Test Case** to return to your own scans.
+The sample supplies upper and lower STL files; its upload controls are disabled.
+Exit the sample before adding a personal scan. Click a segmented crown or its
+FDI number beneath the viewer to select the actual region. Guided views hide
+floating number badges and unsegmented marker proxies. Automatic tooth regions
+are approximate; inspect/correct the segmentation before treating a region as
+an entire tooth. The six-step rail stays visible while scrolling and on reference
+pages. The gear beside the theme switch opens Settings; changing workspace mode
+requires confirmation and preserves your work.
+
+The Tooth Map is a separate numbering reference. Quadrants surround the mouth
+from the facing-person perspective. Its color dropdown changes selection color
+only, not tooth state or movement. The glossary combines category filters with
+text search. Viewers start two zoom steps closer; use minus or Reset as needed.
+
+For AI, select DeepSeek, Z.ai GLM, OpenAI, Claude Code, or a compatible/local host.
+Custom model IDs support newer models without an app update. Hosted DeepSeek and
+GLM use standard API keys; local hosts take their server's model ID and base URL.
+See [provider details and verified documentation](docs/OpenAI_Agents.md).
+The assistant receives structured plan and scan metadata, not raw STL surfaces or
+images. Expand **What the assistant can see** in chat for the access summary.
+
+After the November audit, a tooth nudge adds stages after your existing timeline;
+it does not rewrite earlier stages or move other teeth. Apply/Discard and Undo
+still work as before. Failed scan or tooth loads can be retried by selecting the
+tooth/view again. The sample starts with separate controls and restores your
+personal controls, notes, print settings, and generation state on exit.
+
+### Geometry job limits and validation
+
+Browser evaluation and tooth segmentation run in disposable local worker processes.
+Changing a plan cancels its obsolete evaluation; the Identify teeth button becomes
+Cancel segmentation while working. Changing scan context cancels segmentation.
+The browser retries occupied worker slots for up to 15 seconds.
+The server allows two concurrent jobs, with a 120-second deadline, a sampled
+1 GiB RSS limit, and a 32 MiB result-file limit. macOS/Linux `ps` is required;
+failed memory monitoring stops the job. These watchdog limits can briefly overshoot
+between samples; they are not an OS security sandbox. Completed files are released
+by the browser or expire after five minutes. Legacy synchronous API routes remain
+available and do not acquire these worker limits. Generation and goal-preview
+requests are not yet migrated to jobs.
+
+The labeled real-scan benchmark rejects non-boolean provenance declarations,
+invalid permanent FDI labels, and ambiguous triangle centroids. Missing triangles
+reduce accuracy; duplicated or unknown predictions also reduce the score. Reference
+STLs must contain labeled tooth surfaces (exclude unlabeled gingiva). Use the
+existing labeled-corpus manifest workflow in `docs/segmentation-learned-backend.md`.
+No reviewed per-triangle real-scan labels are bundled; synthetic regression tests
+and renderer/engine transform agreement do not establish real-scan accuracy.
+The 3D fragment renderer now consumes engine affine transforms, including trusted
+root-aware rotations, rather than approximating that movement in JavaScript.

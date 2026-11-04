@@ -1,3 +1,6 @@
+import { orientedMeshMatrix } from "./mesh_affine.js";
+import { createFragmentLoader } from "./viewer_fragments.js";
+import { schematicToothPose, syntheticToothGeometry } from "./tooth_geometry.js";
 // 3D progress viewer. Renders registered local tooth meshes when the engine
 // supplies render links, otherwise schematic per-tooth proxies positioned from
 // frames[].poses[]. Translation is exact and exaggerated for visibility (the
@@ -6,7 +9,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "./vendor/OrbitControls.js";
-import { displacement, rotationApplications, toothKind } from "./core.js";
+import { displacement, rotationApplications } from "./core.js";
 import { toothPositions } from "./state.js";
 import { buildScanObject, isSupportedScanName, parseScanGeometry } from "./scan_geometry.js";
 import { SCALE_BAR_MM, scaleBarLabel } from "./scale.js";
@@ -15,7 +18,7 @@ import { makeTextSprite, makeToothNumberSprite } from "./viewer_labels.js";
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
 const PLANNED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.56, metalness: 0.01 });
 // Highlight for the tooth currently selected for manual target authoring.
-const SELECTED = new THREE.MeshStandardMaterial({ color: 0xfff4df, roughness: 0.5, emissive: 0x0f766e, emissiveIntensity: 0.55 });
+const SELECTED = new THREE.MeshStandardMaterial({ color: 0xf4bd4b, roughness: 0.5, emissive: 0x996210, emissiveIntensity: 0.18, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
 // "Held still" teeth (the guided user unchecked them, so the engine fixes them):
 // a muted blue-grey so it is obvious at a glance which teeth will not move.
 const HELD = new THREE.MeshStandardMaterial({ color: 0x9fb2bd, roughness: 0.7, emissive: 0x1f3a45, emissiveIntensity: 0.2 });
@@ -30,14 +33,6 @@ const SCAN = new THREE.MeshPhysicalMaterial({
 const ATTACHMENT = new THREE.MeshStandardMaterial({ color: 0xb45309 });
 const ATTACHMENT_BOX = new THREE.BoxGeometry(0.9, 0.55, 0.45);
 const LINE_MAT = new THREE.LineBasicMaterial({ color: 0x2563eb });
-// Honest movement indicators for an un-segmented whole-arch scan: a small marker
-// dot per tooth (the pickable, selection-aware target) plus an arrow showing
-// where that tooth is planned to move. No fake crowns - the scan stays the teeth.
-const MARKER = new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.5, metalness: 0.0 });
-const MARKER_GEO = new THREE.SphereGeometry(0.7, 16, 12);
-const ARROW_MAT = new THREE.MeshBasicMaterial({ color: 0x2563eb });
-const ARROW_HEAD = new THREE.ConeGeometry(0.5, 1.4, 12);
-const ARROW_MIN_MM = 0.3; // below this displacement, show only the marker
 // Occlusal proximity overlay: red = touching/overlapping, amber = near, green =
 // clearance. GEOMETRIC closeness of the registered surfaces, NOT bite force.
 const PROXIMITY_COLORS = {
@@ -56,7 +51,6 @@ const MEASURE_MAT = new THREE.LineBasicMaterial({ color: 0x475569 });
 const SCALE_TICK_H = 1.2; // height of the end ticks, in scan units
 const meshGeometryCache = new Map();
 const meshUrlCache = new Map();
-const syntheticToothCache = new Map();
 
 // Dental-arch layout. Each FDI arch is laid out as a horseshoe on its own
 // horizontal plane: the maxillary (upper) arch sits above the mandibular
@@ -93,10 +87,13 @@ function basePosition(tooth) {
 
 // Maxillary crowns point down toward the occlusal plane; mandibular crowns point
 // up. Synthetic geometry is built crown-up (+y), so flip the upper arch.
-function archQuaternion(tooth) {
-  return archOf(tooth) === "upper"
+function archQuaternion(tooth, schematic = false) {
+  const flip = archOf(tooth) === "upper"
     ? new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI)
     : new THREE.Quaternion();
+  if (!schematic) return flip;
+  const { angle } = schematicToothPose(tooth);
+  return new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle).multiply(flip);
 }
 
 // When the per-tooth proxies are anchored onto an uploaded scan, they are scaled
@@ -149,8 +146,10 @@ function plannedQuaternion(pose, frame) {
 }
 
 export function createViewer(container, { schematicOnly = false } = {}) {
+  let needsRender = true;
   const highlightMaterial = new THREE.MeshStandardMaterial({ roughness: 0.55 });
-  const toothGeometry = (tooth) => (!schematicOnly && meshGeometryCache.get(tooth)) || syntheticToothGeometry(tooth);
+  let rootsVisible = !schematicOnly;
+  const toothGeometry = (tooth) => (!schematicOnly && meshGeometryCache.get(tooth)) || syntheticToothGeometry(tooth, rootsVisible);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -164,6 +163,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   camera.position.set(0, 42, 46);
 
   const controls = new OrbitControls(camera, renderer.domElement);
+  controls.addEventListener("change", () => { needsRender = true; });
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
 
@@ -227,8 +227,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
 
   // Persistent arch labels so the stacked maxillary/mandibular arches are
   // unambiguous (depthTest off keeps them readable through the teeth).
-  const UPPER_LABEL_POS = new THREE.Vector3(0, ARCH.gapY + (schematicOnly ? 12 : 5), 7);
-  const LOWER_LABEL_POS = new THREE.Vector3(0, -ARCH.gapY - (schematicOnly ? 12 : 5), 7);
+  const UPPER_LABEL_POS = new THREE.Vector3(0, ARCH.gapY + (schematicOnly ? 6 : 5), 7);
+  const LOWER_LABEL_POS = new THREE.Vector3(0, -ARCH.gapY - (schematicOnly ? 6 : 5), 7);
   const upperLabel = makeTextSprite("Upper arch");
   upperLabel.position.copy(UPPER_LABEL_POS);
   scene.add(upperLabel);
@@ -266,7 +266,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   // space (NOT centered) so they assemble into the arch at their true positions.
   // Populated by loadToothFragments after the user applies segmentation; when
   // present the planned layer draws these real crowns moving instead of proxies.
-  const fragmentCache = new Map();
+  const fragments = createFragmentLoader(parseScanGeometry, orientScanGeometry);
+  const fragmentCache = fragments.cache;
   // Per-update line geometries are freshly allocated each rebuild (unlike the
   // cached tooth/box geometries) so they must be disposed explicitly - clearing
   // the group only detaches them and leaks their GPU buffers otherwise.
@@ -284,6 +285,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   let visibleArchFilter = "both";
 
   function resize() {
+    needsRender = true;
     const w = container.clientWidth || 1;
     const h = container.clientHeight || 1;
     // updateStyle must stay on (the default): with it off the canvas keeps no
@@ -300,12 +302,16 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   let running = true;
   (function loop() {
     if (!running) return;
-    controls.update();
-    renderer.render(scene, camera);
+    if (container.clientWidth && container.clientHeight) {
+      controls.update();
+      if (needsRender) { renderer.render(scene, camera); needsRender = false; }
+    }
     requestAnimationFrame(loop);
   })();
 
-  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, showScale, unitsConfirmed, excluded, highlightTeeth = [], highlightColor = "#2563eb", labelTeeth = null }) {
+  function update({ frames, toothFrames, attachments, initialOffsets, stageIndex, view, exaggeration, showToothLabels, showScale, unitsConfirmed, excluded, highlightTeeth = [], highlightColor = "#2563eb", labelTeeth = null, showRoots = !schematicOnly }) {
+    needsRender = true;
+    rootsVisible = showRoots;
     const highlighted = new Set(highlightTeeth.map(String));
     const labels = labelTeeth === null ? null : new Set(labelTeeth.map(String));
     const showLabel = (tooth) => showToothLabels && (!labels || labels.has(String(tooth)));
@@ -320,8 +326,12 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     // Independent of the plan frame: the ruler only needs a loaded scan, so build
     // it before the early return below (a scan can be loaded with no plan yet).
     updateScaleBar(showScale, unitsConfirmed);
-    const frame = frames && frames[stageIndex];
-    if (!frame) return;
+    const frame = frames?.[stageIndex] || { poses: [] };
+    const poses = [...frame.poses];
+    const present = new Set(poses.map(pose => String(pose.tooth)));
+    for (const tooth of fragmentCache.keys()) {
+      if (!present.has(tooth)) poses.push({ tooth });
+    }
     const visibleScanCount = visibleScanChildren().length;
     const hasExactScan = visibleScanCount > 0;
     // The scan itself is the baseline, so the translucent "current" ghost layer
@@ -337,33 +347,24 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     // current/overlay, hidden in planned by the visibility rule above).
     const fragmentMode = fragmentCache.size > 0 && visibleScanCount > 0;
     const scanBase = uploadedScans.position;
-    // Arrow mode: a scan is loaded but NOT segmented, so there are no real crowns
-    // to move. Rather than float synthetic peg crowns (which read as "the anchors
-    // move, not the teeth"), mark each tooth on the scan and draw an arrow showing
-    // its planned movement. Segmented scans use real crowns (fragmentMode); a
-    // scan-less demo keeps the schematic proxies below.
-    const arrowMode = !fragmentMode && scanAnchors.size > 0 && visibleScanCount > 0;
     const activeAttachments = new Set((attachments || [])
       .filter((item) => stageIndex >= item.stage_start && (item.stage_end === null || stageIndex <= item.stage_end))
       .map((item) => item.tooth?.value));
 
-    for (const pose of frame.poses) {
-      // Real segmented crown moving at its true scan position (translation only;
-      // per-tooth rotation needs a trusted oriented frame and is left to a later
-      // pass). The fragment geometry already encodes the within-scan location, so
-      // its base is just the scan's placement offset.
+    for (const pose of poses) {
+      // Render the exact affine transform supplied by the engine.
       if (fragmentMode) {
         const fragment = fragmentCache.get(String(pose.tooth));
         if (!fragment) continue; // no real crown for this tooth; shell covers it
         const fragBase = scanBase.clone();
         const delta = showPlanned ? worldDeltaOriented(pose, exaggeration) : new THREE.Vector3();
-        const fragMoved = fragBase.clone().add(delta);
-        // The fragment geometry encodes its true within-scan location, so the
-        // mesh transform is only the scan placement offset (fragBase/fragMoved).
-        // The tooth's VISIBLE location - where labels and movement trace lines
-        // belong - is the fragment's bounding-box centre plus that offset.
+        const matrix = new THREE.Matrix4().set(...orientedMeshMatrix(
+          showPlanned ? frame.mesh_transforms?.[pose.tooth] : null, showPlanned ? pose : {}, exaggeration));
+        matrix.premultiply(new THREE.Matrix4().makeTranslation(...fragBase.toArray()));
+        // Transform the visible centroid with the same matrix as its crown
+        // so labels follow both rotation and translation.
         const toothAt = fragmentCentroid(fragment).add(fragBase);
-        const toothMoved = toothAt.clone().add(delta);
+        const toothMoved = fragmentCentroid(fragment).applyMatrix4(matrix);
         if (showLabel(pose.tooth)) {
           let label = toothLabelSprites.get(pose.tooth);
           if (!label) {
@@ -373,12 +374,13 @@ export function createViewer(container, { schematicOnly = false } = {}) {
           label.position.copy(toothMoved).add(new THREE.Vector3(0, 2.4, 0));
           proxies.add(label);
         }
-        if (showPlanned) {
+        {
           const material = excludedSet.has(String(pose.tooth))
             ? HELD
             : (selectedTooth === pose.tooth ? SELECTED : PLANNED);
           const crown = new THREE.Mesh(fragment, withHighlight(pose.tooth, material));
-          crown.position.copy(fragMoved);
+          crown.matrixAutoUpdate = false;
+          crown.matrix.copy(matrix);
           crown.userData.tooth = pose.tooth;
           proxies.add(crown);
           if (delta.length() > 0.2) {
@@ -390,35 +392,12 @@ export function createViewer(container, { schematicOnly = false } = {}) {
         continue;
       }
 
-      // Un-segmented scan: a marker dot at the tooth + an arrow for its movement.
-      if (arrowMode) {
-        const spot = scanAnchors.get(String(pose.tooth));
-        if (!spot) continue;
-        const held = excludedSet.has(String(pose.tooth));
-        const markerMat = held ? HELD : (selectedTooth === pose.tooth ? SELECTED : MARKER);
-        const marker = new THREE.Mesh(MARKER_GEO, withHighlight(pose.tooth, markerMat));
-        marker.position.copy(spot.pos);
-        marker.scale.set(spot.scale, spot.scale * 0.5, spot.scale);
-        marker.userData.tooth = pose.tooth;
-        proxies.add(marker);
-        const delta = showPlanned && !held ? worldDeltaOriented(pose, exaggeration) : new THREE.Vector3();
-        if (showLabel(pose.tooth)) {
-          let label = toothLabelSprites.get(pose.tooth);
-          if (!label) {
-            label = makeToothNumberSprite(String(pose.tooth));
-            toothLabelSprites.set(pose.tooth, label);
-          }
-          label.position.copy(spot.pos).add(delta).add(new THREE.Vector3(0, 2.4, 0));
-          proxies.add(label);
-        }
-        if (delta.length() > ARROW_MIN_MM) addMovementArrow(spot.pos, delta);
-        continue;
-      }
-
+      if (hasExactScan && !fragmentMode) continue;
       const anchor = scanAnchors.get(String(pose.tooth));
-      const ideal = anchor ? anchor.pos.clone() : basePosition(pose.tooth);
+      const mapPose = schematicOnly ? schematicToothPose(pose.tooth) : null;
+      const ideal = mapPose ? new THREE.Vector3(mapPose.x, mapPose.y, mapPose.z)
+        : anchor ? anchor.pos.clone() : basePosition(pose.tooth);
       if (!ideal) continue;
-      if (schematicOnly) ideal.y += archOf(pose.tooth) === "upper" ? 6 : -6;
       const proxyScale = anchor ? anchor.scale : 1;
       // The anchor (or schematic position) is the tooth's aligned/ideal spot; a
       // demo crowding offset shifts the start away from it, and the per-stage
@@ -431,7 +410,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
         const ghost = new THREE.Mesh(ghostGeometry, withHighlight(pose.tooth, GHOST));
         ghost.position.copy(base);
         ghost.scale.setScalar(proxyScale);
-        ghost.quaternion.copy(archQuaternion(pose.tooth));
+        ghost.quaternion.copy(archQuaternion(pose.tooth, schematicOnly));
         ghost.userData.tooth = pose.tooth;
         proxies.add(ghost);
       }
@@ -457,7 +436,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
         const mesh = new THREE.Mesh(geometry, withHighlight(pose.tooth, material));
         mesh.position.copy(moved);
         mesh.scale.setScalar(proxyScale);
-        mesh.quaternion.copy(archQuaternion(pose.tooth).multiply(plannedQuaternion(pose, toothFrames?.[pose.tooth])));
+        mesh.quaternion.copy(archQuaternion(pose.tooth, schematicOnly).multiply(plannedQuaternion(pose, toothFrames?.[pose.tooth])));
         mesh.userData.tooth = pose.tooth;
         proxies.add(mesh);
 
@@ -493,6 +472,10 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     if (!box || box.isEmpty()) {
       return;
     }
+    if (schematicOnly) {
+      box.expandByPoint(UPPER_LABEL_POS.clone().add(new THREE.Vector3(5, 1.5, 0)));
+      box.expandByPoint(LOWER_LABEL_POS.clone().add(new THREE.Vector3(-5, -1.5, 0)));
+    }
     // Fit a bounding sphere using the limiting (narrower) of the vertical and
     // horizontal field of view so a wide dental arch is fully framed and
     // centered regardless of the viewport aspect ratio.
@@ -505,14 +488,15 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     let distance = Math.max(24, (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.1);
     if (schematicOnly) {
       const size = box.getSize(new THREE.Vector3());
-      const height = size.y * 0.968 + size.z * 0.25;
+      const height = size.y * 0.916 + size.z * 0.4;
       distance = (Math.max(size.x / (2 * Math.tan(fovH / 2)), height / (2 * Math.tan(fovV / 2)))
-        + (size.z * 0.968 + size.y * 0.25) / 2) * 1.15;
+        + (size.z * 0.916 + size.y * 0.4) / 2) * 1.15;
     }
+    distance *= 0.82 ** 2; // Start two zoom-in steps closer; Reset uses the same framing.
     // ~42 deg elevation: high enough to read the arch horseshoe, low enough to
     // still face the crowns.
-    camera.position.set(center.x, center.y + distance * (schematicOnly ? 0.25 : 0.7),
-      center.z + distance * (schematicOnly ? 0.968 : 0.74));
+    camera.position.set(center.x, center.y + distance * (schematicOnly ? 0.4 : 0.7),
+      center.z + distance * (schematicOnly ? 0.916 : 0.74));
     controls.target.copy(center);
     camera.near = Math.max(0.1, distance / 100);
     camera.far = distance * 100;
@@ -528,7 +512,6 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   }
 
   function visibleScanChildren() {
-    if (!uploadedScans.visible) return [];
     return uploadedScans.children.filter((child) => child.visible !== false);
   }
 
@@ -538,21 +521,6 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     const box = new THREE.Box3();
     for (const child of visible) box.expandByObject(child);
     return box.isEmpty() ? null : box;
-  }
-
-  // A blue shaft + cone arrowhead from `origin` along `delta` (movement vector).
-  // The shaft geometry is per-update (tracked for disposal); the cone reuses a
-  // shared geometry. Used by arrow mode to show planned movement on a scan.
-  function addMovementArrow(origin, delta) {
-    const tip = origin.clone().add(delta);
-    const geom = new THREE.BufferGeometry().setFromPoints([origin, tip]);
-    lineGeometries.push(geom);
-    proxies.add(new THREE.Line(geom, LINE_MAT));
-    const cone = new THREE.Mesh(ARROW_HEAD, ARROW_MAT);
-    cone.position.copy(tip);
-    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.clone().normalize());
-    cone.scale.setScalar(Math.min(Math.max(delta.length() * 0.18, 0.5), 2.0));
-    proxies.add(cone);
   }
 
   // One anchor point per tooth on the uploaded scan, used to place the arrow-mode
@@ -656,40 +624,26 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     return loaded;
   }
 
-  // Load segmented per-tooth crown fragments (from applied segmentation). Each
-  // fragment STL carries the ORIGINAL scan-space triangles, so it is oriented
-  // exactly like the scan (loadScanSources) and deliberately NOT centered - the
-  // fragments then sit on the real crowns and, together, reconstruct the arch.
-  async function loadToothFragments(fragments = []) {
-    let loaded = false;
-    // Each fragment is fetched independently and failures are swallowed per item
-    // so one bad/aborted fetch cannot reject Promise.all (which the caller does
-    // not catch). A partial load still renders the crowns that did arrive.
-    await Promise.all(fragments.map(async (item) => {
-      const tooth = item?.tooth != null ? String(item.tooth) : null;
-      if (!tooth || !item.url || fragmentCache.has(tooth)) return;
-      try {
-        const response = await fetch(item.url);
-        if (!response.ok) return;
-        const geometry = parseScanGeometry(await response.arrayBuffer());
-        orientScanGeometry(geometry);
-        fragmentCache.set(tooth, geometry);
-        loaded = true;
-      } catch {
-        // leave this tooth without a fragment; the shell still covers it
-      }
-    }));
-    return loaded;
+  // Fragments retain original scan coordinates and are keyed by tooth + URL.
+  const loadToothFragments = fragments.load;
+
+  let scanRevision = 0, scanPending = null;
+  function loadScanSources(sources = []) {
+    const key = sources.filter(source => isSupportedScanName(source?.name)).map(sourceKey).join("|");
+    if (key === uploadedScans.userData.key && scanPending) return scanPending;
+    const token = ++scanRevision;
+    scanPending = loadScanBatch(sources, token).finally(() => { if (token === scanRevision) scanPending = null; });
+    return scanPending;
   }
 
-  async function loadScanSources(sources = []) {
+  async function loadScanBatch(sources, token) {
     const scanSources = sources.filter((source) => isSupportedScanName(source?.name));
     const key = scanSources.map(sourceKey).join("|");
     if (uploadedScans.userData.key === key) return { loaded: false, count: uploadedScans.children.length };
     uploadedScans.userData.key = key;
     // Per-tooth fragments belong to the previous scan/segmentation; drop them so
     // a new scan never renders stale crowns.
-    fragmentCache.clear();
+    fragments.clear();
     uploadedScans.traverse((child) => {
       if (child.geometry) child.geometry.dispose();
     });
@@ -703,15 +657,27 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       return { loaded: false, count: 0 };
     }
 
-    for (const source of scanSources) {
-      const geometry = parseScanGeometry(await sourceBuffer(source));
-      orientScanGeometry(geometry);
-      const mesh = buildScanObject(geometry, SCAN);
-      mesh.name = source.name;
-      mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
-      mesh.visible = archVisible(mesh.userData.arch);
-      uploadedScans.add(mesh);
+    const prepared = [];
+    try {
+      for (const source of scanSources) {
+        const bytes = await sourceBuffer(source);
+        if (token !== scanRevision) { for (const mesh of prepared) mesh.geometry.dispose(); return { loaded: false, stale: true, count: 0 }; }
+        const geometry = parseScanGeometry(bytes);
+        orientScanGeometry(geometry);
+        const mesh = buildScanObject(geometry, SCAN);
+        mesh.name = source.name;
+        mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
+        mesh.visible = archVisible(mesh.userData.arch);
+        prepared.push(mesh);
+      }
+    } catch (error) {
+      for (const mesh of prepared) mesh.geometry.dispose();
+      if (token !== scanRevision) return { loaded: false, stale: true, count: 0 };
+      uploadedScans.userData.key = null;
+      throw error;
     }
+    uploadedScans.position.set(0, 0, 0);
+    for (const mesh of prepared) uploadedScans.add(mesh);
 
     const box = new THREE.Box3().setFromObject(uploadedScans);
     if (!box.isEmpty()) {
@@ -729,6 +695,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   function setVisibleArchFilter(filter) {
     const next = normalizeArch(filter) || "both";
     const changed = next !== visibleArchFilter;
+    if (!changed) return;
     visibleArchFilter = next;
     for (const mesh of uploadedScans.children) {
       mesh.visible = archVisible(mesh.userData.arch || normalizeArch(mesh.name));
@@ -896,6 +863,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   }
 
   function dispose() {
+    scanRevision++;
     running = false;
     highlightMaterial.dispose();
     for (const label of [upperLabel, lowerLabel]) {
@@ -913,8 +881,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     toothLabelSprites.clear();
     // Per-viewer fragment crowns own GPU buffers; free them (the shared
     // synthetic/class caches are module-level and intentionally retained).
-    for (const geometry of fragmentCache.values()) geometry.dispose();
-    fragmentCache.clear();
+    fragments.clear();
     uploadedScans.traverse((child) => {
       if (child.geometry) child.geometry.dispose();
     });
@@ -928,7 +895,9 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   window.addEventListener("resize", resize);
   return {
     update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
+    fragmentError: () => fragments.error,
     loadProximity, setProximityVisible, scanExtentMm, setArchRegistration, setVisibleArchFilter,
+    setAutoRotate: (enabled) => { controls.autoRotate = enabled; controls.autoRotateSpeed = .65; },
     zoomBy, recenter, setSelectionHandler, setSelectionEnabled, setSelectedTooth,
   };
 }
@@ -962,124 +931,6 @@ async function sourceBuffer(source) {
   const response = await fetch(source.url);
   if (!response.ok) throw new Error(`could not load ${source.name}`);
   return response.arrayBuffer();
-}
-
-// A material placeholder: mergeGroupGeometry only copies position/normal, so the
-// per-part material is irrelevant - the render material (GHOST/PLANNED) is set
-// on the final mesh. Built crown-up (+y), root-down; the caller orients per arch.
-const TOOTH_MAT = new THREE.MeshBasicMaterial();
-
-function syntheticToothGeometry(tooth) {
-  const key = toothKind(tooth);
-  if (syntheticToothCache.has(key)) return syntheticToothCache.get(key);
-  const p = toothProfile(key);
-  const group = new THREE.Group();
-
-  // Crown: a tapered prism. CylinderGeometry(topR, bottomR, height, sides) gives
-  // the natural occlusal->cervical taper; 4 sides reads as a boxy crown (incisor,
-  // molar), more sides round it (premolar). Scaled to mesiodistal width and
-  // buccolingual depth so each tooth class has a distinct silhouette.
-  const crown = new THREE.Mesh(
-    new THREE.CylinderGeometry(p.crownTop, p.crownNeck, p.crownHeight, p.sides),
-    TOOTH_MAT,
-  );
-  if (p.sides === 4) crown.rotation.y = Math.PI / 4; // align flats mesiodistally
-  crown.scale.set(p.width, 1, p.depth);
-  crown.position.y = p.crownHeight / 2;
-  group.add(crown);
-
-  // Occlusal anatomy: a flat incisal edge (incisor) or pointed cusps.
-  for (const c of p.cusps) {
-    const cusp = new THREE.Mesh(new THREE.ConeGeometry(c.r, c.h, c.flat ? 4 : 12), TOOTH_MAT);
-    if (c.flat) cusp.rotation.y = Math.PI / 4;
-    cusp.scale.set(c.sx ?? 1, 1, c.sz ?? 1);
-    cusp.position.set((c.x ?? 0) * p.width, p.crownHeight - (c.sink ?? 0) + c.h / 2, (c.z ?? 0) * p.depth);
-    group.add(cusp);
-  }
-
-  // Root: a single tapering cone (multi-root teeth simplified) below the neck.
-  const root = new THREE.Mesh(
-    new THREE.CylinderGeometry(p.crownNeck * 0.92, p.rootTip, p.rootHeight, 12),
-    TOOTH_MAT,
-  );
-  root.scale.set(p.width * 0.86, 1, p.depth * 0.86);
-  root.position.y = -p.rootHeight / 2;
-  group.add(root);
-
-  const geometry = mergeGroupGeometry(group);
-  geometry.computeVertexNormals();
-  syntheticToothCache.set(key, geometry);
-  return geometry;
-}
-
-// Per-class crown/root proportions. width = mesiodistal, depth = buccolingual.
-// crownTop/crownNeck are the prism radii (occlusal vs cervical); cusp x/z are
-// fractions of width/depth so they track crown size.
-// Cusps are deliberately short, rounded bumps (not tall cones) and crowns use
-// rounder prisms so the schematic fallback reads as teeth, not spikes.
-function toothProfile(kind) {
-  if (kind === "incisor") {
-    // Rounded chisel blade: wide mesiodistally, shallow buccolingually, soft edge.
-    return {
-      sides: 8, width: 1.15, depth: 0.55, crownTop: 1.0, crownNeck: 0.7, crownHeight: 1.4,
-      rootTip: 0.12, rootHeight: 1.7,
-      cusps: [{ x: 0, z: 0, r: 0.95, h: 0.14, flat: true, sx: 1.0, sz: 0.55, sink: 0.06 }],
-    };
-  }
-  if (kind === "canine") {
-    // Single rounded cusp on a tapering crown (a soft point, not a spike).
-    return {
-      sides: 8, width: 1.0, depth: 0.85, crownTop: 0.78, crownNeck: 0.7, crownHeight: 1.45,
-      rootTip: 0.12, rootHeight: 1.9,
-      cusps: [{ x: 0, z: 0, r: 0.62, h: 0.32, sink: 0.16 }],
-    };
-  }
-  if (kind === "premolar") {
-    // Oval occlusal table with two low cusps (buccal + lingual).
-    return {
-      sides: 10, width: 1.1, depth: 1.0, crownTop: 0.85, crownNeck: 0.7, crownHeight: 1.1,
-      rootTip: 0.12, rootHeight: 1.7,
-      cusps: [
-        { x: 0, z: -0.28, r: 0.4, h: 0.22, sink: 0.12 },
-        { x: 0, z: 0.28, r: 0.4, h: 0.22, sink: 0.12 },
-      ],
-    };
-  }
-  return { // molar: broad rounded crown with four low cusps
-    sides: 8, width: 1.5, depth: 1.35, crownTop: 1.0, crownNeck: 0.78, crownHeight: 1.0,
-    rootTip: 0.12, rootHeight: 1.6,
-    cusps: [
-      { x: -0.32, z: -0.3, r: 0.4, h: 0.2, sink: 0.1 },
-      { x: 0.32, z: -0.3, r: 0.4, h: 0.2, sink: 0.1 },
-      { x: -0.32, z: 0.3, r: 0.4, h: 0.2, sink: 0.1 },
-      { x: 0.32, z: 0.3, r: 0.4, h: 0.2, sink: 0.1 },
-    ],
-  };
-}
-
-function mergeGroupGeometry(group) {
-  group.updateMatrixWorld(true);
-  const geometries = [];
-  group.traverse((child) => {
-    if (!child.isMesh) return;
-    const cloned = child.geometry.index ? child.geometry.toNonIndexed() : child.geometry.clone();
-    cloned.applyMatrix4(child.matrixWorld);
-    geometries.push(cloned);
-  });
-  const merged = new THREE.BufferGeometry();
-  const positions = [];
-  const normals = [];
-  for (const geometry of geometries) {
-    const position = geometry.getAttribute("position");
-    const normal = geometry.getAttribute("normal");
-    for (let i = 0; i < position.count; i += 1) {
-      positions.push(position.getX(i), position.getY(i), position.getZ(i));
-      normals.push(normal.getX(i), normal.getY(i), normal.getZ(i));
-    }
-  }
-  merged.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  merged.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
-  return merged;
 }
 
 // Min/max/mid and half-span of a list of numbers (half clamped away from zero so

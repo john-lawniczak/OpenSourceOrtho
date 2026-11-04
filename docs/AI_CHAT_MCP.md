@@ -38,14 +38,17 @@ live provider construction live in `orthoplan/ai_connectors.py`.
 - `ChatSession`: auditable session record containing plan id, plan hash,
   connector, context scope, and messages.
 
-The Plan AI box presents a **single model dropdown** (no separate provider
-selector, no Basic/Advanced toggle): each option carries its provider, so choosing
-e.g. "GPT-5.5" or "Claude Opus 4.8" sets both. A **session-only API-key field** is
-shown for any external model and hidden for the **local helper** (which needs no
-key). The model endpoint (for an open-source / self-hosted model) and the
-external-egress consent live under **Connector settings**. The API key is read from
-the DOM only at send time, is transmitted solely to the selected connector, and is
-never stored in app state, `localStorage`, plans, case snapshots, reports, or docs.
+The Plan assistant’s **Settings** dialog contains provider and model selectors,
+a session-only key, endpoint controls for compatible hosts, and explicit consent
+to share the full plan and conversation. The local helper needs no key. Switching
+providers clears the key, endpoint, and consent. Keys are read from the DOM only
+for explicit requests and are never stored in app state, browser storage, plans,
+case snapshots, or reports. Generate Plan reuses this connection for optional
+advisory review. Closing settings does not send a request.
+
+The visible transcript stays in tab memory. Follow-ups send the latest 16
+non-error messages; New chat clears the thread and session ID. Streamed output
+updates the existing assistant turn after server-side linting.
 
 ## Current Endpoints
 

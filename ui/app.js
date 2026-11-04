@@ -1,5 +1,9 @@
+import { installToothWorkspace } from "./tooth_workspace.js";
+import { discardGoalPreview, requestToothGoal, renderGoalPreview } from "./tooth_goal_ui.js";
+import { sendChatMessage } from "./chat_controller.js";
+import { confirmWorkspaceMode, updateChatSetting } from "./chat_settings.js";
 import { SCAN_FORMATS_LABEL, isSupportedScanName } from "./scan_formats.js";
-import { askPlanAssistant, el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, requestCbctAnatomyProposal, requestCbctAnatomyReview, savePlanVersion, state, streamPlanAssistant, uploadCaseRecord, uploadScanFile } from "./state.js";
+import { el, listCaseVersions, loadAiConnectors, maxStage, requestCaseReview, requestCbctAnatomyProposal, requestCbctAnatomyReview, savePlanVersion, state, uploadCaseRecord, uploadScanFile } from "./state.js";
 import { demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 import { recenterViewer, renderAll, renderAvailability, renderChat, renderGeneration, renderStagePreview, renderVersions, requestViewerRefit, setDimension, zoomViewer } from "./render.js";
 import { planJson } from "./plan.js";
@@ -13,7 +17,7 @@ import {
 } from "./storage.js";
 import { closestDatasetTarget, inferArchFromName, rowsFromPlan } from "./core.js";
 import { generatePlan } from "./generation.js";
-import { glossaryTerms } from "./glossary.js";
+import { filterGlossary, renderGlossaryTerms } from "./glossary_view.js";
 import {
   downloadPrintArtifact,
   goGuided,
@@ -32,7 +36,7 @@ import {
 } from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
 import { registrationActionable, requestProximity } from "./proximity.js";
-import { NUDGE_STEP_MM, clearTarget, nudgeTarget, scaleConfirmed } from "./manual_edit.js";
+import { NUDGE_STEP_MM, scaleConfirmed } from "./manual_edit.js";
 import { applyDirectControl, controlGate, proposeArchResponse } from "./direct_controls.js";
 import {
   captureSetupBaseline,
@@ -68,7 +72,6 @@ el("themeToggle").addEventListener("click", () => {
 
 function setUserMode(mode) {
   state.userMode = mode;
-  state.chat.collapsed = mode === "simple";
   if (mode === "simple" && !state.guided.step) state.guided.step = "upload";
   renderAll();
   maybeRecenterPreview();
@@ -144,6 +147,8 @@ function maybeRecenterPreview() {
     requestViewerRefit();
   }
 }
+
+installToothWorkspace({ renderAll, renderGoalPreview, discardGoalPreview });
 
 document.querySelectorAll(".step").forEach((button) => {
   button.addEventListener("click", () => {
@@ -233,12 +238,6 @@ document.body.addEventListener("input", (event) => {
   if (target.dataset.guidedTooth) {
     toggleExcludedTooth(target.dataset.guidedTooth);
   }
-  if (target.id === "guidedStagePreview") {
-    el("stageSlider").value = target.value;
-    el("guidedStagePreviewValue").textContent = `Stage ${target.value}`;
-    renderStagePreview();
-    return;
-  }
   if (target.dataset.row) {
     const row = state.rows[Number(target.dataset.row)];
     const field = target.dataset.field;
@@ -259,23 +258,7 @@ document.body.addEventListener("input", (event) => {
   }
   if (target.id === "simpleGoal") state.simpleGoal = target.value;
   if (target.id === "simpleAcknowledged") state.simpleAcknowledged = target.checked;
-  if (target.id === "chatProvider") {
-    state.chat.provider = target.value;
-    state.chat.model = state.chat.modelByProvider[state.chat.provider] || defaultModelForProvider(state.chat.provider);
-  }
-  if (target.id === "chatModel") {
-    state.chat.model = target.value === "__custom__"
-      ? el("chatCustomModel").value.trim() || "custom-model"
-      : target.value;
-    if (state.chat.model) state.chat.modelByProvider[state.chat.provider] = state.chat.model;
-  }
-  if (target.id === "chatCustomModel") {
-    state.chat.model = target.value.trim();
-    if (state.chat.model) state.chat.modelByProvider[state.chat.provider] = state.chat.model;
-  }
-  if (target.id === "chatInput") state.chat.input = target.value;
-  if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
-  if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
+  updateChatSetting(target);
   if (target.id === "generationAck") state.generation.acknowledged = target.checked;
   if (target.id === "generationNotes") state.generation.notes = target.value;
   if (target.id === "setupLiveRestage") {
@@ -310,9 +293,9 @@ document.body.addEventListener("input", (event) => {
 
 document.body.addEventListener("keydown", (event) => {
   if (event.target?.id !== "chatInput") return;
-  if (event.key === "Enter" && !event.shiftKey) {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
-    sendChatMessage();
+    sendChatMessage(buildChatUiContext());
   }
 });
 
@@ -321,7 +304,6 @@ document.body.addEventListener("click", (event) => {
   const button = target.closest?.("button");
   const stepTarget = closestDatasetTarget(target, "stepTarget");
   const infoBackTarget = closestDatasetTarget(target, "infoBack");
-  const journeyTarget = closestDatasetTarget(target, "journeyStep");
   const removeUploadTarget = closestDatasetTarget(target, "removeUpload");
   const clearUploadsTarget = closestDatasetTarget(target, "clearUploads");
   const removeRecordTarget = closestDatasetTarget(target, "removeRecord");
@@ -342,10 +324,11 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (userModeTarget) {
-    setUserMode(userModeTarget.dataset.userMode);
+    confirmWorkspaceMode(userModeTarget.dataset.userMode, setUserMode);
     return;
   }
   if (guidedStepTarget) {
+    state.activeStep = "review";
     goGuided(guidedStepTarget.dataset.gstepNav);
     renderAll();
     maybeRecenterPreview();
@@ -362,6 +345,7 @@ document.body.addEventListener("click", (event) => {
     maybeRecenterPreview();
   }
   if (button?.id === "sampleLaunch") {
+    discardGoalPreview();
     // The sidebar launcher toggles the sample so it can be exited from either
     // Guided or Technician view, wherever the user has navigated.
     if (sampleActive()) {
@@ -372,17 +356,27 @@ document.body.addEventListener("click", (event) => {
       // Load the root/bone fixture first so segmentation can use CBCT boundary
       // priors, then segment the bundled scans in the background so the preview
       // animates real per-tooth crowns.
+      const sampleSession = state.segmentation;
       applySampleRootBoneFixture()
-        .then(() => prepareSampleSegmentation())
+        .then(() => state.segmentation === sampleSession && prepareSampleSegmentation())
         .then(() => renderAll());
     }
     renderAll();
   }
+  if (button?.id === "teethProfile") {
+    discardGoalPreview();
+    if (sampleActive()) exitSample();
+    state.activeStep = "upload";
+    state.guided.step = "upload";
+    renderAll();
+    return;
+  }
   if (button?.id === "sampleExit") {
+    discardGoalPreview();
     exitSample();
     renderAll();
   }
-  if (button?.id === "guidedBuild") {
+  if (button?.id === "guidedBuild" || button?.id === "uploadGeneratePreview") {
     generatePlan();
     renderAll();
   }
@@ -442,7 +436,7 @@ document.body.addEventListener("click", (event) => {
     const tooth = state.manualEdit.selectedTooth;
     if (tooth) {
       pushManualUndo();
-      state.rows = clearTarget(state.rows, tooth);
+      state.rows = state.rows.filter(row => String(row.tooth) !== String(tooth));
       renderAll();
     }
   }
@@ -470,10 +464,6 @@ document.body.addEventListener("click", (event) => {
   }
   if (infoBackTarget) {
     goToStep(state.returnStep || "upload");
-    renderAll();
-  }
-  if (journeyTarget) {
-    goToStep(journeyTarget.dataset.journeyStep);
     renderAll();
   }
   if (removeUploadTarget) {
@@ -519,7 +509,7 @@ document.body.addEventListener("click", (event) => {
     exportCaseReview();
   }
   if (button?.id === "sendChat") {
-    sendChatMessage();
+    sendChatMessage(buildChatUiContext());
   }
   if (button?.id === "proximityToggle") {
     toggleProximity();
@@ -537,6 +527,7 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
+    el(state.chat.collapsed ? "chatReopenTab" : "chatInput").focus();
   }
   if (button?.id === "generatePlan") {
     generatePlan();
@@ -592,7 +583,14 @@ function goToStep(step) {
 }
 
 async function setUploadedFiles(files) {
+  if (state.sample.active) return;
   stopStagePlayback();
+  discardGoalPreview();
+  state.rows = [];
+  state.manualEdit = { selectedTooth: null, status: "", undoStack: [] };
+  state.guided.excludedTeeth = [];
+  state.demoInitialOffsets = {};
+  el("scanUnits").value = "unverified";
   const scanFiles = files.filter((file) => isSupportedScanName(file?.name));
   state.files = scanFiles;
   state.file = scanFiles[0] || null;
@@ -892,24 +890,17 @@ function renderCaseHandoff(review) {
   target.appendChild(label);
 }
 
-// Apply one planar nudge to the selected tooth's authored target. `direction` is
-// "x-" | "x+" | "y-" | "y+". Gated on confirmed scan units so a mm nudge is
-// never authored against unverified scale. Movement itself is recomputed by the
-// engine on the next evaluation (the UI never computes poses).
 function pushManualUndo() {
   const stack = state.manualEdit.undoStack || [];
   stack.push(state.rows.map((row) => ({ ...row })));
   state.manualEdit.undoStack = stack.slice(-20);
 }
 
-function applyManualNudge(direction) {
-  const tooth = state.manualEdit.selectedTooth;
-  if (!tooth || !scaleConfirmed(state.scanUnits)) return;
-  const axis = direction[0]; // "x" or "y"
+async function applyManualNudge(direction) {
   const delta = direction.endsWith("-") ? -NUDGE_STEP_MM : NUDGE_STEP_MM;
-  pushManualUndo();
-  state.rows = nudgeTarget(state.rows, tooth, axis, delta);
-  renderAll();
+  try {
+    await requestToothGoal("Preview a manual nudge", { x_mm: direction[0] === "x" ? delta : 0, y_mm: direction[0] === "y" ? delta : 0 });
+  } catch (error) { el("guidedEditStatus").textContent = error.message; }
 }
 
 function directControlGate() {
@@ -1107,82 +1098,6 @@ function stopStagePlayback() {
   state.stagePlayback.playing = false;
 }
 
-async function sendChatMessage() {
-  const message = state.chat.input.trim();
-  if (!message || state.chat.busy) return;
-  const history = state.chat.messages
-    .filter((item) => item.role === "user" || item.role === "assistant")
-    .slice(-16);
-  state.chat.busy = true;
-  state.chat.status = "Reviewing the scoped plan context...";
-  state.chat.messages.push({ role: "user", content: message });
-  state.chat.messages.push({ role: "assistant", content: "Reviewing the scoped plan context..." });
-  el("chatInput").value = "";
-  state.chat.input = "";
-  renderChat();
-  try {
-    // The API key is read straight from the DOM at send time so it is never
-    // held in app state or persisted - only transmitted on an explicit "Ask AI".
-    const apiKey = el("chatApiKey").value.trim();
-    const payload = {
-      plan: planJson(),
-      message,
-      history,
-      provider: state.chat.provider,
-      model: state.chat.model,
-      // The assistant always works from the full plan context (no scope selector).
-      context_scope: state.chat.contextScope,
-      ui_context: buildChatUiContext(),
-      api_key: apiKey || undefined,
-      endpoint: state.chat.agentEndpoint.trim() || undefined,
-      share_acknowledged: state.chat.agentAccessEnabled,
-      session_id: state.chat.sessionId || undefined,
-    };
-    const pending = state.chat.messages[state.chat.messages.length - 1];
-    const connector = (state.chat.connectors || []).find((item) => item.kind === state.chat.provider);
-    const result = connector?.supports_streaming
-      ? await streamChatPayload(payload, pending)
-      : await askPlanAssistant(payload);
-    if (result.ok === false) {
-      pending.content = (result.errors || ["AI chat is not available."]).join(" ");
-      state.chat.status = "Connector unavailable";
-    } else {
-      const assistant = [...result.session.messages].reverse().find((item) => item.role === "assistant");
-      pending.content = assistant?.content || "No answer returned.";
-      state.chat.sessionId = result.session.session_id;
-      state.chat.status = `${result.session.connector.label} · ${result.session.context_scope.name}`;
-    }
-  } catch (error) {
-    const pending = state.chat.messages[state.chat.messages.length - 1];
-    if (pending?.role === "assistant") pending.content = error.message;
-    else state.chat.messages.push({ role: "assistant", content: error.message });
-    state.chat.status = "Chat request failed";
-  } finally {
-    state.chat.busy = false;
-    el("chatInput").focus();
-    renderChat();
-  }
-}
-
-async function streamChatPayload(payload, pending) {
-  pending.content = "";
-  let finalResult = null;
-  await streamPlanAssistant(payload, {
-    onDelta: (text) => {
-      pending.content += text;
-      renderChat();
-    },
-    onDone: (result) => {
-      finalResult = result;
-    },
-  });
-  return finalResult || { ok: false, errors: ["AI chat stream ended without a final response."] };
-}
-
-function defaultModelForProvider(provider) {
-  const connector = (state.chat.connectors || []).find((item) => item.kind === provider);
-  return connector?.model || connector?.models?.[0] || "local-educational-helper";
-}
 
 function buildChatUiContext() {
   const active = state.userMode === "simple"
@@ -1229,33 +1144,6 @@ function buildChatUiContext() {
       timeline: evaluation.timeline || null,
     },
   };
-}
-
-function filterGlossary(query) {
-  const term = query.trim().toLowerCase();
-  const entries = document.querySelectorAll(".glossary dl > div");
-  let visible = 0;
-  entries.forEach((entry) => {
-    const match = !term || entry.textContent.toLowerCase().includes(term);
-    entry.hidden = !match;
-    if (match) visible += 1;
-  });
-  el("glossaryEmpty").hidden = visible !== 0;
-}
-
-function renderGlossaryTerms() {
-  const list = el("glossaryTerms");
-  if (!list || list.dataset.rendered === "1") return;
-  for (const item of glossaryTerms) {
-    const wrapper = document.createElement("div");
-    const term = document.createElement("dt");
-    const definition = document.createElement("dd");
-    term.textContent = item.term;
-    definition.textContent = item.definition;
-    wrapper.append(term, definition);
-    list.appendChild(wrapper);
-  }
-  list.dataset.rendered = "1";
 }
 
 async function loadVersions() {

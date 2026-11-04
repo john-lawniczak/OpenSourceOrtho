@@ -84,17 +84,20 @@ def score_segmentation(segments: list[ToothSegment], arch: SyntheticArch) -> Seg
     """Score produced ``segments`` against the synthetic ``arch`` ground truth."""
 
     truth = arch.truth_by_centroid
-    total = 0
+    total = len(truth)
+    seen = set()
     correct = 0
     pure = 0
     for segment in segments:
         true_labels: list[str] = []
         for tri in segment.triangles:
-            true_label = truth.get(_centroid_key(_mean3(tri)))
-            if true_label is None:
+            key = _centroid_key(_mean3(tri))
+            true_label = truth.get(key)
+            if true_label is None or key in seen:
+                total += 1  # Unknown and duplicate predictions cannot improve the score.
                 continue
+            seen.add(key)
             true_labels.append(true_label)
-            total += 1
             if true_label == segment.tooth_value:
                 correct += 1
         if true_labels:
@@ -105,7 +108,7 @@ def score_segmentation(segments: list[ToothSegment], arch: SyntheticArch) -> Seg
     accuracy = correct / total if total else 0.0
     purity = pure / total if total else 0.0
 
-    produced_labels = {segment.tooth_value for segment in segments}
+    produced_labels = {segment.tooth_value for segment in segments if segment.triangles}
     labels_recovered = sum(1 for tooth in arch.tooth_values if tooth in produced_labels)
 
     # Mean arc error for produced labels that match a known tooth.

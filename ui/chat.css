@@ -1,0 +1,75 @@
+/* Assistant UI is isolated from the planning workspace styles. */
+.chat-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.chat-actions button { min-height: 34px; padding: 6px 10px; border-radius: 8px; }
+.chat-settings-dialog { width: min(480px, calc(100vw - 32px)); max-height: 90dvh; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--ink); box-shadow: 0 24px 100px #0004; }
+.chat-settings-dialog::backdrop { background: #0b182c80; backdrop-filter: blur(4px); }
+.chat-settings-dialog form, .chat-settings-dialog .ai-connector { display: grid; gap: 16px; }
+.chat-settings-dialog label { display: grid; gap: 6px; }
+.chat-settings-dialog .toggle { display: flex; }
+.chat-settings-dialog [hidden] { display: none; }
+.chat-settings-dialog input, .chat-settings-dialog select { width: 100%; min-width: 0; }
+.chat-settings-dialog input[type="checkbox"] { width: 20px; flex-shrink: 0; }
+.chat-settings-dialog .ai-key-help { margin: 0; font-size: 12px; color: var(--muted); }
+.chat-boundary { font-size: 11px; color: var(--muted); text-align: center; margin: 10px 0 0; }
+
+.app-shell { grid-template-columns: 248px minmax(0, 1fr) minmax(420px, 34vw); }
+body[data-chat-collapsed="1"] .app-shell { grid-template-columns: 248px minmax(0, 1fr) 0; }
+.ai-rail { padding: 16px 16px 16px 0; }
+.ai-rail .ai-chat { top: 76px; height: calc(100dvh - 92px); max-height: none; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 18px; padding: 20px; background: var(--panel); box-shadow: 0 8px 30px #00000005; }
+.ai-chat-heading { align-items: center; }
+#aiChatBlock .ai-chat-heading { flex-wrap: wrap; }
+#aiChatBlock h2 { font-size: 18px; margin: 0 0 4px; }
+#chatStageContext { display: none; }
+#chatConnection { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; }
+.ai-chat-body { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+.chat-session-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.chat-session-bar .chat-status { margin: 0; text-align: left; }
+.chat-session-bar button { border: 0; background: none; color: var(--muted); font-size: 12px; cursor: pointer; }
+.chat-messages { display: block; flex: 1; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; padding: 24px 4px; margin: 0; scrollbar-width: thin; }
+.chat-message { border: 0; border-radius: 16px; padding: 16px; margin: 0 0 20px; background: none; overflow-wrap: anywhere; }
+.chat-message.user { background: var(--panel-alt); margin-left: 32px; }
+.chat-message.assistant { border: 0; padding-left: 4px; }
+.chat-message p { color: var(--ink); line-height: 1.7; font-size: 14px; white-space: pre-wrap; margin: 8px 0 0; }
+.chat-message strong { font-size: 11px; color: var(--muted); font-weight: 650; }
+.chat-message.is-pending strong { color: var(--accent); }
+.chat-message.is-error { border-left: 2px solid var(--warn); padding-left: 14px; }
+.chat-welcome { display: flex; min-height: 100%; flex-direction: column; justify-content: center; max-width: 330px; margin: auto; text-align: center; padding: 20px 0; }
+.chat-welcome h3 { font-size: 24px; letter-spacing: -.6px; margin: 0 0 12px; }
+.chat-welcome p { font-size: 14px; line-height: 1.6; color: var(--muted); }
+.chat-starters { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.chat-starters button { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 12px; padding: 10px; font-size: 12px; cursor: pointer; }
+.chat-composer { border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: var(--field); }
+.chat-composer:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent); }
+.chat-composer .chat-input { margin: 0; }
+.chat-composer textarea { border: 0; background: transparent; resize: none; width: 100%; min-height: 80px; max-height: 160px; padding: 2px; outline: none; box-shadow: none; }
+.chat-composer-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.chat-composer-footer small { color: var(--muted); font-size: 10px; }
+.chat-composer #sendChat { width: auto; border-radius: 10px; padding: 8px 16px; min-height: 36px; margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+body[data-chat-collapsed="1"] .ai-chat { display: none; }
+body[data-chat-focus="1"]:not([data-chat-collapsed="1"]) .ai-rail { position: fixed; inset: 60px 0 0; z-index: 40; padding: 16px max(16px, calc((100vw - 1000px) / 2)); background: var(--bg); }
+body[data-chat-focus="1"] .ai-rail .ai-chat { height: calc(100dvh - 92px); }
+@media (max-width: 1200px) {
+  body:not([data-chat-collapsed="1"]) .ai-rail { position: fixed; z-index: 40; inset: 60px 0 0 auto; width: min(580px, 100%); padding: 12px; background: var(--bg); box-shadow: -20px 0 60px #0002; }
+  .app-shell, body[data-chat-collapsed="1"] .app-shell { grid-template-columns: 220px minmax(0, 1fr) 0; }
+  .ai-rail .ai-chat { height: calc(100dvh - 84px); }
+  body[data-chat-focus="1"]:not([data-chat-collapsed="1"]) .ai-rail { width: 100%; padding: 12px; }
+}
+@media (max-width: 920px) {
+  .app-shell, body[data-chat-collapsed="1"] .app-shell { grid-template-columns: 1fr; }
+  .ai-rail .ai-chat { padding: 16px; }
+}
+@media (max-width: 480px) {
+  .chat-composer-footer small { max-width: 125px; }
+  .chat-actions button { font-size: 12px; }
+  #aiChatBlock .ai-chat-heading { gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .ai-rail .ai-chat { transition: none; } }
+.chat-actions button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; font-size: 12px; }
+.chat-actions button:hover, .chat-starters button:hover { background: var(--panel-alt); border-color: var(--accent); }
+.chat-actions button:focus-visible, .chat-session-bar button:focus-visible, .chat-starters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.chat-settings-dialog .ai-connector { padding: 0; border: 0; margin: 0; background: transparent; }
+.chat-settings-dialog form > .ai-chat-heading p { margin-top: 6px; font-size: 13px; }
+.chat-settings-dialog form > .ai-chat-heading button { border: 0; background: var(--panel-alt); color: var(--ink); width: 32px; height: 32px; font-size: 20px; cursor: pointer; }
+.chat-settings-dialog .toggle { border-radius: 10px; padding: 12px; font-size: 13px; }
+.chat-settings-dialog form > .primary-action { border-radius: 10px; }

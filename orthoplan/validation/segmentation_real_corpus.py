@@ -147,19 +147,24 @@ def _load_labelled_arch(scan_path: Path, labels_path: Path) -> LabelledRealArch:
             (tri[0][1] + tri[1][1] + tri[2][1]) / 3.0,
             (tri[0][2] + tri[1][2] + tri[2][2]) / 3.0,
         )
-        truth[_centroid_key(centroid)] = str(label)
+        if not isinstance(label, str) or len(label) != 2 or label[0] not in "1234" or label[1] not in "12345678":
+            raise ValueError("triangle_labels must use permanent-tooth FDI strings")
+        key = _centroid_key(centroid)
+        if key in truth:
+            raise ValueError("Ambiguous triangle centroids in reference scan")
+        truth[key] = label
     tooth_values = tuple(sorted(set(truth.values())))
     return LabelledRealArch(
         vertices=vertices,
         tooth_values=tooth_values,
         expected_count=len(tooth_values),
         truth_by_centroid=truth,
-        arc_center={tooth: 0.0 for tooth in tooth_values},
+        arc_center={},
     )
 
 
 def _provenance_ok(raw: dict) -> bool:
-    return all(bool(raw.get(key)) for key in (
+    return all(raw.get(key) is True for key in (
         "phi_removed",
         "consent_acknowledged",
         "commercial_use_allowed",

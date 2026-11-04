@@ -10,7 +10,7 @@ class OpenAIProvider:
 
     def __init__(
         self,
-        model: str = "gpt-5.5",
+        model: str = "gpt-6.1-sol",
         *,
         api_key: str | None = None,
         base_url: str | None = None,
@@ -32,7 +32,7 @@ class OpenAIProvider:
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY is required for OpenAIProvider")
 
-        client = OpenAI(api_key=api_key, base_url=self._base_url)
+        client = OpenAI(api_key=api_key, base_url=self._base_url, timeout=120, max_retries=0)
         try:
             response = client.responses.create(
                 model=self.model,
@@ -41,6 +41,11 @@ class OpenAIProvider:
                     {"role": "user", "content": request.prompt},
                 ],
             )
+            text = response.output_text
+            if not isinstance(text, str) or not text.strip():
+                raise ValueError("Provider returned no text response")
         except Exception as exc:
-            raise RuntimeError(f"OpenAIProvider request failed: {exc}") from exc
-        return ModelResponse(text=response.output_text, model=self.model, provider=self.name)
+            raise RuntimeError(f"OpenAIProvider request failed ({type(exc).__name__}); check model and credentials.") from exc
+        finally:
+            client.close()
+        return ModelResponse(text=text, model=self.model, provider=self.name)

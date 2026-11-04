@@ -30,6 +30,7 @@ function enterFakeSample() {
     { name: "upper.stl", url: "./example-scans/upper.stl", arch: "maxillary" },
   ];
   state.scanArch = "";
+  state.scanUnits = "mm";
   state.view = "overlay";
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
   state.availability = { ...state.availability, segmented_teeth: false };
@@ -40,7 +41,8 @@ function enterFakeSample() {
 }
 
 function stubFetch(payload) {
-  globalThis.fetch = async () => ({ ok: true, json: async () => payload });
+  globalThis.fetch = async url => ({ ok: true, json: async () =>
+    url === '/api/geometry-jobs' ? {ok:true,job_id:'sample'} : {ok:true,status:'complete',result:payload} });
 }
 
 test("prepareSampleSegmentation applies the draft so per-tooth movement renders", async () => {
@@ -84,10 +86,9 @@ test("applySampleRootBoneFixture loads CBCT registration and anatomy into isolat
 test("prepareSampleSegmentation never applies after the sample exits mid-run", async () => {
   enterFakeSample();
   // The user exits the sample while the segmenter request is in flight.
-  globalThis.fetch = async () => {
-    state.sample.active = false;
-    return { ok: true, json: async () => proposalPayload() };
-  };
+  stubFetch(proposalPayload());
+  const fetchJob = globalThis.fetch;
+  globalThis.fetch = async url => { state.sample.active = false; return fetchJob(url); };
 
   const ready = await prepareSampleSegmentation();
 
@@ -96,7 +97,7 @@ test("prepareSampleSegmentation never applies after the sample exits mid-run", a
   assert.equal(state.availability.segmented_teeth, false);
 });
 
-test("prepareSampleSegmentation falls back to arrows when segmentation fails", async () => {
+test("prepareSampleSegmentation keeps scans visible when segmentation fails", async () => {
   enterFakeSample();
   stubFetch({ ok: false, errors: ["segmentation failed"] });
 
@@ -104,7 +105,7 @@ test("prepareSampleSegmentation falls back to arrows when segmentation fails", a
 
   assert.equal(ready, false);
   assert.equal(state.segmentation.applied, null);
-  assert.match(state.sampleStatus, /markers and arrows/);
+  assert.match(state.sampleStatus, /tooth regions are unavailable/);
 });
 
 test("prepareSampleSegmentation is a no-op outside the sample", async () => {
@@ -118,4 +119,27 @@ test("prepareSampleSegmentation is a no-op outside the sample", async () => {
 
   assert.equal(await prepareSampleSegmentation(), false);
   assert.equal(fetched, false);
+});
+
+test("an old fixture response cannot populate a restarted sample", async (t) => {
+  enterFakeSample();
+  let resolve;
+  t.mock.method(globalThis, 'fetch', () => new Promise(done => { resolve = done; }));
+  const pending = applySampleRootBoneFixture();
+  enterFakeSample(); // New segmentation/session object, still sample.active=true.
+  resolve({ ok: true, json: async () => ({ case_records: [{ id: 'old-case' }] }) });
+  assert.equal(await pending, false);
+  assert.deepEqual(state.caseRecords, []);
+});
+
+test("an old fixture failure cannot overwrite the restored profile status", async (t) => {
+  enterFakeSample();
+  let reject;
+  t.mock.method(globalThis, 'fetch', () => new Promise((_, no) => { reject = no; }));
+  const pending = applySampleRootBoneFixture();
+  state.sample.active = false;
+  state.recordUploadStatus = 'Personal scan loaded';
+  reject(new Error('old request failed'));
+  assert.equal(await pending, false);
+  assert.equal(state.recordUploadStatus, 'Personal scan loaded');
 });

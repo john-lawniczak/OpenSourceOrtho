@@ -13,12 +13,14 @@ let selected = [];
 let viewer = null;
 let loading = false;
 let unavailable = false;
+let rotating = false;
 const frames = [{ poses: FDI_TEETH.map((tooth) => ({ tooth })) }];
 
 for (const quadrant of FDI_QUADRANTS) {
   const group = document.createElement("fieldset");
   const legend = document.createElement("legend");
   legend.textContent = quadrant.name;
+  group.dataset.quadrant = String(quadrant.teeth[0])[0];
   group.append(legend);
   for (const tooth of quadrant.teeth) {
     const button = document.createElement("button");
@@ -51,7 +53,7 @@ function draw() {
     swatch.setAttribute("aria-pressed", String(swatch.dataset.highlightColor === color.value));
   }
   viewer?.update({ frames, stageIndex: 0, view: "planned", exaggeration: 1,
-    showToothLabels: true, labelTeeth: selected, highlightTeeth: selected, highlightColor: color.value });
+    showToothLabels: false, labelTeeth: selected, highlightTeeth: selected, highlightColor: color.value, showRoots: false });
 }
 
 function select(teeth) {
@@ -75,15 +77,32 @@ document.getElementById("toothExplorerForm").addEventListener("submit", (event) 
 document.getElementById("toothExplorerClear").addEventListener("click", () => select([]));
 document.getElementById("toothExplorerExample").addEventListener("click", () => select(["11", "12", "33", "34", "43", "44"]));
 color.addEventListener("input", draw);
+document.getElementById("toothExplorerZoomIn").addEventListener("click", () => viewer?.zoomBy(.82));
+document.getElementById("toothExplorerZoomOut").addEventListener("click", () => viewer?.zoomBy(1.22));
 for (const swatch of root.querySelectorAll("[data-highlight-color]")) {
   swatch.addEventListener("click", () => { color.value = swatch.dataset.highlightColor; draw(); });
 }
-document.getElementById("toothExplorerResetView").addEventListener("click", () => viewer?.recenter());
+const rotateButton = document.getElementById("toothExplorerRotate");
+function setRotation(enabled) {
+  rotating = enabled;
+  viewer?.setAutoRotate(enabled);
+  rotateButton.setAttribute("aria-pressed", String(enabled));
+  rotateButton.textContent = enabled ? "Pause rotation" : "Auto-rotate";
+}
+rotateButton.addEventListener("click", () => setRotation(!rotating));
+host.addEventListener("pointerdown", () => setRotation(false));
+document.getElementById("toothExplorerResetView").addEventListener("click", () => {
+  setRotation(false);
+  viewer?.recenter();
+});
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) setRotation(false); });
 
 // Keep this independent of treatment state and patient mesh caches. Only mount
 // WebGL while the Tooth Map is visible, releasing its resources on navigation.
 async function syncViewer() {
   if (!host.clientWidth || !host.clientHeight) {
+    setRotation(false);
     viewer?.dispose();
     viewer = null;
     return;
@@ -100,6 +119,7 @@ async function syncViewer() {
     draw();
   } catch {
     unavailable = true;
+    rotateButton.disabled = true;
     host.textContent = "3D is unavailable in this browser. Use the numbered tooth buttons and selected-tooth list below.";
   } finally {
     loading = false;

@@ -1,3 +1,5 @@
+import { renderChat, currentChatModel } from "./chat_view.js";
+export { renderChat } from "./chat_view.js";
 import { buildViewerScanSources } from "./scan_formats.js";
 import {
   availabilityLabels,
@@ -17,7 +19,7 @@ import {
 } from "./core.js";
 import { createViewer } from "./viewer3d.js";
 import { planJson } from "./plan.js";
-import { renderGuided, toggleExcludedTooth } from "./guided.js";
+import { renderGuided } from "./guided.js";
 import { scaleConfirmed, targetFor, targetMagnitudeMm } from "./manual_edit.js";
 import { CONTROL_AXES, CONTROL_STEPS, controlGate } from "./direct_controls.js";
 import { formatScaleStatus } from "./scale.js";
@@ -31,8 +33,6 @@ import { renderAnatomyReview } from "./anatomy_render.js";
 
 let viewer = null;
 let viewerFailed = false;
-let renderedChatCount = 0;
-let renderedChatSignature = "";
 // One-shot request to re-frame the camera once the next evaluation has populated
 // the scene. Used when a new scene becomes visible (sample screen, guided 3D
 // step) where the viewer may have been sized while hidden or framed for a
@@ -40,25 +40,13 @@ let renderedChatSignature = "";
 // uses the real container size and the new geometry.
 let pendingRefit = false;
 
+export function acceptGoalEvaluation(result) {
+  state.lastEval = result;
+  scheduleEvaluate.prime(planJson(), result);
+}
+
 export function requestViewerRefit() {
   pendingRefit = true;
-}
-
-// The guided steps that show the 3D viewer for selecting/holding teeth. Returns
-// the step id, or null when not in that context.
-function guidedViewerStep() {
-  if (state.userMode !== "simple") return null;
-  const step = state.guided.step;
-  return step === "plan" || step === "details" ? step : null;
-}
-
-function guidedStageIndex(step, result) {
-  const lastStage = Math.max(0, (result.frames?.length || 1) - 1);
-  if (step === "details") {
-    return Math.min(Number(el("guidedStagePreview")?.value || 0), lastStage);
-  }
-  if (step === "plan") return 0;
-  return lastStage;
 }
 
 function formatWeek(value) {
@@ -77,6 +65,7 @@ function stagePhaseText(result, stageIndex) {
 }
 
 function updateStagePhase(result = state.lastEval) {
+  result = state.goalPreview?.evaluation || result;
   const slider = el("stageSlider");
   const stageIndex = Number(slider.value || 0);
   el("stageValue").textContent = String(stageIndex);
@@ -91,16 +80,8 @@ function ensureViewer() {
   if (viewer || viewerFailed) return viewer;
   try {
     viewer = createViewer(el("viewer3d"));
-    // Clicking a tooth means different things by context. In the guided "teeth"
-    // and "details" steps it toggles whether that tooth is held still (the visual
-    // equivalent of the checkbox list). Everywhere else it selects the tooth for
-    // manual target authoring (only honored when scan units are confirmed).
     viewer.setSelectionHandler((tooth) => {
-      if (guidedViewerStep() === "plan") {
-        toggleExcludedTooth(tooth);
-      } else {
-        state.manualEdit.selectedTooth = tooth;
-      }
+      state.manualEdit.selectedTooth = tooth;
       renderAll();
     });
   } catch (error) {
@@ -150,12 +131,13 @@ function scanStatusText(count, movingFragments) {
   if (!count) return "Your scan could not be displayed.";
   if (movingFragments) return "Showing your scan with reviewed per-tooth fragments moving in 3D.";
   if (state.segmentation.busy) {
-    return "Showing your scan. Segmenting individual teeth on this machine — movement switches from arrows to real crowns when it is applied.";
+    return "Showing your scan. Identifying tooth regions locally…";
   }
-  return "Showing your scan. Tooth movement uses markers/arrows until reviewed per-tooth meshes are applied.";
+  return "Showing your scan. Review tooth regions in Upload to enable individual selection.";
 }
 
 function updateViewer(result) {
+  result = state.goalPreview?.evaluation || result;
   if (state.dim !== "3d") return;
   const v = ensureViewer();
   if (!v) return;
@@ -164,13 +146,14 @@ function updateViewer(result) {
   const scanSources = filterScanSources(allScanSources);
   v.setVisibleArchFilter(state.scanArchFilter);
   if (allScanSources.length) {
-    v.loadScanSources(allScanSources).then(({ loaded }) => {
+    v.loadScanSources(allScanSources).then(({ loaded, stale }) => {
+      if (stale || (state.goalPreview?.evaluation || state.lastEval) !== result) return;
       const movingFragments = Boolean(
         result.render_meshes?.some((item) => item.source === "model-generated" && toothMatchesArch(item.tooth)),
       );
       state.scanRenderStatus = scanStatusText(scanSources.length, movingFragments);
       renderScanStatus();
-      if (loaded && state.lastEval === result) updateViewer(result);
+      if (loaded && (state.goalPreview?.evaluation || state.lastEval) === result) updateViewer(result);
     }).catch(() => {
       state.scanRenderStatus = "Your scan could not be displayed.";
       renderScanStatus();
@@ -189,43 +172,44 @@ function updateViewer(result) {
   const scanLoaded = scanSources.length > 0;
   // Segmentation links carry MeshProvenance.MODEL_GENERATED, whose serialized
   // value is "model-generated" (hyphen). Match that exact string.
-  const segFragments = (result.render_meshes || [])
-    .filter((item) => item.source === "model-generated" && toothMatchesArch(item.tooth));
+  const applied = state.segmentation.applied?.tooth_meshes;
+  const draft = !applied && state.segmentation.proposal?.teeth;
+  const segFragments = (applied ? applied.map(link => ({ tooth: link.tooth.value, url: `/api/mesh/${link.mesh_asset_id}` }))
+    : draft ? draft.filter(item => state.segmentation.edits[item.mesh_asset_id]?.included)
+      .map(item => ({ tooth: state.segmentation.edits[item.mesh_asset_id].tooth, url: item.url }))
+    : (result.render_meshes || []).filter(item => item.source === "model-generated"))
+    .filter(item => toothMatchesArch(item.tooth));
   if (scanLoaded && segFragments.length) {
     v.loadToothFragments(segFragments).then((loaded) => {
-      if (loaded && state.lastEval === result) updateViewer(result);
+      if (v.fragmentError()) { state.scanRenderStatus = v.fragmentError(); renderScanStatus(); }
+      if (loaded && (state.goalPreview?.evaluation || state.lastEval) === result) updateViewer(result);
     });
   } else {
+    v.loadToothFragments([]);
     const renderMeshes = result.render_meshes?.length
       ? result.render_meshes
       : (state.useDemoMeshes ? demoRenderMeshes() : []);
     const filteredRenderMeshes = renderMeshes.filter((item) => toothMatchesArch(item.tooth));
     if (filteredRenderMeshes.length) {
       v.loadMeshes(filteredRenderMeshes).then((loaded) => {
-        if (loaded && state.lastEval === result) updateViewer(result);
+        if (loaded && (state.goalPreview?.evaluation || state.lastEval) === result) updateViewer(result);
       });
     }
   }
   const visibleResult = filterResultForArch(result);
-  const guidedSelect = guidedViewerStep();
-  // Tooth picking is enabled for manual authoring once units are confirmed, and
-  // unconditionally in the guided teeth/details steps (there a click just toggles
-  // "hold still", which needs no millimetre scale).
-  v.setSelectionEnabled(Boolean(guidedSelect) || scaleConfirmed(state.scanUnits));
+  // Uploaded scans can be picked only through their reviewed crown fragments.
+  v.setSelectionEnabled(scanLoaded ? segFragments.length > 0 : scaleConfirmed(state.scanUnits));
   v.setSelectedTooth(state.manualEdit.selectedTooth);
-  // In guided Plan the viewer shows final movement for hold-still selection. In
-  // guided Details the local stage slider previews real staged movement.
   v.update({
     frames: visibleResult.frames,
     toothFrames: visibleResult.tooth_frames,
     attachments: visibleResult.clinical_controls?.attachments || [],
     initialOffsets: state.demoInitialOffsets,
-    stageIndex: guidedSelect
-      ? guidedStageIndex(guidedSelect, visibleResult)
-      : Number(el("stageSlider").value || 0),
-    view: guidedSelect ? "overlay" : state.view,
-    exaggeration: guidedSelect ? 1 : (numberValue("exaggeration") || 1),
-    showToothLabels: guidedSelect === "plan" ? true : state.showToothLabels,
+    stageIndex: Number(el("stageSlider").value || 0),
+    view: state.view,
+    exaggeration: state.userMode === "simple" ? 1 : (numberValue("exaggeration") || 1),
+    showToothLabels: state.userMode === "simple" ? false : state.showToothLabels,
+    labelTeeth: state.userMode === "simple" ? [state.manualEdit.selectedTooth].filter(Boolean) : null,
     showScale: state.showScale,
     unitsConfirmed: scaleConfirmed(state.scanUnits),
     excluded: state.guided.excludedTeeth,
@@ -346,7 +330,7 @@ export function renderAll() {
 
 export function renderStagePreview() {
   updateStagePhase();
-  renderGuidedStagePreviewControl(Number(el("stageSlider").max || 0));
+  el("stageSlider").max = String(Math.max(0, ((state.goalPreview?.evaluation || state.lastEval)?.frames?.length || 1) - 1));
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
 }
@@ -386,8 +370,8 @@ function renderMovementFidelity() {
     target.dataset.mode = "real";
     target.textContent = `Movement layer: reviewed per-tooth 3D meshes (${renderLinks.length}) moving over the scan.`;
   } else if (scanCount) {
-    target.dataset.mode = "scan-arrow";
-    target.textContent = "Movement layer: scan is real; tooth movement is shown with markers/arrows until segmentation is reviewed.";
+    target.dataset.mode = "scan-only";
+    target.textContent = "Individual selection and movement need reviewed tooth regions.";
   } else {
     target.dataset.mode = "schematic";
     target.textContent = "Movement layer: schematic preview until scans and reviewed per-tooth meshes are available.";
@@ -434,165 +418,6 @@ function filterResultForArch(result) {
         .filter((item) => toothMatchesArch(item.tooth?.value)),
     },
   };
-}
-
-const AI_KEY_HELP = {
-  local: "The local helper runs on this machine and needs no API key.",
-  openai: "Paste your OpenAI API key (from platform.openai.com). It is used only for this session and never saved.",
-  "claude-code": "Paste your Anthropic API key (from console.anthropic.com). It is used only for this session and never saved.",
-  mcp: "Paste the API key your MCP host expects (set the endpoint under Connector settings). Used only for this session.",
-  "open-source": "Set the model endpoint under Connector settings. Paste a key only if your endpoint requires one; used only for this session.",
-};
-
-export function renderChat() {
-  renderChatConnectorControls();
-  el("chatInput").value = state.chat.input;
-  el("agentAccessEnabled").checked = state.chat.agentAccessEnabled;
-  el("agentEndpoint").value = state.chat.agentEndpoint;
-  el("sendChat").disabled = state.chat.busy || !state.chat.input.trim();
-  const toggle = el("toggleChatPanel");
-  if (toggle) {
-    toggle.textContent = state.chat.collapsed ? "Show" : "Hide";
-    toggle.setAttribute("aria-expanded", state.chat.collapsed ? "false" : "true");
-    toggle.setAttribute("aria-label", state.chat.collapsed ? "Expand AI chat" : "Collapse AI chat");
-  }
-  // The reopen tab is the only visible handle once the panel slides off-screen.
-  const reopenTab = el("chatReopenTab");
-  if (reopenTab) reopenTab.hidden = !state.chat.collapsed;
-  const contextEl = el("chatStageContext");
-  if (contextEl) contextEl.textContent = chatStageLabel();
-  // The local helper needs no key, so hide the key field for it; for any real
-  // provider show the field with provider-specific, plain-language instructions.
-  const isLocal = state.chat.provider === "local";
-  const connector = chatConnector(state.chat.provider);
-  el("aiKeyField").hidden = isLocal || connector?.requires_api_key === false;
-  el("chatCustomModelField").hidden = !connector?.allow_custom_model;
-  el("aiKeyHelp").textContent = AI_KEY_HELP[state.chat.provider] || AI_KEY_HELP.local;
-  const secretStatus = state.chat.apiKeyPresent ? " · key in session" : "";
-  const agentStatus = state.chat.agentAccessEnabled ? " · agent access staged" : "";
-  el("chatStatus").textContent = `${state.chat.status}${secretStatus}${agentStatus}`;
-  renderChatMessages();
-}
-
-function currentChatModel() {
-  const custom = el("chatCustomModel")?.value.trim();
-  const selected = el("chatModel")?.value;
-  if (selected === "__custom__") return custom || state.chat.model || "custom-model";
-  return selected || state.chat.model;
-}
-
-function chatConnector(kind) {
-  return (state.chat.connectors || []).find((connector) => connector.kind === kind);
-}
-
-function renderChatConnectorControls() {
-  const provider = el("chatProvider");
-  const model = el("chatModel");
-  const custom = el("chatCustomModel");
-  const connectors = state.chat.connectors || [];
-  const providerSignature = connectors.map((item) => `${item.kind}:${item.label}`).join("|");
-  if (provider.dataset.signature !== providerSignature) {
-    provider.replaceChildren(...connectors.map((connector) => {
-      const option = document.createElement("option");
-      option.value = connector.kind;
-      option.textContent = connector.shares_patient_data
-        ? `${connector.label} (shares plan context)`
-        : connector.label;
-      return option;
-    }));
-    provider.dataset.signature = providerSignature;
-  }
-  provider.value = state.chat.provider;
-  const connector = chatConnector(state.chat.provider) || connectors[0];
-  const models = connector?.models?.length ? connector.models : [connector?.model || state.chat.model];
-  const modelSignature = `${connector?.kind || ""}:${models.join("|")}:${connector?.allow_custom_model ? "custom" : ""}`;
-  if (model.dataset.signature !== modelSignature) {
-    const options = models.map((modelId) => {
-      const option = document.createElement("option");
-      option.value = modelId;
-      option.textContent = modelId;
-      return option;
-    });
-    if (connector?.allow_custom_model) {
-      const option = document.createElement("option");
-      option.value = "__custom__";
-      option.textContent = "Custom model ID";
-      options.push(option);
-    }
-    model.replaceChildren(...options);
-    model.dataset.signature = modelSignature;
-  }
-  const selected = state.chat.modelByProvider[state.chat.provider] || connector?.model || models[0];
-  const customSelected = connector?.allow_custom_model && !models.includes(selected);
-  model.value = customSelected ? "__custom__" : selected;
-  custom.value = customSelected ? selected : custom.value;
-  state.chat.model = customSelected ? custom.value : model.value;
-}
-
-function renderChatMessages() {
-  const host = el("chatMessages");
-  const signature = state.chat.messages.map((message) => `${message.role}:${message.content}`).join("\n");
-  if (!state.chat.messages.length) {
-    if (renderedChatSignature !== signature) {
-      host.replaceChildren(chatEmptyNode("Ask what the preview can and cannot tell you."));
-      renderedChatCount = 0;
-      renderedChatSignature = signature;
-    }
-    return;
-  }
-  if (!signature.startsWith(renderedChatSignature) || renderedChatCount > state.chat.messages.length) {
-    host.replaceChildren();
-    renderedChatCount = 0;
-  }
-  for (const message of state.chat.messages.slice(renderedChatCount)) {
-    host.appendChild(chatMessageNode(message));
-  }
-  renderedChatCount = state.chat.messages.length;
-  renderedChatSignature = signature;
-  host.scrollTop = host.scrollHeight;
-}
-
-function chatEmptyNode(text) {
-  const node = document.createElement("p");
-  node.className = "chat-empty";
-  node.textContent = text;
-  return node;
-}
-
-function chatMessageNode(message) {
-  const node = document.createElement("div");
-  node.className = `chat-message ${escapeHtml(message.role)}`;
-  const label = document.createElement("strong");
-  label.textContent = message.role === "user" ? "You" : "AI";
-  const body = document.createElement("p");
-  body.textContent = message.content;
-  node.append(label, body);
-  return node;
-}
-
-function chatStageLabel() {
-  if (state.userMode === "simple") {
-    const labels = {
-      upload: "Guided step 1: Upload",
-      plan: "Guided step 2: Teeth and time",
-      details: "Guided step 3: Details",
-      review: "Guided step 4: Review",
-      preview: "Guided step 5: 3D preview",
-      print: "Guided step 6: Print / send",
-    };
-    return labels[state.guided.step] || "Guided workflow";
-  }
-  const labels = {
-    upload: "Technician: Upload",
-    availability: "Technician: Data",
-    settings: "Technician: Settings",
-    stages: "Technician: Stages",
-    review: "Technician: Review",
-    toothmap: "Reference: Tooth map",
-    glossary: "Reference: Glossary",
-    photos: "Reference: Imaging guide",
-  };
-  return labels[state.activeStep] || "Technician workflow";
 }
 
 export function renderGeneration() {
@@ -674,6 +499,7 @@ export function renderVersions() {
 }
 
 const scheduleEvaluate = createEvaluationRunner({
+  cacheKey: JSON.stringify,
   getPayload: planJson,
   evaluate: evaluatePlan,
   onPending: () => renderTrustStatus(el("trustStatusStrip"), state, renderAll, true),
@@ -711,9 +537,6 @@ function renderSteps() {
   });
   document.querySelectorAll(".step").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.step === state.activeStep);
-  });
-  document.querySelectorAll("[data-journey-step]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.journeyStep === state.activeStep);
   });
   // Keep the Current/Planned/Overlay toolbar in sync with state.view. Without
   // this, programmatic view changes (e.g. the sample sets "overlay") leave the
@@ -854,6 +677,7 @@ function caseRecordDetail(record) {
 }
 
 function renderEvaluation(result) {
+  result = state.goalPreview?.evaluation || result;
   renderReviewTier(result.review_tier);
   renderCbct(result.cbct_status, result.cbct_handoff, result.registration);
   renderAnatomyReview(result.derived_anatomy);
@@ -873,7 +697,6 @@ function renderEvaluation(result) {
   const lastStage = Math.max(0, result.frames.length - 1);
   slider.max = String(lastStage);
   if (Number(slider.value) > lastStage) slider.value = String(lastStage);
-  renderGuidedStagePreviewControl(lastStage);
   updateStagePhase(result);
   drawCanvas();
   updateViewer(result);
@@ -886,15 +709,6 @@ function renderEvaluation(result) {
   renderDownloadActions();
 }
 
-function renderGuidedStagePreviewControl(lastStage) {
-  const guidedSlider = el("guidedStagePreview");
-  if (!guidedSlider) return;
-  guidedSlider.max = String(lastStage);
-  if (Number(guidedSlider.value) > lastStage) guidedSlider.value = String(lastStage);
-  el("guidedStagePreviewValue").textContent =
-    stagePhaseText(state.lastEval, Number(guidedSlider.value || 0));
-}
-
 function renderReviewTier(info) {
   const container = el("reviewTierBanner");
   if (!container) return;
@@ -902,13 +716,16 @@ function renderReviewTier(info) {
     container.innerHTML = "";
     return;
   }
+  const expanded = container.querySelector("details")?.open;
   container.dataset.tier = info.tier;
   container.innerHTML = `
     <p class="review-tier-label"><strong>${escapeHtml(info.label)}</strong></p>
+    <details class="review-scope-details" ${expanded ? "open" : ""}><summary>Scope & limitations</summary>
     <p class="review-tier-summary">${escapeHtml(info.summary)}</p>
     ${info.root_bone_aware
       ? ""
       : `<p class="review-tier-note">Root/bone-aware review is not available for this plan.</p>`}
+    </details>
   `;
 }
 

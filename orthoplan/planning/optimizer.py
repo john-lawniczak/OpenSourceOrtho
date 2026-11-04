@@ -130,6 +130,6 @@ def _split_delta(delta: ToothDelta, steps: int) -> ToothDelta:
         rotate_torque_deg=delta.rotate_torque_deg / steps,
         rotate_rotation_deg=delta.rotate_rotation_deg / steps,
         coordinate_frame=delta.coordinate_frame,
-        source="manual",
+        source=delta.source,
         mesh_asset_id=delta.mesh_asset_id,
     )
