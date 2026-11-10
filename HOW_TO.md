@@ -57,12 +57,15 @@ without changing the camera. Rotate, zoom, or double-click a crown to inspect
 that region closely; the camera is shared between visits. No intermediate tooth
 positions are invented, and no movement is exaggerated.
 
-The earlier observation is the June 5, 2026 **pretreatment baseline**, not a
-confirmed week 1 scan. September 17 is the contributor's reported week 7.
-Display orientation and centering are applied without scale fitting; cross-visit
-registration, progress scale, and tooth correspondence remain unverified.
-Differences therefore cannot be reported as accurate per-tooth movement. The
-private week 18 scans from chipped stone models are excluded from this example.
+The contributor labels the earlier observation **Week 1 / baseline**; its recorded
+June 5, 2026 pretreatment date is retained. September 17 is the reported week 7.
+The contributor confirms that **cross-visit alignment and tooth correspondence
+are validated** for these original pairs. This confirmation is recorded against
+the four source hashes. The viewer currently uses display orientation and
+independent centering; it has not yet imported the registration transform or
+per-tooth map needed to calculate tooth displacement. Progress scale is still
+unverified. The week 18 contribution consists of personal molds and scans from
+chipped stone models and does not inherit the week 1–7 validation.
 
 Choose **Simulated planning demo** separately for hypothetical edits and Plan AI,
 and to explore synthetic stages with

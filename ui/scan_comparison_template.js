@@ -5,9 +5,10 @@ export const comparisonTemplate = `
     <label>Arch <select id="comparisonArch"><option value="upper">Upper</option><option value="lower">Lower</option></select></label>
   </header>
   <p>Two original scans, one camera. Reveal either visit while keeping the same close-up.</p>
+  <p id="comparisonValidation" class="comparison-validation">Loading the scan validation record…</p>
   <p class="comparison-limitation"><strong>Visual comparison, not measured tooth movement.</strong>
-    Display orientation and centering only; cross-visit alignment and week 7 scale are unverified.
-    Tooth identities have not been matched across visits.</p>
+    This viewer uses display orientation and centering. It has not yet imported the registration
+    transform or per-tooth map, and does not calculate movement between visits.</p>
   <div class="comparison-toolbar" role="group" aria-label="Comparison camera">
     <button type="button" data-comparison-view="occlusal">Biting surface</button>
     <button type="button" data-comparison-view="front">Front</button>
@@ -19,13 +20,13 @@ export const comparisonTemplate = `
   </div>
   <div class="comparison-stage">
     <div id="comparisonCanvas" class="comparison-canvas"></div>
-    <div class="comparison-visit comparison-before" id="comparisonBefore">Pretreatment baseline</div>
+    <div class="comparison-visit comparison-before" id="comparisonBefore">Week 1 / baseline</div>
     <div class="comparison-visit comparison-after" id="comparisonAfter">Reported week 7</div>
     <div id="comparisonDivider" class="comparison-divider" hidden aria-hidden="true"><span>↔</span></div>
   </div>
   <div class="comparison-reveal">
     <div class="comparison-endpoints">
-      <button id="comparisonBaseline" type="button">Baseline only</button>
+      <button id="comparisonBaseline" type="button">Week 1 only</button>
       <button id="comparisonSplit" type="button">Split view</button>
       <button id="comparisonWeek7" type="button">Week 7 only</button>
     </div>
@@ -39,10 +40,13 @@ export const comparisonTemplate = `
   <p id="comparisonStatus" role="status" aria-live="polite">Loading original scan pair…</p>
   <button id="comparisonRetry" type="button" hidden>Retry scan loading</button>
   <details class="comparison-provenance"><summary>About these visits</summary>
-    <p>The baseline is a pretreatment scan from June 5, 2026, not a confirmed week 1 scan.
+    <p>The contributor labels the earlier pair week 1 / baseline. Its recorded date remains June 5, 2026 (pretreatment).
       The progress scan is from September 17, 2026, reported as week 7.
       There are 104 days between the scans and 30 days from the recorded treatment start to the progress scan.
       The week label is not elapsed calendar time.</p>
+    <p>Input alignment and tooth correspondence were confirmed by the contributor on November 10, 2026.
+      A machine-readable registration transform and tooth map have not been linked to this viewer.
+      Progress scale remains unverified; no millimeter displacement is reported.</p>
     <p>Only two observed visits are available here. The slider reveals the recorded surfaces;
       intermediate positions are not inferred tooth positions or additional weeks. No movement is exaggerated.
       Differences can include scan coverage, orientation, attachments, and acquisition artifacts.

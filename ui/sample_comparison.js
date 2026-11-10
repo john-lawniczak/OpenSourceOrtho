@@ -2,7 +2,7 @@ import { el, state } from "./state.js";
 import { applySampleRootBoneFixture, prepareSampleSegmentation } from "./sample.js";
 import { comparisonTemplate } from "./scan_comparison_template.js";
 import { createScanComparison } from "./scan_comparison_viewer.js";
-import { loadObservedPair, revealFraction } from "./scan_comparison_data.js";
+import { inputValidationText, loadObservedPair, revealFraction } from "./scan_comparison_data.js";
 
 let mounted = false, viewer = null, request = null, session = null, startedPlanning = false;
 
@@ -38,23 +38,26 @@ async function loadArch() {
   viewer?.clear();
   el("comparisonRetry").hidden = true;
   el("comparisonStatus").textContent = "Loading and verifying the two original scans…";
+  el("comparisonValidation").textContent = "Loading the scan validation record…";
   try {
     viewer ||= createScanComparison(el("comparisonCanvas"), {
-      onFocus: () => { el("comparisonStatus").textContent = "Region focused. Alternate visits to inspect this area; tooth correspondence is unverified."; },
+      onFocus: () => { el("comparisonStatus").textContent = "Region focused. Alternate visits to inspect this area; this viewer does not compute per-tooth displacement."; },
     });
     const pair = await loadObservedPair(el("comparisonArch").value, { signal: pending.signal });
     if (pending.signal.aborted || !observedSampleActive()) return;
     viewer.setPair(pair);
     el("comparisonBefore").textContent = `${pair[0].label} · ${pair[0].date}`;
     el("comparisonAfter").textContent = `${pair[1].label} · ${pair[1].date}`;
+    el("comparisonValidation").textContent = inputValidationText(pair.every(scan => scan.validation) ? pair[0].validation : null);
     setReveal(50);
     setReady(true);
-    el("comparisonStatus").textContent = "Original scan pair loaded and verified. Display alignment only; tooth movement is not measured.";
+    el("comparisonStatus").textContent = "Original scan pair loaded and hashes verified. The reveal uses display orientation and centering; per-tooth displacement is not computed.";
   } catch (error) {
     if (pending.signal.aborted) return;
     viewer?.clear();
     el("comparisonDivider").hidden = true;
     el("comparisonStatus").textContent = `Comparison unavailable: ${error.message}`;
+    el("comparisonValidation").textContent = "The scan validation record could not be loaded with a complete pair.";
     el("comparisonRetry").hidden = false;
   }
 }

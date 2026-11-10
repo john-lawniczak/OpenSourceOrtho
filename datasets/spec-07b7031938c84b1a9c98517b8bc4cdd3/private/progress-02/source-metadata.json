@@ -32,7 +32,8 @@
       "scope_note": "Contributor confirms both models were poorly made; these defects do not reflect the actual teeth.",
       "reference_damage_map_available": false,
       "interpretation_basis": "Contributor clarification, not inferred tooth condition."
-    }
+    },
+    "origin": "Contributor-created personal molds and scans"
   },
   "units": {
     "declared_in_stl": false,
@@ -102,6 +103,7 @@
     "reproduction_script": "evaluate_meshes.py",
     "data_classification": "damaged-model-test-data",
     "reference_tooth_geometry": false,
-    "model_findings": "quality-findings.json"
+    "model_findings": "quality-findings.json",
+    "week_1_to_7_validation_applies": false
   }
 }

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { loadObservedPair, observedPairMetadata, revealFraction } from "./scan_comparison_data.js";
+import { inputValidationText, loadObservedPair, observedPairMetadata, revealFraction } from "./scan_comparison_data.js";
 import { comparisonGeometry } from "./scan_comparison_geometry.js";
 
 const root = new URL("../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/", import.meta.url);
@@ -13,10 +13,20 @@ test("observed visits retain actual dates, labels, hashes, and documented proper
   const pair = observedPairMetadata(...records(), "upper");
   assert.deepEqual(pair.map(scan => scan.filename), ["initial-upper.stl", "progress-01-upper.stl"]);
   assert.deepEqual(pair.map(scan => scan.date), ["2026-06-05", "2026-09-17"]);
-  assert.deepEqual(pair.map(scan => scan.label), ["Pretreatment baseline", "Reported week 7"]);
+  assert.deepEqual(pair.map(scan => scan.label), ["Week 1 / baseline", "Reported week 7"]);
+  assert.match(inputValidationText(pair[0].validation), /validated, confirmed by the contributor/);
   assert.deepEqual(pair.map(scan => scan.rotation), [[-1, 1, -1], [1, 1, 1]]);
   assert.equal(pair[1].units, "unverified");
   assert.throws(() => observedPairMetadata(...records(), "both"));
+});
+
+test("validation wording requires a matching source hash and confirmed provenance", () => {
+  const items = records();
+  items[1].comparison.input_validation.scans["initial-upper.stl"] = "0".repeat(64);
+  const pair = observedPairMetadata(...items, "upper");
+  assert.equal(pair[0].validation, null);
+  assert.match(inputValidationText(pair[0].validation), /No contributor-confirmed/);
+  assert.match(inputValidationText({status: "unknown"}), /No contributor-confirmed/);
 });
 
 test("mismatched identity, hashes, arch, visit membership, and mirror transforms fail closed", () => {

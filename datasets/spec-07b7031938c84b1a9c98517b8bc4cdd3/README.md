@@ -23,7 +23,10 @@ The contributor confirms week 7 and reports five-day tray changes. The source
 scanning date is September 17, 2026, 30 days after the recorded treatment start;
 the progress label does not mean seven elapsed calendar weeks. The two new STLs
 and six source-rendered JPEG views retain their original bytes with neutral
-filenames. Progress scale and cross-time registration are unverified.
+filenames. The contributor confirms validated cross-visit alignment and tooth
+correspondence for the week 1/baseline and week 7 pairs (November 10, 2026).
+Progress scale remains unverified. The viewer has not yet imported an executable
+registration transform or per-tooth map.
 
 The user confirmed that the upper/lower STL pair was acquired on **June 5, 2026**,
 **before treatment**, and that the companion CBCT is from the **same person**.

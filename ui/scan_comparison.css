@@ -29,6 +29,7 @@ body[data-sample-view="observed"] .ai-rail { display: none !important; }
 .comparison-heading label { display: flex; gap: 8px; align-items: center; }
 .comparison-eyebrow { color: #0f766e; font-size: .8rem; font-weight: 700; margin: 0; }
 .comparison-limitation { padding: 12px 14px; background: #fff5df; color: #61420c; border-radius: 8px; font-size: .88rem; line-height: 1.5; }
+.comparison-validation { font-size: .9rem; font-weight: 600; line-height: 1.5; }
 .comparison-toolbar, .comparison-endpoints { display: flex; flex-wrap: wrap; gap: 6px; }
 .comparison-toolbar { margin: 12px 0; }
 .comparison-stage { position: relative; border: 1px solid #ccdadd; border-radius: 12px; overflow: hidden; }

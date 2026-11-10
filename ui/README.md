@@ -63,9 +63,11 @@ The Sample Test Case initially renders original baseline/week 7 scan pairs with
 a shared orthographic camera and scissored reveal. `scan_comparison_data.js`
 checks case identity, visit membership, documented proper display rotations,
 and SHA-256 hashes. `scan_comparison_geometry.js` applies only those rotations
-and independent centering, with no deformation or scale fitting. Registration,
-progress scale, and per-tooth correspondence remain unverified; this view does
-not measure tooth motion. Scrubbing changes only the reveal, preserving the
+and independent centering, with no deformation or scale fitting. The contributor confirms validated input alignment and tooth correspondence
+for week 1/baseline and week 7; the UI reads the hash-bound confirmation from
+the longitudinal record. An executable registration transform and per-tooth map
+have not been linked to this renderer. Progress scale remains unverified, and
+this view does not measure tooth motion. Scrubbing changes only the reveal, preserving the
 camera and source geometry. Failed or stale loads cannot expose a partial pair.
 Private chipped-stone records are not discovered or loaded.
 

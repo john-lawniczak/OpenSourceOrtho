@@ -6,6 +6,13 @@ export function revealFraction(value) {
   return Number.isFinite(number) ? Math.min(1, Math.max(0, number / 100)) : 0;
 }
 
+export function inputValidationText(validation) {
+  return validation?.status === "contributor-confirmed"
+    && validation.cross_visit_alignment === "validated" && validation.tooth_correspondence === "validated"
+    ? "Week 1–7 cross-visit alignment and tooth correspondence: validated, confirmed by the contributor."
+    : "No contributor-confirmed alignment and tooth-correspondence record is linked to this pair.";
+}
+
 export function observedPairMetadata(manifest, timeline, comparison, arch) {
   if (!["upper", "lower"].includes(arch)) throw new Error("Choose an upper or lower arch.");
   if ([manifest, timeline, comparison].some(record => record.specimen_id !== sampleDataset.specimenId)) {
@@ -29,8 +36,11 @@ export function observedPairMetadata(manifest, timeline, comparison, arch) {
         || rotation.reduce((a, b) => a * b, 1) !== 1) {
       throw new Error("The documented display orientation is unavailable.");
     }
-    return { filename, sha256: scan.sha256, units: scan.units, rotation,
-      date: event.date, label: index ? `Reported week ${event.reported_week}` : "Pretreatment baseline" };
+    const validation = timeline.comparison?.input_validation;
+    const boundValidation = validation?.scans?.[filename] === scan.sha256 ? validation : null;
+    return { filename, sha256: scan.sha256, units: scan.units, rotation, validation: boundValidation,
+      date: event.date, label: index ? `Reported week ${event.reported_week}`
+        : event.reported_week === 1 ? "Week 1 / baseline" : "Pretreatment baseline" };
   });
 }
 
