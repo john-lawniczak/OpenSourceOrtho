@@ -21,6 +21,7 @@ def test_settings_and_phase_navigation_stay_in_place(server_url):
                 expect(page.locator(f'.gstep[data-gstep="{step}"]')).to_be_visible()
                 assert page.evaluate('window.scrollY') == 0
             page.locator('#sampleLaunch').click()
+            page.locator('[data-sample-view="simulation"]').click()
             page.locator('#openChatSettings').click()
             page.locator('[data-user-mode="advanced"]').click()
             expect(page.locator('#chatSettingsDialog')).not_to_be_visible()

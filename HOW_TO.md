@@ -50,16 +50,27 @@ in the top bar:
 - **Technician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
 
-To see a complete, isolated example, click **Sample Test Case** in the left
-sidebar: it runs the guided wizard pre-loaded with the two bundled test-case STL
-scans, redacted CBCT metadata, a safe root/bone engineering fixture, and a
-10-day stage spacing. It opens directly on the shared scan viewer. The 3D
-preview shows the real scans with sample-only per-tooth segmentation and the
-root/bone-aware fixture path: accepted fixture STL-to-CBCT registration, trusted
-derived root/axis landmarks, anatomical frames, root/bone context, and CBCT
-boundary priors. This is a workflow fixture, not clinical interpretation of raw
-CBCT. It snapshots and restores your own work, so nothing leaks into your
-editors; use **Exit Sample Test Case** to return.
+Click **Sample Test Case** to open USER_ONE's **Observed scan comparison**.
+Choose upper or lower, then drag the reveal slider or the divider across the
+model. **Baseline only** and **Week 7 only** alternate the original surfaces
+without changing the camera. Rotate, zoom, or double-click a crown to inspect
+that region closely; the camera is shared between visits. No intermediate tooth
+positions are invented, and no movement is exaggerated.
+
+The earlier observation is the June 5, 2026 **pretreatment baseline**, not a
+confirmed week 1 scan. September 17 is the contributor's reported week 7.
+Display orientation and centering are applied without scale fitting; cross-visit
+registration, progress scale, and tooth correspondence remain unverified.
+Differences therefore cannot be reported as accurate per-tooth movement. The
+private week 18 scans from chipped stone models are excluded from this example.
+
+Choose **Simulated planning demo** separately for hypothetical edits and Plan AI,
+and to explore synthetic stages with
+draft per-tooth segmentation, a redacted CBCT/root-bone engineering fixture, and
+10-day stage spacing. Those movements are not USER_ONE's recorded history.
+The fixture exercises registration and anatomy-review paths; it is not a clinical
+interpretation of raw CBCT. The sample snapshots and restores your work;
+use **Exit Sample Test Case** to return.
 
 Optional tools start collapsed to keep the workspace focused. Open a section
 heading for additional records, segmentation, saved versions, setup comparison,
@@ -276,7 +287,7 @@ includes a captioned video recorded from the bundled sample, not an outcome pred
 
 Use **Your Teeth Profile** above **Sample Test Case** to return to your own scans.
 The sample supplies upper and lower STL files; its upload controls are disabled.
-Exit the sample before adding a personal scan. Click a segmented crown or its
+Exit the sample before adding a personal scan. In the **Simulated planning demo**, click a segmented crown or its
 FDI number beneath the viewer to select the actual region. Guided views hide
 floating number badges and unsegmented marker proxies. Automatic tooth regions
 are approximate; inspect/correct the segmentation before treating a region as

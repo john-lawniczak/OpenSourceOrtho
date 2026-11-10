@@ -54,6 +54,7 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
             page.goto(server_url, wait_until="networkidle")
             assert page.locator("body").get_attribute("data-chat-collapsed") == "1"
             page.click("#sampleLaunch")
+            page.locator('[data-sample-view="simulation"]').click()
             page.wait_for_selector('body[data-sample="1"]')
             assert not page.locator("#guidedPrintLinks").is_visible()
 

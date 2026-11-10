@@ -28,10 +28,8 @@ import {
   toggleExcludedTooth,
 } from "./guided.js";
 import {
-  applySampleRootBoneFixture,
   enterSample,
   exitSample,
-  prepareSampleSegmentation,
   sampleActive,
 } from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
@@ -353,13 +351,8 @@ document.body.addEventListener("click", (event) => {
     } else {
       enterSample();
       requestViewerRefit();
-      // Load the root/bone fixture first so segmentation can use CBCT boundary
-      // priors, then segment the bundled scans in the background so the preview
-      // animates real per-tooth crowns.
-      const sampleSession = state.segmentation;
-      applySampleRootBoneFixture()
-        .then(() => state.segmentation === sampleSession && prepareSampleSegmentation())
-        .then(() => renderAll());
+      // Observed visits load first. The separate simulation prepares its
+      // fixture and draft segmentation only when explicitly selected.
     }
     renderAll();
   }

@@ -30,6 +30,7 @@ import { renderPrintExport } from "./print_export.js";
 import { renderTrustStatus } from "./trust_status.js";
 import { createEvaluationRunner } from "./evaluation_runner.js";
 import { renderAnatomyReview } from "./anatomy_render.js";
+import { observedSampleActive, renderSampleComparison } from "./sample_comparison.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -137,6 +138,7 @@ function scanStatusText(count, movingFragments) {
 }
 
 function updateViewer(result) {
+  if (observedSampleActive()) return;
   result = state.goalPreview?.evaluation || result;
   if (state.dim !== "3d") return;
   const v = ensureViewer();
@@ -296,6 +298,7 @@ export function renderAll() {
   // view is active). Runs before updateViewer so the viewer is in its host
   // before it resizes.
   renderGuided();
+  renderSampleComparison(renderAll);
   renderReviewHeading();
   renderMetadata();
   renderUploadFileList();

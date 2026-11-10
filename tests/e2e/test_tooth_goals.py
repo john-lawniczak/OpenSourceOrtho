@@ -30,6 +30,7 @@ def amber_crown_point(page):
 
 def open_supplied_sample(page):
     page.locator('#sampleLaunch').click()
+    page.locator('[data-sample-view="simulation"]').click()
     expect(page.locator('#simpleStlFile')).to_be_disabled()
     expect(page.locator('#sampleBanner')).to_contain_text('STL')
 

@@ -153,7 +153,7 @@ export function renderGuided() {
   const heading = el("guidedHeading");
   if (heading) {
     heading.textContent = state.sample.active
-      ? "Sample test case — guided walkthrough"
+      ? (state.sample.view === "observed" ? "USER_ONE · observed scan history" : "Simulated planning example")
       : "Explore your scans, step by step";
   }
 

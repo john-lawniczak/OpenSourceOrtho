@@ -35,9 +35,9 @@ Then open `http://127.0.0.1:8000`.
 
 The app opens in Guided mode by default. A light/dark switch is anchored at the
 top-right of the window in every mode. The sidebar **Sample Test Case** button
-opens an isolated walkthrough that reuses the guided wizard, pre-loaded with the
-two bundled test-case STL scans plus the canonical redacted CBCT/root-bone
-fixture; it snapshots and restores the user's working state, so it never replaces
+opens the observed baseline/week 7 scan comparison, with an explicitly separate
+simulated planning walkthrough using the redacted CBCT/root-bone fixture.
+It snapshots and restores the user's working state, so it never replaces
 the normal Guided or Technician flows. The same button becomes **Exit Sample Test
 Case** while the sample is active, and the
 Guided/Technician toggle stays available throughout so the sample can be viewed in
@@ -59,9 +59,18 @@ workflows:
 - **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 
-The Sample Test Case renders the exact bundled STL models
-(`/datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/initial-{upper,lower}.stl`). On
-entry it loads `root-bone-fixture.json` (redacted CBCT record metadata, accepted
+The Sample Test Case initially renders original baseline/week 7 scan pairs with
+a shared orthographic camera and scissored reveal. `scan_comparison_data.js`
+checks case identity, visit membership, documented proper display rotations,
+and SHA-256 hashes. `scan_comparison_geometry.js` applies only those rotations
+and independent centering, with no deformation or scale fitting. Registration,
+progress scale, and per-tooth correspondence remain unverified; this view does
+not measure tooth motion. Scrubbing changes only the reveal, preserving the
+camera and source geometry. Failed or stale loads cannot expose a partial pair.
+Private chipped-stone records are not discovered or loaded.
+
+Only selecting **Simulated planning demo** loads `root-bone-fixture.json`
+(redacted CBCT record metadata, accepted
 fixture STL-to-CBCT registrations, safe derived anterior root centerlines,
 trusted tooth axes, and an alveolar-bounds record), then runs the on-device
 auto-segmenter on those scans and applies the per-tooth draft (clearly labeled as
@@ -74,9 +83,9 @@ falls back to the labeled marker/arrow display. Outside the sample, movement
 stays schematic/marker-based until the user reviews and applies per-tooth meshes
 themselves.
 
-The 3D viewer, AI box, and upload control are single instances relocated into the
-active surface (delegated events + id-based renders), so there is never a second
-WebGL context.
+The planning viewer, AI box, and upload control are relocated between workflow
+hosts. Observed history has its own rendering context, which is disposed when
+leaving that mode; it never reuses simulated tooth transforms.
 
 ## Plan AI
 
@@ -131,9 +140,9 @@ uploaded to a server database.
 OrthoCAD shell STLs (`initial-{upper,lower}.stl`) used to keep exact scan
 rendering stable as the product evolves (and as the first tracked data
 contribution). You can load them via the normal upload control to see exact
-whole-arch scan rendering. The sidebar **Sample Test Case** loads these same two
-STLs as its already-present records and renders them in an overlay view, with a
-clearly labeled tooth-movement layer animating across stages.
+whole-arch scan rendering. **Sample Test Case** compares these baseline scans
+with `progress-01-{upper,lower}.stl` in the default observed-history view. Its
+separate simulation uses baseline scan fragments for synthetic stage movement.
 
 The same folder now also contains:
 
