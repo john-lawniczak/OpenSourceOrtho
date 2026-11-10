@@ -13,6 +13,10 @@ New to dental terms (IPR, tip, torque, FDI numbering)? See the
 app from the **Key Terms** button in the sidebar. To contribute your own
 scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md).
 
+For repository work, follow the [private development and public release workflow](docs/PRIVATE_DEVELOPMENT.md).
+Routine commits go to the private development repository; a public release is a
+separately reviewed, single commit based on public `main`.
+
 ## 1. Start The App
 
 Before buying scanning equipment, read [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)

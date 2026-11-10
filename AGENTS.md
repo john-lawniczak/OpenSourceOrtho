@@ -18,3 +18,15 @@ Keep code composable and easy to review:
 - run `python3 tools/check_maintainability.py` before commits that add or reorganize code
 
 Codex hooks run the maintainability check before commit-status updates.
+
+## Private development and public releases
+
+Develop and push to the private `john-lawniczak/OpenSourceOrtho-dev` repository
+(`private` remote). The public `origin` is for fetching released work and explicit
+releases only. Publish reviewed changes as one new commit based on public `main`,
+without merging private development history. Follow
+[docs/PRIVATE_DEVELOPMENT.md](docs/PRIVATE_DEVELOPMENT.md).
+
+`datasets/**/private/` contains private contributions. Exclude it from public
+release trees and dataset asset allowlists unless publication is explicitly
+authorized. Private contribution permission does not grant public redistribution.
