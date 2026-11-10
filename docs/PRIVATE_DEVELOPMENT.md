@@ -3,6 +3,18 @@
 Routine development belongs in `john-lawniczak/OpenSourceOrtho-dev`, which is
 private. The public repository is `john-lawniczak/OpenSourceOrtho`.
 
+## Where the local private version lives
+
+The existing `OpenSourceOrtho` checkout holds both public and private branches;
+the directory name does not determine repository visibility. On this machine it
+is `/Users/johnlaw/repos/johnlaw/OpenSourceOrtho`. There is no separate local
+`OpenSourceOrtho-dev` directory. The `data/user-one-week-18` branch contains the
+private scan bundle locally and tracks the same branch on the `private` remote.
+
+Check the current branch and its destination with `git status --short --branch`
+and `git remote -v`. Switching to public `main` changes the working tree to the
+public version; the private branch and its committed files remain in local Git.
+
 ## Local setup
 
 Use `private` for the development remote and `origin` for the public remote.

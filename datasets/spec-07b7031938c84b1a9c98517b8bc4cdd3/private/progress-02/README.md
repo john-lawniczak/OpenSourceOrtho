@@ -10,6 +10,16 @@ process: early attempts with limited quality. This description is contributor
 provenance, not an independent assessment of geometric accuracy. The precise
 materials, capture steps, scanner hardware, and acquisition date are unconfirmed.
 
+**Known source-model damage:** the contributor confirms that **both** hardened
+stone models were chipped and attributes the defects to poor model-making,
+**not the actual teeth**. Exact chip locations and timing relative to scanning
+are not separately mapped. Treat this pair as damaged-model test data, not
+reference tooth geometry or evidence of tooth damage or movement.
+See [quality-assessment.md](quality-assessment.md) for the mesh evaluation,
+[mesh-quality.json](mesh-quality.json) for reproducible counts, and
+[mesh-views.png](mesh-views.png) for independent surface views. Geometry checks
+cannot reconstruct the undamaged stone or confirm the original tooth surfaces.
+
 The source filenames carry `2026-11-10` and `week-18`. Week 18 is the reported
 progress label, not a verified tray number or 18 elapsed calendar weeks. Progress
 sequence 2 means the second contributed progress visit after the published week 7

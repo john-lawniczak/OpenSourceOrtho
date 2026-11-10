@@ -15,10 +15,24 @@
   },
   "capture": {
     "method_reported": "Personal scans and builds using a stone and Play-Doh style process.",
-    "quality_reported": "Early attempts with limited quality, described by the contributor as not top tier but good first attempts.",
+    "quality_reported": "Contributor describes poor model-making and confirms both hardened stone models were chipped; the defects are not a reflection of the actual teeth.",
     "scanner_hardware": null,
     "software_from_stl_header": "JMStudio v2.4.19.0131",
-    "materials_and_capture_steps_verified": false
+    "materials_and_capture_steps_verified": false,
+    "source_model_damage": {
+      "status": "contributor-reported",
+      "recorded_on": "2026-11-10",
+      "description": "Both hardened stone models were chipped.",
+      "affected_arches": [
+        "maxillary",
+        "mandibular"
+      ],
+      "affected_regions": null,
+      "timing_relative_to_scanning": "Not separately confirmed",
+      "scope_note": "Contributor confirms both models were poorly made; these defects do not reflect the actual teeth.",
+      "reference_damage_map_available": false,
+      "interpretation_basis": "Contributor clarification, not inferred tooth condition."
+    }
   },
   "units": {
     "declared_in_stl": false,
@@ -77,6 +91,17 @@
     "capture materials and steps",
     "reviewed surface fidelity",
     "validated upper/lower and cross-time registration",
-    "current tray per arch"
-  ]
+    "current tray per arch",
+    "region mapping of stone chips on both arches",
+    "chip timing relative to scanning"
+  ],
+  "evaluation": {
+    "topology_report": "mesh-quality.json",
+    "views": "mesh-views.png",
+    "assessment": "quality-assessment.md",
+    "reproduction_script": "evaluate_meshes.py",
+    "data_classification": "damaged-model-test-data",
+    "reference_tooth_geometry": false,
+    "model_findings": "quality-findings.json"
+  }
 }
