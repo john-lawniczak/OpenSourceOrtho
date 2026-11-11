@@ -49,7 +49,8 @@ dicom = [
 # docs/segmentation-learned-backend.md). The core install stays light without this.
 ml-seg = [
   "onnxruntime>=1.17",
-  "numpy>=1.24"
+  "numpy>=1.24",
+  "scipy>=1.10"
 ]
 # Offline generation of endpoint-based longitudinal motion previews.
 motion-preview = [

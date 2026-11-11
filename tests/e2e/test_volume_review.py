@@ -93,3 +93,43 @@ def test_local_user_one_volume_displays_without_external_requests(server_url, tm
             assert not external
         finally:
             browser.close()
+
+
+def test_landmark_report_import_requires_fresh_explicit_acceptance(server_url, tmp_path):  # noqa: F811
+    report = tmp_path / "registration.json"
+    report.write_text(
+        json.dumps(
+            {
+                "registration": {
+                    "id": "landmark-1",
+                    "matrix": [[1, 0, 0, 10], [0, 1, 0, 20], [0, 0, 1, 30], [0, 0, 0, 1]],
+                    "quality": {"rmse_mm": 0.3},
+                },
+                "source_scan_sha256": "a" * 64,
+                "volume_source_digest": "b" * 64,
+            }
+        )
+    )
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page()
+        try:
+            page.goto(server_url)
+            page.on("dialog", lambda dialog: dialog.accept())
+            page.locator("#openChatSettings").click()
+            page.click('[data-user-mode="advanced"]')
+            page.get_by_text("Root & bone workflow · advanced", exact=True).click()
+            page.locator("#cbctRegistrationAccepted").check()
+            page.locator("#cbctRegistrationFile").set_input_files(report)
+            expect(page.locator("#cbctWorkflowStatus")).to_contain_text("Loaded landmark-1")
+            expect(page.locator("#cbctRegistrationAccepted")).not_to_be_checked()
+            expect(page.locator("#cbctRegistrationRmse")).to_have_value("0.3")
+            page.locator("#cbctRegistrationAccepted").check()
+            report.write_text("{}")
+            page.locator("#cbctRegistrationFile").set_input_files(report)
+            expect(page.locator("#cbctWorkflowStatus")).to_contain_text(
+                "source-bound landmark registration"
+            )
+            expect(page.locator("#cbctRegistrationAccepted")).not_to_be_checked()
+        finally:
+            browser.close()

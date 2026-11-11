@@ -355,3 +355,23 @@ No reviewed per-triangle real-scan labels are bundled; synthetic regression test
 and renderer/engine transform agreement do not establish real-scan accuracy.
 The 3D fragment renderer now consumes engine affine transforms, including trusted
 root-aware rotations, rather than approximating that movement in JavaScript.
+
+## Research review tools
+
+On **Fit another scan pair**, use **Edit baseline directly** or **Edit later directly**,
+return corrections, then **Apply returned corrections** and regenerate. **Review endpoint
+matches** can assign each baseline region to one later region or hold it. **Explain this fit**
+provides a local evidence-based review order. **Proximity hints → Check fitted tooth surfaces**
+checks all triangles for a selected pair at the estimated pose; a budget limit reports an
+indeterminate result. Save before downloading a portable `.orthocase` backup.
+
+Open [local CBCT review](http://127.0.0.1:8000/volume-review.html) for three-plane pixel review
+and seeded draft masks; install `pip install -e ".[dev,motion-preview,volume-review]"` and
+follow [LOCAL_CBCT_REVIEW.md](docs/LOCAL_CBCT_REVIEW.md) to prepare a private review packet.
+Import a landmark registration report in the main root/bone workflow, inspect and explicitly
+accept its transform, then import masks as proposals. No anatomical review is inferred.
+[Opposing-arch bite review](http://127.0.0.1:8000/bite-review.html) uses a shared coordinate frame
+and supports scan-bound reviewed transform imports.
+
+See the [research tool scorecard](docs/TOOL_SCORECARD.md) for implemented improvements,
+remaining limitations, and the distinction between workflow maturity and anatomical accuracy.

@@ -85,11 +85,11 @@ def load_learned_segmenter(
     to keep the heuristic as the default backend.
     """
 
+    weights_by_arch = resolve_weights_by_arch(weights)
     if runner is None and not _onnxruntime_available():
         raise SegmenterUnavailable(
             "onnxruntime is not installed (pip install 'opensource-ortho[ml-seg]')"
         )
-    weights_by_arch = resolve_weights_by_arch(weights)
     return LearnedMeshSegmenter(weights_by_arch, runner=runner)
 
 

@@ -35,7 +35,7 @@ def open_supplied_sample(page):
     expect(page.locator('#sampleBanner')).to_contain_text('STL')
 
 
-def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path):
+def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1100})

@@ -5,7 +5,7 @@ from test_server import server, _post  # noqa: F401
 
 
 @pytest.mark.parametrize("origin", ["https://untrusted.example", "null"])
-def test_cross_origin_posts_are_rejected_before_dispatch(server, monkeypatch, origin):
+def test_cross_origin_posts_are_rejected_before_dispatch(server, monkeypatch, origin):  # noqa: F811 - pytest fixture injection
     def unexpected(*args, **kwargs):
         pytest.fail("Cross-origin request reached model dispatch")
     monkeypatch.setattr("orthoplan.server.preview_goal_payload", unexpected)
@@ -13,18 +13,18 @@ def test_cross_origin_posts_are_rejected_before_dispatch(server, monkeypatch, or
     assert status == 403
 
 
-def test_same_origin_requests_remain_supported(server):
+def test_same_origin_requests_remain_supported(server):  # noqa: F811 - pytest fixture injection
     status, payload = _post(server, b'{"id":"same-origin"}', {"Origin": f"http://127.0.0.1:{server}"})
     assert status == 200 and payload["ok"]
 
 
 @pytest.mark.parametrize("path,mime", [("/workflow-demo.webm", "video/webm"), ("/workflow-demo.vtt", "text/vtt")])
-def test_walkthrough_media_uses_browser_supported_content_types(server, path, mime):
+def test_walkthrough_media_uses_browser_supported_content_types(server, path, mime):  # noqa: F811 - pytest fixture injection
     with urllib.request.urlopen(f"http://127.0.0.1:{server}{path}") as response:
         assert response.headers.get_content_type() == mime
 
 
-def test_geometry_job_round_trip_and_release(server):
+def test_geometry_job_round_trip_and_release(server):  # noqa: F811 - pytest fixture injection
     import json
     import time
     status, started = _post(server, json.dumps({'operation': 'evaluate', 'payload': {'id': 'job-http'}}).encode(), path='/api/geometry-jobs')
@@ -41,7 +41,7 @@ def test_geometry_job_round_trip_and_release(server):
     assert status == 200 and released['status'] == 'released'
 
 
-def test_geometry_capacity_is_explicitly_retryable(server, monkeypatch):
+def test_geometry_capacity_is_explicitly_retryable(server, monkeypatch):  # noqa: F811 - pytest fixture injection
     from orthoplan.geometry_jobs import GeometryBusy
     def busy(*args, **kwargs):
         raise GeometryBusy('Geometry workers are busy. Retry shortly.')

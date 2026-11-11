@@ -7,7 +7,7 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 
 
 @pytest.mark.parametrize("change", ["title", "segmentation", "landmarks"])
-def test_generation_discards_results_after_workspace_changes(server_url, change):
+def test_generation_discards_results_after_workspace_changes(server_url, change):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page()
@@ -37,7 +37,7 @@ def test_generation_discards_results_after_workspace_changes(server_url, change)
             browser.close()
 
 
-def test_sample_from_reference_does_not_leak_controls(server_url):
+def test_sample_from_reference_does_not_leak_controls(server_url):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page()
@@ -60,7 +60,7 @@ def test_sample_from_reference_does_not_leak_controls(server_url):
             browser.close()
 
 
-def test_scan_loading_rejects_stale_geometry_and_retries_failures(server_url):
+def test_scan_loading_rejects_stale_geometry_and_retries_failures(server_url):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page()

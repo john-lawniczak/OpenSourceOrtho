@@ -6,7 +6,7 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
-def test_settings_and_phase_navigation_stay_in_place(server_url):
+def test_settings_and_phase_navigation_stay_in_place(server_url):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1000})

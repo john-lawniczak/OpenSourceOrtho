@@ -101,6 +101,23 @@
       ]
     }
   ],
+  "target_region_ids": [
+    "47",
+    "46",
+    "45",
+    "44",
+    "43",
+    "42",
+    "41",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37"
+  ],
+  "match_overrides": null,
   "teeth": [
     {
       "tooth": "47",
@@ -127,11 +144,19 @@
         "median_residual": 0.11185537800156732,
         "p90_residual": 0.30784881680514603,
         "relative_p90": 0.03705777206484978,
-        "overlap": 0.9947061937533086
+        "overlap": 0.9947061937533086,
+        "consistency": {
+          "round_trip_shift": 0.13424657605693263,
+          "round_trip_rotation_deg": 1.859919973755998,
+          "sampling_shift": 0.05305512985956913,
+          "sampling_rotation_deg": 0.6820592650453569,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "47",
       "target_region_face_count": 1433,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -165,11 +190,19 @@
         "median_residual": 0.19850178971915297,
         "p90_residual": 0.32668848035356873,
         "relative_p90": 0.011535965939112708,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.01848284173251909,
+          "round_trip_rotation_deg": 0.25001496280243896,
+          "sampling_shift": 0.028903226406535396,
+          "sampling_rotation_deg": 0.3745710192499956,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": null,
       "target_region_face_count": 26449,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -203,11 +236,19 @@
         "median_residual": 0.15276576094938107,
         "p90_residual": 0.24854557705620578,
         "relative_p90": 0.011063741939910164,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.015816696151813858,
+          "round_trip_rotation_deg": 0.22095986099747142,
+          "sampling_shift": 0.023252160082409903,
+          "sampling_rotation_deg": 0.21647951913298222,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "46",
       "target_region_face_count": 15834,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -241,11 +282,19 @@
         "median_residual": 0.13768795095322012,
         "p90_residual": 0.2703371567129745,
         "relative_p90": 0.01828290866462646,
-        "overlap": 0.9965625
+        "overlap": 0.9965625,
+        "consistency": {
+          "round_trip_shift": 0.004664670356927603,
+          "round_trip_rotation_deg": 0.3565248375316943,
+          "sampling_shift": 0.025384857039040615,
+          "sampling_rotation_deg": 0.8752877663608981,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "45",
       "target_region_face_count": 10232,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -279,11 +328,19 @@
         "median_residual": 0.14584055938231116,
         "p90_residual": 0.25765125939299793,
         "relative_p90": 0.01690454702855039,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.01163162835849861,
+          "round_trip_rotation_deg": 0.05863183737564667,
+          "sampling_shift": 0.016605681069121386,
+          "sampling_rotation_deg": 0.6107703226552252,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "44",
       "target_region_face_count": 12708,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -317,11 +374,19 @@
         "median_residual": 0.11031519532108185,
         "p90_residual": 0.21759903647925646,
         "relative_p90": 0.015318508961894508,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.031066267691198936,
+          "round_trip_rotation_deg": 0.5235408179024497,
+          "sampling_shift": 0.03085189017535471,
+          "sampling_rotation_deg": 0.32243111708945255,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "43",
       "target_region_face_count": 6915,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -355,11 +420,19 @@
         "median_residual": 0.19578964367870186,
         "p90_residual": 0.3274876890185656,
         "relative_p90": 0.016331168153887073,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.015939619214946327,
+          "round_trip_rotation_deg": 0.10896207678131581,
+          "sampling_shift": 0.00802201369660587,
+          "sampling_rotation_deg": 0.2750741288478025,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "42",
       "target_region_face_count": 20790,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -393,11 +466,19 @@
         "median_residual": 0.21221125079337738,
         "p90_residual": 0.35019786781891743,
         "relative_p90": 0.015429030390152618,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.0145206380462047,
+          "round_trip_rotation_deg": 0.28851710923071944,
+          "sampling_shift": 0.046915479166652375,
+          "sampling_rotation_deg": 0.5614976677848523,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "41",
       "target_region_face_count": 24763,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -431,11 +512,19 @@
         "median_residual": 0.14356834292404158,
         "p90_residual": 0.2612864290604913,
         "relative_p90": 0.01739436409538761,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.006907905741418532,
+          "round_trip_rotation_deg": 0.15343747913928057,
+          "sampling_shift": 0.028348379376605563,
+          "sampling_rotation_deg": 0.5517914749877502,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "32",
       "target_region_face_count": 12235,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -469,11 +558,19 @@
         "median_residual": 0.12256218654114992,
         "p90_residual": 0.1958134401282015,
         "relative_p90": 0.012447320228695812,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.012410577207967077,
+          "round_trip_rotation_deg": 0.3080436728949808,
+          "sampling_shift": 0.05083482390827189,
+          "sampling_rotation_deg": 1.0756597146494382,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "33",
       "target_region_face_count": 10865,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -507,11 +604,19 @@
         "median_residual": 0.13428719985449245,
         "p90_residual": 0.21880429937920312,
         "relative_p90": 0.013146737509212993,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.014348745417118046,
+          "round_trip_rotation_deg": 0.2075023028542466,
+          "sampling_shift": 0.04472522671156445,
+          "sampling_rotation_deg": 0.8311452501228211,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "34",
       "target_region_face_count": 11800,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -545,11 +650,19 @@
         "median_residual": 0.15037330652165629,
         "p90_residual": 0.239247694374314,
         "relative_p90": 0.00964575379129232,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.012741659829800495,
+          "round_trip_rotation_deg": 0.1689943427514486,
+          "sampling_shift": 0.02966180847703797,
+          "sampling_rotation_deg": 0.5178849775428546,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "35",
       "target_region_face_count": 13780,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -583,11 +696,19 @@
         "median_residual": 0.12605565420128687,
         "p90_residual": 0.21474768739765907,
         "relative_p90": 0.009627270383129178,
-        "overlap": 1.0
+        "overlap": 1.0,
+        "consistency": {
+          "round_trip_shift": 0.0549569259766153,
+          "round_trip_rotation_deg": 0.9512538975764835,
+          "sampling_shift": 0.05258190756248952,
+          "sampling_rotation_deg": 0.35487591908031113,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "36",
       "target_region_face_count": 9504,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,
@@ -615,17 +736,25 @@
         0.014258681243029167,
         0.9998649134838177
       ],
-      "status": "estimated-draft",
+      "status": "estimated-weak",
       "segmentation_confidence": 0.858,
       "fit": {
         "median_residual": 0.10339765111949292,
         "p90_residual": 0.4898499482017382,
         "relative_p90": 0.044065836954609104,
-        "overlap": 0.9353813559322034
+        "overlap": 0.9353813559322034,
+        "consistency": {
+          "round_trip_shift": 0.41589715837255886,
+          "round_trip_rotation_deg": 2.131323996384706,
+          "sampling_shift": 0.23328373347838793,
+          "sampling_rotation_deg": 2.774735010586646,
+          "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+        }
       },
       "reviewed": false,
       "independent_target_label": "37",
       "target_region_face_count": 1930,
+      "match_provenance": "automatic-projection",
       "correspondence_checks": {
         "max_distance": 3.3610496846072415,
         "min_absolute_normal_dot": 0.3,

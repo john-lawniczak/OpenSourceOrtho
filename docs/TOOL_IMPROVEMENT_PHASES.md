@@ -129,3 +129,26 @@ units and the volume digest are checked before unreviewed anatomy is generated.
 Rotated/translated reference geometry and mismatched-source tests cover these
 paths. The synthetic volume benchmark's declared dimensions were corrected to
 enclose its root voxels; the new mask validator exposed that old fixture error.
+
+## Phase 7 — refreshed sample evidence and continuous regression coverage
+
+Regenerated both USER_ONE endpoint previews with reverse-cycle and resampling
+metrics, preserving the original endpoint hashes and unreviewed status. No week
+18 molds or local CBCT pixels entered the public asset catalog. CI now runs on
+private development branch patterns and exercises the actual ONNX contract,
+imaging adapters, topology, contact and stress tests with their optional stacks.
+The learned extra includes its topology dependency; an unconfigured model no
+longer imports ONNX Runtime just to fall back to hybrid segmentation, and actual
+model sessions disable runtime telemetry.
+
+Existing fixture-import lint annotations and planning-demo browser selectors
+were corrected so the full lint/browser checks can run against the current UI.
+See [the scorecard](TOOL_SCORECARD.md) for scope-specific reassessment rather than
+an unsupported claim of measured anatomical accuracy.
+
+Final local validation: full Python/browser suite **804 passed, 8 skipped**;
+additional registration-import browser regression **1 passed**; JavaScript suite
+**156 passed**. Ruff, strict maintainability, generated catalog verification and
+`git diff --check` passed. Optional dependency tests were exercised locally with
+motion-preview, ONNX runtime/model fixture, DICOM codecs and Chromium installed;
+this does not substitute for reviewed real anatomical benchmarks.

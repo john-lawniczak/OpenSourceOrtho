@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev, 'data/**', 'work/**']
   pull_request:
 
 jobs:
@@ -59,9 +59,16 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install offline fitting tools
-        run: pip install -e ".[dev,motion-preview]"
+        run: pip install -e ".[dev,motion-preview,ml-seg,volume-review]" onnx
       - name: Fit known motions and verify sample artifacts
-        run: pytest tests/test_endpoint_motion.py tests/test_sample_motion_artifacts.py tests/test_motion_benchmark.py tests/test_motion_corrections.py tests/test_motion_registration.py tests/test_motion_workflow.py tests/test_motion_simulation.py -q
+        run: >-
+          pytest tests/test_endpoint_motion.py tests/test_sample_motion_artifacts.py
+          tests/test_motion_benchmark.py tests/test_motion_corrections.py
+          tests/test_motion_registration.py tests/test_motion_workflow.py
+          tests/test_motion_simulation.py tests/test_surface_topology.py
+          tests/test_model_contract.py tests/test_match_review.py
+          tests/test_full_surface_contact.py tests/test_dicom_volume_review.py
+          tests/test_motion_stress.py tests/test_motion_review.py -q
 
   e2e:
     name: 3D viewer smoke (Playwright)

@@ -5,7 +5,6 @@ import pytest
 
 from orthoplan.goal_preview import preview_goal_payload
 from orthoplan.ai_chat import answer_chat_payload
-from orthoplan.ai_chat_stream import chat_stream_events
 from orthoplan.evaluation.providers.base import ModelResponse
 from orthoplan.model import TreatmentPlan
 

@@ -31,6 +31,7 @@ def read_contract(weights, arch):
 def run_contract(vertices, arch, weights):
     import numpy as np
     import onnxruntime as ort
+    ort.disable_telemetry_events()
     from orthoplan.segmentation.learned import _facets, _tri_centroid, build_cell_features
     contract = read_contract(weights, arch)
     facets = _facets(vertices)
