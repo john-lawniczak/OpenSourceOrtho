@@ -18,14 +18,14 @@ def test_cli_segmentation_benchmark_json(monkeypatch, capsys, tmp_path: Path) ->
             "--manifest",
             str(manifest),
             "--min-triangle-label-accuracy",
-            "0",
+            "0.95",
             "--min-region-purity",
-            "0",
+            "0.95",
             "--json",
         ],
     )
 
-    assert cli.main() == 0
+    assert cli.main() == 1  # The degenerate one-face case must fail valid accuracy floors.
 
     payload = json.loads(capsys.readouterr().out)
     assert len(payload["cases"]) == 1

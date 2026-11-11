@@ -11,6 +11,7 @@ from orthoplan.longitudinal.corrections import correction_segments
 from orthoplan.longitudinal.matching import assign_regions, region_faces, tooth_motion
 from orthoplan.longitudinal.projection import project_regions
 from orthoplan.longitudinal.registration import register_arches
+from orthoplan.longitudinal.simulation import simulation_report
 from orthoplan.segmentation.auto import load_local_segmenter
 from orthoplan.segmentation.quality import evaluate_segmentation_quality
 
@@ -30,7 +31,7 @@ def preview_advisory():
         provenance=FindingProvenance.MODEL,
         title="Weekly motion is an endpoint-based estimate",
         message="Tooth regions and endpoint matches are automatic drafts. Intervening weeks "
-        "use uniform translation and rotation interpolation, not observed weekly positions. "
+        "use assumed timing with rigid translation and rotation interpolation, not observed weekly positions. "
         "Review the boundaries, numbering, alignment, and endpoint fit before interpreting changes.",
     )).model_dump(mode="json")
 
@@ -71,5 +72,6 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
                       else "Whole-arch best fit; not stable anatomy. Global arch movement may be removed."),
         "quality_gates": [evaluate_segmentation_quality(parts, arch=arch).model_dump()
                           for parts in segments],
-        "teeth": motions, "advisory_findings": [preview_advisory()],
+        "teeth": motions, "simulation": simulation_report(source, motions),
+        "advisory_findings": [preview_advisory()],
     }

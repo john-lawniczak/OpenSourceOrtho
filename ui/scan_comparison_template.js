@@ -37,10 +37,12 @@ export const comparisonTemplate = `
   <div class="comparison-motion-tools">
     <a href="./progress.html">Fit another scan pair</a>
       <a href="./region-review.html" target="_blank" rel="noopener">Correct tooth regions</a>
+    <label>Timing assumption <select id="comparisonTiming"><option value="uniform">Uniform motion</option><option value="smooth">Slow start and finish</option><option value="delayed">Delayed start</option></select></label>
     <label>Tooth <select id="comparisonTooth" disabled><option value="">All teeth</option></select></label>
     <button id="comparisonFocusTooth" type="button" disabled>Focus selected tooth</button>
     <button id="comparisonEndpointFit" type="button" aria-pressed="false" hidden>Inspect estimated endpoint</button>
   </div>
+  <details><summary>Proximity hints</summary><p id="comparisonProximity" class="comparison-help"></p></details>
   <p id="comparisonMatchDetail" class="comparison-help" aria-live="polite"></p>
   <button id="comparisonMotionRetry" type="button" hidden>Retry motion preview</button>
   <p id="comparisonHelp" class="comparison-help">Drag to rotate; scroll or pinch to zoom.

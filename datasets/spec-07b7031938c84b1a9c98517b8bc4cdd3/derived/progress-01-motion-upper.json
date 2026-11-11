@@ -622,13 +622,1393 @@
       "face_label": 14
     }
   ],
+  "simulation": {
+    "profiles": {
+      "uniform": {
+        "label": "Uniform motion",
+        "fractions": [
+          0.0,
+          0.16666666666666666,
+          0.3333333333333333,
+          0.5,
+          0.6666666666666666,
+          0.8333333333333334,
+          1.0
+        ],
+        "proximity_by_week": [
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.12229936539333991,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17827395833312049,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.24559693059912818,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18619317009190045,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.0,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.20187275836539373,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06532099439331022,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.14275216256758996,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.18399215650160608,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23962672080299802,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.17534243286968906,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.047555588087304215,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.21064124897016073,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06687607007550081,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.1655581757617132,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.1736189206846548,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23488241157609047,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.16854487812064373,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.09502622064206646,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.2197704460052274,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.07055727473364813,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.18990179854394976,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.16748118594767575,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23144388113978595,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.16629056798053077,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.1424110797060572,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.22923136635800961,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.07605933096937603,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.21528888738969645,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.16607174038064446,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.22937442519044668,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.16875417674088006,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.1341756758795575,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.23899838596093306,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.08302359360859494,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.24141442532878826,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.1695306025900588,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.2287158319498302,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.17573031384170404,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.09787048414233657,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.23024209898293546,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.09111775867150711,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17759458977065615,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.22948490075769987,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18670729385393064,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.07592003713257751,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.2186338870390059,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.10007017889037627,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ]
+        ]
+      },
+      "smooth": {
+        "label": "Slow start and finish",
+        "fractions": [
+          0.0,
+          0.07407407407407407,
+          0.25925925925925924,
+          0.5,
+          0.7407407407407407,
+          0.9259259259259258,
+          1.0
+        ],
+        "proximity_by_week": [
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.12229936539333991,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17827395833312049,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.24559693059912818,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18619317009190045,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.0,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.20187275836539373,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06532099439331022,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.13102834810313294,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.1851345537128779,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.24279778941172692,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18091016282692843,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.02114625279357601,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.20572333257283681,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06573543583712702,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.1551932122265643,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17774467595599955,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23683421261150245,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.17102850867770392,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.07393870248986079,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.21567042977307124,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06867582299425175,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.18990179854394976,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.16748118594767575,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23144388113978595,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.16629056798053077,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.1424110797060572,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.22923136635800961,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.07605933096937603,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.22682255461517373,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.16701479434445773,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.2289059334335068,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.17132253400976033,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.11699702224591266,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.23674187333610539,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.08649919061938081,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.1734733149762307,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.22896684108908602,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.1813755181173934,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.08301633719113684,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.2237781953671356,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.09600006307303337,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17759458977065615,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.22948490075769987,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18670729385393064,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.07592003713257751,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.2186338870390059,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.10007017889037627,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ]
+        ]
+      },
+      "delayed": {
+        "label": "Delayed start",
+        "fractions": [
+          0.0,
+          0.0,
+          0.19999999999999998,
+          0.4,
+          0.6,
+          0.8,
+          1.0
+        ],
+        "proximity_by_week": [
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.12229936539333991,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17827395833312049,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.24559693059912818,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18619317009190045,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.0,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.20187275836539373,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06532099439331022,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.12229936539333991,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17827395833312049,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.24559693059912818,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18619317009190045,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.0,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.20187275836539373,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06532099439331022,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.14715723883895168,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.18161022559546183,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23857703619200404,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.17363958655755102,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.057056537254358296,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.21243921005496988,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.06745036393421261,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.17514426181041712,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.1706216850740136,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23334633221729692,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.1670797916327409,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.1139905028014389,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.22351651431031722,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.0725595575264992,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.2050314801969209,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.16604993290747774,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.23003471324746172,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.16720746294770916,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.1441045065017686,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.23505635555920337,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.08008487453010948,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "14",
+                "13"
+              ],
+              "sampled_distance": 0.23614072970515632,
+              "baseline_distance": 0.12229936539333991,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.16845661632009193,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.22873349730954493,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.17399542267638865,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.10437433986599921,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.23257795737322406,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.08942252934533029,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ],
+          [
+            {
+              "teeth": [
+                "13",
+                "12"
+              ],
+              "sampled_distance": 0.17759458977065615,
+              "baseline_distance": 0.17827395833312049,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "12",
+                "11"
+              ],
+              "sampled_distance": 0.22948490075769987,
+              "baseline_distance": 0.24559693059912818,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "11",
+                "21"
+              ],
+              "sampled_distance": 0.18670729385393064,
+              "baseline_distance": 0.18619317009190045,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "22",
+                "23"
+              ],
+              "sampled_distance": 0.07592003713257751,
+              "baseline_distance": 0.0,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "23",
+                "24"
+              ],
+              "sampled_distance": 0.2186338870390059,
+              "baseline_distance": 0.20187275836539373,
+              "new_proximity": false
+            },
+            {
+              "teeth": [
+                "24",
+                "25"
+              ],
+              "sampled_distance": 0.10007017889037627,
+              "baseline_distance": 0.06532099439331022,
+              "new_proximity": false
+            }
+          ]
+        ]
+      }
+    },
+    "proximity_threshold": 0.2538333194756261,
+    "units": "source-coordinate-units",
+    "scope": "within each arch only",
+    "method": "At most 256 sampled surface vertices per region; threshold is 0.3% of arch span unless supplied",
+    "limitation": "Proximity hints can miss contacts or intersections. Absence does not establish clearance. Draft boundaries can create false hints."
+  },
   "advisory_findings": [
     {
       "severity": "info",
       "category": "education",
       "provenance": "MODEL",
       "title": "Weekly motion is an endpoint-based estimate",
-      "message": "Tooth regions and endpoint matches are automatic drafts. Intervening weeks use uniform translation and rotation interpolation, not observed weekly positions. Review the boundaries, numbering, alignment, and endpoint fit before interpreting changes.",
+      "message": "Tooth regions and endpoint matches are automatic drafts. Intervening weeks use assumed timing with rigid translation and rotation interpolation, not observed weekly positions. Review the boundaries, numbering, alignment, and endpoint fit before interpreting changes.",
       "code": null,
       "data_gap": null,
       "clinician_question": null,

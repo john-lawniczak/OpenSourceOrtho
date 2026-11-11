@@ -5,10 +5,11 @@ import { createHistoryViewer } from "./scan_history_viewer.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
 import { loadMotionPreview } from "./scan_motion_data.js";
 import { renderMotionControls } from "./scan_motion_controls.js";
+import { proximitySummary } from "./proximity_summary.js";
 import { historyFrame } from "./scan_history.js";
 
 let motion = null, motionError = "", selectedTooth = "", endpointEstimate = false;
-let pair = [], week = 1, arch = "both", ready = false;
+let pair = [], week = 1, arch = "both", ready = false, timing = "uniform";
 let mounted = false, viewer = null, request = null, session = null, startedPlanning = false;
 
 export function observedSampleActive() {
@@ -17,7 +18,7 @@ export function observedSampleActive() {
 
 function setWeek(value) {
   week = value;
-  const frame = historyFrame(week, pair, motion, endpointEstimate);
+  const frame = historyFrame(week, pair, motion, endpointEstimate, timing);
   el("comparisonWeekLabel").textContent = `Week ${week} of 7`;
   el("comparisonVisit").textContent = frame.kind === "estimated" ? `Week ${week} · SIMULATED ESTIMATE`
     : frame.scan ? `${frame.scan.label} · ${frame.scan.date} · observed scan` : `Week ${week} · estimate unavailable`;
@@ -28,6 +29,9 @@ function setWeek(value) {
   viewer?.setFrame(frame);
   viewer?.selectTooth(selectedTooth);
   renderMotionControls(motion, selectedTooth, frame, motionError);
+  el("comparisonTiming").value = timing;
+  el("comparisonTiming").disabled = !ready || !motion;
+  el("comparisonProximity").textContent = motion ? proximitySummary(motion.contact_reports || [], week, timing) : "";
   el("sampleComparison").dataset.frameKind = frame.kind;
   el("sampleComparison").querySelectorAll("[data-comparison-week]").forEach(button => {
     const value = Number(button.dataset.comparisonWeek);
@@ -86,7 +90,9 @@ async function loadArch() {
     if (pending.signal.aborted || !observedSampleActive()) return;
     pair = bundles[0].pair;
     const available = bundles.filter(item => item.motion);
-    motion = available.length ? { teeth: available.flatMap(item => item.motion.teeth) } : null;
+    motion = available.length ? { teeth: available.flatMap(item => item.motion.teeth),
+      simulation: available[0].motion.simulation,
+      contact_reports: available.map(item => ({ arch: item.pair[0].arch, simulation: item.motion.simulation })) } : null;
     viewer.setPairs(bundles);
     setReady(true);
     setWeek(week);
@@ -134,6 +140,7 @@ function mount(renderAll) {
       loadArch();
     });
   });
+  el("comparisonTiming").addEventListener("change", event => { timing = event.target.value; setWeek(week); });
   el("comparisonRetry").addEventListener("click", loadArch);
   el("comparisonMotionRetry").addEventListener("click", loadArch);
   el("comparisonTooth").addEventListener("change", event => { selectedTooth = event.target.value; setWeek(week); });
@@ -167,7 +174,7 @@ export function renderSampleComparison(renderAll) {
   if (session !== state.segmentation || !state.sample.active) {
     session = state.segmentation;
     startedPlanning = false;
-    if (!state.sample.active) { week = 1; arch = "both"; endpointEstimate = false; }
+    if (!state.sample.active) { week = 1; arch = "both"; endpointEstimate = false; timing = "uniform"; }
   }
   if (observed && !viewer && !request) loadArch();
   if (observed) viewer?.resize();

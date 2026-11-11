@@ -3,6 +3,8 @@ import { validateMotionPreview } from "./scan_motion_data.js";
 import { geometryJob } from "./geometry_jobs.js";
 import { caseStore } from "./progress_case_store.js";
 import { el, scanFile, correctionFile, upload, orientation } from "./progress_inputs.js";
+import { simulationFraction } from "./scan_history.js";
+import { proximitySummary } from "./proximity_summary.js";
 import { RegionEdits } from "./region_edits.js";
 let pair = [], corrections = [null, null], motion = null, week = 1, pending = null;
 const viewer = createScanComparison(el("caseCanvas"), { onTooth: id => { el("caseTooth").value = id; selectTooth(); } });
@@ -20,8 +22,9 @@ for (let i=0;i<2;i++) {
 }
 function renderFrame() {
   if (!motion) return;
-  const frame = { week, fraction: (week-1)/6, index: week === 1 ? 0 : week === 7 ? 1 : 2 };
+  const frame = { week, fraction: simulationFraction(week, motion.simulation, el("caseTiming").value), index: week === 1 ? 0 : week === 7 ? 1 : 2 };
   viewer.setFrame(frame);
+  el("caseProximity").textContent = proximitySummary([{arch:pair[0].arch,simulation:motion.simulation}],week,el("caseTiming").value);
   for (const button of el("caseWeeks").children) button.setAttribute("aria-current", Number(button.dataset.week) === week ? "step" : "false");
   el("frameLabel").textContent = `Week ${week} · ${frame.index === 2 ? "SIMULATED ESTIMATE" : "Recorded endpoint"}`;
   selectTooth();
@@ -34,6 +37,8 @@ function selectTooth() {
 }
 function mount(preview) {
   motion = validateMotionPreview(preview, pair, { specimenId: "local-two-visit" });
+  if (!motion.simulation?.profiles?.[el("caseTiming").value]) el("caseTiming").value = "uniform";
+  for (const option of el("caseTiming").options) option.disabled = option.value !== "uniform" && !motion.simulation?.profiles?.[option.value];
   viewer.setPair(pair, motion); week = 1;
   el("caseTooth").replaceChildren(new Option("All teeth", ""), ...motion.teeth.map(t => new Option(`${t.tooth} · ${t.status}`,t.tooth)));
   el("caseWeeks").replaceChildren(...Array.from({length:7}, (_,i) => {
@@ -64,6 +69,7 @@ el("fitVisits").onclick = () => action(async () => {
 });
 el("cancelFit").onclick = () => pending?.abort();
 el("caseTooth").onchange = selectTooth;
+el("caseTiming").onchange = renderFrame;
 el("focusTooth").onclick = () => viewer.focusTooth(el("caseTooth").value);
 el("resetView").onclick = () => viewer.setView("front");
 el("zoomIn").onclick = () => viewer.zoom(1.25); el("zoomOut").onclick = () => viewer.zoom(0.8);
@@ -72,7 +78,7 @@ el("saveCase").onclick = () => action(async () => {
   if (!motion || pending) throw new Error("Complete a fit before saving.");
   const name = el("caseName").value.trim(); if (!name) throw new Error("Name the case.");
   await caseStore("put", { name, pair, corrections, motion: { ...motion, faceLabels: undefined },
-    reference: el("referenceTeeth").value, units: el("caseUnits").value });
+    timing: el("caseTiming").value, reference: el("referenceTeeth").value, units: el("caseUnits").value });
   await listCases(); el("savedCases").value = name; status("Case saved locally, including source scans, corrections, and fit.");
 });
 el("openCase").onclick = () => action(async () => {
@@ -82,6 +88,7 @@ el("openCase").onclick = () => action(async () => {
   el("caseArch").value = pair[0].arch; el("caseUnits").value = record.units; el("unitsConfirmed").checked = true;
   el("referenceTeeth").value = record.reference; el("caseName").value = record.name;
   for (let i=0;i<2;i++) { el(`orientation${i}`).value=JSON.stringify(pair[i].rotation); el(`date${i}`).value=pair[i].date; el(`scan${i}`).value=""; el(`correction${i}`).value=""; }
+  el("caseTiming").value = record.timing || "uniform";
   mount(record.motion); status(`Opened ${record.name}: ${pair.map(s=>s.filename).join(" → ")}`);
 });
 for (let i=0;i<2;i++) el(`exportRegions${i}`).onclick = () => action(() => {

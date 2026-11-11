@@ -25,7 +25,7 @@ for existing-record requests, budget comparisons, and checks for usable STL data
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,motion-preview]"
 orthoplan serve
 ```
 
@@ -54,21 +54,26 @@ Click **Sample Test Case** to open USER_ONE's **Scan history**.
 Use **Previous week**, **Next week**, or the week buttons. Weeks 1 and 7 display
 whole original scans. Weeks 2–6 display **SIMULATED ESTIMATE** frames derived from
 the endpoint geometry using local segmentation and tooth-region matching.
-Choose **Upper teeth** or **Lower teeth**; upper crowns point down in the default
+Both arches are shown by default. Choose **Upper teeth** or **Lower teeth** for a closer single-arch view; upper crowns point down in the default
 front view. Rotate, zoom, or double-click a crown to focus. Select a draft tooth
 from the **Tooth** menu to highlight its region and see its estimated shift,
 rotation, and endpoint surface residual. The camera stays in place between weeks.
 At week 7, **Inspect estimated endpoint** alternates the fitted baseline regions
 with the recorded scan so discrepancies remain visible.
 
-The simulation distributes fitted translations and rotations uniformly between
+The **Timing assumption** menu offers uniform motion, slow start/finish, and delayed start between
 the two endpoint labels. It does not establish the actual weekly timing or path.
 Weak matches are flagged but remain usable in the exploratory preview; unmatched
 or numerically unusable regions stay fixed and are explicitly counted. Strict
 production segmentation thresholds do not disable this research simulation.
 Draft boundaries can include gum; surface context outside the moving masks stays
 fixed. Distances remain **scan units**, since the progress scale is unverified.
-To identify teeth in your own scans, continue from Upload to step 2.
+To fit your own scans, open **Fit another scan pair**. Upload two visits, confirm
+the shared units, fit, correct tooth regions, and regenerate. **Save locally**
+keeps source scans and fitted results in this browser. See
+[the two-visit workflow](docs/TWO_VISIT_WORKFLOW.md),
+[boundary corrections](docs/REGION_CORRECTIONS.md), and
+[timing and proximity hints](docs/SIMULATION_ASSUMPTIONS.md).
 
 The contributor labels the earlier observation **Week 1 / baseline**; its recorded
 June 5, 2026 pretreatment date is retained. September 17 is the reported week 7.

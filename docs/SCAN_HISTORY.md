@@ -28,14 +28,14 @@ matching pipeline. Generation runs locally, with no hosted inference.
 4. Compare independently segmented regions with one-to-one spatial/size
    assignment. Independent cuts can drift and misidentify neighboring regions.
    Transfer baseline crown masks onto the aligned target surface by nearest
-   baseline surface location to stabilize region identity. Each target face
+   baseline surface location with distance, normal, and round-trip checks to stabilize region identity. Each target face
    receives at most one baseline region label. Independent label disagreements
    remain uncertainty signals.
 5. Fit a rigid pose for each baseline region to its corresponding target region.
    The crown mask uses the upper 65% of each draft region's face-centroid heights;
    it is a rough geometric mask, not an established gingival margin. Fitting uses
    deterministic area-weighted surface samples and symmetric residual checks.
-6. For reported week `w`, interpolate pivot translation by `(w - 1) / 6` and
+6. For reported week `w`, select a timing assumption (uniform uses `(w - 1) / 6`) and interpolate pivot translation and
    rotation by shortest-path quaternion SLERP. Each region stays rigid. Surface
    context outside the moving masks remains fixed; gaps and overlaps can appear.
 7. Display original surfaces at weeks 1 and 7. At week 7 the user can toggle the
@@ -64,7 +64,7 @@ explicitly and their zero motion does not mean the actual tooth was stationary.
 
 Shift and residual values are **scan units**, since progress scale has not been
 verified. Residuals measure fit, not clinical accuracy or probability of correct
-identity. Uniform interpolation is a timing assumption: actual movement could
+identity. All offered interpolation profiles are timing assumptions: actual movement could
 start, pause, reverse, or follow another path. Reported week labels also differ
 from elapsed time between the recorded acquisition dates.
 
@@ -98,3 +98,14 @@ retain identity motion, test reordered regions and uncertain fits, and verify
 projection ownership. Browser tests verify distinct weekly poses, source/estimate
 labels, selected-tooth continuity, camera preservation, the week 7 comparison,
 mobile layout, failure recovery, and separation from authored planning.
+
+## Additional workflows
+
+Both arches are displayed in separate simultaneous viewports by default. They
+share timeline commands, without implying a bite registration. Right-side zoom
+controls and highlighted week buttons support close inspection.
+
+See [accuracy scoring](MOTION_BENCHMARK.md), [region correction](REGION_CORRECTIONS.md),
+[registration diagnostics](ENDPOINT_REGISTRATION.md), [two-visit cases](TWO_VISIT_WORKFLOW.md),
+and [timing and proximity](SIMULATION_ASSUMPTIONS.md). Reviewed real truth and
+no-motion repeat scans remain necessary for measured anatomical accuracy.

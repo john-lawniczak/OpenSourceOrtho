@@ -28,6 +28,12 @@ def test_tooth_estimate_selection_and_week_progress(server_url, tmp_path):  # no
             expect(page.locator("#comparisonMatchDetail")).to_contain_text("not millimeter measurements")
             canvas = page.locator("#comparisonCanvas canvas")
             third = canvas_snapshot(canvas)
+            page.locator("#comparisonTiming").select_option("delayed")
+            assert canvas_snapshot(canvas) != third, "Timing selection must change actual estimated poses"
+            page.locator("#comparisonTiming").select_option("uniform")
+            assert canvas_snapshot(canvas) == third
+            page.locator("#sampleComparison details summary").click()
+            expect(page.locator("#comparisonProximity")).to_contain_text("Absence does not establish clearance")
             page.locator('[data-comparison-week="5"]').click()
             assert canvas_snapshot(canvas) != third
             page.locator('[data-comparison-week="3"]').click()
