@@ -1,0 +1,75 @@
+"""Accuracy scoring against independently supplied, source-bound reviewed truth."""
+from __future__ import annotations
+
+import base64
+import numpy as np
+from scipy.spatial.transform import Rotation
+
+
+def _labels(record, key):
+    value = record.get(key)
+    return np.array(value, dtype=int) if isinstance(value, list) else np.frombuffer(base64.b64decode(value, validate=True), dtype=np.uint8)
+
+
+def score_motion(preview, truth):
+    if truth.get("schema") != "ortho-motion-truth-v1" or truth.get("frame") != preview["frame"]:
+        raise ValueError("Truth and prediction need the same explicit coordinate frame")
+    if truth.get("source_hashes") != [s["sha256"] for s in preview["sources"]]:
+        raise ValueError("Ground truth is not bound to these endpoint scans")
+    review = truth.get("review", {})
+    if truth.get("kind") not in ["synthetic", "reviewed-real", "reviewed-repeat"]:
+        raise ValueError("Declare synthetic, reviewed-real, or reviewed-repeat truth")
+    if truth["kind"] != "synthetic" and not all(review.get(k) for k in ["reviewer", "boundaries", "correspondence", "poses"]):
+        raise ValueError("Real benchmark truth requires independent boundary, correspondence and pose review")
+    expected = {str(t["tooth"]): t for t in truth["teeth"]}
+    predicted = {str(t["tooth"]): t for t in preview["teeth"]}
+    rows = [_score_tooth(tooth, predicted.get(key), truth) for key, tooth in expected.items()]
+    valid = [r for r in rows if r["translation_error"] is not None]
+    return {
+        "kind": truth["kind"], "units": truth["units"], "teeth": rows,
+        "expected_regions": len(rows), "evaluated_regions": len(valid),
+        "missing_regions": len(rows) - len(valid),
+        "translation_rmse": float(np.sqrt(np.mean([r["translation_error"] ** 2 for r in valid]))) if valid else None,
+        "rotation_mean_error_deg": float(np.mean([r["rotation_error_deg"] for r in valid])) if valid else None,
+        "identity_errors": sum(r["identity_correct"] is False for r in rows),
+        "identity_evaluated": sum(r["identity_correct"] is not None for r in rows),
+        "false_motion_regions": sum(r["false_motion"] is True for r in rows),
+        "source_boundary_accuracy": _boundary_accuracy(preview, truth),
+    }
+
+
+def _score_tooth(truth_tooth, candidate, truth):
+    row = {"tooth": str(truth_tooth["tooth"]), "translation_error": None,
+           "rotation_error_deg": None, "identity_correct": None, "false_motion": None}
+    if not candidate or candidate["status"] == "held-unmatched":
+        return row
+    rq = Rotation.from_quat(candidate["quaternion_xyzw"])
+    tq = Rotation.from_quat(truth_tooth["quaternion_xyzw"])
+    pivot = np.asarray(truth_tooth["pivot"])
+    cp = np.asarray(candidate["pivot"])
+    predicted_end = rq.apply(pivot - cp) + cp + candidate["translation"]
+    actual_end = pivot + truth_tooth["translation"]
+    error = float(np.linalg.norm(predicted_end - actual_end))
+    rotation_error = float(np.degrees((rq * tq.inv()).magnitude()))
+    row.update(translation_error=error, rotation_error_deg=rotation_error)
+    # Score *independent target face labels*, never the algorithm's self-assigned target ID.
+    faces = candidate.get("target_faces")
+    if faces is not None and len(faces) and "target_face_tooth_ids" in truth:
+        target_labels = _labels(truth, "target_face_tooth_ids")[faces]
+        ids, counts = np.unique(target_labels, return_counts=True)
+        row["identity_correct"] = int(ids[np.argmax(counts)]) == int(truth_tooth["target_tooth"])
+    if truth["kind"] == "reviewed-repeat" or truth.get("no_motion"):
+        row["false_motion"] = bool(np.linalg.norm(predicted_end - pivot) > truth["translation_tolerance"]
+                                   or np.degrees(rq.magnitude()) > truth["rotation_tolerance_deg"])
+    return row
+
+
+def _boundary_accuracy(preview, truth):
+    expected = _labels(truth, "source_face_tooth_ids")
+    labels = _labels(preview, "moving_face_labels_base64")
+    if len(expected) != len(labels):
+        raise ValueError("Source boundary labels have the wrong face count")
+    mapping = {t["face_label"]: int(t["tooth"]) for t in preview["teeth"]}
+    actual = np.array([mapping.get(int(i), 0) for i in labels])
+    crown = expected != 0
+    return float(np.mean(actual[crown] == expected[crown])) if crown.any() else None
