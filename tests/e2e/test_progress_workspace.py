@@ -66,7 +66,43 @@ def test_upload_fit_correct_and_restore(server_url, tmp_path):  # noqa: F811
             page.locator("#referenceTeeth").press("Tab")
             page.locator("#fitVisits").click()
             expect(page.locator("#caseStatus")).to_contain_text("Fit complete", timeout=30000)
+            correct_and_restore(page, tmp_path)
             assert not errors
             page.screenshot(path=str(tmp_path / "two-visit-workspace.png"))
         finally:
             browser.close()
+
+
+def correct_and_restore(page, tmp_path):
+    for i in range(2):
+        with page.expect_popup() as event:
+            page.locator(f"#editRegions{i}").click()
+        editor = event.value
+        expect(editor.locator("#reviewStatus")).to_contain_text("0 correction operations")
+        editor.locator("#reviewMerge").click()
+        editor.locator("#returnCorrections").click()
+        expect(editor.locator("#reviewStatus")).to_contain_text("Corrections returned")
+        editor.close()
+    page.locator("#applyCorrections").click()
+    expect(page.locator("#caseStatus")).to_contain_text("Corrections applied")
+    page.locator("#referenceTeeth").fill("12")
+    page.locator("#fitVisits").click()
+    expect(page.locator("#caseStatus")).to_contain_text("Fit complete", timeout=30000)
+    page.locator("#caseTooth").select_option("12")
+    expect(page.locator("#caseFitDetail")).to_contain_text("12")
+    page.locator("#saveCase").click()
+    expect(page.locator("#caseStatus")).to_contain_text("Case saved locally")
+    with page.expect_download() as event:
+        page.locator("#backupCase").click()
+    backup = tmp_path / "case.orthocase"
+    event.value.save_as(backup)
+    page.locator("#restoreCase").set_input_files(backup)
+    expect(page.locator("#caseStatus")).to_contain_text("Backup verified and restored")
+    assert page.locator("#savedCases option").count() == 2
+    page.locator("#openCase").click()
+    expect(page.locator("#caseStatus")).to_contain_text("(import 1)")
+    corrupt = json.loads(backup.read_text())
+    corrupt["pair"][0]["sha256"] = "0" * 64
+    backup.write_text(json.dumps(corrupt))
+    page.locator("#restoreCase").set_input_files(backup)
+    expect(page.locator("#caseStatus")).to_contain_text("hash mismatch")

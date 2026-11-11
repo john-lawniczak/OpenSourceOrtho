@@ -8,6 +8,7 @@ from orthoplan.evaluation.finding import (
     Finding, FindingCategory, FindingProvenance, FindingSeverity, lint_finding,
 )
 from orthoplan.longitudinal.corrections import correction_segments
+from orthoplan.longitudinal.match_review import apply_match_overrides
 from orthoplan.longitudinal.matching import assign_regions, region_faces, tooth_motion
 from orthoplan.longitudinal.projection import project_regions
 from orthoplan.longitudinal.registration import register_arches
@@ -36,7 +37,7 @@ def preview_advisory():
     )).model_dump(mode="json")
 
 
-def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, segmenter=None, corrections=None, source_hashes=None, reference=None):
+def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, segmenter=None, corrections=None, source_hashes=None, reference=None, matches=None):
     segmenter = segmenter or load_local_segmenter()
     corrections = corrections or [None, None]
     source_hashes = source_hashes or [None, None]
@@ -56,6 +57,7 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
         projected = [{**by_id[r["tooth"]], "faces": by_id[r["tooth"]]["faces"].tolist(),
                       "independent_label": r["tooth"], "face_count": len(by_id[r["tooth"]]["faces"])}
                      if r["tooth"] in by_id else None for r in regions[0]]
+    projected = apply_match_overrides(regions[0], regions[1], projected, matches)
     motions = [tooth_motion(region, match, registration)
                for region, match in zip(regions[0], projected)]
     return {
@@ -72,6 +74,7 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
                       else "Whole-arch best fit; not stable anatomy. Global arch movement may be removed."),
         "quality_gates": [evaluate_segmentation_quality(parts, arch=arch).model_dump()
                           for parts in segments],
-        "teeth": motions, "simulation": simulation_report(source, motions),
+        "target_region_ids": [r["tooth"] for r in regions[1]],
+        "match_overrides": matches, "teeth": motions, "simulation": simulation_report(source, motions),
         "advisory_findings": [preview_advisory()],
     }

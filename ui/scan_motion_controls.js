@@ -1,4 +1,5 @@
 // Render endpoint-match evidence separately from the timeline and renderer.
+import { fitConsistencyText } from "./fit_consistency.js";
 import { el } from "./state.js";
 
 export function renderMotionControls(motion, selected, frame, error = "") {
@@ -35,5 +36,6 @@ export function renderMotionControls(motion, selected, frame, error = "") {
   detail.textContent = `Draft tooth ${tooth.tooth} · ${status}. Estimated change from week 1: `
     + `${shift.toFixed(2)} scan units, ${(angle * frame.fraction).toFixed(1)}° rotation. `
     + (tooth.fit ? `Endpoint surface residual (90th percentile): ${tooth.fit.p90_residual.toFixed(2)} scan units. ` : "")
+    + `${fitConsistencyText(tooth)} `
     + "Scale is unverified; values are not millimeter measurements. Highlighted regions appear on simulated weeks and the baseline.";
 }

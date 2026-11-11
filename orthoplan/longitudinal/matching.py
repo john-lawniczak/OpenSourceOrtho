@@ -13,6 +13,7 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation
 
+from orthoplan.longitudinal.match_review import reversible_fit_evidence
 from orthoplan.longitudinal.rigid import fit_endpoint, surface_points, transform
 
 
@@ -81,18 +82,27 @@ def tooth_motion(region: dict, target: dict | None, registration: np.ndarray) ->
         matrix, metrics = fit_endpoint(region["points"], points)
     except (ValueError, np.linalg.LinAlgError):
         return record
+    try:
+        metrics["consistency"] = reversible_fit_evidence(region["points"], points, matrix)
+    except (ValueError, np.linalg.LinAlgError):
+        metrics["consistency"] = {"unavailable": True}
     rotation = Rotation.from_matrix(matrix[:3, :3])
     translation = transform(pivot, matrix) - pivot
     record.update(target_tooth=target["tooth"], fit=metrics,
                   independent_target_label=target.get("independent_label"),
                   target_region_face_count=target.get("face_count"),
+                  match_provenance=target.get("match_provenance", "automatic-projection"),
                   target_faces=target.get("faces"), correspondence_checks=target.get("checks"))
     # Computational sanity only, not a treatment-motion threshold.
     span = np.linalg.norm(np.ptp(region["points"], axis=0))
     if np.linalg.norm(translation) > span or rotation.magnitude() > np.pi / 3:
         return record
+    consistency = metrics["consistency"]
+    unstable = (consistency.get("unavailable", False) or consistency.get("round_trip_shift", 0) > span * .02
+                or consistency.get("sampling_shift", 0) > span * .02
+                or consistency.get("round_trip_rotation_deg", 0) > 3 or consistency.get("sampling_rotation_deg", 0) > 3)
     record.update(
-        status="estimated-weak" if metrics["relative_p90"] > 0.12 or metrics["overlap"] < 0.6
+        status="estimated-weak" if unstable or metrics["relative_p90"] > 0.12 or metrics["overlap"] < 0.6
         or target.get("independent_label", region["tooth"]) != region["tooth"]
         else "estimated-draft",
         translation=translation.tolist(), quaternion_xyzw=rotation.as_quat().tolist(),

@@ -72,6 +72,7 @@ def motion_payload(payload, *, workspace, ui_dir):
             segmenter=segmenter, corrections=corrections,
             source_hashes=[s["sha256"] for s in sources],
             reference=_reference(corrections, payload.get("reference_teeth")),
+            matches=payload.get("matches"),
         )
         preview.update(
             specimen_id="local-two-visit",

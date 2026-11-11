@@ -7,7 +7,7 @@
 <label>From <input id="reviewFrom" type="number" value="11"></label><label>To tooth <input id="reviewTo" type="number" value="12"></label><label>Brush radius (scan units) <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label>
 <button id="reviewMerge">Merge from → to</button><button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
 <div id="regionCanvas" class="large-canvas"></div><p id="reviewStatus" role="status">Load a scan to begin.</p>
-<label><input id="reviewChecked" type="checkbox">I checked these tooth boundaries and numbers.</label><button id="reviewExport">Save corrections</button>
+<label><input id="reviewChecked" type="checkbox">I checked these tooth boundaries and numbers.</label><button id="reviewExport">Save corrections</button><button id="returnCorrections" hidden>Return corrections to case</button>
 <p>Corrected labels remain separate from fitted motion and anatomy review. Import this correction file in the two-visit workflow to refit.</p>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module" src="./region_review.js"></script></main></body></html>

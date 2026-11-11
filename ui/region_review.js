@@ -3,6 +3,7 @@ import { loadMotionPreview } from "./scan_motion_data.js";
 import { RegionEdits } from "./region_edits.js";
 import { createRegionEditor } from "./region_editor_viewer.js";
 import { parseStlGeometry } from "./stl.js";
+import { caseStore } from "./progress_case_store.js";
 const el = id => document.getElementById(id);
 let scan, edits, viewer, generation = 0;
 function refresh() { viewer?.colorLabels(edits.labels); el("reviewChecked").checked = false; el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
@@ -41,4 +42,18 @@ el("reviewExport").onclick = () => action(() => {
   if (!edits) throw new Error("Load a scan first.");
   const blob = new Blob([JSON.stringify(edits.export(scan.sha256, el("reviewChecked").checked))], {type:"application/json"});
   const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href=url; a.download="tooth-corrections.json"; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000);
+});
+
+const transferId = new URLSearchParams(location.search).get("edit");
+if (transferId) void action(async () => {
+  const record = await caseStore("get",transferId,"edits");
+  if (!record) throw new Error("Correction session expired. Reopen from the case.");
+  scan=record.scan; edits=RegionEdits.restore(record.labels,scan.sha256,record.labels.face_count,scan.arch);
+  mount(); el("returnCorrections").hidden=false;
+});
+el("returnCorrections").onclick = () => action(async () => {
+  const record=await caseStore("get",transferId,"edits");
+  if (!record || record.scan.sha256 !== scan.sha256) throw new Error("The editor scan no longer matches the case.");
+  await caseStore("put",{...record,labels:edits.export(scan.sha256,el("reviewChecked").checked),returned:true},"edits");
+  el("reviewStatus").textContent="Corrections returned. In the case, click Apply returned corrections, then regenerate.";
 });

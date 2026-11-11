@@ -27,3 +27,27 @@ layouts are NFC/NCF inputs and NFL/NLF outputs. Existing arbitrary dental weight
 are not automatically compatible. Third-party model weights were not bundled or
 claimed validated. A real trained-model comparison still needs a compatible
 model and independent reviewed cases.
+
+## Phase 2 — correction round trips and recoverable cases
+
+The two-visit page opens either endpoint directly in the correction editor with
+its exact scan bytes, display orientation, and draft labels. Returning edits
+checks scan identity before applying them and invalidates the old fit. Both
+visits can be relabeled and regenerated without manual JSON transfers.
+
+Portable `.orthocase` backups include original scans, fitted results, corrections,
+units, orientation, timing, and selected segmentation backend. Restore verifies
+both SHA-256 values, geometry/fit binding, arch, units, and correction contracts.
+Imports preserve existing named cases by creating a unique import name. Source
+bytes remain local; backups are user-created files and are not uploaded remotely.
+
+Browser tests edit both endpoint labels, refit, save, export, restore in a new
+case, and reject a corrupted scan hash while preserving the previous case.
+
+Endpoint match review now accepts an explicit one-to-one map, including holds,
+against independent target regions. Duplicate, unknown, and partial maps are
+rejected. Reverse-fit cycle error and resampling pose differences are recorded
+per tooth and flag unstable fits. These diagnostics are empirical consistency,
+not calibrated confidence intervals. Benchmark reports now include per-region
+IoU/precision/recall, false-positive context faces, missed faces, and fit coverage;
+real-data review flags must be actual booleans, not truthy strings.

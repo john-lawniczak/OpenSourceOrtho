@@ -19,7 +19,7 @@ def score_motion(preview, truth):
     review = truth.get("review", {})
     if truth.get("kind") not in ["synthetic", "reviewed-real", "reviewed-repeat"]:
         raise ValueError("Declare synthetic, reviewed-real, or reviewed-repeat truth")
-    if truth["kind"] != "synthetic" and not all(review.get(k) for k in ["reviewer", "boundaries", "correspondence", "poses"]):
+    if truth["kind"] != "synthetic" and not (isinstance(review.get("reviewer"), str) and review["reviewer"].strip() and all(review.get(k) is True for k in ["boundaries", "correspondence", "poses"])):
         raise ValueError("Real benchmark truth requires independent boundary, correspondence and pose review")
     expected = {str(t["tooth"]): t for t in truth["teeth"]}
     predicted = {str(t["tooth"]): t for t in preview["teeth"]}
@@ -39,6 +39,8 @@ def score_motion(preview, truth):
         "identity_evaluated": sum(r["identity_correct"] is not None for r in rows),
         "false_motion_regions": sum(r["false_motion"] is True for r in rows),
         "source_boundary_accuracy": _boundary_accuracy(preview, truth),
+        "boundary_regions": boundary_regions(preview, truth),
+        "fit_coverage": len(valid)/len(rows) if rows else 0,
     }
 
 
@@ -77,3 +79,23 @@ def _boundary_accuracy(preview, truth):
     actual = np.array([mapping.get(int(i), 0) for i in labels])
     crown = expected != 0
     return float(np.mean(actual[crown] == expected[crown])) if crown.any() else None
+
+
+def boundary_regions(preview, truth):
+    expected = _labels(truth, "source_face_tooth_ids")
+    ownership = _labels(preview, "moving_face_labels_base64")
+    if expected.shape != ownership.shape:
+        raise ValueError("Boundary label counts differ")
+    mapping = {t["face_label"]: int(t["tooth"]) for t in preview["teeth"]}
+    actual = np.array([mapping.get(int(i), 0) for i in ownership])
+    result = []
+    for tooth in sorted((set(expected) | set(actual)) - {0}):
+        true, predicted = expected == tooth, actual == tooth
+        intersection = int(np.count_nonzero(true & predicted))
+        union = int(np.count_nonzero(true | predicted))
+        result.append({"tooth": str(tooth), "iou": intersection/union,
+                       "precision": intersection/int(predicted.sum()) if predicted.any() else None,
+                       "recall": intersection/int(true.sum()) if true.any() else None,
+                       "false_positive_faces": int(np.count_nonzero(predicted & ~true)),
+                       "missed_faces": int(np.count_nonzero(true & ~predicted))})
+    return result
