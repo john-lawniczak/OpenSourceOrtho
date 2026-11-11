@@ -134,7 +134,7 @@ function scanStatusText(count, movingFragments) {
   if (state.segmentation.busy) {
     return "Showing your scan. Identifying tooth regions locally…";
   }
-  return "Showing your scan. Review tooth regions in Upload to enable individual selection.";
+  return "Showing your scan. Review tooth regions to enable individual selection.";
 }
 
 function updateViewer(result) {

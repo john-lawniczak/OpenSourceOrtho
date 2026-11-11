@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { inputValidationText, loadObservedPair, observedPairMetadata, revealFraction } from "./scan_comparison_data.js";
+import { inputValidationText, loadObservedPair, observedPairMetadata } from "./scan_comparison_data.js";
+import { historyFrame, historyCamera } from "./scan_history.js";
 import { comparisonGeometry } from "./scan_comparison_geometry.js";
 
 const root = new URL("../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/", import.meta.url);
@@ -67,12 +68,26 @@ test("loading verifies actual bytes and requests only the two chosen public obse
   await assert.rejects(loadObservedPair("lower", { signal: controller.signal }), /integrity check failed/);
 });
 
-test("reveal fraction has exact endpoints and rejects non-finite input", () => {
-  assert.equal(revealFraction(0), 0);
-  assert.equal(revealFraction(100), 1);
-  assert.equal(revealFraction(37.5), 0.375);
-  for (const value of [-10, NaN, Infinity, "bad"]) assert.equal(revealFraction(value), 0);
-  assert.equal(revealFraction(200), 1);
+test("week navigation never substitutes endpoints or fabricated motion for missing observations", () => {
+  const pair = observedPairMetadata(...records(), "upper");
+  assert.equal(historyFrame(1, pair).scan, pair[0]);
+  assert.equal(historyFrame(7, pair).scan, pair[1]);
+  for (let week = 2; week <= 6; week++) {
+    assert.deepEqual(historyFrame(week, pair), { week, index: null, scan: null });
+  }
+  for (const week of [0, 8, 1.5, NaN, Infinity, "2"]) assert.throws(() => historyFrame(week, pair));
+});
+
+test("upper front/side camera is rolled so crowns point down; lower retains upright orientation", () => {
+  for (const view of ["front", "left", "right"]) {
+    assert.deepEqual(historyCamera("upper", view).up, [0, -1, 0]);
+    assert.deepEqual(historyCamera("lower", view).up, [0, 1, 0]);
+  }
+  assert.deepEqual(historyCamera("upper"), historyCamera("upper", "front"));
+  for (const arch of ["upper", "lower"]) {
+    const { position, up } = historyCamera(arch, "occlusal");
+    assert.equal(position.reduce((sum, v, i) => sum + v * up[i], 0), 0);
+  }
 });
 
 test("display geometry preserves triangle coordinates up to proper rotation and translation", () => {

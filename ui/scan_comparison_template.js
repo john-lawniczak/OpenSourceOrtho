@@ -1,15 +1,7 @@
 export const comparisonTemplate = `
-  <header class="comparison-heading">
-    <div><p class="comparison-eyebrow">USER_ONE · observed scan history</p>
-    <h3>Look closely at what changed</h3></div>
-    <label>Arch <select id="comparisonArch"><option value="upper">Upper</option><option value="lower">Lower</option></select></label>
-  </header>
-  <p>Two original scans, one camera. Reveal either visit while keeping the same close-up.</p>
-  <p id="comparisonValidation" class="comparison-validation">Loading the scan validation record…</p>
-  <p class="comparison-limitation"><strong>Visual comparison, not measured tooth movement.</strong>
-    This viewer uses display orientation and centering. It has not yet imported the registration
-    transform or per-tooth map, and does not calculate movement between visits.</p>
-  <div class="comparison-toolbar" role="group" aria-label="Comparison camera">
+  <div class="comparison-toolbar" role="group" aria-label="Scan history controls">
+    <button type="button" data-comparison-arch="upper" aria-pressed="true">Upper teeth</button>
+    <button type="button" data-comparison-arch="lower" aria-pressed="false">Lower teeth</button>
     <button type="button" data-comparison-view="occlusal">Biting surface</button>
     <button type="button" data-comparison-view="front">Front</button>
     <button type="button" data-comparison-view="left">Left side</button>
@@ -20,36 +12,37 @@ export const comparisonTemplate = `
   </div>
   <div class="comparison-stage">
     <div id="comparisonCanvas" class="comparison-canvas"></div>
-    <div class="comparison-visit comparison-before" id="comparisonBefore">Week 1 / baseline</div>
-    <div class="comparison-visit comparison-after" id="comparisonAfter">Reported week 7</div>
-    <div id="comparisonDivider" class="comparison-divider" hidden aria-hidden="true"><span>↔</span></div>
-  </div>
-  <div class="comparison-reveal">
-    <div class="comparison-endpoints">
-      <button id="comparisonBaseline" type="button">Week 1 only</button>
-      <button id="comparisonSplit" type="button">Split view</button>
-      <button id="comparisonWeek7" type="button">Week 7 only</button>
+    <div class="comparison-visit" id="comparisonVisit" aria-live="polite">Week 1</div>
+    <div id="comparisonMissing" class="comparison-missing" hidden>
+      <strong id="comparisonMissingTitle"></strong>
+      <p>Only weeks 1 and 7 have scans. Tooth positions for this week are unavailable.</p>
+      <p>Accurate weekly motion needs additional observations. Estimates need the validated tooth map and registration data.</p>
     </div>
-    <label for="comparisonReveal">Reveal week 7 <output id="comparisonPercent">0%</output></label>
-    <input id="comparisonReveal" type="range" min="0" max="100" step="0.1" value="0" disabled
-      aria-label="Reveal week 7 scan" aria-describedby="comparisonHelp" />
   </div>
-  <p id="comparisonHelp" class="comparison-help">Drag the slider or divider to reveal the other scan.
-    Drag the model to rotate; scroll or pinch to zoom. Double-click a crown to focus that region.
-    Use the endpoint buttons to alternate visits without moving the camera.</p>
+  <nav class="comparison-timeline" aria-label="Reported scan weeks">
+    <div class="comparison-week-navigation">
+      <button id="comparisonPrevious" type="button" disabled>← Previous week</button>
+      <output id="comparisonWeekLabel" aria-live="polite">Week 1 of 7</output>
+      <button id="comparisonNext" type="button" disabled>Next week →</button>
+    </div>
+    <div class="comparison-weeks">
+      ${Array.from({ length: 7 }, (_, i) => `<button type="button" data-comparison-week="${i + 1}" disabled
+        aria-label="Week ${i + 1}, ${i === 0 || i === 6 ? "observed scan" : "no scan"}">
+        Week ${i + 1}<small>${i === 0 || i === 6 ? "Observed" : "No scan"}</small></button>`).join("")}
+    </div>
+  </nav>
+  <p id="comparisonHelp" class="comparison-help">Drag to rotate; scroll or pinch to zoom.
+    Double-click a crown to focus. The camera stays in place when changing weeks.</p>
   <p id="comparisonStatus" role="status" aria-live="polite">Loading original scan pair…</p>
   <button id="comparisonRetry" type="button" hidden>Retry scan loading</button>
-  <details class="comparison-provenance"><summary>About these visits</summary>
-    <p>The contributor labels the earlier pair week 1 / baseline. Its recorded date remains June 5, 2026 (pretreatment).
-      The progress scan is from September 17, 2026, reported as week 7.
-      There are 104 days between the scans and 30 days from the recorded treatment start to the progress scan.
-      The week label is not elapsed calendar time.</p>
-    <p>Input alignment and tooth correspondence were confirmed by the contributor on November 10, 2026.
-      A machine-readable registration transform and tooth map have not been linked to this viewer.
-      Progress scale remains unverified; no millimeter displacement is reported.</p>
-    <p>Only two observed visits are available here. The slider reveals the recorded surfaces;
-      intermediate positions are not inferred tooth positions or additional weeks. No movement is exaggerated.
-      Differences can include scan coverage, orientation, attachments, and acquisition artifacts.
-      The later chipped-stone test scans are excluded.</p>
-    <p>Hypothetical tooth edits and Plan AI belong to the separate Simulated planning demo.</p>
+  <details class="comparison-provenance"><summary>Scan dates and accuracy</summary>
+    <p id="comparisonValidation">Loading the scan validation record…</p>
+    <p>The earlier pair is labeled week 1 / baseline by the contributor and was recorded on June 5, 2026 (pretreatment).
+      The September 17, 2026 scan is labeled week 7. These reported labels are not elapsed calendar weeks:
+      the scans are 104 days apart, and the progress scan is 30 days after the recorded treatment start.</p>
+    <p>The viewer uses display orientation and independent centering. The validated registration transform
+      and tooth map have not been linked to this viewer. Progress scale is unverified; no per-tooth or
+      millimeter displacement is calculated. Differences can include scan coverage and acquisition artifacts.</p>
+    <p>No intermediate tooth positions are generated. The later personal scans of chipped stone models are excluded.
+      Hypothetical edits belong to the separate Simulated planning demo.</p>
   </details>`;

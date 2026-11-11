@@ -6,19 +6,46 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
+def canvas_snapshot(canvas, **kwargs):
+    # Rounded CSS corners can differ by 1–2 RGB levels after browser scrolling.
+    # Remove that border mask for exact comparison of the rendered scan pixels.
+    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; }", **kwargs)
+
+
 def assert_observed_endpoints_preserve_camera(page, tmp_path):
     canvas = page.locator("#comparisonCanvas canvas")
     page.locator("#comparisonZoomIn").click()
-    page.locator("#comparisonBaseline").click()
-    baseline = canvas.screenshot(path=str(tmp_path / "observed-baseline.png"))
-    page.locator("#comparisonWeek7").click()
-    progress = canvas.screenshot(path=str(tmp_path / "observed-week7.png"))
+    page.locator('[data-comparison-week="1"]').click()
+    baseline = canvas_snapshot(canvas, path=str(tmp_path / "observed-baseline.png"))
+    page.locator('[data-comparison-week="7"]').click()
+    progress = canvas_snapshot(canvas, path=str(tmp_path / "observed-week7.png"))
     assert baseline != progress, "Endpoints must show different observed surfaces"
-    page.locator("#comparisonBaseline").click()
-    assert canvas.screenshot() == baseline, "Scrubbing must preserve camera and original geometry"
+    page.locator('[data-comparison-week="1"]').click()
+    assert canvas_snapshot(canvas) == baseline, "Changing weeks must preserve camera and original geometry"
 
 
-def test_observed_pair_reveal_camera_arch_and_personal_state(server_url, tmp_path):  # noqa: F811
+def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
+    baseline = canvas_snapshot(canvas, path=str(tmp_path / "before-weeks.png"))
+    for week in range(2, 7):
+        page.locator("#comparisonNext").click()
+        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 7")
+        expect(page.locator("#comparisonMissing")).to_be_visible()
+        expect(canvas).not_to_be_visible()
+        expect(page.locator("#comparisonStatus")).to_contain_text("no observation")
+    page.locator("#sampleComparison").screenshot(path=str(tmp_path / "missing-week.png"))
+    page.locator("#comparisonNext").click()
+    expect(page.locator("#comparisonVisit")).to_contain_text("Reported week 7")
+    expect(page.locator("#comparisonNext")).to_be_disabled()
+    expect(page.locator("#comparisonMissing")).not_to_be_visible()
+    page.locator('[data-comparison-week="1"]').click()
+    assert canvas_snapshot(canvas, path=str(tmp_path / "after-weeks.png")) == baseline
+    page.locator('[data-comparison-week="7"]').focus()
+    page.keyboard.press("Enter")
+    expect(page.locator('[data-comparison-week="7"]')).to_have_attribute("aria-current", "step")
+    assert len([url for url in requests if url.endswith(".stl")]) == count_before
+
+
+def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path):  # noqa: F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1100})
@@ -27,40 +54,36 @@ def test_observed_pair_reveal_camera_arch_and_personal_state(server_url, tmp_pat
         page.on("request", lambda request: requests.append(request.url))
         try:
             page.goto(server_url, wait_until="networkidle")
+            expect(page.locator("#uploadIntroduction")).to_have_count(0)
+            expect(page.locator("#segmentationBlock")).not_to_be_visible()
+            page.locator("#guidedNext").click()
+            expect(page.locator("#segmentationBlock")).to_be_visible()
             page.locator("#sampleLaunch").click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
-            expect(page.locator("#comparisonBefore")).to_contain_text("Week 1 / baseline")
+            expect(page.locator("#comparisonVisit")).to_contain_text("Week 1 / baseline")
+            page.locator(".comparison-provenance summary").click()
             expect(page.locator("#comparisonValidation")).to_contain_text("validated, confirmed by the contributor")
-            expect(page.locator("#comparisonAfter")).to_contain_text("Reported week 7")
+            page.locator(".comparison-provenance summary").click()
+            expect(page.locator("#comparisonPrevious")).to_be_disabled()
             expect(page.locator("#stageSlider")).not_to_be_visible()
             expect(page.locator("#guidedBuild")).not_to_be_visible()
             expect(page.locator("#chatReopenTab")).not_to_be_visible()
-            expect(page.locator("#comparisonReveal")).to_have_value("50")
             canvas = page.locator("#comparisonCanvas canvas")
             assert_observed_endpoints_preserve_camera(page, tmp_path)
             count_before = len([url for url in requests if url.endswith(".stl")])
-            page.locator("#comparisonReveal").focus()
-            page.locator("#comparisonReveal").press("ArrowRight")
-            expect(page.locator("#comparisonReveal")).to_have_value("0.1")
-            page.locator("#comparisonSplit").click()
-            expect(page.locator("#comparisonDivider")).to_be_visible()
-            handle = page.locator("#comparisonDivider").bounding_box()
-            page.mouse.move(handle["x"] + handle["width"] / 2, handle["y"] + handle["height"] / 2)
-            page.mouse.down()
-            page.mouse.move(handle["x"] + 100, handle["y"] + handle["height"] / 2, steps=5)
-            page.mouse.up()
-            assert float(page.locator("#comparisonReveal").input_value()) < 50
-            assert len([url for url in requests if url.endswith(".stl")]) == count_before
-            page.locator("#comparisonArch").select_option("lower")
+            assert_week_navigation(page, canvas, requests, count_before, tmp_path)
+            page.locator("#comparisonReset").click()
+            page.locator("#sampleComparison").screenshot(path=str(tmp_path / "upper-front.png"))
+            page.locator('[data-comparison-arch="lower"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             assert any(url.endswith("progress-01-lower.stl") for url in requests)
             assert not any("progress-02" in url for url in requests)
-            page.locator("#comparisonBaseline").click()
+            page.locator('[data-comparison-week="1"]').click()
+            page.locator('[data-comparison-view="occlusal"]').click()
             box = canvas.bounding_box()
             canvas.dblclick(position={"x": box["width"] * 0.5, "y": box["height"] * 0.75})
             expect(page.locator("#comparisonStatus")).to_contain_text("Region focused")
             page.locator("#comparisonReset").click()
-            page.locator("#comparisonSplit").click()
             page.locator("#sampleComparison").screenshot(path=str(tmp_path / "observed-desktop.png"))
             page.set_viewport_size({"width": 390, "height": 844})
             expect(canvas).to_be_visible()
@@ -85,7 +108,7 @@ def test_failed_visit_does_not_display_partial_pair_and_can_retry(server_url):  
             page.goto(server_url, wait_until="networkidle")
             page.locator("#sampleLaunch").click()
             expect(page.locator("#comparisonStatus")).to_contain_text("Comparison unavailable", timeout=30000)
-            expect(page.locator("#comparisonReveal")).to_be_disabled()
+            expect(page.locator("#comparisonNext")).to_be_disabled()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "false")
             page.unroute("**/progress-01-upper.stl")
             page.locator("#comparisonRetry").click()

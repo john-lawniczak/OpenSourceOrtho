@@ -1,11 +1,6 @@
 // Observed visits only. No simulated stages or private visit discovery.
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
-export function revealFraction(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? Math.min(1, Math.max(0, number / 100)) : 0;
-}
-
 export function inputValidationText(validation) {
   return validation?.status === "contributor-confirmed"
     && validation.cross_visit_alignment === "validated" && validation.tooth_correspondence === "validated"
@@ -38,7 +33,7 @@ export function observedPairMetadata(manifest, timeline, comparison, arch) {
     }
     const validation = timeline.comparison?.input_validation;
     const boundValidation = validation?.scans?.[filename] === scan.sha256 ? validation : null;
-    return { filename, sha256: scan.sha256, units: scan.units, rotation, validation: boundValidation,
+    return { arch, filename, sha256: scan.sha256, units: scan.units, rotation, validation: boundValidation,
       date: event.date, label: index ? `Reported week ${event.reported_week}`
         : event.reported_week === 1 ? "Week 1 / baseline" : "Pretreatment baseline" };
   });

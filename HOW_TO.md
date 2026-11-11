@@ -50,12 +50,15 @@ in the top bar:
 - **Technician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
 
-Click **Sample Test Case** to open USER_ONE's **Observed scan comparison**.
-Choose upper or lower, then drag the reveal slider or the divider across the
-model. **Baseline only** and **Week 7 only** alternate the original surfaces
-without changing the camera. Rotate, zoom, or double-click a crown to inspect
-that region closely; the camera is shared between visits. No intermediate tooth
-positions are invented, and no movement is exaggerated.
+Click **Sample Test Case** to open USER_ONE's **Scan history**.
+Use **Previous week**, **Next week**, or the week buttons. Weeks 1 and 7 display
+whole original scans with a shared camera; weeks 2–6 explicitly show no scan.
+Choose **Upper teeth** or **Lower teeth**; upper crowns point down in the default
+front view. Rotate, zoom, or double-click a crown to inspect that region closely.
+The camera stays in place when changing weeks, including across missing weeks.
+Precise weekly movement cannot be recovered from two endpoints alone. No
+intermediate per-tooth motion is generated without the supporting mapping data.
+To identify teeth in your own scans, continue from Upload to step 2.
 
 The contributor labels the earlier observation **Week 1 / baseline**; its recorded
 June 5, 2026 pretreatment date is retained. September 17 is the reported week 7.
@@ -63,7 +66,9 @@ The contributor confirms that **cross-visit alignment and tooth correspondence
 are validated** for these original pairs. This confirmation is recorded against
 the four source hashes. The viewer currently uses display orientation and
 independent centering; it has not yet imported the registration transform or
-per-tooth map needed to calculate tooth displacement. Progress scale is still
+per-tooth map needed to calculate tooth displacement. The current automatic
+segmenter produces drafts requiring boundary and identity review; matching FDI
+labels between two drafts does not establish validated correspondence. Progress scale is still
 unverified. The week 18 contribution consists of personal molds and scans from
 chipped stone models and does not inherit the week 1–7 validation.
 

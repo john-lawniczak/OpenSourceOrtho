@@ -11,7 +11,7 @@ export async function generatePlan() {
     return;
   }
   if (state.userMode === "simple" && (state.scanUnits !== "mm" || !state.segmentation.applied)) {
-    state.generation.status = "Confirm mm units and review individual teeth in Upload first.";
+    state.generation.status = "Confirm mm units and review individual teeth before generating.";
     state.guided.step = "upload";
     renderAll();
     return;

@@ -95,7 +95,7 @@ export function enterSample() {
   state.guided.step = "plan";
   state.activeStep = "review";
   state.simpleAcknowledged = true;
-  state.sampleStatus = "Observed baseline / week 7 comparison. The planning simulation is a separate example.";
+  state.sampleStatus = "Week 1–7 scan history. The planning simulation is a separate example.";
   el("planTitle").value = `Sample test case · ${sampleDataset.pseudonym}`;
   el("planId").value = "sample-test-case";
   el("simpleGoal").value = "crowding";

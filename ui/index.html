@@ -135,7 +135,6 @@
 
           <section class="gstep" data-gstep="upload">
             <h3 id="uploadHeading">1 · Upload your scan files</h3>
-            <p id="uploadIntroduction">Add upper or lower 3D scans. Common mesh and point-cloud formats are supported.</p>
             <div id="guidedUploadHost">
               <div id="simpleUpload" class="upload-stack">
                 <label class="upload-target" for="simpleStlFile">
@@ -148,9 +147,6 @@
             </div>
             <div id="guidedScanMetadataHost"></div>
             <div id="guidedUploadViewerHost" class="guided-viewer-host"></div>
-            <div id="guidedSegmentationHost"></div>
-            <button id="uploadGeneratePreview" class="primary-action" type="button" disabled>Generate staged preview</button>
-            <p class="guided-hint">Confirm mm units and use reviewed teeth to enable the geometry proposal. Your AI connection can review it.</p>
             <details class="guided-help"><summary>See the upload-to-preview workflow</summary>
               <video controls preload="none" poster="./workflow-poster.jpg" aria-label="Sample workflow: select, edit, and preview stages">
                 <source src="./workflow-demo.webm" type="video/webm" />
@@ -166,6 +162,7 @@
 
           <section class="gstep" data-gstep="plan">
             <h3>2 · Explore teeth &amp; stages</h3>
+            <div id="guidedSegmentationHost"></div>
             <div class="guided-action-strip">
               <span>Select a tooth below, then nudge it or describe a change in chat.</span>
 

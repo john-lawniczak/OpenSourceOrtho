@@ -60,16 +60,19 @@ workflows:
   clinical controls, print metadata, optimized staging, and plan JSON.
 
 The Sample Test Case initially renders original baseline/week 7 scan pairs with
-a shared orthographic camera and scissored reveal. `scan_comparison_data.js`
+a shared orthographic camera and whole-scan week navigation. Weeks 2–6 show an
+explicit missing-observation state, never reused endpoints or synthetic poses.
+`scan_history.js` owns reported-week availability and arch-aware camera presets.
+The default front view displays upper crowns pointing down. `scan_comparison_data.js`
 checks case identity, visit membership, documented proper display rotations,
 and SHA-256 hashes. `scan_comparison_geometry.js` applies only those rotations
 and independent centering, with no deformation or scale fitting. The contributor confirms validated input alignment and tooth correspondence
 for week 1/baseline and week 7; the UI reads the hash-bound confirmation from
 the longitudinal record. An executable registration transform and per-tooth map
 have not been linked to this renderer. Progress scale remains unverified, and
-this view does not measure tooth motion. Scrubbing changes only the reveal, preserving the
-camera and source geometry. Failed or stale loads cannot expose a partial pair.
-Private chipped-stone records are not discovered or loaded.
+this view does not measure tooth motion. Changing weeks preserves the camera and source geometry. Failed or stale loads cannot expose a partial pair.
+Private chipped-stone records are not discovered or loaded. Tooth identification
+lives in guided step 2; upload is limited to scans and their metadata.
 
 Only selecting **Simulated planning demo** loads `root-bone-fixture.json`
 (redacted CBCT record metadata, accepted

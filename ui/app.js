@@ -369,7 +369,7 @@ document.body.addEventListener("click", (event) => {
     exitSample();
     renderAll();
   }
-  if (button?.id === "guidedBuild" || button?.id === "uploadGeneratePreview") {
+  if (button?.id === "guidedBuild") {
     generatePlan();
     renderAll();
   }
