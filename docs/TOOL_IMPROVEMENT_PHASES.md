@@ -51,3 +51,27 @@ per tooth and flag unstable fits. These diagnostics are empirical consistency,
 not calibrated confidence intervals. Benchmark reports now include per-region
 IoU/precision/recall, false-positive context faces, missed faces, and fit coverage;
 real-data review flags must be actual booleans, not truthy strings.
+
+## Phase 3 — full-surface checks, bite review, and shell QA
+
+Two-visit cases can inspect full-triangle separation for a selected pair at its
+fitted weekly pose. Bounding-volume pruning preserves every triangle; a time or
+pair-test budget returns indeterminate, never a clearance claim. This detects
+crossings between triangle interiors that vertex samples miss. The sampled
+multi-week overview remains available as the inexpensive first pass.
+
+The same bounded kernel now adds inner/outer full-surface separation to shell QA.
+Incomplete checks and sub-feature separation downgrade the manufacturing report.
+Vertex spacing remains separately reported. Surface separation does not prove
+physical fit or rule out containment of closed objects.
+
+`/bite-review.html` displays both original scans without separate recentering.
+Users may inspect geometric inference or import a reviewed rigid transform bound
+to both source hashes, reviewer, and reference description. Supplied frames are
+measured without automatically moving arches into contact. Imported transforms
+are not painted as overlays on untransformed geometry. Templates export with
+acceptance false. Unit confirmation is required for reviewed-transform imports.
+
+The paired-upload browser test exposed lost registry entries during concurrent
+uploads. Registry updates now lock the read/modify/write transaction across
+threads and processes; a parallel-upload regression confirms all assets survive.

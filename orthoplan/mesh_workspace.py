@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from orthoplan.io.file_lock import exclusive_file_lock
 from orthoplan.io.atomic import atomic_write_text
 from orthoplan.io.mesh_import import ScanImport, read_scan
 from orthoplan.io.stl_export import canonical_bytes, canonical_suffix
@@ -66,16 +67,17 @@ def register_scan_mesh(
     mesh_dir.mkdir(parents=True, exist_ok=True)
     filename = _write_canonical(source, scan, mesh_dir)
 
-    registry = read_registry(root)
-    registry.entries[scan.asset.id] = MeshRegistryEntry(
-        mesh_asset_id=scan.asset.id,
-        filename=f"meshes/{filename}",
-        original_reference=scan.asset.reference,
-        sha256=scan.asset.sha256,
-        source_format=scan.asset.format,
-        geometry_kind=scan.asset.geometry_kind,
-    )
-    write_registry(registry, root)
+    with exclusive_file_lock(root / ".registry.lock"):
+        registry = read_registry(root)
+        registry.entries[scan.asset.id] = MeshRegistryEntry(
+            mesh_asset_id=scan.asset.id,
+            filename=f"meshes/{filename}",
+            original_reference=scan.asset.reference,
+            sha256=scan.asset.sha256,
+            source_format=scan.asset.format,
+            geometry_kind=scan.asset.geometry_kind,
+        )
+        write_registry(registry, root)
     return scan.asset
 
 

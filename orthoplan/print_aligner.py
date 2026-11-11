@@ -121,6 +121,8 @@ def _quality_block(stats) -> dict:
         "self_intersection_count": stats.self_intersection_count,
         "nonmanifold_edge_count": stats.nonmanifold_edge_count,
         "inner_outer_min_clearance_mm": round(stats.inner_outer_min_clearance_mm, 4),
+        "inner_outer_surface_clearance_mm": stats.inner_outer_surface_clearance_mm,
+        "surface_clearance_status": stats.surface_clearance_status,
         "minimum_printable_feature_mm": round(stats.minimum_printable_feature_mm, 4),
         "xy_compensation_mm": round(stats.xy_compensation_mm, 4),
         "z_compensation_mm": round(stats.z_compensation_mm, 4),
@@ -162,6 +164,10 @@ def _failed_checks(stats) -> list[str]:
             f"min wall thickness {stats.min_thickness_mm:.3f} mm below "
             f"minimum printable feature {feature:.3f} mm"
         )
+    if stats.surface_clearance_status != "complete":
+        checks.append("full-surface clearance check incomplete")
+    elif stats.inner_outer_surface_clearance_mm is not None and stats.inner_outer_surface_clearance_mm < feature - 1e-9:
+        checks.append(f"full-surface clearance {stats.inner_outer_surface_clearance_mm:.3f} mm below printable feature {feature:.3f} mm")
     if stats.inner_outer_min_clearance_mm < feature:
         checks.append(
             f"inner/outer clearance {stats.inner_outer_min_clearance_mm:.3f} mm below "

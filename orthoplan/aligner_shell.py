@@ -24,6 +24,7 @@ from orthoplan.aligner_shell_quality import (
     count_self_intersections,
     min_inner_outer_clearance,
 )
+from orthoplan.surface_distance_check import surface_distance
 from orthoplan.aligner_shell_mesh import clean_triangles
 from orthoplan.aligner_shell_stats import connected_components, mean, percentile
 from orthoplan.aligner_shell_topology import (
@@ -67,6 +68,8 @@ class ShellStats(BaseModel):
     rim_closed: bool
     self_intersection_count: int = Field(ge=0)
     nonmanifold_edge_count: int = Field(ge=0)
+    inner_outer_surface_clearance_mm: float | None = None
+    surface_clearance_status: str = "unavailable"
     inner_outer_min_clearance_mm: float
     minimum_printable_feature_mm: float
     triangle_count: int = Field(ge=0)
@@ -240,6 +243,7 @@ def _shell_stats(
     _, shell_faces = index_mesh(shell_triangles)
     watertight = is_watertight(shell_triangles)
     rim_triangles = len(input_boundary_edges) * 2
+    surface = surface_distance([[inner[i] for i in f] for f in faces], [[outer[i] for i in f] for f in faces], seconds=2)
     return ShellStats(
         requested_thickness_mm=thickness_mm,
         measured_thickness_mm=mean(thicknesses),
@@ -257,6 +261,8 @@ def _shell_stats(
         rim_closed=watertight and rim_triangles == len(input_boundary_edges) * 2,
         self_intersection_count=count_self_intersections(shell_triangles),
         nonmanifold_edge_count=count_nonmanifold_edges(shell_triangles),
+        inner_outer_surface_clearance_mm=surface["distance"],
+        surface_clearance_status=surface["status"],
         inner_outer_min_clearance_mm=min_inner_outer_clearance(inner, outer),
         minimum_printable_feature_mm=minimum_printable_feature_mm,
         triangle_count=len(shell_triangles),

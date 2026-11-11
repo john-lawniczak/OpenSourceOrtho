@@ -28,6 +28,7 @@ for (let i=0;i<2;i++) {
 function renderFrame() {
   if (!motion) return;
   const frame = { week, fraction: simulationFraction(week, motion.simulation, el("caseTiming").value), index: week === 1 ? 0 : week === 7 ? 1 : 2 };
+  el("contactResult").textContent="";
   viewer.setFrame(frame);
   el("caseProximity").textContent = proximitySummary([{arch:pair[0].arch,simulation:motion.simulation}],week,el("caseTiming").value);
   for (const button of el("caseWeeks").children) button.setAttribute("aria-current", Number(button.dataset.week) === week ? "step" : "false");
@@ -45,6 +46,8 @@ function mount(preview) {
   if (!motion.simulation?.profiles?.[el("caseTiming").value]) el("caseTiming").value = "uniform";
   for (const option of el("caseTiming").options) option.disabled = option.value !== "uniform" && !motion.simulation?.profiles?.[option.value];
   renderMatchReview(el("matchReview"),motion,matches);
+  for(const id of ["contactA","contactB"]) el(id).replaceChildren(...motion.teeth.map(t=>new Option(t.tooth,t.tooth)));
+  if(motion.teeth.length>1)el("contactB").selectedIndex=1;
   viewer.setPair(pair, motion); week = 1;
   el("caseTooth").replaceChildren(new Option("All teeth", ""), ...motion.teeth.map(t => new Option(`${t.tooth} · ${t.status}`,t.tooth)));
   el("caseWeeks").replaceChildren(...Array.from({length:7}, (_,i) => {
@@ -156,3 +159,17 @@ el("restoreCase").onchange = () => action(async () => {
 
 el("applyMatches").onclick = () => action(() => { const reviewed=collectMatchReview(el("matchReview"));invalidate();matches=reviewed;status("Match mapping applied. Regenerate to fit selected pairs."); });
 el("resetMatches").onclick = () => { invalidate();matches=null;status("Automatic matching selected. Regenerate to update estimates."); };
+
+el("checkContact").onclick = () => action(async () => {
+  if(!motion || pending)throw new Error("Complete a fit first.");
+  const selected=motion, selectedWeek=week, selectedTiming=el("caseTiming").value;
+  el("checkContact").disabled=true;el("contactResult").textContent="Checking all surface triangles…";
+  try {
+    const scan=await upload(pair[0]);
+    const result=await geometryJob("contact",{scan,preview:{...motion,faceLabels:undefined},teeth:[el("contactA").value,el("contactB").value],fraction:simulationFraction(week,motion.simulation,selectedTiming)});
+    if(motion!==selected || week!==selectedWeek || el("caseTiming").value!==selectedTiming)return;
+    if(!result.ok)throw new Error(result.errors.join("; "));
+    const report=result.result;
+    el("contactResult").textContent=report.status==="complete"?`Fitted week ${selectedWeek}, ${result.teeth.join(" / ")}: full-surface distance ${report.distance.toFixed(4)} scan units. ${report.surface_contact_or_intersection?"Surfaces touch or intersect. ":""}${result.limitation}`:`${report.status}: ${report.reason}`;
+  } finally {el("checkContact").disabled=false;}
+});

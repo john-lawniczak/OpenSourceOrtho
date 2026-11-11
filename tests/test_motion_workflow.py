@@ -45,6 +45,11 @@ def test_two_visit_pipeline_uses_corrected_identity_and_reference(tmp_path):
     result = motion_payload(payload, **kwargs)
     assert result["ok"], result
     preview = result["preview"]
+    from orthoplan.longitudinal.contact_detail import contact_payload
+    contact = contact_payload({"scan": payload["scans"][0], "preview": preview,
+                               "teeth": ["11", "12"], "fraction": .5}, **kwargs)
+    assert contact["ok"] and contact["result"]["status"] == "complete"
+    assert contact["result"]["distance"] > 0
     assert "User-selected reference" in preview["reference"]
     assert preview["units_confirmation"]["unit"] == "mm"
     assert len(base64.b64decode(preview["target_face_labels_base64"])) == 160
