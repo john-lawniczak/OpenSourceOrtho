@@ -43,7 +43,7 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
     segments = [correction_segments(correction, mesh, sha, arch) if correction else
                 segmenter.segment([tuple(v) for v in mesh.reshape(-1, 3).tolist()], arch=arch)
                 for mesh, correction, sha in zip((source, target), corrections, source_hashes)]
-    regions = [region_faces(mesh, parts, crop_crowns=not bool(correction))
+    regions = [region_faces(mesh, parts, crop_crowns=not bool(correction) and segmenter.name != "seeded-surface-graph")
                for mesh, parts, correction in zip((source, target), segments, corrections)]
     if not all(regions):
         raise ValueError("No draft tooth regions were found in an endpoint")

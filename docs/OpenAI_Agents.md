@@ -250,3 +250,9 @@ an explicit model. Claude Code uses its installed CLI authentication. Each live
 test has a 150-second process deadline. A standalone check requires explicit opt-in:
 `python -m orthoplan.validation.provider_smoke --live --provider deepseek`.
 Failures print only provider and exception type, never upstream response bodies.
+
+Local mesh-model integration now requires an explicit, hash-bound ONNX contract
+(`orthoplan/segmentation/model_contract.py`). Feature layout, output shape, arch,
+and FDI mapping are checked before a draft can be rendered. Invalid predictions
+fail the local fitting job; they are not accepted as reviewed tooth geometry.
+See [tool improvement phases](TOOL_IMPROVEMENT_PHASES.md).

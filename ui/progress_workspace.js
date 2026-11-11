@@ -15,7 +15,7 @@ function invalidate() {
   el("caseTooth").replaceChildren(new Option("All teeth", "")); el("caseFitDetail").textContent = "";
   el("frameLabel").textContent = ""; status("Inputs changed. Fit again to update estimates.");
 }
-for (const id of ["caseArch", "caseUnits", "unitsConfirmed", "referenceTeeth", "date0", "date1", "orientation0", "orientation1"]) el(id).onchange = invalidate;
+for (const id of ["caseSegmenter", "caseArch", "caseUnits", "unitsConfirmed", "referenceTeeth", "date0", "date1", "orientation0", "orientation1"]) el(id).onchange = invalidate;
 for (let i=0;i<2;i++) {
   el(`scan${i}`).onchange = () => { invalidate(); pair[i] = null; corrections[i] = null; el(`correction${i}`).value = ""; };
   el(`correction${i}`).onchange = () => { invalidate(); corrections[i] = null; };
@@ -59,7 +59,7 @@ el("fitVisits").onclick = () => action(async () => {
     const edited = await Promise.all([0,1].map(i => el(`correction${i}`).files[0] ? correctionFile(el(`correction${i}`).files[0]) : corrections[i]));
     controller.signal.throwIfAborted();
     const payload = { scans: await Promise.all(loaded.map(upload)), arch: loaded[0].arch,
-      units: el("caseUnits").value, units_confirmed: true, corrections: edited,
+      units: el("caseUnits").value, units_confirmed: true, corrections: edited, segmenter: el("caseSegmenter").value,
       reference_teeth: el("referenceTeeth").value.split(",").map(s=>s.trim()).filter(Boolean) };
     const result = await geometryJob("motion", payload, { signal: controller.signal });
     controller.signal.throwIfAborted();

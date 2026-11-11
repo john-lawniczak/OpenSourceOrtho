@@ -60,10 +60,16 @@ def motion_payload(payload, *, workspace, ui_dir):
             raise ValueError("Provide exactly two visits and their optional correction files")
         loaded = [_scan(scan, workspace, ui_dir) for scan in scans]
         sources = [item[1] for item in loaded]
+        segmenter = None
+        if payload.get("segmenter") == "surface-graph":
+            from orthoplan.segmentation.surface_graph import SurfaceGraphSegmenter
+            segmenter = SurfaceGraphSegmenter()
+        elif payload.get("segmenter", "active") != "active":
+            raise ValueError("Unknown segmentation backend")
         preview = build_arch_preview(
             *[item[0] for item in loaded],
             arch="maxillary" if payload["arch"] == "upper" else "mandibular",
-            corrections=corrections,
+            segmenter=segmenter, corrections=corrections,
             source_hashes=[s["sha256"] for s in sources],
             reference=_reference(corrections, payload.get("reference_teeth")),
         )
