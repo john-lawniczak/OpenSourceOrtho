@@ -1,4 +1,5 @@
 import { fitConsistencyText } from "./fit_consistency.js";
+import { bindFitReview } from "./progress_fit_review.js";
 import { createScanComparison } from "./scan_comparison_viewer.js";
 import { validateMotionPreview } from "./scan_motion_data.js";
 import { geometryJob } from "./geometry_jobs.js";
@@ -12,10 +13,12 @@ import { renderMatchReview, collectMatchReview } from "./progress_match_review.j
 let matches = null;
 const transfers = new Map();
 let pair = [], corrections = [null, null], motion = null, week = 1, pending = null;
+bindFitReview(() => motion);
 const viewer = createScanComparison(el("caseCanvas"), { onTooth: id => { el("caseTooth").value = id; selectTooth(); } });
 const status = message => { el("caseStatus").textContent = message; };
 async function action(fn) { try { await fn(); } catch (error) { status(error.message); } }
 function invalidate() {
+  el("fitExplanation").replaceChildren();
   pending?.abort(); motion = null; viewer.clear(); el("caseWeeks").replaceChildren();
   el("caseTooth").replaceChildren(new Option("All teeth", "")); el("caseFitDetail").textContent = "";
   el("frameLabel").textContent = ""; status("Inputs changed. Fit again to update estimates.");
@@ -42,6 +45,7 @@ function selectTooth() {
     : motion ? `${motion.teeth.filter(t=>t.status.startsWith("estimated")).length}/${motion.teeth.length} draft regions fitted. ${motion.reference}` : "";
 }
 function mount(preview) {
+  el("fitExplanation").replaceChildren();
   motion = validateMotionPreview(preview, pair, { specimenId: "local-two-visit" });
   if (!motion.simulation?.profiles?.[el("caseTiming").value]) el("caseTiming").value = "uniform";
   for (const option of el("caseTiming").options) option.disabled = option.value !== "uniform" && !motion.simulation?.profiles?.[option.value];

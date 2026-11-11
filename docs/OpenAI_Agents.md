@@ -256,3 +256,15 @@ Local mesh-model integration now requires an explicit, hash-bound ONNX contract
 and FDI mapping are checked before a draft can be rendered. Invalid predictions
 fail the local fitting job; they are not accepted as reviewed tooth geometry.
 See [tool improvement phases](TOOL_IMPROVEMENT_PHASES.md).
+
+### Local endpoint-fit explanations
+
+`/api/motion-review` is a deterministic local helper for two-visit research fits.
+It accepts at most 32 regions with FDI labels, fit statuses and finite numeric
+metrics. It ignores caller prose and generates educational findings through
+`lint_finding()` before returning them. The UI sends only these metadata fields;
+raw surfaces, CBCT pixels and filesystem paths are excluded. It does not contact
+an external provider or infer tooth identity from a small surface residual.
+Explanations prioritize held and weak regions and distinguish a held zero pose
+from evidence of no movement. Imported cases receive a fresh local explanation
+instead of displaying imported advisory text as newly generated findings.

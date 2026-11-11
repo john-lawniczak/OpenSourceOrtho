@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.geometry_jobs import GeometryBusy, jobs
+from orthoplan.evaluation.motion_review import motion_review_payload
 from orthoplan.goal_preview import preview_goal_payload
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
 from orthoplan.ai_chat_stream import send_chat_stream
@@ -49,7 +50,7 @@ JSON_POST_ENDPOINTS = {
     "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
-    "/api/segment", "/api/occlusion", "/api/geometry-jobs", "/api/geometry-jobs/cancel",
+    "/api/segment", "/api/occlusion", "/api/geometry-jobs", "/api/geometry-jobs/cancel", "/api/motion-review",
 }
 
 
@@ -203,6 +204,8 @@ def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
         return preview_goal_payload(payload)
     if path == "/api/chat":
         return answer_chat_payload(payload)
+    if path == "/api/motion-review":
+        return motion_review_payload(payload)
     if path == "/api/generate-plan":
         return generate_plan_payload(payload)
     if path == "/api/plan/version":

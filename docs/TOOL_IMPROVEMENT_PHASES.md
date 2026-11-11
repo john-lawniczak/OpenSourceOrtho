@@ -90,3 +90,25 @@ residuals without automatically accepting the transform. USER_ONE's actual
 compressed volume was decoded and displayed locally. Reviewed anatomy and a
 correct study-to-STL correspondence are still human review inputs. See
 [local CBCT review](LOCAL_CBCT_REVIEW.md) for commands, contracts, and limitations.
+
+## Phase 5 — evidence-bound help and reproducible stress benchmarks
+
+The two-visit page now explains its fit through a deterministic local helper.
+It ranks held/weak regions for correction, ties each statement to fit evidence,
+and distinguishes no estimate from no movement. The endpoint validates bounded
+numeric metadata, ignores supplied prose, and lints every educational finding.
+No raw scans, pixels or external model calls are involved.
+
+`tools/run_motion_stress.py` records 36 synthetic fitting cases with known
+identity: exact repeats, noisy repeats, independent resampling, known rigid
+motion, partial surfaces and noisy motion. Exact motion is recovered numerically;
+independent resampling produces false motion in 2/6 cases at the declared
+0.05 synthetic-mm / 1-degree thresholds. Mean rotation error for that group is
+0.915 degrees, maximum 1.759 degrees. This is useful failure evidence, not a
+patient accuracy estimate. The committed [report](benchmarks/motion-stress-2026-11-11.json)
+includes all cases, thresholds, cycle checks and sampling differences.
+
+Boundary benchmark regression checks now catch context leakage despite perfect
+crown-only accuracy, and refuse truthy-string review flags. Missing fits reduce
+coverage rather than receiving zero error. Real anatomical accuracy remains null
+until independently reviewed labels, poses and repeated real scans are supplied.

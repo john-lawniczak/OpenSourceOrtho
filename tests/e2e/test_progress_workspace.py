@@ -42,6 +42,7 @@ def test_upload_fit_correct_and_restore(server_url, tmp_path):  # noqa: F811
             page.locator("#unitsConfirmed").check()
             page.locator("#fitVisits").click()
             expect(page.locator("#caseStatus")).to_contain_text("Fit complete", timeout=30000)
+            explain_fit(page)
             page.get_by_role("button", name="Week 4", exact=True).click()
             expect(page.locator("#frameLabel")).to_contain_text("SIMULATED ESTIMATE")
             expect(page.get_by_role("button", name="Week 4", exact=True)).to_have_attribute(
@@ -71,6 +72,13 @@ def test_upload_fit_correct_and_restore(server_url, tmp_path):  # noqa: F811
             page.screenshot(path=str(tmp_path / "two-visit-workspace.png"))
         finally:
             browser.close()
+
+
+def explain_fit(page):
+    page.get_by_text("Explain this fit", exact=True).click()
+    page.locator("#explainFit").click()
+    expect(page.locator("#fitExplanation")).to_contain_text("1 of 1 draft regions")
+    expect(page.locator("#fitExplanation")).to_contain_text("Local helper")
 
 
 def correct_and_restore(page, tmp_path):
