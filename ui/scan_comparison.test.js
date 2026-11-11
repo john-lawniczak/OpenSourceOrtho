@@ -68,12 +68,13 @@ test("loading verifies actual bytes and requests only the two chosen public obse
   await assert.rejects(loadObservedPair("lower", { signal: controller.signal }), /integrity check failed/);
 });
 
-test("week navigation never substitutes endpoints or fabricated motion for missing observations", () => {
+test("week navigation without an estimate never substitutes endpoint scans for missing observations", () => {
   const pair = observedPairMetadata(...records(), "upper");
   assert.equal(historyFrame(1, pair).scan, pair[0]);
   assert.equal(historyFrame(7, pair).scan, pair[1]);
   for (let week = 2; week <= 6; week++) {
-    assert.deepEqual(historyFrame(week, pair), { week, index: null, scan: null });
+    assert.deepEqual(historyFrame(week, pair), { week, index: null, scan: null,
+      kind: "unavailable", fraction: (week - 1) / 6 });
   }
   for (const week of [0, 8, 1.5, NaN, Infinity, "2"]) assert.throws(() => historyFrame(week, pair));
 });

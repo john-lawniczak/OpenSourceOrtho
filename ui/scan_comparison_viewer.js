@@ -1,10 +1,11 @@
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { comparisonGeometry } from "./scan_comparison_geometry.js";
+import { createMotionSurfaces, viewerRegistration } from "./scan_motion_geometry.js";
 import { historyCamera } from "./scan_history.js";
 
-// One camera persists across full-surface visits and missing-week states.
-export function createScanComparison(host, { onFocus = () => {} } = {}) {
+// One camera persists across original surfaces and endpoint-fitted weekly poses.
+export function createScanComparison(host, { onFocus = () => {}, onTooth = () => {} } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -21,7 +22,7 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
     return control;
   }
   let controls = makeControls();
-  const scenes = [new THREE.Scene(), new THREE.Scene()];
+  const scenes = [new THREE.Scene(), new THREE.Scene(), new THREE.Scene()];
   const material = new THREE.MeshStandardMaterial({ color: 0xefe4cf, roughness: 0.68, side: THREE.DoubleSide });
   for (const scene of scenes) {
     scene.add(new THREE.HemisphereLight(0xffffff, 0x667788, 2));
@@ -29,6 +30,7 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
     light.position.set(20, 65, 35);
     scene.add(light);
   }
+  let simulation = null, motion = null, selected = "";
   let meshes = [], activeIndex = 0, arch = "upper", span = 40, width = 1, height = 1, disposed = false;
 
   function render() {
@@ -39,7 +41,7 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
     if (activeIndex === null || !meshes.length) {
       renderer.setClearColor(background);
       renderer.clear();
-    } else renderer.render(scenes[activeIndex], camera);
+    } else renderer.render(scenes[activeIndex === 0 && selected && simulation ? 2 : activeIndex], camera);
   }
 
   function resize() {
@@ -71,6 +73,8 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
   }
 
   function clear() {
+    if (simulation) { scenes[2].remove(simulation.group); simulation.dispose(); }
+    simulation = null; motion = null;
     for (let i = 0; i < meshes.length; i++) {
       scenes[i].remove(meshes[i]);
       meshes[i].geometry.dispose();
@@ -79,7 +83,7 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
     render();
   }
 
-  function setPair(scans) {
+  function setPair(scans, preview = null) {
     const prepared = [];
     try {
       for (const scan of scans) prepared.push(new THREE.Mesh(comparisonGeometry(scan), material));
@@ -89,6 +93,12 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
     }
     clear();
     meshes = prepared;
+    motion = preview;
+    if (preview) {
+      meshes[1].geometry.applyMatrix4(viewerRegistration(preview.target_to_source));
+      simulation = createMotionSurfaces(meshes[0].geometry, preview, material);
+      scenes[2].add(simulation.group);
+    }
     arch = scans[0].arch;
     span = Math.max(...meshes.map(mesh => mesh.geometry.boundingSphere.radius), 5) * 1.08;
     meshes.forEach((mesh, index) => scenes[index].add(mesh));
@@ -109,12 +119,16 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
     const y = (event.clientY - rect.top) / rect.height;
     const ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2(x * 2 - 1, 1 - y * 2), camera);
-    const hit = ray.intersectObject(meshes[activeIndex])[0];
+    const useRegions = activeIndex === 2 || (activeIndex === 0 && selected && simulation);
+    const hit = ray.intersectObject(useRegions ? simulation.group : meshes[activeIndex], true)[0];
     if (!hit) return;
     camera.position.add(hit.point.clone().sub(controls.target));
     controls.target.copy(hit.point);
     zoom(2);
     controls.update();
+    const label = activeIndex === 0 && !useRegions ? motion?.faceLabels[hit.faceIndex] : null;
+    const tooth = hit.object.userData.tooth || motion?.teeth.find(t => t.face_label === label)?.tooth;
+    if (tooth) onTooth(tooth);
     onFocus();
   }
 
@@ -125,10 +139,20 @@ export function createScanComparison(host, { onFocus = () => {} } = {}) {
   setView();
   return {
     setPair, clear, resize, zoom, setView,
-    setVisit(index) {
-      if (index !== null && index !== 0 && index !== 1) throw new Error("Unknown visit.");
-      activeIndex = index;
-      controls.enabled = index !== null;
+    setFrame(frame) {
+      if (frame.index === 2 && !simulation) throw new Error("No endpoint estimates loaded.");
+      activeIndex = frame.index;
+      simulation?.setFraction(frame.fraction);
+      controls.enabled = frame.index !== null;
+      render();
+    },
+    selectTooth(id) { selected = id; simulation?.select(id); render(); },
+    focusTooth(id) {
+      const center = simulation?.center(id);
+      if (!center) return;
+      camera.position.add(center.clone().sub(controls.target));
+      controls.target.copy(center);
+      controls.update();
       render();
     },
     dispose() {

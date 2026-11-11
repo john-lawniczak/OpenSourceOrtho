@@ -20,6 +20,8 @@
     "derived/attachment-transcription.json",
     "derived/progress-01-comparison.json",
     "derived/progress-01-comparison.png",
+    "derived/progress-01-motion-lower.json",
+    "derived/progress-01-motion-upper.json",
     "derived/scan-topology.json",
     "doctor-followup-template.md",
     "fixtures/root-bone-fixture.json",

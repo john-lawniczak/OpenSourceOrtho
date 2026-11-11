@@ -59,20 +59,23 @@ workflows:
 - **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 
-The Sample Test Case initially renders original baseline/week 7 scan pairs with
-a shared orthographic camera and whole-scan week navigation. Weeks 2–6 show an
-explicit missing-observation state, never reused endpoints or synthetic poses.
-`scan_history.js` owns reported-week availability and arch-aware camera presets.
-The default front view displays upper crowns pointing down. `scan_comparison_data.js`
-checks case identity, visit membership, documented proper display rotations,
-and SHA-256 hashes. `scan_comparison_geometry.js` applies only those rotations
-and independent centering, with no deformation or scale fitting. The contributor confirms validated input alignment and tooth correspondence
-for week 1/baseline and week 7; the UI reads the hash-bound confirmation from
-the longitudinal record. An executable registration transform and per-tooth map
-have not been linked to this renderer. Progress scale remains unverified, and
-this view does not measure tooth motion. Changing weeks preserves the camera and source geometry. Failed or stale loads cannot expose a partial pair.
+The Sample Test Case renders original baseline/week 7 surfaces and best-effort
+weekly motion estimates with a shared orthographic camera. Weeks 2–6 interpolate
+per-region fitted translations and quaternion rotations. `scan_motion_data.js`
+validates source hashes, coordinate frames, proper registration, face masks, and
+draft provenance before enabling the simulation. `scan_motion_geometry.js` builds
+rigid region meshes from unchanged baseline triangles; remaining context stays
+fixed. No source vertex is paired with a same-index vertex in the later scan.
+`scan_history.js` chooses original or estimated frames, retaining original
+endpoints when estimates fail to load. The renderer preserves the camera across
+weeks and supports an estimated-vs-recorded week 7 toggle and tooth selection.
+
+The contributor's input validation remains recorded separately from these
+algorithm-generated, unreviewed estimates. Weak segmentation and match evidence
+remain visible without blocking the exploratory preview. Missing/unusable regions
+are held explicitly. Progress distances are scan units, not verified millimeters.
 Private chipped-stone records are not discovered or loaded. Tooth identification
-lives in guided step 2; upload is limited to scans and their metadata.
+lives in guided step 2. See [the fitting pipeline](../docs/SCAN_HISTORY.md).
 
 Only selecting **Simulated planning demo** loads `root-bone-fixture.json`
 (redacted CBCT record metadata, accepted

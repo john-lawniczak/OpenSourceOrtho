@@ -1,4 +1,4 @@
-// Observed visits only. No simulated stages or private visit discovery.
+// Original endpoint provenance. Motion estimates are loaded separately; no private visit discovery.
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
 export function inputValidationText(validation) {

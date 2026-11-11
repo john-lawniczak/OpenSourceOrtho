@@ -53,3 +53,9 @@ body[data-theme="dark"] .sample-view-modes [aria-pressed="true"] { background: #
   .comparison-toolbar button, .comparison-week-navigation button { font-size: .78rem; padding: 8px; }
   .comparison-visit { font-size: .7rem; padding: 5px; }
 }
+
+.comparison-estimate-note { padding: 10px 12px; background: #fff4d6; color: #61420c; border-radius: 8px; font-size: .86rem; }
+.comparison-motion-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.comparison-motion-tools label { display: flex; gap: 8px; align-items: center; }
+#sampleComparison[data-frame-kind="estimated"] .comparison-visit { background: #fff0b8; color: #61420c; font-weight: 700; }
+body[data-theme="dark"] .comparison-estimate-note { background: #40341e; color: #f6dea6; }

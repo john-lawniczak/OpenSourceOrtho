@@ -4,6 +4,13 @@ This repository is safety-boundary-first. Do not describe OpenSource Ortho as a 
 
 When changing behavior, summarize it in your pull request description. When changing model-provider behavior, also update [docs/OpenAI_Agents.md](docs/OpenAI_Agents.md).
 
+A core product goal is best-effort longitudinal tooth-motion simulation from existing scans.
+Use and improve local segmentation and endpoint matching to infer intermediate weeks;
+missing intermediate scans or unmet production segmentation thresholds alone must not
+block a clearly labeled exploratory preview. Distinguish original observations from
+estimated poses, expose weak/unmatched regions, and keep inferred motion separate
+from reviewed treatment-plan data. See [docs/SCAN_HISTORY.md](docs/SCAN_HISTORY.md).
+
 Model-generated findings are untrusted and must pass `lint_finding()` before display or export.
 
 ## Maintainability

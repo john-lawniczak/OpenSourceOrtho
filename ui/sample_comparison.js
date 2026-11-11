@@ -3,8 +3,11 @@ import { applySampleRootBoneFixture, prepareSampleSegmentation } from "./sample.
 import { comparisonTemplate } from "./scan_comparison_template.js";
 import { createScanComparison } from "./scan_comparison_viewer.js";
 import { inputValidationText, loadObservedPair } from "./scan_comparison_data.js";
+import { loadMotionPreview } from "./scan_motion_data.js";
+import { renderMotionControls } from "./scan_motion_controls.js";
 import { historyFrame } from "./scan_history.js";
 
+let motion = null, motionError = "", selectedTooth = "", endpointEstimate = false;
 let pair = [], week = 1, arch = "upper", ready = false;
 let mounted = false, viewer = null, request = null, session = null, startedPlanning = false;
 
@@ -14,19 +17,29 @@ export function observedSampleActive() {
 
 function setWeek(value) {
   week = value;
-  const frame = historyFrame(week, pair);
+  const frame = historyFrame(week, pair, motion, endpointEstimate);
   el("comparisonWeekLabel").textContent = `Week ${week} of 7`;
-  el("comparisonVisit").textContent = frame.scan
-    ? `${frame.scan.label} · ${frame.scan.date} · observed scan` : `Week ${week} · no scan`;
-  el("comparisonMissing").hidden = !ready || Boolean(frame.scan);
-  el("comparisonMissingTitle").textContent = `Week ${week} has no recorded scan`;
-  el("comparisonCanvas").style.visibility = ready && !frame.scan ? "hidden" : "visible";
-  el("comparisonHelp").hidden = !frame.scan;
-  viewer?.setVisit(frame.index);
+  el("comparisonVisit").textContent = frame.kind === "estimated" ? `Week ${week} · SIMULATED ESTIMATE`
+    : frame.scan ? `${frame.scan.label} · ${frame.scan.date} · observed scan` : `Week ${week} · estimate unavailable`;
+  el("comparisonMissing").hidden = !ready || frame.kind !== "unavailable";
+  el("comparisonMissingTitle").textContent = `Week ${week} estimate unavailable`;
+  el("comparisonCanvas").style.visibility = ready && frame.kind === "unavailable" ? "hidden" : "visible";
+  el("comparisonHelp").hidden = frame.kind === "unavailable";
+  viewer?.setFrame(frame);
+  viewer?.selectTooth(selectedTooth);
+  renderMotionControls(motion, selectedTooth, frame, motionError);
+  el("sampleComparison").dataset.frameKind = frame.kind;
+  el("sampleComparison").querySelectorAll("[data-comparison-week]").forEach(button => {
+    const value = Number(button.dataset.comparisonWeek);
+    if (value === 1 || value === 7) return;
+    button.querySelector("small").textContent = motion ? "Estimated" : "Unavailable";
+    button.setAttribute("aria-label", `Week ${value}, ${motion ? "simulated estimate" : "estimate unavailable"}`);
+  });
   updateControls();
-  if (ready) el("comparisonStatus").textContent = frame.scan
-    ? "Original scan · file integrity verified. Per-tooth displacement is not computed."
-    : `Week ${week}: no observation or validated motion estimate is available.`;
+  if (ready) el("comparisonStatus").textContent = frame.kind === "estimated"
+    ? `Week ${week}: estimated tooth poses, ${(frame.fraction * 100).toFixed(0)}% through the fitted endpoint motion. No movement exaggeration.`
+    : frame.scan ? `Original scan · file integrity verified.${motion ? " Week 7 uses an estimated whole-arch alignment." : ""}`
+      : `Week ${week}: motion preview unavailable. The original endpoint scans remain available.`;
 }
 
 function updateControls() {
@@ -37,7 +50,7 @@ function updateControls() {
   el("comparisonPrevious").disabled = !ready || week === 1;
   el("comparisonNext").disabled = !ready || week === 7;
   el("sampleComparison").querySelectorAll(".comparison-toolbar button").forEach(button => {
-    button.disabled = !button.dataset.comparisonArch && (!ready || !historyFrame(week, pair).scan);
+    button.disabled = !button.dataset.comparisonArch && (!ready || historyFrame(week, pair, motion, endpointEstimate).kind === "unavailable");
     if (button.dataset.comparisonArch) button.setAttribute("aria-pressed", String(button.dataset.comparisonArch === arch));
   });
 }
@@ -53,7 +66,7 @@ async function loadArch() {
   const pending = new AbortController();
   request = pending;
   setReady(false);
-  pair = [];
+  pair = []; motion = null; motionError = ""; selectedTooth = "";
   setWeek(week);
   viewer?.clear();
   el("comparisonRetry").hidden = true;
@@ -61,19 +74,24 @@ async function loadArch() {
   el("comparisonValidation").textContent = "Loading the scan validation record…";
   try {
     viewer ||= createScanComparison(el("comparisonCanvas"), {
-      onFocus: () => { el("comparisonStatus").textContent = "Region focused. Alternate visits to inspect this area; this viewer does not compute per-tooth displacement."; },
+      onFocus: () => { el("comparisonStatus").textContent = "Region focused. Step through weeks to inspect the estimated motion."; },
+      onTooth: tooth => { selectedTooth = tooth; setWeek(week); },
     });
     const loaded = await loadObservedPair(arch, { signal: pending.signal });
     if (pending.signal.aborted || !observedSampleActive()) return;
-    pair = loaded;
-    viewer.setPair(pair);
+    let preview = null;
+    try { preview = await loadMotionPreview(loaded, { signal: pending.signal }); }
+    catch (error) { if (!pending.signal.aborted) motionError = `Motion preview unavailable: ${error.message}`; }
+    if (pending.signal.aborted || !observedSampleActive()) return;
+    pair = loaded; motion = preview;
+    viewer.setPair(pair, motion);
     el("comparisonValidation").textContent = inputValidationText(pair.every(scan => scan.validation) ? pair[0].validation : null);
     setReady(true);
     setWeek(week);
   } catch (error) {
     if (pending.signal.aborted) return;
     viewer?.clear();
-    pair = [];
+    pair = []; motion = null;
     setReady(false);
     setWeek(week);
     el("comparisonStatus").textContent = `Comparison unavailable: ${error.message}`;
@@ -116,6 +134,10 @@ function mount(renderAll) {
     });
   });
   el("comparisonRetry").addEventListener("click", loadArch);
+  el("comparisonMotionRetry").addEventListener("click", loadArch);
+  el("comparisonTooth").addEventListener("change", event => { selectedTooth = event.target.value; setWeek(week); });
+  el("comparisonFocusTooth").addEventListener("click", () => viewer?.focusTooth(selectedTooth));
+  el("comparisonEndpointFit").addEventListener("click", () => { endpointEstimate = !endpointEstimate; setWeek(week); });
   panel.querySelectorAll("[data-comparison-week]").forEach(button => {
     button.addEventListener("click", () => setWeek(Number(button.dataset.comparisonWeek)));
   });
@@ -144,7 +166,7 @@ export function renderSampleComparison(renderAll) {
   if (session !== state.segmentation || !state.sample.active) {
     session = state.segmentation;
     startedPlanning = false;
-    if (!state.sample.active) { week = 1; arch = "upper"; }
+    if (!state.sample.active) { week = 1; arch = "upper"; endpointEstimate = false; }
   }
   if (observed && !viewer && !request) loadArch();
   if (observed) viewer?.resize();

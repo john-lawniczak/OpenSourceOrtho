@@ -52,25 +52,31 @@ in the top bar:
 
 Click **Sample Test Case** to open USER_ONE's **Scan history**.
 Use **Previous week**, **Next week**, or the week buttons. Weeks 1 and 7 display
-whole original scans with a shared camera; weeks 2–6 explicitly show no scan.
+whole original scans. Weeks 2–6 display **SIMULATED ESTIMATE** frames derived from
+the endpoint geometry using local segmentation and tooth-region matching.
 Choose **Upper teeth** or **Lower teeth**; upper crowns point down in the default
-front view. Rotate, zoom, or double-click a crown to inspect that region closely.
-The camera stays in place when changing weeks, including across missing weeks.
-Precise weekly movement cannot be recovered from two endpoints alone. No
-intermediate per-tooth motion is generated without the supporting mapping data.
+front view. Rotate, zoom, or double-click a crown to focus. Select a draft tooth
+from the **Tooth** menu to highlight its region and see its estimated shift,
+rotation, and endpoint surface residual. The camera stays in place between weeks.
+At week 7, **Inspect estimated endpoint** alternates the fitted baseline regions
+with the recorded scan so discrepancies remain visible.
+
+The simulation distributes fitted translations and rotations uniformly between
+the two endpoint labels. It does not establish the actual weekly timing or path.
+Weak matches are flagged but remain usable in the exploratory preview; unmatched
+or numerically unusable regions stay fixed and are explicitly counted. Strict
+production segmentation thresholds do not disable this research simulation.
+Draft boundaries can include gum; surface context outside the moving masks stays
+fixed. Distances remain **scan units**, since the progress scale is unverified.
 To identify teeth in your own scans, continue from Upload to step 2.
 
 The contributor labels the earlier observation **Week 1 / baseline**; its recorded
 June 5, 2026 pretreatment date is retained. September 17 is the reported week 7.
-The contributor confirms that **cross-visit alignment and tooth correspondence
-are validated** for these original pairs. This confirmation is recorded against
-the four source hashes. The viewer currently uses display orientation and
-independent centering; it has not yet imported the registration transform or
-per-tooth map needed to calculate tooth displacement. The current automatic
-segmenter produces drafts requiring boundary and identity review; matching FDI
-labels between two drafts does not establish validated correspondence. Progress scale is still
-unverified. The week 18 contribution consists of personal molds and scans from
-chipped stone models and does not inherit the week 1–7 validation.
+The contributor confirms validated input alignment and tooth correspondence for
+these originals. The new algorithm's segmentation, whole-arch best-fit alignment,
+and motion estimates are separate, unreviewed derived artifacts. The week 18
+personal molds/scans of chipped stone models are excluded from fitting.
+See [the method and regeneration instructions](docs/SCAN_HISTORY.md).
 
 Choose **Simulated planning demo** separately for hypothetical edits and Plan AI,
 and to explore synthetic stages with

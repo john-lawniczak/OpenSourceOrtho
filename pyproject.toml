@@ -51,6 +51,11 @@ ml-seg = [
   "onnxruntime>=1.17",
   "numpy>=1.24"
 ]
+# Offline generation of endpoint-based longitudinal motion previews.
+motion-preview = [
+  "numpy>=1.24",
+  "scipy>=1.10"
+]
 e2e = [
   "playwright>=1.40"
 ]

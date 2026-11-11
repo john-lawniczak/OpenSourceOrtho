@@ -9,7 +9,7 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 def canvas_snapshot(canvas, **kwargs):
     # Rounded CSS corners can differ by 1–2 RGB levels after browser scrolling.
     # Remove that border mask for exact comparison of the rendered scan pixels.
-    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; }", **kwargs)
+    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit { visibility: hidden !important; }", **kwargs)
 
 
 def assert_observed_endpoints_preserve_camera(page, tmp_path):
@@ -26,16 +26,26 @@ def assert_observed_endpoints_preserve_camera(page, tmp_path):
 
 def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     baseline = canvas_snapshot(canvas, path=str(tmp_path / "before-weeks.png"))
+    frames = []
     for week in range(2, 7):
         page.locator("#comparisonNext").click()
         expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 7")
-        expect(page.locator("#comparisonMissing")).to_be_visible()
-        expect(canvas).not_to_be_visible()
-        expect(page.locator("#comparisonStatus")).to_contain_text("no observation")
-    page.locator("#sampleComparison").screenshot(path=str(tmp_path / "missing-week.png"))
+        expect(page.locator("#comparisonMissing")).not_to_be_visible()
+        expect(canvas).to_be_visible()
+        expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")
+        expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "estimated")
+        frames.append(canvas_snapshot(canvas))
+    assert len(set(frames)) == 5, "Every intermediate week must render a distinct fitted pose"
+    page.locator("#sampleComparison").screenshot(path=str(tmp_path / "estimated-week6.png"))
     page.locator("#comparisonNext").click()
     expect(page.locator("#comparisonVisit")).to_contain_text("Reported week 7")
     expect(page.locator("#comparisonNext")).to_be_disabled()
+    recorded = canvas_snapshot(canvas)
+    page.locator("#comparisonEndpointFit").click()
+    expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")
+    assert canvas_snapshot(canvas) != recorded
+    page.locator("#comparisonEndpointFit").click()
+    assert canvas_snapshot(canvas) == recorded
     expect(page.locator("#comparisonMissing")).not_to_be_visible()
     page.locator('[data-comparison-week="1"]').click()
     assert canvas_snapshot(canvas, path=str(tmp_path / "after-weeks.png")) == baseline
