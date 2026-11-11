@@ -85,7 +85,8 @@ def tooth_motion(region: dict, target: dict | None, registration: np.ndarray) ->
     translation = transform(pivot, matrix) - pivot
     record.update(target_tooth=target["tooth"], fit=metrics,
                   independent_target_label=target.get("independent_label"),
-                  target_region_face_count=target.get("face_count"))
+                  target_region_face_count=target.get("face_count"),
+                  target_faces=target.get("faces"), correspondence_checks=target.get("checks"))
     # Computational sanity only, not a treatment-motion threshold.
     span = np.linalg.norm(np.ptp(region["points"], axis=0))
     if np.linalg.norm(translation) > span or rotation.magnitude() > np.pi / 3:

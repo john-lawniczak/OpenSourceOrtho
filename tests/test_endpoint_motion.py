@@ -109,7 +109,10 @@ def test_projected_correspondence_and_local_fit_recover_motion_in_shared_frame()
     regions = [dict(tooth=tooth, faces=np.arange(i * 300, (i + 1) * 300),
                     confidence=0.3, points=surface_points(mesh, 1600))
                for i, (tooth, mesh) in enumerate([("11", first), ("12", second)])]
-    projected = project_regions(source, target, regions, registration, regions, {0: 0, 1: 1})
+    # Random triangle soup has no coherent surface normals. Test frame composition
+    # independently of normal rejection (covered with physical patches separately).
+    projected = project_regions(source, target, regions, registration, regions, {0: 0, 1: 1},
+                                thresholds={"min_normal": 0})
     moved = tooth_motion(regions[0], projected[0], registration)
     pivot = np.array(moved["pivot"])
     np.testing.assert_allclose(moved["translation"], transform(pivot, tooth_delta) - pivot, atol=1e-5)

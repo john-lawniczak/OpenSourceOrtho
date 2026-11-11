@@ -10,7 +10,7 @@ from orthoplan.evaluation.finding import (
 from orthoplan.longitudinal.corrections import correction_segments
 from orthoplan.longitudinal.matching import assign_regions, region_faces, tooth_motion
 from orthoplan.longitudinal.projection import project_regions
-from orthoplan.longitudinal.rigid import fit_endpoint, surface_points
+from orthoplan.longitudinal.registration import register_arches
 from orthoplan.segmentation.auto import load_local_segmenter
 from orthoplan.segmentation.quality import evaluate_segmentation_quality
 
@@ -35,7 +35,7 @@ def preview_advisory():
     )).model_dump(mode="json")
 
 
-def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, segmenter=None, corrections=None, source_hashes=None):
+def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, segmenter=None, corrections=None, source_hashes=None, reference=None):
     segmenter = segmenter or load_local_segmenter()
     corrections = corrections or [None, None]
     source_hashes = source_hashes or [None, None]
@@ -46,7 +46,7 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
                for mesh, parts, correction in zip((source, target), segments, corrections)]
     if not all(regions):
         raise ValueError("No draft tooth regions were found in an endpoint")
-    registration, metrics = fit_endpoint(surface_points(target, 16000), surface_points(source, 16000))
+    registration, metrics = register_arches(source, target, reference)
     assignment = assign_regions(*regions, registration)
     projected = project_regions(source, target, regions[0], registration, regions[1], assignment)
     motions = [tooth_motion(region, match, registration)
@@ -61,7 +61,8 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
         "interpolation": "linear-pivot-translation-and-shortest-quaternion-slerp",
         "source_face_count": len(source), "target_face_count": len(target),
         "target_to_source": registration.tolist(), "registration_fit": metrics,
-        "reference": "Whole-arch best fit; not stable anatomy. Global arch movement may be removed.",
+        "reference": ("User-selected reference faces; anatomical stability is unverified." if reference
+                      else "Whole-arch best fit; not stable anatomy. Global arch movement may be removed."),
         "quality_gates": [evaluate_segmentation_quality(parts, arch=arch).model_dump()
                           for parts in segments],
         "teeth": motions, "advisory_findings": [preview_advisory()],

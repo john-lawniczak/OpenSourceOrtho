@@ -11,12 +11,30 @@ from scipy.spatial import cKDTree
 from orthoplan.longitudinal.rigid import surface_points, transform
 
 
-def project_regions(source, target, regions, registration, independent, assignment):
+def correspondence_mask(source, target, registration, *, max_distance=None, min_normal=0.3):
+    a, b = source.mean(axis=1), transform(target.mean(axis=1), registration)
+    distance, nearest = cKDTree(a).query(b)
+    reverse = cKDTree(b).query(a)[1]
+    cycle = np.linalg.norm(b - b[reverse[nearest]], axis=1)
+    normals = []
+    for mesh in (source, target):
+        n = np.cross(mesh[:, 1] - mesh[:, 0], mesh[:, 2] - mesh[:, 0])
+        normals.append(n / np.maximum(np.linalg.norm(n, axis=1)[:, None], 1e-12))
+    agreement = np.abs(np.sum(normals[0][nearest] * (normals[1] @ registration[:3, :3].T), axis=1))
+    limit = float(max_distance) if max_distance is not None else float(np.linalg.norm(np.ptp(a, axis=0)) * 0.04)
+    if not np.isfinite(limit) or limit <= 0 or not 0 <= min_normal <= 1:
+        raise ValueError('Invalid correspondence thresholds')
+    valid = (distance <= limit) & (agreement >= min_normal) & (cycle <= limit)
+    return nearest, valid, {'max_distance': limit, 'min_absolute_normal_dot': min_normal,
+                           'accepted_fraction': float(valid.mean()), 'cycle_distance_limit': limit}
+
+
+def project_regions(source, target, regions, registration, independent, assignment, *, thresholds=None):
     owners = np.zeros(len(source), dtype=np.int16)
     for index, region in enumerate(regions, 1):
         owners[region["faces"]] = index
-    nearest = cKDTree(source.mean(axis=1)).query(transform(target.mean(axis=1), registration))[1]
-    projected = owners[nearest]
+    nearest, valid, checks = correspondence_mask(source, target, registration, **(thresholds or {}))
+    projected = np.where(valid, owners[nearest], 0)
     result = []
     for index, region in enumerate(regions, 1):
         faces = np.flatnonzero(projected == index)
@@ -33,6 +51,6 @@ def project_regions(source, target, regions, registration, independent, assignme
             "tooth": region["tooth"], "points": points,
             "confidence": min(region["confidence"], candidate["confidence"]) if candidate else 0.0,
             "independent_label": candidate["tooth"] if candidate else None,
-            "face_count": len(faces),
+            "face_count": len(faces), "faces": faces.tolist(), "checks": checks,
         })
     return result
