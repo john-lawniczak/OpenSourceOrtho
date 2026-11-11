@@ -1,11 +1,12 @@
+import { parseStlGeometry } from "./stl.js";
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
 const finiteVector = (v, length) => Array.isArray(v) && v.length === length && v.every(Number.isFinite);
 
-export function validateMotionPreview(preview, pair) {
+export function validateMotionPreview(preview, pair, { specimenId = sampleDataset.specimenId } = {}) {
   const fail = () => { throw new Error("The endpoint motion preview does not match these scans."); };
   if (preview?.schema !== "opensource-ortho-endpoint-motion-preview-v1"
-      || preview.specimen_id !== sampleDataset.specimenId || preview.arch !== pair[0].arch
+      || preview.specimen_id !== specimenId || preview.arch !== pair[0].arch
       || preview.status !== "estimated-unreviewed"
       || preview.frame !== "display-oriented-bbox-centered-source-xyz"
       || preview.units !== "source-coordinate-units-unverified"
@@ -27,7 +28,14 @@ export function validateMotionPreview(preview, pair) {
   const determinant = a[0] * (b[1] * c[2] - b[2] * c[1])
     - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0]);
   if (Math.abs(determinant - 1) > 1e-5) fail();
-  const counts = pair.map(scan => new DataView(scan.bytes).getUint32(80, true));
+  const counts = pair.map(scan => {
+    if (scan.bytes.byteLength >= 84) {
+      const count = new DataView(scan.bytes).getUint32(80, true);
+      if (scan.bytes.byteLength === 84 + count * 50) return count;
+    }
+    const geometry = parseStlGeometry(scan.bytes), count = geometry.attributes.position.count / 3;
+    geometry.dispose(); return count;
+  });
   if (preview.source_face_count !== counts[0] || preview.target_face_count !== counts[1]) fail();
   if (!Array.isArray(preview.teeth) || !preview.teeth.length || preview.teeth.length > 32) fail();
   const toothIds = new Set(), labels = new Set(), targets = new Set();

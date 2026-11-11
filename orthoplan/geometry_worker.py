@@ -17,6 +17,9 @@ def main():
             result = segment_payload(
                 request["payload"], workspace=workspace, ui_dir=Path(request["ui_dir"])
             )
+        elif request["operation"] == "motion":
+            from orthoplan.longitudinal.api import motion_payload
+            result = motion_payload(request["payload"], workspace=workspace, ui_dir=Path(request["ui_dir"]))
         else:
             result = evaluate_plan_payload(request["payload"], workspace=workspace)
     except Exception:

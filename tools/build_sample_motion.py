@@ -6,7 +6,6 @@ private scans, remote inference, or manually authored target movements are used.
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import json
 from pathlib import Path
@@ -17,6 +16,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from orthoplan.datasets import SAMPLE_CASE_DIR as CASE  # noqa: E402
+from orthoplan.longitudinal.artifact import pack_face_labels  # noqa: E402
 from orthoplan.longitudinal.preview import build_arch_preview, centered_triangles  # noqa: E402
 
 
@@ -35,17 +35,6 @@ def read_source(scan):
     if not np.isfinite(triangles).all():
         raise ValueError("Non-finite source geometry")
     return triangles
-
-
-def pack_face_labels(preview):
-    labels = np.zeros(preview["source_face_count"], dtype=np.uint8)
-    for index, tooth in enumerate(preview["teeth"], 1):
-        faces = tooth.pop("source_faces")
-        if np.any(labels[faces]):
-            raise ValueError("Overlapping source tooth regions")
-        labels[faces] = index
-        tooth["face_label"] = index
-    preview["moving_face_labels_base64"] = base64.b64encode(labels.tobytes()).decode("ascii")
 
 
 def main():

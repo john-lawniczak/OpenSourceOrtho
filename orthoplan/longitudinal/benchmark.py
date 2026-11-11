@@ -23,6 +23,10 @@ def score_motion(preview, truth):
         raise ValueError("Real benchmark truth requires independent boundary, correspondence and pose review")
     expected = {str(t["tooth"]): t for t in truth["teeth"]}
     predicted = {str(t["tooth"]): t for t in preview["teeth"]}
+    if "target_face_labels_base64" in preview:
+        ownership = _labels(preview, "target_face_labels_base64")
+        predicted = {key: {**t, "target_faces": np.flatnonzero(ownership == t["face_label"]).tolist()}
+                     for key, t in predicted.items()}
     rows = [_score_tooth(tooth, predicted.get(key), truth) for key, tooth in expected.items()]
     valid = [r for r in rows if r["translation_error"] is not None]
     return {

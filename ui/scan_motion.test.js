@@ -10,7 +10,7 @@ const root = new URL("../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/", impor
 function fixture(arch = "upper") {
   const preview = JSON.parse(readFileSync(new URL(`derived/progress-01-motion-${arch}.json`, root)));
   const pair = preview.sources.map((source, i) => {
-    const bytes = new ArrayBuffer(84);
+    const bytes = new ArrayBuffer(84 + 50 * (i ? preview.target_face_count : preview.source_face_count));
     new DataView(bytes).setUint32(80, i ? preview.target_face_count : preview.source_face_count, true);
     return { ...source, arch, bytes };
   });

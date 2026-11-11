@@ -49,6 +49,12 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
     registration, metrics = register_arches(source, target, reference)
     assignment = assign_regions(*regions, registration)
     projected = project_regions(source, target, regions[0], registration, regions[1], assignment)
+    if corrections[1]:
+        # Corrected target FDI labels explicitly replace projected matches.
+        by_id = {r["tooth"]: r for r in regions[1]}
+        projected = [{**by_id[r["tooth"]], "faces": by_id[r["tooth"]]["faces"].tolist(),
+                      "independent_label": r["tooth"], "face_count": len(by_id[r["tooth"]]["faces"])}
+                     if r["tooth"] in by_id else None for r in regions[0]]
     motions = [tooth_motion(region, match, registration)
                for region, match in zip(regions[0], projected)]
     return {
