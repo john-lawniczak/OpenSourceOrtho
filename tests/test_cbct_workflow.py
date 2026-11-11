@@ -20,7 +20,9 @@ def _plan() -> TreatmentPlan:
             )
         ],
         case_records=[
-            CaseRecord(id="cb", kind="cbct", modality="CBCT/DICOM", local_reference="records/cb.dcm")
+            CaseRecord(
+                id="cb", kind="cbct", modality="CBCT/DICOM", local_reference="records/cb.dcm"
+            )
         ],
     )
 
@@ -60,7 +62,9 @@ def test_cbct_mask_import_creates_untrusted_anatomy_proposals() -> None:
     assert result["proposal"]["roots"][0]["review_status"] == "proposed"
     assert result["proposal"]["roots"][0]["trusted"] is False
     assert result["proposal"]["alveolar_bone"][0]["trusted"] is False
-    assert result["plan"]["derived_anatomy"]["roots"][0]["quality_metrics"]["centerline_points"] == 4
+    assert (
+        result["plan"]["derived_anatomy"]["roots"][0]["quality_metrics"]["centerline_points"] == 4
+    )
 
 
 def test_cbct_mask_import_requires_accepted_quality_backed_registration() -> None:
@@ -89,3 +93,21 @@ def test_cbct_review_decisions_are_required_before_trust() -> None:
     assert result["trusted_count"] == 2
     assert result["derived_anatomy"]["roots"][0]["trusted"] is True
     assert result["derived_anatomy"]["alveolar_bone"][0]["trusted"] is False
+
+
+def test_volume_patient_frame_and_roi_evidence_survive_import():
+    payload = _payload()
+    payload["mask"].update(
+        voxel_to_patient_mm=[[0, -0.25, 0, 10], [0.25, 0, 0, 20], [0, 0, 0.5, 30], [0, 0, 0, 1]],
+        roi_boundary_regions=["11"],
+        source_digest="a" * 64,
+    )
+    result = cbct_proposal_payload(payload)
+    assert result["ok"]
+    root = result["proposal"]["roots"][0]
+    assert root["centerline"][0] == [9.5, 20.5, 31.0]
+    assert root["out_of_field"] and not root["trusted"]
+    assert root["quality_metrics"]["touches_roi_boundary"]
+    assert any("a" * 64 in note for note in root["notes"])
+    payload["mask"]["voxel_to_patient_mm"][0] = None
+    assert not cbct_proposal_payload(payload)["ok"]

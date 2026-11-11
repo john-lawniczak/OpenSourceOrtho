@@ -75,3 +75,18 @@ acceptance false. Unit confirmation is required for reviewed-transform imports.
 The paired-upload browser test exposed lost registry entries during concurrent
 uploads. Registry updates now lock the read/modify/write transaction across
 threads and processes; a parallel-upload regression confirms all assets survive.
+
+## Phase 4 — usable local CBCT review and patient-space anatomy proposals
+
+Added streaming regular-series DICOM pixel decoding, geometry checks, rescaling,
+and a hash-checked local review packet. A three-plane browser viewer supports
+windowing, explicit seed/threshold/ROI growth, overlays, undo, and draft mask
+export for the existing anatomy workflow. It rejects overlapping root proposals
+and truncated exports. Patient origin/direction are preserved during anatomy
+conversion; draft centerlines no longer assume scanner-Z orientation.
+
+Paired landmark registration verifies source bindings and provides held-out
+residuals without automatically accepting the transform. USER_ONE's actual
+compressed volume was decoded and displayed locally. Reviewed anatomy and a
+correct study-to-STL correspondence are still human review inputs. See
+[local CBCT review](LOCAL_CBCT_REVIEW.md) for commands, contracts, and limitations.

@@ -56,6 +56,12 @@ motion-preview = [
   "numpy>=1.24",
   "scipy>=1.10"
 ]
+volume-review = [
+  "numpy>=1.24",
+  "pydicom>=3.0",
+  "pylibjpeg>=2.0",
+  "pylibjpeg-libjpeg>=2.1"
+]
 e2e = [
   "playwright>=1.40"
 ]

@@ -13,6 +13,7 @@ from typing import Any
 from orthoplan.model.anatomy import DerivedAnatomy, ReviewStatus
 from orthoplan.model.assets import CaseRecord
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.volume_coordinates import preserve_mask_provenance
 from orthoplan.model.registration import (
     RegistrationMethod,
     RegistrationQuality,
@@ -61,10 +62,12 @@ def cbct_proposal_payload(payload: dict[str, Any]) -> dict[str, Any]:
                 bone_voxels=_voxels(mask.get("bone_voxels", []), field="bone_voxels"),
                 voxel_spacing_mm=_float3(mask.get("voxel_spacing_mm"), default=(1.0, 1.0, 1.0)),
                 volume_dimensions=_int3_or_none(mask.get("volume_dimensions")),
+                voxel_to_patient_mm=mask.get("voxel_to_patient_mm"),
                 min_root_component_voxels=int(mask.get("min_root_component_voxels", 3)),
                 model_provenance=str(mask.get("model_provenance") or "local-volume-mask-import"),
             )
         )
+        preserve_mask_provenance(proposal, mask)
     except (ValueError, VolumeProposalUnavailable) as exc:
         return {"ok": False, "errors": [str(exc)]}
 
