@@ -35,6 +35,7 @@ export const comparisonTemplate = `
     </div>
   </nav>
   <div class="comparison-motion-tools">
+    <a href="./region-review.html" target="_blank" rel="noopener">Correct tooth regions</a>
     <label>Tooth <select id="comparisonTooth" disabled><option value="">All teeth</option></select></label>
     <button id="comparisonFocusTooth" type="button" disabled>Focus selected tooth</button>
     <button id="comparisonEndpointFit" type="button" aria-pressed="false" hidden>Inspect estimated endpoint</button>

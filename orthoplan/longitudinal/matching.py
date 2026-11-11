@@ -16,7 +16,7 @@ from scipy.spatial.transform import Rotation
 from orthoplan.longitudinal.rigid import fit_endpoint, surface_points, transform
 
 
-def region_faces(triangles: np.ndarray, segments: list) -> list[dict]:
+def region_faces(triangles: np.ndarray, segments: list, *, crop_crowns=True) -> list[dict]:
     """Recover source face identity exactly; never match vertices between visits.
 
     The upper 65% of each draft region is a rough crown mask. This reduces
@@ -38,7 +38,8 @@ def region_faces(triangles: np.ndarray, segments: list) -> list[dict]:
             continue
         selected = np.asarray(faces, dtype=int)
         height = triangles[selected].mean(axis=1)[:, 2]
-        selected = selected[height >= np.quantile(height, 0.35)]
+        if crop_crowns:
+            selected = selected[height >= np.quantile(height, 0.35)]
         try:
             points = surface_points(triangles[selected], 1600)
         except ValueError:

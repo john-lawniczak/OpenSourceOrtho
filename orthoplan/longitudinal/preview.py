@@ -7,6 +7,7 @@ import numpy as np
 from orthoplan.evaluation.finding import (
     Finding, FindingCategory, FindingProvenance, FindingSeverity, lint_finding,
 )
+from orthoplan.longitudinal.corrections import correction_segments
 from orthoplan.longitudinal.matching import assign_regions, region_faces, tooth_motion
 from orthoplan.longitudinal.projection import project_regions
 from orthoplan.longitudinal.rigid import fit_endpoint, surface_points
@@ -34,11 +35,15 @@ def preview_advisory():
     )).model_dump(mode="json")
 
 
-def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, segmenter=None):
+def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, segmenter=None, corrections=None, source_hashes=None):
     segmenter = segmenter or load_local_segmenter()
-    segments = [segmenter.segment([tuple(v) for v in mesh.reshape(-1, 3).tolist()], arch=arch)
-                for mesh in (source, target)]
-    regions = [region_faces(mesh, parts) for mesh, parts in zip((source, target), segments)]
+    corrections = corrections or [None, None]
+    source_hashes = source_hashes or [None, None]
+    segments = [correction_segments(correction, mesh, sha, arch) if correction else
+                segmenter.segment([tuple(v) for v in mesh.reshape(-1, 3).tolist()], arch=arch)
+                for mesh, correction, sha in zip((source, target), corrections, source_hashes)]
+    regions = [region_faces(mesh, parts, crop_crowns=not bool(correction))
+               for mesh, parts, correction in zip((source, target), segments, corrections)]
     if not all(regions):
         raise ValueError("No draft tooth regions were found in an endpoint")
     registration, metrics = fit_endpoint(surface_points(target, 16000), surface_points(source, 16000))
