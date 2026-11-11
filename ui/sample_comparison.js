@@ -1,14 +1,14 @@
 import { el, state } from "./state.js";
 import { applySampleRootBoneFixture, prepareSampleSegmentation } from "./sample.js";
 import { comparisonTemplate } from "./scan_comparison_template.js";
-import { createScanComparison } from "./scan_comparison_viewer.js";
-import { inputValidationText, loadObservedPair } from "./scan_comparison_data.js";
+import { createHistoryViewer } from "./scan_history_viewer.js";
+import { loadObservedPair } from "./scan_comparison_data.js";
 import { loadMotionPreview } from "./scan_motion_data.js";
 import { renderMotionControls } from "./scan_motion_controls.js";
 import { historyFrame } from "./scan_history.js";
 
 let motion = null, motionError = "", selectedTooth = "", endpointEstimate = false;
-let pair = [], week = 1, arch = "upper", ready = false;
+let pair = [], week = 1, arch = "both", ready = false;
 let mounted = false, viewer = null, request = null, session = null, startedPlanning = false;
 
 export function observedSampleActive() {
@@ -49,7 +49,7 @@ function updateControls() {
   });
   el("comparisonPrevious").disabled = !ready || week === 1;
   el("comparisonNext").disabled = !ready || week === 7;
-  el("sampleComparison").querySelectorAll(".comparison-toolbar button").forEach(button => {
+  el("sampleComparison").querySelectorAll(".comparison-toolbar button, .comparison-zoom button").forEach(button => {
     button.disabled = !button.dataset.comparisonArch && (!ready || historyFrame(week, pair, motion, endpointEstimate).kind === "unavailable");
     if (button.dataset.comparisonArch) button.setAttribute("aria-pressed", String(button.dataset.comparisonArch === arch));
   });
@@ -71,21 +71,23 @@ async function loadArch() {
   viewer?.clear();
   el("comparisonRetry").hidden = true;
   el("comparisonStatus").textContent = "Loading and verifying the two original scans…";
-  el("comparisonValidation").textContent = "Loading the scan validation record…";
   try {
-    viewer ||= createScanComparison(el("comparisonCanvas"), {
+    viewer ||= createHistoryViewer(el("comparisonCanvas"), {
       onFocus: () => { el("comparisonStatus").textContent = "Region focused. Step through weeks to inspect the estimated motion."; },
       onTooth: tooth => { selectedTooth = tooth; setWeek(week); },
     });
-    const loaded = await loadObservedPair(arch, { signal: pending.signal });
+    const bundles = await Promise.all((arch === "both" ? ["upper", "lower"] : [arch]).map(async name => {
+      const scans = await loadObservedPair(name, { signal: pending.signal });
+      let preview = null;
+      try { preview = await loadMotionPreview(scans, { signal: pending.signal }); }
+      catch (error) { if (!pending.signal.aborted) motionError = `Motion preview unavailable: ${error.message}`; }
+      return { pair: scans, motion: preview };
+    }));
     if (pending.signal.aborted || !observedSampleActive()) return;
-    let preview = null;
-    try { preview = await loadMotionPreview(loaded, { signal: pending.signal }); }
-    catch (error) { if (!pending.signal.aborted) motionError = `Motion preview unavailable: ${error.message}`; }
-    if (pending.signal.aborted || !observedSampleActive()) return;
-    pair = loaded; motion = preview;
-    viewer.setPair(pair, motion);
-    el("comparisonValidation").textContent = inputValidationText(pair.every(scan => scan.validation) ? pair[0].validation : null);
+    pair = bundles[0].pair;
+    const available = bundles.filter(item => item.motion);
+    motion = available.length ? { teeth: available.flatMap(item => item.motion.teeth) } : null;
+    viewer.setPairs(bundles);
     setReady(true);
     setWeek(week);
   } catch (error) {
@@ -95,7 +97,6 @@ async function loadArch() {
     setReady(false);
     setWeek(week);
     el("comparisonStatus").textContent = `Comparison unavailable: ${error.message}`;
-    el("comparisonValidation").textContent = "The scan validation record could not be loaded with a complete pair.";
     el("comparisonRetry").hidden = false;
   }
 }
@@ -166,7 +167,7 @@ export function renderSampleComparison(renderAll) {
   if (session !== state.segmentation || !state.sample.active) {
     session = state.segmentation;
     startedPlanning = false;
-    if (!state.sample.active) { week = 1; arch = "upper"; endpointEstimate = false; }
+    if (!state.sample.active) { week = 1; arch = "both"; endpointEstimate = false; }
   }
   if (observed && !viewer && !request) loadArch();
   if (observed) viewer?.resize();

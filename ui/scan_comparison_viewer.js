@@ -66,7 +66,7 @@ export function createScanComparison(host, { onFocus = () => {}, onTooth = () =>
     // OrbitControls caches the camera-up basis at construction.
     controls.dispose();
     controls = makeControls();
-    camera.zoom = 1;
+    camera.zoom = 1.25;
     camera.updateProjectionMatrix();
     controls.update();
     render();

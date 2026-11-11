@@ -17,6 +17,7 @@ def test_tooth_estimate_selection_and_week_progress(server_url, tmp_path):  # no
         try:
             page.goto(server_url, wait_until="networkidle")
             page.locator("#sampleLaunch").click()
+            page.locator('[data-comparison-arch="upper"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             expect(page.locator("#comparisonTooth")).to_be_enabled()
             page.locator("#comparisonTooth").select_option("11")
@@ -52,6 +53,7 @@ def test_failed_motion_preserves_original_scans_and_retries(server_url):  # noqa
             page.route("**/progress-01-motion-upper.json", lambda route: route.fulfill(status=503, body="unavailable"))
             page.goto(server_url, wait_until="networkidle")
             page.locator("#sampleLaunch").click()
+            page.locator('[data-comparison-arch="upper"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             expect(page.locator("#comparisonVisit")).to_contain_text("observed scan")
             expect(page.locator("#comparisonTooth")).to_be_disabled()
