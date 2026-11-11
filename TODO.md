@@ -132,3 +132,16 @@ Related records: [implementation phases](docs/TOOL_IMPROVEMENT_PHASES.md),
 [prior research workflow scorecard](docs/TOOL_SCORECARD.md),
 [two-visit workflow](docs/TWO_VISIT_WORKFLOW.md), and
 [boundary corrections](docs/REGION_CORRECTIONS.md).
+
+## Completed follow-up: endpoint assignment reliability
+
+- [x] Exclude infeasible candidates before one-to-one assignment; provide explicit
+  unmatched choices so invalid edges cannot displace valid matches.
+- [x] Record competing assignment costs and flag nearly tied identities as uncertain
+  without disabling best-effort motion previews.
+- [x] Initialize match review from the actual independent candidate rather than
+  assuming equal FDI numbers across independently segmented visits.
+- [x] Refresh USER_ONE artifacts and expose ambiguity in selected-tooth details.
+
+These changes improve the matcher and its inspectability. They do not establish
+anatomical identity accuracy or replace the independently reviewed benchmark.

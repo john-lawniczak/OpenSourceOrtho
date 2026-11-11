@@ -1,3 +1,9 @@
+export function suggestedMatch(tooth, targets, current) {
+  const proposed = Object.hasOwn(tooth, "independent_target_label") ? tooth.independent_target_label : tooth.target_tooth;
+  const value = current ? current[tooth.tooth] : proposed;
+  return targets.includes(value) ? value : "";
+}
+
 export function renderMatchReview(host,motion,current) {
   host.replaceChildren();
   const targets=motion.target_region_ids || motion.teeth.map(t=>t.tooth);
@@ -5,7 +11,7 @@ export function renderMatchReview(host,motion,current) {
     const label=document.createElement("label");label.textContent=`Baseline ${tooth.tooth} → later region`;
     const select=document.createElement("select");select.dataset.source=tooth.tooth;
     select.append(new Option("Hold / no match",""),...targets.map(id=>new Option(id,id)));
-    select.value=current ? current[tooth.tooth] || "" : targets.includes(tooth.tooth)?tooth.tooth:"";
+    select.value=suggestedMatch(tooth,targets,current);
     label.append(select);host.append(label);
   }
 }

@@ -34,5 +34,7 @@ def test_motion_preview_sources_masks_and_advisories():
             assert all(math.isfinite(v) for v in tooth["translation"])
             if tooth["status"] == "held-unmatched":
                 assert tooth["translation"] == [0, 0, 0]
+            if (tooth.get("assignment_evidence") or {}).get("ambiguous"):
+                assert tooth["status"] in {"estimated-weak", "held-unmatched"}
         for finding in preview["advisory_findings"]:
             assert lint_finding(Finding.model_validate(finding)).provenance == FindingProvenance.MODEL

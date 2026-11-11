@@ -9,7 +9,8 @@ from orthoplan.evaluation.finding import (
 )
 from orthoplan.longitudinal.corrections import correction_segments
 from orthoplan.longitudinal.match_review import apply_match_overrides
-from orthoplan.longitudinal.matching import assign_regions, region_faces, tooth_motion
+from orthoplan.longitudinal.matching import region_faces, tooth_motion
+from orthoplan.longitudinal.correspondence import region_assignment
 from orthoplan.longitudinal.projection import project_regions
 from orthoplan.longitudinal.registration import register_arches
 from orthoplan.longitudinal.simulation import simulation_report
@@ -49,8 +50,8 @@ def build_arch_preview(source: np.ndarray, target: np.ndarray, *, arch: str, seg
     if not all(regions):
         raise ValueError("No draft tooth regions were found in an endpoint")
     registration, metrics = register_arches(source, target, reference)
-    assignment = assign_regions(*regions, registration)
-    projected = project_regions(source, target, regions[0], registration, regions[1], assignment)
+    assignment, evidence = region_assignment(*regions, registration)
+    projected = project_regions(source, target, regions[0], registration, regions[1], assignment, evidence=evidence)
     if corrections[1]:
         # Corrected target FDI labels explicitly replace projected matches.
         by_id = {r["tooth"]: r for r in regions[1]}

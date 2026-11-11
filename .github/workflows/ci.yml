@@ -68,7 +68,8 @@ jobs:
           tests/test_motion_simulation.py tests/test_surface_topology.py
           tests/test_model_contract.py tests/test_match_review.py
           tests/test_full_surface_contact.py tests/test_dicom_volume_review.py
-          tests/test_motion_stress.py tests/test_motion_review.py -q
+          tests/test_motion_stress.py tests/test_motion_review.py
+          tests/test_correspondence_assignment.py -q
 
   e2e:
     name: 3D viewer smoke (Playwright)

@@ -163,6 +163,22 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 1,
+        "ambiguous": false,
+        "alternative_cost_increase": null,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "47",
+            "cost": 1.443175507285821
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "47",
+        "assigned_cost": 1.443175507285821
+      },
       "face_label": 1
     },
     {
@@ -185,7 +201,7 @@
         0.9999759533331148
       ],
       "status": "estimated-weak",
-      "segmentation_confidence": 0.0,
+      "segmentation_confidence": 0.493,
       "fit": {
         "median_residual": 0.19850178971915297,
         "p90_residual": 0.32668848035356873,
@@ -200,7 +216,7 @@
         }
       },
       "reviewed": false,
-      "independent_target_label": null,
+      "independent_target_label": "42",
       "target_region_face_count": 26449,
       "match_provenance": "automatic-projection",
       "correspondence_checks": {
@@ -208,6 +224,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 6,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.27095738764981014,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "47",
+            "cost": 0.022385687367398814
+          },
+          {
+            "target_tooth": "46",
+            "cost": 0.590021732475452
+          },
+          {
+            "target_tooth": "45",
+            "cost": 0.9330073612425305
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "42",
+        "assigned_cost": 1.4929251118165954
       },
       "face_label": 2
     },
@@ -255,6 +295,30 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 6,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.27095738764981014,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "46",
+            "cost": 0.11047083576260652
+          },
+          {
+            "target_tooth": "45",
+            "cost": 0.5153391808083698
+          },
+          {
+            "target_tooth": "47",
+            "cost": 0.6341238226253857
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "46",
+        "assigned_cost": 0.11047083576260652
+      },
       "face_label": 3
     },
     {
@@ -300,6 +364,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 6,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.7583639383769469,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "45",
+            "cost": 0.08541733322442771
+          },
+          {
+            "target_tooth": "44",
+            "cost": 0.4686285903890694
+          },
+          {
+            "target_tooth": "46",
+            "cost": 0.5282316950408253
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "45",
+        "assigned_cost": 0.08541733322442771
       },
       "face_label": 4
     },
@@ -347,6 +435,30 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 5,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.5971974092243997,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "44",
+            "cost": 0.045870451892609014
+          },
+          {
+            "target_tooth": "45",
+            "cost": 0.4210231331049132
+          },
+          {
+            "target_tooth": "43",
+            "cost": 0.4424468872769257
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "44",
+        "assigned_cost": 0.045870451892609014
+      },
       "face_label": 5
     },
     {
@@ -393,6 +505,30 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 6,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.47806065167198053,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "43",
+            "cost": 0.10954427598246674
+          },
+          {
+            "target_tooth": "44",
+            "cost": 0.36367675622635226
+          },
+          {
+            "target_tooth": "42",
+            "cost": 0.7637007013927648
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "43",
+        "assigned_cost": 0.10954427598246674
+      },
       "face_label": 6
     },
     {
@@ -414,7 +550,7 @@
         0.004757590458723942,
         0.9999575618882542
       ],
-      "status": "estimated-weak",
+      "status": "estimated-draft",
       "segmentation_confidence": 0.474,
       "fit": {
         "median_residual": 0.19578964367870186,
@@ -430,7 +566,7 @@
         }
       },
       "reviewed": false,
-      "independent_target_label": "42",
+      "independent_target_label": "41",
       "target_region_face_count": 20790,
       "match_provenance": "automatic-projection",
       "correspondence_checks": {
@@ -438,6 +574,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 9,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.24287584813153096,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "42",
+            "cost": 0.06803930222159471
+          },
+          {
+            "target_tooth": "43",
+            "cost": 0.45592117200242976
+          },
+          {
+            "target_tooth": "41",
+            "cost": 0.6448659132936594
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "41",
+        "assigned_cost": 0.6448659132936594
       },
       "face_label": 7
     },
@@ -460,7 +620,7 @@
         -0.007457385794469291,
         0.9999655477326871
       ],
-      "status": "estimated-weak",
+      "status": "estimated-draft",
       "segmentation_confidence": 0.474,
       "fit": {
         "median_residual": 0.21221125079337738,
@@ -476,7 +636,7 @@
         }
       },
       "reviewed": false,
-      "independent_target_label": "41",
+      "independent_target_label": "31",
       "target_region_face_count": 24763,
       "match_provenance": "automatic-projection",
       "correspondence_checks": {
@@ -484,6 +644,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 10,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.24287584813153096,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "41",
+            "cost": 0.20409710435867012
+          },
+          {
+            "target_tooth": "31",
+            "cost": 0.30670615472480056
+          },
+          {
+            "target_tooth": "32",
+            "cost": 0.6142949238580114
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "31",
+        "assigned_cost": 0.30670615472480056
       },
       "face_label": 8
     },
@@ -531,6 +715,30 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 5,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.7022277562040715,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "32",
+            "cost": 0.04540536213212288
+          },
+          {
+            "target_tooth": "33",
+            "cost": 0.4261543632297145
+          },
+          {
+            "target_tooth": "31",
+            "cost": 0.4400443492029832
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "32",
+        "assigned_cost": 0.04540536213212288
+      },
       "face_label": 9
     },
     {
@@ -576,6 +784,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 7,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.7814486281309625,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "33",
+            "cost": 0.024961459620353878
+          },
+          {
+            "target_tooth": "32",
+            "cost": 0.42566108665372526
+          },
+          {
+            "target_tooth": "34",
+            "cost": 0.4663809294545637
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "33",
+        "assigned_cost": 0.024961459620353878
       },
       "face_label": 10
     },
@@ -623,6 +855,30 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 7,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.8584523704435387,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "34",
+            "cost": 0.04083997521425384
+          },
+          {
+            "target_tooth": "33",
+            "cost": 0.4578728758235815
+          },
+          {
+            "target_tooth": "35",
+            "cost": 0.69761812820293
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "34",
+        "assigned_cost": 0.04083997521425384
+      },
       "face_label": 11
     },
     {
@@ -668,6 +924,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 8,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.5616462556701896,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "35",
+            "cost": 0.011582340767073956
+          },
+          {
+            "target_tooth": "36",
+            "cost": 0.2858327506463797
+          },
+          {
+            "target_tooth": "34",
+            "cost": 0.4870112083203137
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "35",
+        "assigned_cost": 0.011582340767073956
       },
       "face_label": 12
     },
@@ -715,6 +995,30 @@
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
       },
+      "assignment_evidence": {
+        "candidate_count": 6,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.5616462556701896,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "36",
+            "cost": 0.024625701423373135
+          },
+          {
+            "target_tooth": "35",
+            "cost": 0.31202154721425635
+          },
+          {
+            "target_tooth": "37",
+            "cost": 0.4101943241565647
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "36",
+        "assigned_cost": 0.024625701423373135
+      },
       "face_label": 13
     },
     {
@@ -760,6 +1064,30 @@
         "min_absolute_normal_dot": 0.3,
         "accepted_fraction": 0.99385291468328,
         "cycle_distance_limit": 3.3610496846072415
+      },
+      "assignment_evidence": {
+        "candidate_count": 3,
+        "ambiguous": false,
+        "alternative_cost_increase": 0.8919931528342824,
+        "ambiguity_cost_margin": 0.05,
+        "candidates": [
+          {
+            "target_tooth": "37",
+            "cost": 0.13882570772563618
+          },
+          {
+            "target_tooth": "36",
+            "cost": 0.6452502378267274
+          },
+          {
+            "target_tooth": "35",
+            "cost": 1.1577984804328922
+          }
+        ],
+        "interpretation": "Normalized geometric assignment costs; not identity probabilities",
+        "status": "assigned-draft",
+        "target_tooth": "37",
+        "assigned_cost": 0.13882570772563618
       },
       "face_label": 14
     }

@@ -109,3 +109,24 @@ See [accuracy scoring](MOTION_BENCHMARK.md), [region correction](REGION_CORRECTI
 [registration diagnostics](ENDPOINT_REGISTRATION.md), [two-visit cases](TWO_VISIT_WORKFLOW.md),
 and [timing and proximity](SIMULATION_ASSUMPTIONS.md). Reviewed real truth and
 no-motion repeat scans remain necessary for measured anatomical accuracy.
+
+## Independent assignment ambiguity
+
+Independent draft-region matching excludes infeasible distance edges before the
+one-to-one optimization and provides explicit unmatched choices. This prevents a
+far-away candidate from displacing a better valid match before being discarded.
+The optimizer first maximizes feasible match count, then minimizes normalized
+centroid/size cost. These are geometric proposals, not anatomical identities.
+
+For each selected pair, the matcher also solves the assignment with that edge
+removed. If an alternative preserves match count and increases total cost by at
+most 0.05, the identity is marked ambiguous. This dimensionless heuristic is not
+a probability or calibrated accuracy threshold. Candidate regions and the cost
+difference appear in selected-tooth details; the preview remains available with
+an uncertain status. Explicit corrected labels and match overrides remain
+separate from this automatic evidence.
+
+The match-review dropdown starts with the actual independent candidate, including
+an unmatched state, instead of assuming that independently assigned FDI labels
+must agree. The refreshed USER_ONE artifacts flag six upper-region assignments as
+ambiguous; fitted translations and rotations are unchanged by this diagnostic.

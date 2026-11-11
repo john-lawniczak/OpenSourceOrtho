@@ -9,11 +9,10 @@ from __future__ import annotations
 from collections import defaultdict
 
 import numpy as np
-from scipy.optimize import linear_sum_assignment
-from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation
 
 from orthoplan.longitudinal.match_review import reversible_fit_evidence
+from orthoplan.longitudinal.correspondence import region_assignment
 from orthoplan.longitudinal.rigid import fit_endpoint, surface_points, transform
 
 
@@ -51,19 +50,8 @@ def region_faces(triangles: np.ndarray, segments: list, *, crop_crowns=True) -> 
 
 
 def assign_regions(source: list[dict], target: list[dict], registration: np.ndarray):
-    """One-to-one spatial/size matching after global fitting, independent of FDI guesses."""
-    if not source or not target:
-        return {}
-    a = [r["points"] for r in source]
-    b = [transform(r["points"], registration) for r in target]
-    centers_a, centers_b = [p.mean(axis=0) for p in a], [p.mean(axis=0) for p in b]
-    size_a = np.array([max(np.linalg.norm(np.ptp(p, axis=0)), 1e-9) for p in a])
-    size_b = np.array([max(np.linalg.norm(np.ptp(p, axis=0)), 1e-9) for p in b])
-    distances = cdist(centers_a, centers_b) / size_a[:, None]
-    costs = distances + 0.25 * np.abs(np.log(size_a[:, None] / size_b[None, :]))
-    rows, cols = linear_sum_assignment(costs)
-    # A grossly distant assignment is explicitly held, not silently clamped.
-    return {int(i): int(j) for i, j in zip(rows, cols) if distances[i, j] <= 1.5}
+    """Return feasible one-to-one matches; preserve the public mapping interface."""
+    return region_assignment(source, target, registration)[0]
 
 
 def tooth_motion(region: dict, target: dict | None, registration: np.ndarray) -> dict:
@@ -92,7 +80,8 @@ def tooth_motion(region: dict, target: dict | None, registration: np.ndarray) ->
                   independent_target_label=target.get("independent_label"),
                   target_region_face_count=target.get("face_count"),
                   match_provenance=target.get("match_provenance", "automatic-projection"),
-                  target_faces=target.get("faces"), correspondence_checks=target.get("checks"))
+                  target_faces=target.get("faces"), correspondence_checks=target.get("checks"),
+                  assignment_evidence=target.get("assignment_evidence"))
     # Computational sanity only, not a treatment-motion threshold.
     span = np.linalg.norm(np.ptp(region["points"], axis=0))
     if np.linalg.norm(translation) > span or rotation.magnitude() > np.pi / 3:
@@ -102,7 +91,7 @@ def tooth_motion(region: dict, target: dict | None, registration: np.ndarray) ->
                 or consistency.get("sampling_shift", 0) > span * .02
                 or consistency.get("round_trip_rotation_deg", 0) > 3 or consistency.get("sampling_rotation_deg", 0) > 3)
     record.update(
-        status="estimated-weak" if unstable or metrics["relative_p90"] > 0.12 or metrics["overlap"] < 0.6
+        status="estimated-weak" if unstable or (target.get("assignment_evidence") or {}).get("ambiguous", False) or metrics["relative_p90"] > 0.12 or metrics["overlap"] < 0.6
         or target.get("independent_label", region["tooth"]) != region["tooth"]
         else "estimated-draft",
         translation=translation.tolist(), quaternion_xyzw=rotation.as_quat().tolist(),

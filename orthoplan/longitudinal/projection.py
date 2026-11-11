@@ -29,7 +29,7 @@ def correspondence_mask(source, target, registration, *, max_distance=None, min_
                            'accepted_fraction': float(valid.mean()), 'cycle_distance_limit': limit}
 
 
-def project_regions(source, target, regions, registration, independent, assignment, *, thresholds=None):
+def project_regions(source, target, regions, registration, independent, assignment, *, thresholds=None, evidence=None):
     owners = np.zeros(len(source), dtype=np.int16)
     for index, region in enumerate(regions, 1):
         owners[region["faces"]] = index
@@ -52,5 +52,6 @@ def project_regions(source, target, regions, registration, independent, assignme
             "confidence": min(region["confidence"], candidate["confidence"]) if candidate else 0.0,
             "independent_label": candidate["tooth"] if candidate else None,
             "face_count": len(faces), "faces": faces.tolist(), "checks": checks,
+            "assignment_evidence": evidence[index-1] if evidence else None,
         })
     return result
