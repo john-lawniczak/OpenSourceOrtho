@@ -55,3 +55,18 @@ USER_ONE's 824-slice primary volume was decoded locally at stride 4 into a
 225×225×206 review packet; the single secondary image was excluded. Browser tests
 verify it renders without external requests. No real root labels or accepted
 registration were fabricated during preparation.
+
+Use **Import landmark registration report** in the root/bone workflow to load
+`registration-review.json`, inspect the saved landmark/transform report, and
+explicitly check **Registration accepted**. The import preserves its matrix and
+measured quality; it does not replace them with manually entered defaults. The
+server checks the selected scan/record IDs, scan SHA-256, millimeter units, and
+mask volume digest. Patient-space masks require an explicit transform; the legacy
+identity fallback is unavailable for these packets. Anatomy still starts as a
+proposal after registration acceptance.
+
+Downstream root-aware pivots convert the anatomy through its own registration
+back to scan space. Root proximity translates scan-space vectors into the CBCT
+frame before comparison. This proximity approximation explicitly excludes root
+surface thickness and rotations. Different study frames or an unrelated accepted
+registration cannot unlock these calculations.

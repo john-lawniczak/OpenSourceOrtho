@@ -112,3 +112,20 @@ Boundary benchmark regression checks now catch context leakage despite perfect
 crown-only accuracy, and refuse truthy-string review flags. Missing fits reduce
 coverage rather than receiving zero error. Real anatomical accuracy remains null
 until independently reviewed labels, poses and repeated real scans are supplied.
+
+## Phase 6 — registration import and downstream frame consistency
+
+Review found that root-aware pivots and root proximity could mix CBCT and STL
+coordinates. Root/axis pairs now resolve through their own quality-gated rigid
+registration; pivots return to scan space and translations rotate into the CBCT
+frame. Reflected/scaled/nonfinite transforms and mismatched study references are
+excluded. Root proximity explicitly describes centerline, translation-only
+geometry instead of implying a full rotated root-surface check.
+
+The main workspace imports source-bound landmark reports, preserving their
+actual transform and held-out metrics. Patient-space masks cannot silently use
+the legacy identity transform. Acceptance stays explicit; source IDs, hashes,
+units and the volume digest are checked before unreviewed anatomy is generated.
+Rotated/translated reference geometry and mismatched-source tests cover these
+paths. The synthetic volume benchmark's declared dimensions were corrected to
+enclose its root voxels; the new mask validator exposed that old fixture error.

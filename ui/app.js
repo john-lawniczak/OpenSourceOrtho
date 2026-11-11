@@ -1,4 +1,5 @@
 import { installToothWorkspace } from "./tooth_workspace.js";
+import { bindCbctRegistration } from "./cbct_registration_review.js";
 import { discardGoalPreview, requestToothGoal, renderGoalPreview } from "./tooth_goal_ui.js";
 import { sendChatMessage } from "./chat_controller.js";
 import { confirmWorkspaceMode, updateChatSetting } from "./chat_settings.js";
@@ -211,6 +212,7 @@ el("cbctMaskFile").addEventListener("change", async (event) => {
   await loadCbctMaskFile((event.target.files || [])[0]);
   event.target.value = "";
 });
+bindCbctRegistration(state, renderAll);
 
 document.body.addEventListener("input", (event) => {
   const target = event.target;
@@ -757,6 +759,7 @@ async function proposeCbctAnatomy() {
       cbct_record_id: cbct.id,
       source_stl_asset_id: source.asset.id,
       registration_accepted: workflow.registrationAccepted,
+      registration_review: workflow.registrationReview,
       registration_quality: {
         method: "local-review",
         rmse_mm: workflow.rmseMm,

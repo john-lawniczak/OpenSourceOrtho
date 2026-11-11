@@ -29,6 +29,8 @@ from orthoplan.evaluation.finding import (
 )
 from orthoplan.model.plan import CBCT_RECORD_KINDS, TreatmentPlan
 from orthoplan.model.review_tier import accepted_registration
+from orthoplan.model.geometry import apply_affine_direction
+from orthoplan.planning.registered_anatomy import anatomy_registration
 from orthoplan.viz.progress import build_stage_progress_frames
 
 ROOT_PROXIMITY_MM = 1.0
@@ -101,6 +103,12 @@ def _readiness_blockers(plan: TreatmentPlan) -> list[str]:
         blockers.append("no reviewed (trusted, in-field) CBCT-derived anatomy")
     if not plan.tooth_meshes:
         blockers.append("no reviewed per-tooth segmentation")
+    if any(delta.coordinate_frame != "scan-local" for stage in plan.stages for delta in stage.deltas):
+        blockers.append("root proximity translation requires scan-local movement coordinates")
+    if anatomy and any(obj.trusted and anatomy_registration(plan, obj) is None for obj in anatomy.all_objects()):
+        blockers.append("an anatomy object lacks its own quality-gated rigid registration")
+    if anatomy and len({obj.source_cbct_record_id for obj in anatomy.all_objects() if obj.trusted}) > 1:
+        blockers.append("anatomy spans different CBCT study coordinate frames")
     return blockers
 
 
@@ -127,7 +135,10 @@ def _trusted_root_points(
     for root in anatomy.roots:
         if not root.trusted or not root.centerline:
             continue
-        dx, dy, dz = final_translate.get(root.tooth.value, (0.0, 0.0, 0.0))
+        registration = anatomy_registration(plan, root)
+        if registration is None:
+            continue
+        dx, dy, dz = apply_affine_direction(registration.matrix, final_translate.get(root.tooth.value, (0.0, 0.0, 0.0)))
         out[root.tooth.value] = [(p[0] + dx, p[1] + dy, p[2] + dz) for p in root.centerline]
     return out
 
@@ -155,12 +166,12 @@ def _root_proximity_findings(roots: dict[str, list[tuple[float, float, float]]])
             findings.append(_warn(
                 title=(
                     f"Roots {tooth_a} and {tooth_b} "
-                    + ("intersect" if collision else "are in close proximity")
+                    + ("have coincident centerline samples" if collision else "have nearby centerline samples")
                 ),
                 message=(
                     f"Reviewed root centerlines for teeth {tooth_a} and {tooth_b} reach a "
                     f"minimum separation of {max(distance, 0.0):.2f} mm after planned "
-                    f"movement (threshold {ROOT_PROXIMITY_MM:.2f} mm)."
+                    f"translation only (threshold {ROOT_PROXIMITY_MM:.2f} mm); rotations and root surface thickness are excluded."
                 ),
                 code="root-proximity",
             ))
@@ -185,7 +196,7 @@ def _cortical_findings(
                 title=f"Root {tooth} approaches or exceeds the cortical boundary",
                 message=(
                     f"Reviewed root for tooth {tooth} extends about {margin:.2f} mm beyond the "
-                    f"reviewed alveolar bone boundary after planned movement (margin "
+                    f"reviewed alveolar bone bounds after translation only, excluding rotations (margin "
                     f"{CORTICAL_MARGIN_MM:.2f} mm)."
                 ),
                 code="cortical-proximity",
