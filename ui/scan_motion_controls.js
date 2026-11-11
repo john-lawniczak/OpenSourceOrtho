@@ -19,7 +19,7 @@ export function renderMotionControls(motion, selected, frame, error = "") {
   el("comparisonEstimateNote").textContent = frame.kind === "estimated"
     ? "SIMULATED ESTIMATE · Assumed timing between the two scans. Tooth boundaries and matches are automatic drafts."
     : "Weeks 2–6 simulate motion fitted to the endpoint scans. Tooth boundaries and matches are automatic drafts.";
-  el("comparisonMotionRetry").hidden = Boolean(motion) || !error;
+  el("comparisonMotionRetry").hidden = !error;
   const detail = el("comparisonMatchDetail");
   if (!motion) { detail.textContent = error; return; }
   const tooth = motion.teeth.find(item => item.tooth === selected);

@@ -44,6 +44,7 @@ function setWeek(value) {
     ? `Week ${week}: estimated tooth poses, ${(frame.fraction * 100).toFixed(0)}% through the fitted endpoint motion. No movement exaggeration.`
     : frame.scan ? `Original scan · file integrity verified.${motion ? " Week 7 uses an estimated whole-arch alignment." : ""}`
       : `Week ${week}: motion preview unavailable. The original endpoint scans remain available.`;
+  if (ready && frame.kind === "estimated" && motionError) el("comparisonStatus").textContent += ` ${motionError}. Only available arch estimates are displayed.`;
 }
 
 function updateControls() {
@@ -84,7 +85,7 @@ async function loadArch() {
       const scans = await loadObservedPair(name, { signal: pending.signal });
       let preview = null;
       try { preview = await loadMotionPreview(scans, { signal: pending.signal }); }
-      catch (error) { if (!pending.signal.aborted) motionError = `Motion preview unavailable: ${error.message}`; }
+      catch (error) { if (!pending.signal.aborted) motionError = `${name} motion preview unavailable: ${error.message}`; }
       return { pair: scans, motion: preview };
     }));
     if (pending.signal.aborted || !observedSampleActive()) return;

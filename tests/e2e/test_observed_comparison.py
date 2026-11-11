@@ -90,7 +90,7 @@ def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path): 
             page.locator('[data-comparison-week="1"]').click()
             page.locator('[data-comparison-view="occlusal"]').click()
             box = canvas.bounding_box()
-            canvas.dblclick(position={"x": box["width"] * 0.5, "y": box["height"] * 0.75})
+            canvas.dblclick(position={"x": box["width"] * 0.5, "y": box["height"] * 0.8125})
             expect(page.locator("#comparisonStatus")).to_contain_text("Region focused")
             page.locator("#comparisonReset").click()
             page.locator("#sampleComparison").screenshot(path=str(tmp_path / "observed-desktop.png"))

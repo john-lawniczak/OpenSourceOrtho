@@ -54,7 +54,9 @@ Click **Sample Test Case** to open USER_ONE's **Scan history**.
 Use **Previous week**, **Next week**, or the week buttons. Weeks 1 and 7 display
 whole original scans. Weeks 2–6 display **SIMULATED ESTIMATE** frames derived from
 the endpoint geometry using local segmentation and tooth-region matching.
-Both arches are shown by default. Choose **Upper teeth** or **Lower teeth** for a closer single-arch view; upper crowns point down in the default
+Both arches share one 3D scene and camera by default, with upper crowns above the lower teeth.
+Their combined placement is a display arrangement, not a measured bite registration.
+The default zoom includes one additional **+** step. Choose **Upper teeth** or **Lower teeth** for a closer single-arch view; upper crowns point down in the default
 front view. Rotate, zoom, or double-click a crown to focus. Select a draft tooth
 from the **Tooth** menu to highlight its region and see its estimated shift,
 rotation, and endpoint surface residual. The camera stays in place between weeks.
