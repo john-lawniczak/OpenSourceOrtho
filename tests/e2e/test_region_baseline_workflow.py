@@ -99,3 +99,27 @@ def test_both_baselines_resume_separate_versioned_labels(review_page, server_url
     expect(page.locator("#reviewSaveStatus")).to_contain_text("Saved upper user-reviewed locally")
     assert len(list((tmp_path / "snapshots").rglob("*.json"))) == 3
     assert json.loads(Path(lower_path).read_text()) == saved_lower
+
+
+def test_reload_saved_gets_new_numbers_and_stale_save_is_rejected(review_page, server_url, tmp_path):  # noqa: F811
+    from orthoplan.region_corrections import save_baseline_corrections
+    import base64
+    page = review_page
+    page.goto(server_url + "/region-review.html?baseline=upper")
+    expect(page.locator("#reviewSource")).to_contain_text("initial-upper.stl", timeout=30000)
+    page.locator("#reviewSaveLocal").click()
+    expect(page.locator("#reviewSaveStatus")).to_contain_text("Saved upper draft locally")
+    original = page.request.get(server_url + "/api/region-corrections/upper")
+    assert original.headers["cache-control"] == "no-store"
+    record = original.json()["corrections"]
+    record["labels_base64"] = base64.b64encode(bytes([22]) * record["face_count"]).decode()
+    saved = save_baseline_corrections({"arch": "upper", "corrections": record}, root=tmp_path / "snapshots")
+    assert saved["ok"]
+    page.locator("#reviewSaveLocal").click()
+    expect(page.locator("#reviewSaveStatus")).to_contain_text("A newer draft is saved")
+    page.locator("#reviewReload").click()
+    expect(page.locator("#reviewSaveStatus")).to_contain_text("Restored draft")
+    page.locator('[data-tooth="18"]').click()
+    expect(page.locator("#reviewSelectionHelp")).to_contain_text("No surface is labeled 18")
+    page.locator('[data-tooth="22"]').click()
+    expect(page.locator("#reviewSelectionHelp")).to_contain_text(f'{record["face_count"]:,} labeled faces')

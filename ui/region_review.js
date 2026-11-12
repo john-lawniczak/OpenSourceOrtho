@@ -60,6 +60,7 @@ function parseStlFaceCount(bytes) {
   const geometry = parseStlGeometry(bytes), count = geometry.attributes.position.count / 3;
   geometry.dispose(); return count;
 }
+el("reviewReload").onclick = () => action(() => loadBaseline(scan?.arch));
 el("loadSample").onclick = () => action(() => loadBaseline(el("reviewArch").value));
 for (const arch of ["upper", "lower"]) el(`reviewLoad${arch}`).onclick = () => action(() => loadBaseline(arch));
 el("reviewScan").onchange = () => action(async () => {

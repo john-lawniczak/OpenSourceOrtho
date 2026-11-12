@@ -81,3 +81,9 @@
 .region-review-page .review-save-panel .controls { margin:0; }
 #regionCanvas { height:62vh; }
 @media(max-width:850px) { .region-review-page .review-workbench { grid-template-columns:1fr; } }
+
+.review-navigation-modes { position:absolute; top:10px; left:10px; z-index:5; display:flex; gap:6px; }
+.review-navigation-modes button { background:#20343c; color:white; }
+.review-navigation-modes button[aria-pressed="true"] { background:#0f766e; }
+#regionCanvas[data-mode="pan"] { cursor:grab; }
+#regionCanvas[data-mode="pan"]:active { cursor:grabbing; }

@@ -10,8 +10,11 @@ import os
 from pathlib import Path
 import re
 import uuid
+from threading import RLock
 
 from orthoplan.datasets import SAMPLE_CASE_DIR, SAMPLE_SPECIMEN_ID
+
+_SAVE_LOCK = RLock()
 
 
 def correction_store() -> Path:
@@ -65,6 +68,19 @@ def _folder(root: Path, arch: str) -> Path:
 
 
 def save_baseline_corrections(payload: dict, *, root: Path | None = None) -> dict:
+    with _SAVE_LOCK:
+        if "base_saved_at" in payload:
+            latest = load_baseline_corrections(payload.get("arch"), root=root)
+            if not latest["ok"]:
+                return latest
+            if payload["base_saved_at"] != latest.get("saved_at"):
+                return {"ok": False, "errors": [
+                    "A newer draft is saved. Download JSON to keep these edits, then use Reload saved before continuing."
+                ]}
+        return _save_snapshot(payload, root=root)
+
+
+def _save_snapshot(payload: dict, *, root: Path | None = None) -> dict:
     try:
         arch = payload.get("arch")
         source = baseline_source(arch)

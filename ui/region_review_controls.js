@@ -46,7 +46,8 @@ export function setupReviewControls({ selectTooth, changeMode }) {
         ? `${count.toLocaleString()} labeled faces · identity unconfirmed`
         : `No surface is labeled ${id} yet. Choose its crown, then paint.`;
       const messages = {
-        orbit: "Drag to rotate · Right-drag to pan · Double-click a labeled crown to focus",
+        orbit: "Drag to rotate · Pan to move · Double-click any surface to focus",
+        pan: "Drag to move the mouth · Scroll to zoom · Double-click any surface to focus",
         brush: `Paint tooth ${id} · [ smaller · ] larger`,
         erase: "Erase to context · [ smaller · ] larger",
         split: `Split ${el("reviewFrom").value} → ${id}`,

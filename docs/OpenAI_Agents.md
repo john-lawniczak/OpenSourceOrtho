@@ -296,3 +296,16 @@ an external provider or infer tooth identity from a small surface residual.
 Explanations prioritize held and weak regions and distinguish a held zero pose
 from evidence of no movement. Imported cases receive a fresh local explanation
 instead of displaying imported advisory text as newly generated findings.
+
+### OpenAI connection failures
+
+The OpenAI adapter defaults explicitly to `https://api.openai.com/v1` rather than
+inheriting an SDK base URL. Request-supplied keys are trimmed and do not inherit
+process organization/project IDs; environment-based CLI credentials retain their
+scope. Explicit adapter base URLs remain supported. Authentication, access, model,
+quota, rate and connection errors use fixed actionable messages without copying
+upstream bodies, key fragments or plan data. Failed chat turns link to Connection
+settings and retain their prompts. These changes do not validate a user's actual
+key; a successful authenticated request is still required.
+
+See [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes).

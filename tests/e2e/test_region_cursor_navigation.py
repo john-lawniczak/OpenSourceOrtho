@@ -72,3 +72,53 @@ def test_focused_view_presets_keep_marker_centered(server_url, tmp_path, monkeyp
             page.screenshot(path=str(tmp_path / "compact-focused-editor.png"), full_page=True)
         finally:
             browser.close()
+
+
+def test_pan_moves_mouth_without_painting_and_survives_presets(server_url, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setenv("ORTHOPLAN_REGION_CORRECTIONS", str(tmp_path / "labels"))
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1000})
+        try:
+            page.goto(server_url + "/region-review.html?baseline=upper")
+            expect(page.locator("#reviewSource")).to_contain_text("initial-upper.stl", timeout=30000)
+            page.locator('[data-tooth="21"]').click()
+            page.locator("#reviewFocus").click()
+            page.get_by_role("button", name="✥ Pan", exact=True).click()
+            page.locator('[data-scan-view="flip"]').click()
+            marker = page.locator("#reviewSelectionMarker")
+            before = marker.evaluate("e => [parseFloat(e.style.left), parseFloat(e.style.top)]")
+            canvas = page.locator("#regionCanvas canvas").bounding_box()
+            x, y = canvas["x"] + canvas["width"] / 2, canvas["y"] + canvas["height"] / 2
+            page.mouse.move(x, y)
+            page.mouse.down()
+            page.mouse.move(x + 100, y + 60, steps=8)
+            page.mouse.up()
+            after = marker.evaluate("e => [parseFloat(e.style.left), parseFloat(e.style.top)]")
+            assert abs(after[0] - before[0] - 100) < 3
+            assert abs(after[1] - before[1] - 60) < 3
+            expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations")
+            page.screenshot(path=str(tmp_path / "pan-controls.png"), full_page=True)
+        finally:
+            browser.close()
+
+
+def test_double_click_unlabeled_surface_centers_and_zooms(server_url, tmp_path):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1000})
+        try:
+            page.goto(server_url + "/region-review.html")
+            page.locator("#reviewScan").set_input_files(surface(tmp_path))
+            expect(page.locator("#reviewSource")).to_contain_text("lower_test.stl")
+            canvas = page.locator("#regionCanvas canvas")
+            before = canvas.screenshot()
+            canvas.dblclick()
+            assert canvas.screenshot() != before
+            expect(page.locator("#reviewStatus")).to_contain_text("unlabeled")
+            page.locator('[data-scan-view="flip"]').click()
+            page.get_by_role("button", name="✥ Pan", exact=True).click()
+            page.locator('[data-scan-view="fit"]').click()
+            expect(page.get_by_role("button", name="✥ Pan", exact=True)).to_have_attribute("aria-pressed", "true")
+        finally:
+            browser.close()

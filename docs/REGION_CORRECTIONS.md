@@ -124,3 +124,11 @@ are under **Notes & saved file**. Empty save-status rows are hidden.
 
 FDI/US conversion follows the [ADA Universal Tooth Designation System](https://www.ada.org/-/media/project/ada-organization/ada/ada-org/files/publications/cdt/universal_tooth_designation_system_valueset_2.pdf).
 These are numbering equivalents, not anatomical verification of a painted mask.
+
+Use **Pan** above the image to drag the whole mouth, or **Rotate** to turn it.
+Double-click any surface, including gray context, to center and zoom there.
+The view presets then turn around that location; **Fit scan** returns to the arch.
+**Reload saved** reads the latest local snapshot without using a cached response.
+Saving from an older draft is rejected if another snapshot was saved since it
+loaded. Download JSON to retain those edits before reloading; existing snapshots
+remain unchanged.

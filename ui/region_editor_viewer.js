@@ -15,13 +15,14 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 2000);
   const pose = historyCamera(scan.arch); camera.up.set(...pose.up); camera.position.set(...pose.position).multiplyScalar(0.55);
   const selection = createRegionSelection(host, scene, geometry, camera);
-  let activeLabels = [], pointerStart = null, lastHit = null, focused = false, selectedLabel = 0;
+  let activeLabels = [], pointerStart = null, lastHit = null, focused = false, pointBounds = null, selectedLabel = 0;
   let controls = new OrbitControls(camera, renderer.domElement); controls.addEventListener("change", render);
   const box = geometry.boundingBox.clone();
   const viewControls = mountScanViewToolbar(host.closest(".review-viewport") || host, command => {
     if (["auto", "fit"].includes(command)) focused = false;
-    const viewBox = focused ? selection.focusBounds() || box : box;
+    const viewBox = focused ? pointBounds || selection.focusBounds() || box : box;
     controls = frameScanView(camera, controls, renderer.domElement, viewBox, command, render);
+    configureNavigation();
   }, { compact: true });
   const cursor = new THREE.Mesh(new THREE.RingGeometry(0.94, 1, 48), new THREE.MeshBasicMaterial({ color: 0xffbf47, side: THREE.DoubleSide, depthTest: false }));
   cursor.visible = false; cursor.renderOrder = 10; scene.add(cursor);
@@ -40,8 +41,15 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       1 - (event.clientY - rect.top) / rect.height * 2), camera);
     return ray.intersectObject(mesh)[0];
   }
+  function navigating() { return ["orbit", "pan"].includes(brushSettings().mode); }
+  function configureNavigation() {
+    const pan = brushSettings().mode === "pan";
+    controls.mouseButtons.LEFT = pan ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+    controls.touches.ONE = pan ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
+    controls.screenSpacePanning = true;
+  }
   function paint(event, apply = true) {
-    const settings = brushSettings(); if (settings.mode === "orbit") { cursor.visible = false; render(); return; }
+    const settings = brushSettings(); if (navigating()) { cursor.visible = false; render(); return; }
     const hit = hitAt(event); lastHit = hit || null; cursor.visible = Boolean(hit);
     if (!hit) { render(); return; }
     updateBrush(); if (!apply) return;
@@ -54,7 +62,8 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   }
   function updateBrush() {
     const settings = brushSettings();
-    cursor.visible = Boolean(lastHit && settings.mode !== "orbit");
+    configureNavigation();
+    cursor.visible = Boolean(lastHit && !navigating());
     if (cursor.visible) {
       cursor.position.copy(lastHit.point); cursor.scale.setScalar(settings.radius);
       cursor.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), lastHit.face.normal.clone().normalize());
@@ -64,27 +73,34 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   function focusSelected() {
     const selectedBox = selection.focusBounds();
     if (!selectedBox) return;
-    focused = true; lastHit = null; cursor.visible = false;
+    focused = true; pointBounds = null; lastHit = null; cursor.visible = false;
     controls = frameScanView(camera, controls, renderer.domElement, selectedBox, "fit", render);
+    configureNavigation();
   }
   renderer.domElement.addEventListener("dblclick", event => {
-    if (brushSettings().mode !== "orbit") return;
+    if (!navigating()) return;
     const hit = hitAt(event);
     if (!hit) return;
     const id = activeLabels[hit.faceIndex];
-    if (id) { onSelectTooth(id); focusSelected(); }
+    if (id) onSelectTooth(id);
+    // Focus the clicked surface, even if unlabeled or part of a broad draft region.
+    const size = box.getSize(new THREE.Vector3()).length() * 0.1;
+    pointBounds = new THREE.Box3().setFromCenterAndSize(hit.point, new THREE.Vector3(size, size, size));
+    focused = true; lastHit = null; cursor.visible = false;
+    controls = frameScanView(camera, controls, renderer.domElement, pointBounds, "fit", render);
+    configureNavigation();
   });
   let drawing = false;
   renderer.domElement.addEventListener("pointerdown", event => {
     if (event.button !== 0) return;
     pointerStart = [event.clientX, event.clientY];
-    drawing = brushSettings().mode !== "orbit"; controls.enabled = !drawing;
+    drawing = !navigating(); controls.enabled = !drawing;
     if (drawing) { onStrokeStart(); renderer.domElement.setPointerCapture(event.pointerId); paint(event); }
   }, true);
   renderer.domElement.addEventListener("pointermove", event => paint(event, Boolean(drawing && event.buttons)));
   function finishStroke() { if (drawing) onStrokeEnd(); drawing = false; controls.enabled = true; }
   renderer.domElement.addEventListener("pointerup", event => {
-    if (!drawing && event.button === 0 && pointerStart && brushSettings().mode === "orbit"
+    if (!drawing && event.button === 0 && pointerStart && navigating()
       && Math.hypot(event.clientX - pointerStart[0], event.clientY - pointerStart[1]) < 5) {
       const hit = hitAt(event);
       if (hit) onSelectTooth(activeLabels[hit.faceIndex] || 0);
@@ -105,7 +121,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       labels.forEach((id, face) => { const color = palette.get(id); for (let i = 0; i < 3; i++) colors.set([color.r, color.g, color.b], face * 9 + i * 3); });
       selection.update(labels, selected);
       geometry.attributes.color.needsUpdate = true;
-      if (focused && changedSelection) focusSelected();
+      if (focused && changedSelection && !pointBounds) focusSelected();
       render();
     },
     setMarkerVisible(visible) { selection.setMarkerVisible(visible); render(); },

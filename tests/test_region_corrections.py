@@ -56,3 +56,15 @@ def test_corrupted_latest_snapshot_is_not_silently_replaced(tmp_path):
     from pathlib import Path
     Path(saved["path"]).write_text("broken JSON")
     assert not load_baseline_corrections("lower", root=tmp_path)["ok"]
+
+
+def test_stale_browser_draft_cannot_supersede_newer_labels(tmp_path):
+    first = save_baseline_corrections({"arch": "upper", "corrections": record("upper"),
+                                       "base_saved_at": None}, root=tmp_path)
+    newer = save_baseline_corrections({"arch": "upper", "corrections": record("upper"),
+                                       "base_saved_at": first["saved_at"]}, root=tmp_path)
+    stale = save_baseline_corrections({"arch": "upper", "corrections": record("upper"),
+                                       "base_saved_at": first["saved_at"]}, root=tmp_path)
+    assert not stale["ok"] and "Reload saved" in stale["errors"][0]
+    assert load_baseline_corrections("upper", root=tmp_path)["path"] == newer["path"]
+    assert len(list(tmp_path.rglob("*.json"))) == 2

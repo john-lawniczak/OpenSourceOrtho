@@ -5,7 +5,7 @@ import { renderChatMessages } from "./chat_thread.js";
 const AI_KEY_HELP = {
   local: "Offline. No key needed.",
   anthropic: "Paste an Anthropic API key here. Use Claude Code instead for local CLI sign-in.",
-  openai: "Use an OpenAI API key. Kept for this tab only.",
+  openai: "Paste the complete key from platform.openai.com. Kept for this page only.",
   "claude-code": "Uses your signed-in Claude Code CLI on this machine. To enter an API key, choose Claude API (Anthropic).",
   deepseek: "Use a DeepSeek API key. Kept for this tab only.",
   glm: "Use a Z.ai standard API key. Kept for this tab only.",

@@ -6,6 +6,7 @@
 <section class="review-baseline-entry" aria-label="USER_ONE baseline painting">
 <strong>USER_ONE · Week 1</strong>
 <div class="controls"><button id="reviewLoadupper" type="button">⌒ Upper</button><button id="reviewLoadlower" type="button">⌣ Lower</button></div>
+<button id="reviewReload" type="button" title="Load the latest saved labels for this arch" disabled>↻ Reload saved</button>
 <span id="reviewSavedupper" class="review-save-badge" hidden></span><span id="reviewSavedlower" class="review-save-badge" hidden></span>
 </section>
 <details class="review-import"><summary>Import scan or corrections</summary>
@@ -15,6 +16,10 @@
 <section class="review-workbench">
 <div class="review-surface">
 <div class="review-viewport">
+<div class="review-navigation-modes" role="group" aria-label="Drag action">
+<button type="button" data-review-mode="orbit" aria-pressed="true" title="Drag to rotate">↻ Rotate</button>
+<button type="button" data-review-mode="pan" aria-pressed="false" title="Drag to move the whole mouth">✥ Pan</button>
+</div>
 <div id="regionCanvas" class="large-canvas" aria-label="Interactive tooth painting surface"></div>
 <div class="review-viewport-tools" role="group" aria-label="Scan navigation">
 <button id="reviewZoomIn" type="button" aria-label="Zoom in" title="Zoom in" disabled>+</button>
@@ -36,13 +41,13 @@
 <small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
 <div class="controls"><button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
 <details><summary>Split / merge labels</summary>
-<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
+<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
 <label>To FDI <input id="reviewTo" type="number" value="12"></label><label>From FDI <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
 </fieldset>
 <details><summary>Numbering &amp; help</summary>
 <p>Large numbers are FDI; small numbers are US Universal. Right and left mean your own sides. Colors identify labels, not verified anatomy.</p>
 <a href="./tooth-chart.svg" target="_blank" rel="noopener">Open tooth diagram ↗</a>
-<p>Paint crown surfaces, then focus (◎) and rotate to paint the inside. Focus keeps view presets centered on that region; Fit scan returns to the whole arch.</p>
+<p>Paint crown surfaces, then double-click any surface to center it and rotate to paint the inside. Use Pan to move the whole mouth. Focus keeps view presets centered on that region; Fit scan returns to the whole arch.</p>
 <p>Labels may include gum or span several teeth. Correct boundaries and identity before marking an arch reviewed.</p>
 </details>
 </aside></section>
