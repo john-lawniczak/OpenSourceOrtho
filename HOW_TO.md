@@ -136,6 +136,35 @@ orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out repor
 In the 3D preview you can toggle **Tooth #** to overlay FDI tooth numbers on each
 tooth, which helps when choosing which teeth to move.
 
+### USER_ONE photo walkthrough
+
+**Materials → impressions → stone casts → scanning setup → STL upload**
+
+These photos show USER_ONE's acquisition process. For acquisition options and
+limitations, see [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md).
+
+| Impression material | Scanner equipment | Model stone |
+| --- | --- | --- |
+| ![Two containers of impression putty](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/01-user-one-impression-putty.jpg) | ![3DMakerpro Fox scanner packaging](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/02-user-one-scanner-equipment.jpg) | ![Bag of yellow model stone](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/03-user-one-model-stone.jpg) |
+
+| Both impressions | Lower impression | Upper impression |
+| --- | --- | --- |
+| ![Upper and lower impressions in blue trays](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/04-user-one-upper-lower-impressions.jpg) | ![Lower impression close-up](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/05-user-one-lower-impression.jpg) | ![Upper impression close-up](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/06-user-one-upper-impression.jpg) |
+
+| Stone-filled impressions | Tray-side view |
+| --- | --- |
+| ![Stone material filling the impressions](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/07-user-one-stone-filled-impressions.jpg) | ![Stone-filled trays from another angle](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/08-user-one-stone-filled-trays.jpg) |
+
+| Lower cast | Casts together | Front view |
+| --- | --- | --- |
+| ![Lower stone cast on a turntable](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/09-user-one-lower-cast-on-turntable.jpg) | ![Casts stacked on a turntable](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/10-user-one-stacked-casts-on-turntable.jpg) | ![Front view of casts placed together](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/11-user-one-casts-front-view.jpg) |
+
+The casts together show a display arrangement, not a measured bite registration.
+After exporting a scan, start at **Upload**, confirm the arch and units, then use
+**Teeth & time → Identify teeth → Paint boundaries** to review tooth labels.
+The photos do not establish scan accuracy; see the
+[photo provenance record](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/README.md).
+
 ### Auto-segmenting teeth (experimental)
 
 A whole-arch scan is one shell, not per-tooth meshes, so real per-tooth planning
