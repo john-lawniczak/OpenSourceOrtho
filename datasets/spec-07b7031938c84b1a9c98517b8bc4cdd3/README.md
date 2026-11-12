@@ -122,3 +122,22 @@ sequence is clinically correct.
 [Week 18 scans and model-damage notes](visits/progress-02/README.md) include the
 original upper/lower pair and both Fusion H4/H6 lower captures. Public publication
 was authorized on November 12, 2026; the existing week 1–7 motion fit is unchanged.
+
+## Dentition and baseline annotation
+
+The contributor reports that the wisdom teeth (FDI 18, 28, 38, 48) were removed.
+Extraction dates and any other absent teeth are unspecified. Upper second molars
+are 17 / US 2 and 27 / US 15. See `treatment-context.json`.
+
+The [upper annotation draft](annotations/initial-upper-tooth-corrections.json)
+retains painted front surfaces, aligns side numbering with the contributor's
+confirmed 21/22 anchors, and splits posterior masks into premolar/first-molar/
+second-molar labels. The [recipe](annotations/initial-upper-posterior-recipe.json)
+and [report](annotations/initial-upper-posterior-report.json) describe the
+geometry-assisted separators and remaining uncertainty. The previous annotation
+is retained alongside them. The draft is not fully reviewed crown segmentation;
+it does not replace the week 1–7 motion artifact. Reproduce with:
+
+```bash
+python3 tools/correct_user_one_upper_labels.py datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3
+```

@@ -348,3 +348,9 @@ visual assessment of contacts or an enamel/space analysis for IPR.
 The composer starts as one line, expands on focus, and collapses on blur, Send,
 or its Collapse button. Draft text survives collapse and reload. Opening the
 chat panel does not automatically expand the composer.
+
+Selected USER_ONE context also supplies `dentition` from the specimen-checked
+`treatment-context.json`: contributor-reported wisdom-tooth removal (18/28/38/48),
+with extraction dates unknown. This is reported history, not an independent
+anatomical finding. Published annotation drafts remain distinct from locally saved
+labels and the existing motion estimates.

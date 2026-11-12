@@ -1,4 +1,5 @@
 import { setupBrushShortcuts } from "./region_review_shortcuts.js";
+import { loadBaselineCaseData } from "./region_case_data.js";
 import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
 import { setupReviewControls } from "./region_review_controls.js";
 import { inferArchFromName } from "./core.js";
@@ -19,7 +20,7 @@ function refresh(changed = false) { if (changed) { saving.markDirty(); el("revie
 function mount() {
   viewer?.dispose();
   el("reviewWorkspaceLink").href = scan.baseline ? "./?chat_case=user_one" : "./";
-  panel.arch(scan.arch); el("reviewTool").value = "orbit";
+  panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
   el("reviewSource").textContent = `${scan.baseline ? "USER_ONE baseline · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
@@ -42,15 +43,17 @@ async function loadBaseline(arch) {
   el("reviewStatus").textContent = `Loading USER_ONE ${arch} baseline…`;
   el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
   try {
-    const [pair, saved] = await Promise.all([loadObservedPair(arch), fetchBaselineSave(arch)]);
-    const motion = saved.saved ? null : await loadMotionPreview(pair);
+    const [pair, saved, caseData] = await Promise.all([loadObservedPair(arch), fetchBaselineSave(arch), loadBaselineCaseData(arch)]);
+    const corrections = saved.saved ? saved.corrections : caseData.corrections;
+    const motion = corrections ? null : await loadMotionPreview(pair);
     if (current !== generation) return;
-    const nextScan = { ...pair[0], baseline: true };
+    const nextScan = { ...pair[0], baseline: true, absentTeeth: caseData.absentTeeth };
     const mapping = motion && Object.fromEntries(motion.teeth.map(t => [t.face_label, Number(t.tooth)]));
     const count = parseStlFaceCount(nextScan.bytes);
-    const nextEdits = saved.saved ? RegionEdits.restore(saved.corrections, nextScan.sha256, count, arch)
-      : new RegionEdits(motion.faceLabels.map(id => mapping[id] || 0), arch);
+    const nextEdits = corrections ? RegionEdits.restore(corrections, nextScan.sha256, count, arch)
+      : new RegionEdits(motion.faceLabels.map(id => caseData.absentTeeth.includes(mapping[id]) ? 0 : mapping[id] || 0), arch);
     scan = nextScan; edits = nextEdits; mount(); saving.setSaved(saved);
+    if (!saved.saved && corrections) el("reviewSaveStatus").textContent = "Published draft · boundaries need review";
     const url = new URL(location.href); url.searchParams.delete("edit"); url.searchParams.set("baseline", arch);
     history.replaceState(null, "", url);
   } finally {

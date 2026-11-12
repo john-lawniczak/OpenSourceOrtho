@@ -17,6 +17,7 @@ export class RegionEdits {
   }
   valid(id) { return id === 0 || (Number.isInteger(id) && (this.arch === "upper" ? /^[12][1-8]$/ : /^[34][1-8]$/).test(String(id))); }
   paint(faces, target, source = null) {
+    if (this.absentTeeth?.includes(target)) throw new Error(`Tooth ${target} is reported removed for this case. Choose a present tooth.`);
     if (!this.valid(target) || (source !== null && !this.valid(source))) throw new Error("Choose a valid tooth number for this arch.");
     const changes = [];
     for (const face of new Set(faces)) {

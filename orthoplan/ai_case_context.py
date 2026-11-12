@@ -75,6 +75,7 @@ def user_one_chat_context() -> dict:
     if not scans:
         raise ValueError("USER_ONE case records are unavailable in this installation.")
     case = {"pseudonym": "USER_ONE", "specimen_id": SAMPLE_SPECIMEN_ID, "scans": scans,
+            "dentition": (_read("treatment-context.json") or {}).get("dentition"),
             "source_notes": notes, "saved_baseline_labels": [_annotation(a) for a in ["upper", "lower"]],
             "motion_estimates": [m for a in ["upper", "lower"] if (m := _motion(a))],
             "limitations": ["Scan metadata and saved label summaries, not visual inspection of crowns.",

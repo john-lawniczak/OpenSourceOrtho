@@ -15,7 +15,7 @@ export function setupReviewControls({ selectTooth, changeMode }) {
   el("reviewSplitSource").onchange = () => { el("reviewFrom").value = el("reviewSplitSource").value; changeMode(); };
   el("reviewFrom").onchange = () => { el("reviewSplitSource").value = el("reviewFrom").value; changeMode(); };
   return {
-    arch(arch) {
+    arch(arch, absentTeeth = []) {
       const lower = arch === "lower";
       el("reviewArch").value = arch;
       el("reviewFrom").value = lower ? 31 : 11;
@@ -25,6 +25,7 @@ export function setupReviewControls({ selectTooth, changeMode }) {
       el("reviewArchNotice").textContent = lower
         ? "Lower · FDI numbering"
         : "Upper · FDI numbering";
+      if (absentTeeth.length) el("reviewArchNotice").textContent += " · wisdom teeth removed (reported)";
       for (const quadrant of FDI_QUADRANTS.filter(q => q.name.startsWith(lower ? "Lower" : "Upper"))) {
         const group = document.createElement("div"); group.className = "review-tooth-quadrant";
         const heading = document.createElement("p");
@@ -40,6 +41,10 @@ export function setupReviewControls({ selectTooth, changeMode }) {
           button.dataset.kind = number % 10 <= 3 ? "front" : number % 10 <= 5 ? "premolar" : "molar";
           el("reviewSplitSource").append(new Option(`${id} · ${toothName(id)}`, id));
           button.title = toothName(id); button.setAttribute("aria-label", `FDI ${id} · US ${universalToothNumber(id)} · ${toothName(id)}`);
+          if (absentTeeth.includes(number)) {
+            button.disabled = true; kind.textContent = "Removed";
+            button.title += " · removed, per contributor";
+          }
           button.onclick = () => { el("reviewTo").value = id; selectTooth(); };
           row.append(button);
         }

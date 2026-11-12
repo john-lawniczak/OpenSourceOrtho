@@ -50,8 +50,11 @@ chipped-model metadata and evaluations. These unchanged scans now live under
 `datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/` and are individually
 allowlisted. The historical private sharing records remain as provenance.
 `datasets/**/private/` continues to mean unpublished contributions. This specific
-authorization does not cover other private contributions, raw CBCT, local painting
-sessions, credentials, or the third-party reference video.
+authorization does not confer third-party reference video rights or cover application
+credentials. The contributor subsequently authorized all USER_ONE contributed case
+data for publication, including wisdom-tooth removal history and the inventoried
+upper baseline annotations. Keep each published asset explicit in `consent.json`;
+local editing sessions remain outside release trees until incorporated into that inventory.
 
 ## 3. Prepare a public release worktree
 

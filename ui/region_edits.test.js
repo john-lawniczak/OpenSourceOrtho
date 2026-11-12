@@ -27,3 +27,11 @@ test("a drag stroke undoes all moves together and retains each original label", 
   edits.beginStroke(); edits.paint([3], 33); edits.paint([3], 0); edits.endStroke();
   assert.equal(edits.undoStack.length, 1);
 });
+
+test("case-specific removed teeth cannot be painted but old labels can be corrected", () => {
+  const edits = new RegionEdits([18, 17, 0], "upper"); edits.absentTeeth = [18, 28];
+  assert.throws(() => edits.paint([2], 18), /reported removed/);
+  edits.paint([0], 17, 18); assert.deepEqual([...edits.labels], [17, 17, 0]);
+  const generic = new RegionEdits([0], "upper"); generic.paint([0], 18);
+  assert.equal(generic.labels[0], 18);
+});

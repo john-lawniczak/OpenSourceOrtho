@@ -23,6 +23,8 @@ def test_region_merge_undo_brush_and_export(server_url, tmp_path):  # noqa:F811
             )
             page.screenshot(path=str(tmp_path / "sample-boundary-editor.png"), full_page=True)
             page.get_by_text("Split / merge labels", exact=True).click()
+            page.locator("#reviewFrom").fill("21")
+            page.locator("#reviewTo").fill("22")
             page.locator("#reviewMerge").click()
             expect(page.locator("#reviewStatus")).to_contain_text("1 correction operations")
             page.locator("#reviewUndo").click()
