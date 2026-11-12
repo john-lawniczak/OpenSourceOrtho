@@ -1,0 +1,421 @@
+{
+  "schema": "ortho-lower-label-audit-v1",
+  "status": "draft-needs-boundary-review",
+  "source_filename": "initial-lower.stl",
+  "source_sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+  "units": "mm (case manifest declaration; not independently calibrated)",
+  "scan_geometry_modified": false,
+  "tooth_order": [
+    47,
+    46,
+    45,
+    44,
+    43,
+    42,
+    41,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37
+  ],
+  "width_method": "98th minus 2nd percentile of source vertices projected onto the local arch tangent between neighboring crown seeds; not clinical mesiodistal caliper width",
+  "midline": {
+    "between_fdi": [
+      41,
+      31
+    ],
+    "reference_xy": [
+      0.025,
+      -45.5
+    ],
+    "patient_right_raw_x": "negative",
+    "patient_left_raw_x": "positive",
+    "assessment": "Above-view inspection places the 41/31 inter-incisor contact near original X=0, Y=-45.5. Separate anterior seeds lie on either side and proceed outward 41/42/43 and 31/32/33. Patient right/left retains the existing lower case convention (negative X=4x, positive X=3x); an unmarked mesh alone does not independently establish anatomical handedness."
+  },
+  "cleanup": {
+    "overlapping_outline_faces_left_unlabeled": 272,
+    "contact_buffer_faces_left_unlabeled": 22,
+    "per_tooth_cleanup": {
+      "47": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "46": {
+        "components_before_cleanup": 2,
+        "stray_faces_removed": 83
+      },
+      "45": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "44": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "43": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "42": {
+        "components_before_cleanup": 2,
+        "stray_faces_removed": 9
+      },
+      "41": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "31": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "32": {
+        "components_before_cleanup": 2,
+        "stray_faces_removed": 1
+      },
+      "33": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "34": {
+        "components_before_cleanup": 2,
+        "stray_faces_removed": 2
+      },
+      "35": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "36": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      },
+      "37": {
+        "components_before_cleanup": 1,
+        "stray_faces_removed": 0
+      }
+    }
+  },
+  "labeled_faces": 127968,
+  "unlabeled_faces": 158833,
+  "cross_label_shared_edges": 0,
+  "limitations": [
+    "All 14 labels are draft boundaries for subsequent painting, not independently reviewed reference segmentation.",
+    "Projected crown outlines cannot establish exact hidden proximal contact or gingival boundaries; uncertain edge faces remain context.",
+    "The previous crown-mask envelope is retained as an upper bound on coverage, so gray crown portions may remain for manual review.",
+    "Millimeters use the lower manifest declaration; no independent calibration or width-based scaling was applied.",
+    "Estimated widths depend on tooth rotation, crown-mask extent and the local arch tangent; outliers need review rather than automatic splitting or resizing.",
+    "Neither upper scan/labels nor cross-visit motion artifacts are read or changed by the lower correction generator.",
+    "Distal margins of 47/37 are conservatively capped in the projected view; residual width outliers and gray distal crown portions require review."
+  ],
+  "teeth": [
+    {
+      "fdi": 47,
+      "face_count": 13868,
+      "connected_components": 1,
+      "estimated_width_mm": 11.37,
+      "full_projected_span_mm": 13.07,
+      "user_reference_width_mm": [
+        10,
+        10.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -25.048659068095592,
+        -9.925838931089823,
+        -0.5853857518205183
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Above supplied range: inspect distal/gingival extent and tangent orientation"
+      ]
+    },
+    {
+      "fdi": 46,
+      "face_count": 11775,
+      "connected_components": 1,
+      "estimated_width_mm": 10.31,
+      "full_projected_span_mm": 11.36,
+      "user_reference_width_mm": [
+        10.5,
+        11.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -21.614710602163004,
+        -21.304901797057717,
+        -1.3988770122082623
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 45,
+      "face_count": 7309,
+      "connected_components": 1,
+      "estimated_width_mm": 6.48,
+      "full_projected_span_mm": 7.5,
+      "user_reference_width_mm": [
+        7,
+        7.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -20.237457746943367,
+        -30.06347194143972,
+        -1.6472684951608603
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 44,
+      "face_count": 7568,
+      "connected_components": 1,
+      "estimated_width_mm": 6.7,
+      "full_projected_span_mm": 7.27,
+      "user_reference_width_mm": [
+        7,
+        7.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -16.441099559403877,
+        -36.06884882986083,
+        -0.9044403119604717
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 43,
+      "face_count": 10063,
+      "connected_components": 1,
+      "estimated_width_mm": 7.13,
+      "full_projected_span_mm": 8.22,
+      "user_reference_width_mm": [
+        6.5,
+        7
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -12.71275911186178,
+        -42.03231699580667,
+        -1.3642178160044367
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Above supplied range: inspect distal/gingival extent and tangent orientation"
+      ]
+    },
+    {
+      "fdi": 42,
+      "face_count": 5700,
+      "connected_components": 1,
+      "estimated_width_mm": 5.25,
+      "full_projected_span_mm": 5.97,
+      "user_reference_width_mm": [
+        5.5,
+        6
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -7.644190711250082,
+        -43.92290600447627,
+        0.14618646242465191
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 41,
+      "face_count": 6982,
+      "connected_components": 1,
+      "estimated_width_mm": 4.79,
+      "full_projected_span_mm": 5.36,
+      "user_reference_width_mm": [
+        5,
+        5.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        -2.7253121264306635,
+        -45.26769845988568,
+        0.07188365407765429
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 31,
+      "face_count": 8091,
+      "connected_components": 1,
+      "estimated_width_mm": 5.11,
+      "full_projected_span_mm": 5.48,
+      "user_reference_width_mm": [
+        5,
+        5.5
+      ],
+      "within_reference_range": true,
+      "centroid_xyz": [
+        2.92826986894351,
+        -46.29018455706219,
+        -0.029980627680003598
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate"
+      ]
+    },
+    {
+      "fdi": 32,
+      "face_count": 6455,
+      "connected_components": 1,
+      "estimated_width_mm": 5.23,
+      "full_projected_span_mm": 6.04,
+      "user_reference_width_mm": [
+        5.5,
+        6
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        7.988215375728395,
+        -44.15846180422128,
+        -0.23053241838572902
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 33,
+      "face_count": 8197,
+      "connected_components": 1,
+      "estimated_width_mm": 7.04,
+      "full_projected_span_mm": 8.62,
+      "user_reference_width_mm": [
+        6.5,
+        7
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        12.77990465213437,
+        -40.84383217941619,
+        -0.8163999529611264
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Above supplied range: inspect distal/gingival extent and tangent orientation"
+      ]
+    },
+    {
+      "fdi": 34,
+      "face_count": 7161,
+      "connected_components": 1,
+      "estimated_width_mm": 6.4,
+      "full_projected_span_mm": 7.24,
+      "user_reference_width_mm": [
+        7,
+        7.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        16.750408875155937,
+        -35.551212710497,
+        -0.5807334870115282
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 35,
+      "face_count": 7149,
+      "connected_components": 1,
+      "estimated_width_mm": 6.08,
+      "full_projected_span_mm": 6.92,
+      "user_reference_width_mm": [
+        7,
+        7.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        20.338264674058063,
+        -29.819114146746415,
+        -1.4150028449091572
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 36,
+      "face_count": 11543,
+      "connected_components": 1,
+      "estimated_width_mm": 10.12,
+      "full_projected_span_mm": 11.52,
+      "user_reference_width_mm": [
+        10.5,
+        11.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        21.856789243083927,
+        -21.38858370632368,
+        -1.7076182873801433
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Below supplied range: conservative mask or tooth rotation may underestimate width"
+      ]
+    },
+    {
+      "fdi": 37,
+      "face_count": 16107,
+      "connected_components": 1,
+      "estimated_width_mm": 10.9,
+      "full_projected_span_mm": 12.8,
+      "user_reference_width_mm": [
+        10,
+        10.5
+      ],
+      "within_reference_range": false,
+      "centroid_xyz": [
+        25.09105375352323,
+        -9.815843811784344,
+        -0.7019509454946916
+      ],
+      "flags": [
+        "Draft contact/gum boundaries need surface review",
+        "Width is a projected mask estimate",
+        "Above supplied range: inspect distal/gingival extent and tangent orientation"
+      ]
+    }
+  ]
+}

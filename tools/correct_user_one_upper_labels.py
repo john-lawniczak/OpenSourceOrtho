@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 
-def correct_labels(triangles, labels, recipe):
+def correct_labels(triangles, labels, recipe, draft_labels=None):
     """Apply simultaneous identity changes and explicit posterior separator planes."""
     original = np.asarray(labels, dtype=np.uint8)
     centers = np.asarray(triangles).mean(axis=1)
@@ -22,7 +22,27 @@ def correct_labels(triangles, labels, recipe):
             boundary = plane["y_origin"] + plane["slope"] * (centers[:, 0] - plane["x_origin"])
             partition += centers[:, 1] > boundary
         result[mask] = np.asarray(group["target_labels"])[partition[mask]]
+    if recipe.get("front_restoration"):
+        if draft_labels is None or len(draft_labels) != len(original):
+            raise ValueError("Front restoration requires the source-bound draft masks")
+        for source, target in recipe["front_restoration"]["face_label_to_fdi"].items():
+            mask = (original == 0) & (result == 0) & (draft_labels == int(source))
+            result[mask] = target
     return result
+
+
+def restoration_masks(case, recipe):
+    restoration = recipe.get("front_restoration")
+    if not restoration:
+        return None
+    path = case / restoration["source_artifact"]
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != restoration["source_artifact_sha256"]:
+        raise ValueError("Restoration draft artifact changed")
+    artifact = json.loads(raw)
+    if artifact["sources"][0]["sha256"] != recipe["source_sha256"]:
+        raise ValueError("Restoration masks belong to another source scan")
+    return np.frombuffer(base64.b64decode(artifact["moving_face_labels_base64"], validate=True), dtype=np.uint8)
 
 
 def generate(case):
@@ -38,7 +58,7 @@ def generate(case):
     labels = np.frombuffer(base64.b64decode(before["labels_base64"], validate=True), dtype=np.uint8)
     if len(labels) != len(triangles) or before["face_count"] != len(labels):
         raise ValueError("Face counts must match")
-    updated = correct_labels(triangles, labels, recipe)
+    updated = correct_labels(triangles, labels, recipe, restoration_masks(case, recipe))
     record = {**before, "labels_base64": base64.b64encode(updated.tobytes()).decode(), "reviewed": False}
     (folder / "initial-upper-tooth-corrections.json").write_text(json.dumps(record, indent=2) + "\n")
     report = {"status": recipe["status"], "source_sha256": digest,
@@ -48,7 +68,8 @@ def generate(case):
               "previous_labels": {str(n): int((labels == n).sum()) for n in np.unique(labels)},
               "updated_labels": {str(n): int((updated == n).sum()) for n in np.unique(updated)},
               "front_21_22_faces_preserved": bool(np.all(updated[np.isin(labels, [21, 22])] == labels[np.isin(labels, [21, 22])])),
-              "unlabeled_faces_preserved": bool(np.all(updated[labels == 0] == 0)),
+              "unlabeled_faces_restored": {str(n): int(np.count_nonzero((labels == 0) & (updated == n))) for n in [11, 12]},
+              "other_unlabeled_faces_preserved": bool(np.all(np.isin(updated[labels == 0], [0, 11, 12]))),
               "limitations": recipe["limitations"]}
     (folder / "initial-upper-posterior-report.json").write_text(json.dumps(report, indent=2) + "\n")
     return report

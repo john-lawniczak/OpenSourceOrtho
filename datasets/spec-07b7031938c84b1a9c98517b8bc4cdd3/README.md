@@ -141,3 +141,9 @@ it does not replace the week 1–7 motion artifact. Reproduce with:
 ```bash
 python3 tools/correct_user_one_upper_labels.py datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3
 ```
+
+The contributor also confirmed the previously gray upper-right front crowns as
+11 / US 8 (central) and 12 / US 7 (lateral). Their original draft masks are
+restored only where faces were unlabeled; existing colored surfaces are unchanged.
+The before-restoration annotation is retained for comparison. These crown masks
+still need boundary review.

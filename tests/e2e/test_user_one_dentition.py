@@ -19,6 +19,12 @@ def test_published_upper_labels_and_case_specific_inventory(server_url, monkeypa
             expect(page.locator('[data-tooth="17"]')).to_be_enabled()
             expect(page.locator('[data-tooth="27"]')).to_be_enabled()
             expect(page.locator("#reviewSaveStatus")).to_contain_text("Published draft")
+            for tooth, us, count in [("11", "8", "18,019"), ("12", "7", "8,322")]:
+                page.locator(f'[data-tooth="{tooth}"]').click()
+                expect(page.locator("#reviewSelectedTooth")).to_contain_text(f"FDI {tooth} / US {us}")
+                expect(page.locator("#reviewSelectionHelp")).to_contain_text(f"{count} labeled faces")
+            page.get_by_role("button", name="Face-on", exact=True).click()
+            page.screenshot(path=str(tmp_path / "upper-front-11-12.png"), full_page=True)
             page.locator('[data-tooth="27"]').click()
             expect(page.locator("#reviewSelectionHelp")).to_contain_text("21,856 labeled faces")
             expect(page.locator("#reviewSelectedTooth")).to_contain_text("US 15")

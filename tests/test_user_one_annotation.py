@@ -7,7 +7,7 @@ import numpy as np
 
 from orthoplan.datasets import SAMPLE_CASE_DIR, resolve_published_asset, SAMPLE_SPECIMEN_ID
 from orthoplan.region_corrections import baseline_source, validate_corrections
-from tools.correct_user_one_upper_labels import correct_labels
+from tools.correct_user_one_upper_labels import correct_labels, restoration_masks
 
 
 def test_upper_posterior_draft_is_reproducible_and_preserves_user_paint():
@@ -21,10 +21,18 @@ def test_upper_posterior_draft_is_reproducible_and_preserves_user_paint():
     triangles = np.frombuffer(raw, dtype=dtype, offset=84)["v"].astype(float)
     previous = np.frombuffer(base64.b64decode(before["labels_base64"]), dtype="u1")
     updated = np.frombuffer(base64.b64decode(after["labels_base64"]), dtype="u1")
-    assert np.array_equal(correct_labels(triangles, previous, recipe), updated)
+    masks = restoration_masks(SAMPLE_CASE_DIR, recipe)
+    assert np.array_equal(correct_labels(triangles, previous, recipe, masks), updated)
     assert np.array_equal(updated[np.isin(previous, [21, 22])], previous[np.isin(previous, [21, 22])])
     assert np.all(updated[previous == 13] == 23)
-    assert np.all(updated[previous == 0] == 0)
+    assert np.all(np.isin(updated[previous == 0], [0, 11, 12]))
+    prior_front = json.loads((folder / "initial-upper-before-front-restoration.json").read_text())
+    prior_labels = np.frombuffer(base64.b64decode(prior_front["labels_base64"]), dtype="u1")
+    assert np.array_equal(updated[prior_labels != 0], prior_labels[prior_labels != 0])
+    assert np.count_nonzero(updated == 11) == 18019
+    assert np.count_nonzero(updated == 12) == 8322
+    assert np.all(masks[(prior_labels == 0) & (updated == 11)] == 8)
+    assert np.all(masks[(prior_labels == 0) & (updated == 12)] == 9)
     assert {15, 16, 17, 25, 26, 27}.issubset(set(updated))
     assert not {18, 28}.intersection(updated)
     assert not after["reviewed"]

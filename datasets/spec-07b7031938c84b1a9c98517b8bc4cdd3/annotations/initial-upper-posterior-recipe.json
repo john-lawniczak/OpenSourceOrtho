@@ -67,8 +67,19 @@
   "limitations": [
     "Separators use original scan XY coordinates and face centroids; scan units are not assumed to be millimeters.",
     "Only existing posterior draft masks are split; crown/gum extent and hidden surfaces still need review.",
-    "Unlabeled faces and painted 21/22 face memberships are preserved. Painted source 13 becomes 23 without altering its surface.",
+    "Painted 21/22 face memberships are preserved. Painted source 13 becomes 23 without altering its surface. Only the confirmed 11/12 draft masks are restored from context; all other context stays unchanged.",
     "Old draft 17/27 patches on distal/lingual context are cleared, not treated as extra teeth.",
-    "Does not regenerate week 1\u20137 motion fits or transfer labels to other scans."
-  ]
+    "Does not regenerate week 1\u20137 motion fits or transfer labels to other scans.",
+    "Restored 11/12 use existing geometric crown masks, not newly reviewed gumlines or full-crown boundaries."
+  ],
+  "front_restoration": {
+    "source_artifact": "derived/progress-01-motion-upper.json",
+    "source_artifact_sha256": "b347b36828991331c755336b21daa8221d238ae48ab893df29aea3afed825665",
+    "face_label_to_fdi": {
+      "8": 11,
+      "9": 12
+    },
+    "input_saved_at": "2026-11-12T17:26:28.118836+00:00",
+    "provenance": "Contributor confirmed the gray upper-right central and lateral crowns as FDI 11/US 8 and FDI 12/US 7 on 2026-11-12. Restore only unlabeled faces from the original source-bound draft masks; mask boundaries remain estimated."
+  }
 }

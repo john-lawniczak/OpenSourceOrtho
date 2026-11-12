@@ -18,6 +18,7 @@
   "date_retention_basis": "Existing case-specific contributor request to retain acquisition and treatment dates; dates remain confined to case records, not the catalog.",
   "public_assets": [
     "README.md",
+    "annotations/initial-upper-before-front-restoration.json",
     "annotations/initial-upper-before-posterior-correction.json",
     "annotations/initial-upper-posterior-recipe.json",
     "annotations/initial-upper-posterior-report.json",
@@ -69,7 +70,14 @@
     "visits/progress-02/progress-02-upper.stl",
     "visits/progress-02/quality-assessment.md",
     "visits/progress-02/quality-findings.json",
-    "visits/progress-02/source-metadata.json"
+    "visits/progress-02/source-metadata.json",
+    "annotations/initial-lower-before-correction.json",
+    "annotations/initial-lower-segmentation-report.csv",
+    "annotations/initial-lower-segmentation-report.json",
+    "annotations/initial-lower-segmentation-report.md",
+    "annotations/initial-lower-segmentation-views.png",
+    "annotations/initial-lower-tooth-corrections.json",
+    "annotations/initial-lower-valley-recipe.json"
   ],
   "third_party_reference_rights": "unverified",
   "rights_note": "The third-party reference simulation is omitted from this public snapshot because redistribution rights remain unverified. Its descriptive metadata is retained for provenance only; references to the video do not make the file available. Raw CBCT, private records, and original identifying paperwork are excluded. Earlier public Git history is unchanged."

@@ -72,9 +72,29 @@
         "us": "15"
       }
     },
-    "note": "Contributor states wisdom teeth have been removed. This does not independently confirm every other tooth is present or establish crown boundaries."
+    "note": "Contributor states wisdom teeth have been removed. This does not independently confirm every other tooth is present or establish crown boundaries.",
+    "confirmed_upper_front_ids": {
+      "right_central": {
+        "fdi": "11",
+        "us": "8"
+      },
+      "right_lateral": {
+        "fdi": "12",
+        "us": "7"
+      },
+      "left_central": {
+        "fdi": "21",
+        "us": "9"
+      },
+      "left_lateral": {
+        "fdi": "22",
+        "us": "10"
+      },
+      "provenance": "Contributor confirmed front-tooth identities in the displayed upper baseline. Identity confirmation does not validate all surface boundaries."
+    }
   },
   "baseline_annotations": {
-    "upper": "annotations/initial-upper-tooth-corrections.json"
+    "upper": "annotations/initial-upper-tooth-corrections.json",
+    "lower": "annotations/initial-lower-tooth-corrections.json"
   }
 }

@@ -1,0 +1,15 @@
+fdi,face_count,connected_components,estimated_width_mm,full_projected_span_mm,within_reference_range,flags
+47,13868,1,11.37,13.07,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Above supplied range: inspect distal/gingival extent and tangent orientation
+46,11775,1,10.31,11.36,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+45,7309,1,6.48,7.5,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+44,7568,1,6.7,7.27,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+43,10063,1,7.13,8.22,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Above supplied range: inspect distal/gingival extent and tangent orientation
+42,5700,1,5.25,5.97,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+41,6982,1,4.79,5.36,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+31,8091,1,5.11,5.48,True,Draft contact/gum boundaries need surface review; Width is a projected mask estimate
+32,6455,1,5.23,6.04,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+33,8197,1,7.04,8.62,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Above supplied range: inspect distal/gingival extent and tangent orientation
+34,7161,1,6.4,7.24,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+35,7149,1,6.08,6.92,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+36,11543,1,10.12,11.52,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Below supplied range: conservative mask or tooth rotation may underestimate width
+37,16107,1,10.9,12.8,False,Draft contact/gum boundaries need surface review; Width is a projected mask estimate; Above supplied range: inspect distal/gingival extent and tangent orientation
