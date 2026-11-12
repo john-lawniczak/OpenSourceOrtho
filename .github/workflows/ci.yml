@@ -84,4 +84,14 @@ jobs:
       - name: Install Chromium
         run: python -m playwright install --with-deps chromium
       - name: Viewer smoke
-        run: pytest tests/e2e -q
+        run: pytest tests/e2e/test_tooth_goals.py -q --basetemp "${{ runner.temp }}/ortho-pick"
+      - name: Browser suite
+        run: pytest tests/e2e -q --basetemp "${{ runner.temp }}/ortho-e2e"
+      - name: Browser failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure-screenshots
+          path: |
+            ${{ runner.temp }}/ortho-pick/**/*.png
+            ${{ runner.temp }}/ortho-e2e/**/*.png
