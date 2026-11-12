@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Review tooth regions</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
 <body><main><a href="./">← Workspace</a><h1>Paint tooth boundaries</h1>
-<p>Give each tooth its own surface label. Original scan bytes stay unchanged.</p>
+<p>This app workspace lets you correct tooth labels for scan analysis. Draft regions and tooth numbers need your review. Original scan bytes stay unchanged.</p>
 <ol class="review-steps">
 <li><strong>1 · Load &amp; position</strong>Choose the arch and scan. Use Auto view, Other side, and Roll to get a comfortable angle.</li>
 <li><strong>2 · Choose &amp; paint a tooth</strong>Select its number, choose Paint tooth, then drag over the crown. Paint the surface, not just an outline.</li>
@@ -16,12 +16,17 @@
 <div class="review-surface">
 <div id="regionCanvas" class="large-canvas" aria-label="Interactive tooth painting surface"></div>
 <p id="reviewStatus" role="status">Load a scan to begin.</p>
-<p>Selected tooth = amber · other teeth = colored · unlabeled/context = gray. An imported STL starts unlabeled. Rotate to inspect hidden surfaces; a single view cannot show a whole tooth.</p>
+<p>Selected label = amber with a numbered marker · other labels = muted blue · unlabeled/context = gray. The marker indicates the label’s location, which may be behind visible surfaces. An imported STL starts unlabeled. Rotate to inspect hidden surfaces; a single view cannot show a whole tooth.</p>
 </div>
 <aside class="review-paint-controls">
 <fieldset id="reviewEditing" disabled><legend>Choose a tooth and tool</legend>
 <p>Tooth numbers use FDI. Right and left refer to the person, not the screen. <a href="./tooth-chart.svg" target="_blank" rel="noopener">Open numbering guide</a>.</p>
+<p id="reviewArchNotice" class="review-arch-notice"></p>
+<div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
 <div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
+<div class="controls"><button id="reviewFocus" type="button" disabled>Find selected label</button>
+<label><input id="reviewOtherColors" type="checkbox">Show other label colors</label></div>
+<p id="reviewSelectionHelp"></p>
 <div class="controls">
 <button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button>
 <label>Brush radius (scan units) <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label>

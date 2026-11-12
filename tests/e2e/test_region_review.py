@@ -37,3 +37,45 @@ def test_region_merge_undo_brush_and_export(server_url, tmp_path):  # noqa:F811
             assert record["reviewed"] is False and len(record["source_sha256"]) == 64
         finally:
             browser.close()
+
+
+def test_lower_selection_is_locatable_without_relabeling(server_url, tmp_path):  # noqa: F811
+    from test_boundary_intake import export
+
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1400, "height": 1050})
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        try:
+            page.goto(server_url + "/region-review.html")
+            page.locator("#reviewArch").select_option("lower")
+            page.locator("#loadSample").click()
+            expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations", timeout=30000)
+            expect(page.locator("#reviewArchNotice")).to_contain_text("Editing LOWER arch")
+            before = export(page, tmp_path, "before-selection.json")
+            page.locator('[data-tooth="46"]').click()
+            expect(page.locator("#reviewSelectedTooth")).to_have_text("Selected 46 · Lower right first molar")
+            expect(page.locator('[data-tooth="46"]')).to_have_attribute("aria-pressed", "true")
+            expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 46")
+            expect(page.locator("#reviewFocus")).to_be_enabled()
+            page.locator("#reviewFocus").click()
+            expect(page.locator("#reviewSelectionMarker")).to_be_visible()
+            first = page.locator("#regionCanvas").screenshot(path=str(tmp_path / "selected-46.png"))
+            page.locator('[data-tooth="31"]').click()
+            expect(page.locator("#reviewSelectedTooth")).to_have_text("Selected 31 · Lower left central incisor")
+            expect(page.locator('[data-tooth="46"]')).to_have_attribute("aria-pressed", "false")
+            page.locator("#reviewFocus").click()
+            expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 31")
+            second = page.locator("#regionCanvas").screenshot(path=str(tmp_path / "selected-31.png"))
+            assert first != second
+            # Find, select and show other colors must never rewrite saved labels.
+            page.locator("#reviewOtherColors").check()
+            page.locator('[data-scan-view="fit"]').click()
+            assert export(page, tmp_path, "after-selection.json") == before
+            expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations")
+            page.locator("#reviewOtherColors").uncheck()
+            page.screenshot(path=str(tmp_path / "lower-selection-guide.png"), full_page=True)
+            assert not errors
+        finally:
+            browser.close()

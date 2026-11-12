@@ -44,6 +44,21 @@ def verify_restore_and_rejection(page, tmp_path, painted):
     assert export(page, tmp_path, "after-rejection.json") == painted
 
 
+def verify_selected_surface(page, tmp_path, canvas, box, painted):
+    expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 31")
+    expect(page.locator("#reviewSelectionMarker")).to_be_visible()
+    expect(page.locator("#reviewFocus")).to_be_enabled()
+    page.locator('[data-tooth="32"]').click()
+    expect(page.locator("#reviewSelectionHelp")).to_contain_text("No surface is labeled 32 yet")
+    expect(page.locator("#reviewSelectionMarker")).to_be_hidden()
+    expect(page.locator("#reviewFocus")).to_be_disabled()
+    page.get_by_role("button", name="Move view", exact=True).click()
+    canvas.click(position={"x": box["width"] / 2, "y": box["height"] / 2})
+    expect(page.locator("#reviewTo")).to_have_value("31")
+    expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 31")
+    assert export(page, tmp_path, "after-selection.json") == painted
+
+
 def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa: F811
     source = surface(tmp_path)
     with sync_playwright() as pw:
@@ -64,6 +79,9 @@ def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa:
             expect(page.locator("#reviewArch")).to_have_value("lower")
             expect(page.locator("#reviewTo")).to_have_value("32")
             expect(page.locator("#returnCorrections")).to_be_hidden()
+            expect(page.locator("#reviewSelectionHelp")).to_contain_text("No surface is labeled 32 yet")
+            expect(page.locator("#reviewSelectionMarker")).to_be_hidden()
+            expect(page.locator("#reviewFocus")).to_be_disabled()
             original = export(page, tmp_path, "blank.json")
             assert original["source_sha256"] == hashlib.sha256(source.read_bytes()).hexdigest()
             assert not any(base64.b64decode(original["labels_base64"]))
@@ -87,6 +105,7 @@ def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa:
             painted = export(page, tmp_path, "painted.json")
             assert 31 in base64.b64decode(painted["labels_base64"])
             assert painted["source_sha256"] == original["source_sha256"]
+            verify_selected_surface(page, tmp_path, canvas, box, painted)
             page.locator("#reviewUndo").click()
             assert export(page, tmp_path, "undone.json") == original
             page.locator("#reviewRedo").click()

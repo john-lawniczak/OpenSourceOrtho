@@ -10,7 +10,7 @@ const el = id => document.getElementById(id);
 let scan, edits, viewer, generation = 0;
 const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => panel.update(Boolean(scan), selectedCount()) });
 function selectedCount() { return edits ? edits.labels.reduce((count, id) => count + (id === Number(el("reviewTo").value)), 0) : 0; }
-function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value)); panel.update(Boolean(scan), selectedCount()); }
+function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value), el("reviewOtherColors").checked); panel.update(Boolean(scan), selectedCount()); }
 function refresh() { selectionChanged(); el("reviewChecked").checked = false; el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
 function mount() {
   viewer?.dispose();
@@ -19,6 +19,10 @@ function mount() {
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
     brushSettings: () => ({ mode: el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
+    onSelectTooth: id => {
+      if (!id) { el("reviewStatus").textContent = "This surface is unlabeled. Choose its tooth number using the guide, then paint."; return; }
+      el("reviewTo").value = id; selectionChanged();
+    },
     onStrokeStart: () => edits.beginStroke(),
     onStrokeEnd: () => { edits.endStroke(); refresh(); },
     onPaint: (faces, settings) => action(() => { edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(); }),
@@ -73,3 +77,6 @@ el("returnCorrections").onclick = () => action(async () => {
   await caseStore("put",{...record,labels:edits.export(scan.sha256,el("reviewChecked").checked),returned:true},"edits");
   el("reviewStatus").textContent="Corrections returned. In the case, click Apply returned corrections, then regenerate.";
 });
+
+el("reviewFocus").onclick = () => viewer?.focusSelected();
+el("reviewOtherColors").onchange = selectionChanged;

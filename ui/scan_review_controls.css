@@ -31,3 +31,13 @@
 #regionCanvas[data-mode="brush"], #regionCanvas[data-mode="split"], #regionCanvas[data-mode="erase"] { cursor:crosshair; }
 @media(max-width:850px) { .review-workbench { grid-template-columns:1fr; } .review-paint-controls { grid-row:1; } }
 @media(max-width:650px) { .review-steps { grid-template-columns:1fr; } }
+.review-selection-marker { position:absolute; transform:translate(-50%, -135%); padding:6px 10px; border:2px solid #201600; border-radius:6px; background:#ffb000; color:#201600; font-weight:800; box-shadow:0 0 0 2px white; pointer-events:none; z-index:2; }
+.review-selection-marker::after { content:""; position:absolute; left:calc(50% - 5px); top:100%; border:6px solid transparent; border-top-color:#ffb000; }
+.review-selection-marker[hidden] { display:none; }
+.review-selected-tooth { padding:12px; background:#ffb000; color:#201600; font-weight:750; border-radius:6px; }
+.review-arch-notice { font-weight:650; }
+.tooth-palette { display:block; }
+.review-tooth-quadrant p { margin:12px 0 5px; }
+.review-tooth-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.tooth-palette button { background:light-dark(#e6edf0,#304750); color:light-dark(#243d45,#e8f0f2); border:1px solid #82989e; }
+.tooth-palette button[aria-pressed="true"] { background:#ffb000; color:#201600; outline:2px solid #ffb000; font-weight:800; }

@@ -47,8 +47,19 @@ reviewed at once.
    Establish orientation and tooth numbering before painting. The numbered buttons
    use FDI, offer tooth names, and follow the loaded arch. Uncertain identities
    need notes, not guesses made to complete the labels.
-3. Click a numbered tooth button, choose **Paint tooth**, and drag over its visible
-   crown surface. The selected label is amber and the brush ring shows the radius.
+3. Click a numbered tooth button. Its full name and position from the midline
+   appear beside the scan; the loaded upper/lower arch and numbering range stay
+   visible. Existing faces for that label turn amber with a numbered location
+   marker, while other labels are muted blue. **Find selected label** centers
+   and fits its region; rotate if it is behind visible surfaces. These are draft
+   label locations, not confirmed tooth identities. In **Move view**, clicking
+   a labeled surface selects its number without painting. **Show other label
+   colors** restores the multicolor context when useful.
+   If no faces carry a number, the editor says there is nothing to highlight;
+   use the location guide and confirm which crown it is before painting. A tooth
+   number alone cannot locate an unpainted or missing tooth.
+   Choose **Paint tooth** and drag over its visible crown surface. The brush ring
+   shows the radius.
    The instruction panel names the active tooth and reports its labeled face count.
    Use a smaller radius near tooth/gum transitions and neighboring teeth. This
    paints mesh faces; drawing only an outline does not fill the enclosed crown.
