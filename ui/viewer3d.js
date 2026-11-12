@@ -186,6 +186,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1,
       -((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 + 1,
     );
+    camera.updateMatrixWorld(true);
+    proxies.updateMatrixWorld(true);
     raycaster.setFromCamera(ndc, camera);
     const hits = raycaster.intersectObjects(proxies.children, false);
     for (const hit of hits) {
@@ -358,6 +360,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       .map((item) => item.tooth?.value));
 
     for (const pose of poses) {
+      if (!archVisible(archOf(pose.tooth))) continue;
       // Render the exact affine transform supplied by the engine.
       if (fragmentMode) {
         const fragment = fragmentCache.get(String(pose.tooth));

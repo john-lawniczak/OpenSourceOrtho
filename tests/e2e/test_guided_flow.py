@@ -8,7 +8,7 @@ import pytest
 
 pytest.importorskip("playwright.sync_api")
 
-from playwright.sync_api import Page, sync_playwright  # noqa: E402
+from playwright.sync_api import Page, expect, sync_playwright  # noqa: E402
 
 from orthoplan.server import Handler  # noqa: E402
 
@@ -75,6 +75,10 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
 
             advance(page, "details")
             advance(page, "review")
+            # Applying scan segmentation starts an asynchronous evaluation.
+            expect(page.locator("#guidedReviewDashboard")).to_contain_text(
+                "Crown contact / spacing", timeout=60000
+            )
             dashboard = page.locator("#guidedReviewDashboard").inner_text()
             assert "Cannot assess fully" not in dashboard
             assert "Crown contact / spacing" in dashboard
