@@ -10,6 +10,29 @@ OpenSource Ortho is a clear-aligner planning safety playground and research
 toolkit. The roadmap deepens measurement, exploratory simulation, and review;
 completing it does not establish clinical equivalence or authorize physical use.
 
+## Primary input — each user's own model
+
+Contributor clarified on November 12, 2026: the intended primary input is each
+individual user's own model/scan, including personally made physical models.
+Professional intraoral scans are optional comparison evidence for development,
+not a prerequisite for using exploratory tools. Preserve the user's observed
+geometry; do not replace it with a generic ideal arch. Measure errors from
+impression/model making, scanning, segmentation and registration separately.
+
+- [ ] Evaluate the local-model workflow against a closely timed professional
+  capture when available; record units, dates, bite alignment, model/impression
+  identities and repeat captures. Repeated scans of one cast measure scanner
+  repeatability; independent casts also test model-making variability.
+- [ ] Keep week-18 variants in one model-series group. The November 10 upper/bottom
+  test pair and H4/H6 are alternate attempts, not new treatment visits. Preserve
+  per-file damage reports and the confirmed H4/H6 shared physical lower model.
+- [ ] Assess complementary intact donor regions before attempting any composite.
+  Require compatible observation time, arch, scale and registration; retain
+  source hashes, per-region provenance, defect masks and the original files.
+  Never count inferred hole filling as observed anatomy or use a later-week
+  surface as a verified week-18 replacement. Keep composites in the same
+  subject/source family for benchmark splitting to avoid evaluation leakage.
+
 ## Current assessment
 
 Visualization, correction workflows, and traceability are implemented. Measured
