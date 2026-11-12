@@ -36,11 +36,14 @@ def test_uploaded_scan_readiness_and_resolution_link(intake_server, tmp_path):
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
         try:
+            page.on("dialog", lambda dialog: dialog.accept())
             page.goto(intake_server)
+            page.locator("#openChatSettings").click()
             page.locator('[data-user-mode="advanced"]').click()
             page.locator('#stlFile').set_input_files(scan)
             page.locator('#scanUnits').select_option('unverified')
             page.locator('[data-step="review"]').click()
+            page.locator('.viewer-diagnostics > summary').click()
             details = page.locator('#intakeReadinessDetails')
             expect(details).to_be_attached()
             details.locator('summary').click()

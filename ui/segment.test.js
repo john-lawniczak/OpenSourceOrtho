@@ -13,6 +13,7 @@ test("parseMissingTeeth keeps valid FDI, drops junk, de-duplicates", () => {
 });
 
 function seedProposal() {
+  state.scanUnits = "mm";
   state.segmentation.proposal = {
     plan_fragment: {
       mesh_assets: [{ id: "a1" }, { id: "a2" }, { id: "a3" }],
@@ -46,6 +47,8 @@ test("applySegmentation includes all valid teeth by default", () => {
   applySegmentation();
   assert.equal(state.segmentation.applied.tooth_meshes.length, 3);
   assert.equal(state.segmentation.applied.mesh_assets.length, 3);
+  assert.ok(state.segmentation.applied.tooth_meshes.every(link => link.reviewed));
+  assert.ok(state.segmentation.applied.mesh_assets.every(asset => asset.units === "mm"));
 });
 
 test("applySegmentation respects include checkboxes", () => {
@@ -105,4 +108,12 @@ test("cbctPriorNote summarizes prior usage per arch", () => {
   });
   assert.match(noAgreement, /mandibular: 5 CBCT boundary prior\(s\)/);
   assert.doesNotMatch(noAgreement, /agreement/);
+});
+
+ test("segmentation acceptance requires confirmed millimetres", () => {
+  seedProposal();
+  state.scanUnits = "unverified";
+  applySegmentation();
+  assert.equal(state.segmentation.applied, null);
+  assert.match(state.segmentation.status, /Confirm scan units/);
 });

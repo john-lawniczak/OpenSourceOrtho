@@ -16,7 +16,8 @@ This directory holds the project docs that should evolve with the product.
 - [UI_DESIGN.md](UI_DESIGN.md) - visualization and interface accuracy contract
 - [MAINTAINABILITY.md](MAINTAINABILITY.md) - composability, code hygiene, and file-size guardrails
 - [OPEN_SOURCE_REFERENCES.md](OPEN_SOURCE_REFERENCES.md) - open-source dependencies and proprietary reference boundaries
-- [RELEASE_READINESS.md](RELEASE_READINESS.md) - private release candidate review and remaining publication decisions
+- [PUBLIC_RELEASE_2026-09-22.md](PUBLIC_RELEASE_2026-09-22.md) - public snapshot scope, exclusions, and validation
+- [RELEASE_READINESS.md](RELEASE_READINESS.md) - release review and publication disposition
 - [LICENSE_AUDIT.md](LICENSE_AUDIT.md) - per-dependency license audit and compatibility
 - [SOURCES_AND_RECOMMENDED_SOFTWARE.md](SOURCES_AND_RECOMMENDED_SOFTWARE.md) - source ledger for monitoring upstream references over time
 - [OpenAI_Agents.md](OpenAI_Agents.md) - OpenAI agent/provider behavior guidance

@@ -15,6 +15,21 @@ uses `shell_occlusion` exports; the update uses `shell_teethup`. The progress
 pair's physical scale and shared bite frame remain unverified. Differences in
 coverage, gingiva, attachments, and orientation can affect apparent changes.
 
+## Contributor validation update — November 10, 2026
+
+The contributor identifies the earlier pair as **week 1 / baseline** and confirms
+that **cross-visit alignment and tooth correspondence are validated** for weeks
+1 and 7. The original acquisition dates and pretreatment baseline status remain
+unchanged; reported week labels are distinct from elapsed calendar weeks.
+`longitudinal-record.json` binds this confirmation to all four original hashes.
+The current figure and browser reveal still use display rotations and independent
+centering; an executable registration transform and per-tooth map have not been
+linked to the viewer. This confirmation does not create numeric tooth trajectories.
+
+Week 18 is a separate contribution of personal molds and scans. Both stone models
+were chipped due to model-making defects, as reported by the contributor. That
+private pair does not inherit the week 1–7 validation.
+
 ## Timeline and provenance
 
 | Record | Recorded date | Evidence |

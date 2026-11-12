@@ -9,6 +9,9 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from orthoplan.geometry_jobs import GeometryBusy, jobs
+from orthoplan.evaluation.motion_review import motion_review_payload
+from orthoplan.goal_preview import preview_goal_payload
 from orthoplan.ai_chat import answer_chat_payload, connector_catalog
 from orthoplan.ai_chat_stream import send_chat_stream
 from orthoplan.api import evaluate_plan_payload, print_package_payload
@@ -20,6 +23,7 @@ from orthoplan.generation import generate_plan_payload
 from orthoplan.datasets import resolve_published_asset
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 from orthoplan.occlusion.proximity_api import proximity_payload
+from orthoplan.region_corrections import load_baseline_corrections, save_baseline_corrections
 from orthoplan.segmentation_api import segment_payload
 from orthoplan.server_uploads import handle_case_record_upload, handle_scan_upload
 from orthoplan.setup_compare import compare_setups_payload, live_restage_comparison_payload
@@ -36,16 +40,19 @@ _CONTENT_TYPES = {
     ".stl": "model/stl",
     ".png": "image/png",
     ".jpg": "image/jpeg",
+    ".webm": "video/webm",
+    ".vtt": "text/vtt; charset=utf-8",
     ".md": "text/plain; charset=utf-8",
     # Canonical point-cloud storage; served as text so the viewer can read it.
     ".xyz": "text/plain; charset=utf-8",
 }
 
 JSON_POST_ENDPOINTS = {
-    "/api/evaluate", "/api/chat", "/api/chat/stream", "/api/generate-plan",
+    "/api/region-corrections",
+    "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
-    "/api/segment", "/api/occlusion",
+    "/api/segment", "/api/occlusion", "/api/geometry-jobs", "/api/geometry-jobs/cancel", "/api/motion-review",
 }
 
 
@@ -58,6 +65,7 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -92,6 +100,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
+            if path.startswith("/api/region-corrections/"):
+                self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1]))
+                return
+            if path.startswith("/api/geometry-jobs/"):
+                result = jobs.get(path.rsplit("/", 1)[-1])
+                self._send_json(404 if result['status'] == 'missing' else 200, result)
+                return
             if path.startswith("/api/mesh/"):
                 mesh_asset_id = urllib.parse.unquote(path.removeprefix("/api/mesh/"))
                 target = resolve_mesh_path(mesh_asset_id, workspace=self._mesh_workspace())
@@ -137,6 +152,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         try:
+            # A foreign page can send a simple POST to localhost even though
+            # CORS blocks reading the response. Reject it before any provider,
+            # upload or plan mutation; explicit non-browser clients have no Origin.
+            origin = self.headers.get("Origin")
+            host = self.headers.get("Host", "")
+            if (origin is not None and origin not in {f"http://{host}", f"https://{host}"}) or self.headers.get("Sec-Fetch-Site") == "cross-site":
+                self._send_json(403, {"ok": False, "errors": ["cross-origin requests are not allowed"]})
+                return
             path = self.path.split("?", 1)[0]
             if path in {"/api/upload/scan", "/api/upload/stl"}:
                 handle_scan_upload(self)
@@ -175,8 +198,22 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/region-corrections":
+        return save_baseline_corrections(payload)
+    if path == "/api/geometry-jobs/cancel":
+        return jobs.get(str(payload.get("job_id", "")), cancel=True)
+    if path == "/api/geometry-jobs":
+        try:
+            return jobs.start(payload.get("operation"), payload.get("payload"),
+                              workspace=handler._mesh_workspace(), ui_dir=UI_DIR)
+        except ValueError as exc:
+            return {"ok": False, "errors": [str(exc)], "retryable": isinstance(exc, GeometryBusy)}
+    if path == "/api/preview-goal":
+        return preview_goal_payload(payload)
     if path == "/api/chat":
         return answer_chat_payload(payload)
+    if path == "/api/motion-review":
+        return motion_review_payload(payload)
     if path == "/api/generate-plan":
         return generate_plan_payload(payload)
     if path == "/api/plan/version":
@@ -208,6 +245,7 @@ def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
     except KeyboardInterrupt:
         print("\nstopping")
     finally:
+        jobs.close()
         httpd.server_close()
 
 

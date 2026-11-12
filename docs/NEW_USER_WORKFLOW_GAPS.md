@@ -162,4 +162,5 @@ unambiguous. CBCT records should have an equally explicit local handoff/import
 path. None of these steps may imply diagnosis, clinical approval, complete
 treatment planning, manufacturing fit, or safe physical use.
 
-Implementation work is tracked in [../TODO.md](../TODO.md).
+This document is the public record of remaining workflow priorities; private
+maintainer working notes are not included in the public snapshot.

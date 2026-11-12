@@ -120,5 +120,6 @@
     "data_gap": "No labeled side or occlusal views; no independent tooth-number review.",
     "clinician_question": null,
     "reference": "media/reference-simulation.mp4 at 2 and 18 seconds"
-  }
+  },
+  "reference_media_included_in_public_snapshot": false
 }

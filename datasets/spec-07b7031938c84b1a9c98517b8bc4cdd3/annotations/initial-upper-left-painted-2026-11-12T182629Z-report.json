@@ -1,0 +1,225 @@
+{
+  "schema": "ortho-annotation-checkpoint-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "arch": "upper",
+  "source_filename": "initial-upper.stl",
+  "source_sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+  "saved_at": "2026-11-12T18:26:29.840511+00:00",
+  "provenance": "Contributor painted and saved the upper arch, then confirmed USER_ONE patient-left side is painted correctly. Saved label bytes are preserved exactly.",
+  "review_status": "draft-partial-contributor-confirmation",
+  "contributor_confirmed_fdi": [
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+  ],
+  "confirmation_basis": "Contributor statement in this session; no independent anatomical verification.",
+  "remaining_review_fdi": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "whole_arch_reviewed": false,
+  "previous_annotation": "annotations/initial-upper-context-cleanup-2026-11-12T181002Z.json",
+  "previous_annotation_sha256": "589f3452002af55debf76646f115eaade8d24a744f8a8555e59ad7f3f1cd8bed",
+  "annotation": "annotations/initial-upper-left-painted-2026-11-12T182629Z.json",
+  "annotation_sha256": "4d3670c1975670e4ccd9a12424d6d2b80d94f6638431dcf9d35b7e971a3aa334",
+  "scan_geometry_modified": false,
+  "changed_faces": 7237,
+  "cleared_to_context": 1537,
+  "newly_labeled_faces": 2789,
+  "reassigned_faces": 2911,
+  "labeled_faces": 174393,
+  "unlabeled_faces": 155916,
+  "transitions": [
+    {
+      "from_fdi": 0,
+      "to_fdi": 21,
+      "faces": 23
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 23,
+      "faces": 143
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 24,
+      "faces": 127
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 25,
+      "faces": 347
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 26,
+      "faces": 573
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 27,
+      "faces": 1576
+    },
+    {
+      "from_fdi": 11,
+      "to_fdi": 0,
+      "faces": 55
+    },
+    {
+      "from_fdi": 11,
+      "to_fdi": 21,
+      "faces": 380
+    },
+    {
+      "from_fdi": 21,
+      "to_fdi": 0,
+      "faces": 542
+    },
+    {
+      "from_fdi": 22,
+      "to_fdi": 0,
+      "faces": 68
+    },
+    {
+      "from_fdi": 23,
+      "to_fdi": 0,
+      "faces": 179
+    },
+    {
+      "from_fdi": 24,
+      "to_fdi": 0,
+      "faces": 153
+    },
+    {
+      "from_fdi": 24,
+      "to_fdi": 23,
+      "faces": 682
+    },
+    {
+      "from_fdi": 24,
+      "to_fdi": 25,
+      "faces": 199
+    },
+    {
+      "from_fdi": 25,
+      "to_fdi": 0,
+      "faces": 179
+    },
+    {
+      "from_fdi": 25,
+      "to_fdi": 24,
+      "faces": 454
+    },
+    {
+      "from_fdi": 25,
+      "to_fdi": 26,
+      "faces": 11
+    },
+    {
+      "from_fdi": 26,
+      "to_fdi": 0,
+      "faces": 275
+    },
+    {
+      "from_fdi": 26,
+      "to_fdi": 25,
+      "faces": 229
+    },
+    {
+      "from_fdi": 27,
+      "to_fdi": 0,
+      "faces": 86
+    },
+    {
+      "from_fdi": 27,
+      "to_fdi": 26,
+      "faces": 956
+    }
+  ],
+  "teeth": [
+    {
+      "fdi": 11,
+      "before_faces": 15044,
+      "after_faces": 14609
+    },
+    {
+      "fdi": 12,
+      "before_faces": 6581,
+      "after_faces": 6581
+    },
+    {
+      "fdi": 13,
+      "before_faces": 8019,
+      "after_faces": 8019
+    },
+    {
+      "fdi": 14,
+      "before_faces": 12220,
+      "after_faces": 12220
+    },
+    {
+      "fdi": 15,
+      "before_faces": 13471,
+      "after_faces": 13471
+    },
+    {
+      "fdi": 16,
+      "before_faces": 18705,
+      "after_faces": 18705
+    },
+    {
+      "fdi": 17,
+      "before_faces": 12559,
+      "after_faces": 12559
+    },
+    {
+      "fdi": 21,
+      "before_faces": 13458,
+      "after_faces": 13319
+    },
+    {
+      "fdi": 22,
+      "before_faces": 6577,
+      "after_faces": 6509
+    },
+    {
+      "fdi": 23,
+      "before_faces": 9796,
+      "after_faces": 10442
+    },
+    {
+      "fdi": 24,
+      "before_faces": 12325,
+      "after_faces": 11872
+    },
+    {
+      "fdi": 25,
+      "before_faces": 10933,
+      "after_faces": 11064
+    },
+    {
+      "fdi": 26,
+      "before_faces": 18582,
+      "after_faces": 19618
+    },
+    {
+      "fdi": 27,
+      "before_faces": 14871,
+      "after_faces": 15405
+    }
+  ],
+  "limitations": [
+    "Left-side correctness is contributor-confirmed, not independently verified.",
+    "Whole-arch review and final benchmark acceptance remain incomplete.",
+    "The saved edits include 435 faces previously labeled 11: 380 reassigned to 21 and 55 cleared to context. These boundary edits are preserved; right-side completion is not inferred."
+  ]
+}

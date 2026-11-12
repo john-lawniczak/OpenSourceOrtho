@@ -1,21 +1,15 @@
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
-// Sample test case: an isolated, self-contained walkthrough that reuses the real
-// guided wizard UI (same step chips: upload -> teeth & time -> details -> review
-// -> 3D preview -> print) so a first-time viewer sees exactly what a guided user
-// sees, pre-filled with the bundled test-case records. It starts at step 1 so the
-// user walks the whole flow: (1) the two test-case STL scans are already loaded,
-// (2) a Balanced 10-day pace with every tooth selected, (4) a plain summary and
-// timeline, (5) the 3D preview rendered from the exact test-case STL models.
+// Sample test case: isolated observed history plus a separately selected
+// simulated planning walkthrough that reuses the guided wizard.
 //
 // Opening it snapshots the user's working state and restores it on exit, so
 // nothing the sample does leaks into the user's own plan, uploads, or editors.
 //
-// The 3D preview shows the real STL scans in OVERLAY view. On entry the sample
-// also runs the on-device auto-segmenter on the bundled scans and applies the
-// per-tooth draft (see prepareSampleSegmentation), so the planned layer animates
-// the scan's own crowns moving crowded -> aligned across stages as the slider
-// drags. If segmentation is unavailable, movement falls back to markers/arrows.
+// The default view compares original baseline and week 7 observations. The
+// separately selected planning simulation can prepare an auto-segmented draft;
+// its staged movements must never be presented as this person's observed history.
 
+import { isolateSampleSettings } from "./sample_settings.js";
 import { el, state } from "./state.js";
 import { applySegmentation, proposeSegmentation } from "./segment.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
@@ -57,6 +51,7 @@ export function enterSample() {
   };
   for (const key of SNAPSHOT_STATE_KEYS) saved.state[key] = state[key];
   for (const field of SNAPSHOT_FIELDS) saved.fields[field] = el(field).value;
+  saved.restoreSettings = isolateSampleSettings();
   state.segmentation = { busy: false, status: "", proposal: null, edits: {}, applied: null };
   state.proximity = { enabled: false, busy: false, status: "", map: null, registration: null, registeredView: false };
   state.manualEdit = { selectedTooth: null, status: "", undoStack: [] };
@@ -95,31 +90,29 @@ export function enterSample() {
   // step chips and panels; the sample flag drives the banner and isolation.
   state.userMode = "simple";
   state.sample.active = true;
-  // Start at step 1 so a first-time user walks the whole flow from the top.
-  state.guided.step = "upload";
+  state.sample.view = "observed";
+  // Open directly on the shared scan selection and stage viewer.
+  state.guided.step = "plan";
+  state.activeStep = "review";
   state.simpleAcknowledged = true;
-  state.sampleStatus =
-    "Loading the root/bone-aware sample fixture, then segmenting the bundled scans into "
-    + "individual 3D teeth on this machine (a few seconds)... "
-    + "Not a real patient and not a medical device.";
+  state.sampleStatus = "Week 1–7 scan history. The planning simulation is a separate example.";
   el("planTitle").value = `Sample test case · ${sampleDataset.pseudonym}`;
   el("planId").value = "sample-test-case";
+  el("simpleGoal").value = "crowding";
   el("wearInterval").value = "10";
-  // x8 keeps the segmented real crowns visibly moving without flinging them off
-  // the arch (the schematic demo uses higher values, but those are placeholder
-  // pegs - real crowns at true scan scale read as broken above ~x8).
-  el("exaggeration").value = "8";
+  el("exaggeration").value = "1";
   el("scanUnits").value = "mm";
   el("simpleAcknowledged").checked = true;
 }
 
 export async function applySampleRootBoneFixture() {
   if (!state.sample.active) return false;
+  const session = state.segmentation;
   try {
     const response = await fetch(ROOT_BONE_FIXTURE_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const fixture = await response.json();
-    if (!state.sample.active) return false;
+    if (!state.sample.active || state.segmentation !== session) return false;
     state.caseRecords = fixture.case_records || [];
     state.fixtureMeshAssets = fixture.mesh_assets || [];
     state.registrations = fixture.registrations || [];
@@ -129,6 +122,7 @@ export async function applySampleRootBoneFixture() {
       "Sample root/bone fixture loaded: redacted CBCT metadata, accepted fixture registration, and safe derived landmarks.";
     return true;
   } catch (error) {
+    if (!state.sample.active || state.segmentation !== session) return false;
     state.recordUploadStatus = `Sample root/bone fixture unavailable: ${error.message}`;
     return false;
   }
@@ -150,8 +144,7 @@ export async function prepareSampleSegmentation() {
   if (!state.sample.active || state.segmentation !== seg) return false;
   if (!seg.proposal) {
     state.sampleStatus =
-      "A simulated walkthrough. Per-tooth segmentation is unavailable, so planned movement is shown "
-      + "with markers and arrows. Not a real patient and not a medical device.";
+      "Sample STL scans loaded. Individual tooth regions are unavailable; retry the sample to enable selection.";
     return false;
   }
   applySegmentation();
@@ -162,11 +155,9 @@ export async function prepareSampleSegmentation() {
   seg.status =
     "Sample: an auto-segmentation draft was applied for you so the 3D preview can move each tooth. "
     + "In your own plan you review and apply segmentation yourself.";
-  state.sampleStatus =
-    "A simulated root/bone-aware walkthrough: each tooth is segmented from the bundled scans, "
-    + "trusted fixture axes make rotation/anatomical-frame review available, and CBCT boundary priors "
-    + "can inform segmentation. Drag the stage slider or press Play. "
-    + "Not a real patient and not a medical device.";
+  state.manualEdit.selectedTooth = seg.applied.tooth_meshes.some(link => link.tooth.value === "11") ? "11" : seg.applied.tooth_meshes[0].tooth.value;
+  state.sampleStatus = "Sample ready. Click a crown or its number, preview a nudge or a chat goal, then drag the stage slider.";
+
   return true;
 }
 
@@ -181,5 +172,6 @@ export function exitSample() {
   state.proximity = saved.proximity;
   state.manualEdit = saved.manualEdit;
   state.sample.active = false;
+  saved.restoreSettings();
   saved = null;
 }

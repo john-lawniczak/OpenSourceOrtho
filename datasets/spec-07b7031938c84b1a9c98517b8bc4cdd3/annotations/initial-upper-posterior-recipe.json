@@ -1,0 +1,85 @@
+{
+  "schema": "ortho-case-label-recipe-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "source_sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+  "input_saved_at": "2026-11-12T16:05:58.844963+00:00",
+  "reported_on": "2026-11-12",
+  "status": "draft-needs-boundary-review",
+  "provenance": "Contributor confirmed upper-left front labels 21/22 and removed wisdom teeth. Remaining side IDs aligned with those anchors; posterior separators estimated from original scan groove views, not independently reviewed.",
+  "source_label_map": {
+    "11": 21,
+    "12": 22,
+    "13": 23,
+    "14": 24,
+    "23": 13,
+    "24": 14,
+    "17": 0,
+    "27": 0
+  },
+  "posterior_groups": [
+    {
+      "source_labels": [
+        15,
+        16
+      ],
+      "target_labels": [
+        25,
+        26,
+        27
+      ],
+      "separators": [
+        {
+          "x_origin": 21.5,
+          "y_origin": -24.1,
+          "slope": -0.244
+        },
+        {
+          "x_origin": 23.0,
+          "y_origin": -13.95,
+          "slope": -0.322
+        }
+      ]
+    },
+    {
+      "source_labels": [
+        25,
+        26
+      ],
+      "target_labels": [
+        15,
+        16,
+        17
+      ],
+      "separators": [
+        {
+          "x_origin": -24.5,
+          "y_origin": -25.7,
+          "slope": 0.375
+        },
+        {
+          "x_origin": -23.5,
+          "y_origin": -13.9,
+          "slope": 0.422
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Separators use original scan XY coordinates and face centroids; scan units are not assumed to be millimeters.",
+    "Only existing posterior draft masks are split; crown/gum extent and hidden surfaces still need review.",
+    "Painted 21/22 face memberships are preserved. Painted source 13 becomes 23 without altering its surface. Only the confirmed 11/12 draft masks are restored from context; all other context stays unchanged.",
+    "Old draft 17/27 patches on distal/lingual context are cleared, not treated as extra teeth.",
+    "Does not regenerate week 1\u20137 motion fits or transfer labels to other scans.",
+    "Restored 11/12 use existing geometric crown masks, not newly reviewed gumlines or full-crown boundaries."
+  ],
+  "front_restoration": {
+    "source_artifact": "derived/progress-01-motion-upper.json",
+    "source_artifact_sha256": "b347b36828991331c755336b21daa8221d238ae48ab893df29aea3afed825665",
+    "face_label_to_fdi": {
+      "8": 11,
+      "9": 12
+    },
+    "input_saved_at": "2026-11-12T17:26:28.118836+00:00",
+    "provenance": "Contributor confirmed the gray upper-right central and lateral crowns as FDI 11/US 8 and FDI 12/US 7 on 2026-11-12. Restore only unlabeled faces from the original source-bound draft masks; mask boundaries remain estimated."
+  }
+}

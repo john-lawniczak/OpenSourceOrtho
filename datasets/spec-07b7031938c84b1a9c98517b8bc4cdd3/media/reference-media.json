@@ -28,7 +28,9 @@
         "No side or occlusal views retained in this media file.",
         "No root, bone, periodontal, radiographic, or outcome-scan evidence.",
         "Third-party treatment-planning simulation; redistribution rights must be confirmed before public data sharing."
-      ]
+      ],
+      "included_in_public_snapshot": false,
+      "availability_note": "Video bytes are withheld pending redistribution-rights confirmation. Metadata describes a previously reviewed reference, not an available download."
     }
   ]
 }

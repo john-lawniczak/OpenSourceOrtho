@@ -4,6 +4,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
+from orthoplan.planning.biomechanics import trusted_movement_frames
+from orthoplan.viz.mesh_affine import mesh_affine
 from orthoplan.model.gaps import data_gaps
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.planning.transforms import ToothPose
@@ -22,6 +24,7 @@ class ProgressViewMode(StrEnum):
 class StageProgressFrame(BaseModel):
     stage_index: int = Field(ge=0)
     poses: list[ToothPose] = Field(default_factory=list)
+    mesh_transforms: dict[str, list[list[float]]] = Field(default_factory=dict)
     coordinate_frame: str = "scan-local"
     rotation_renderable: bool = False
     data_gaps: list[str] = Field(default_factory=list)
@@ -41,6 +44,7 @@ def build_stage_progress_frames(plan: TreatmentPlan) -> list[StageProgressFrame]
     composition from ``planning.transforms`` and gaps from ``model.gaps``.
     """
 
+    movement_frames = trusted_movement_frames(plan)
     frame_name = plan.coordinate_frame.name
     gaps = data_gaps(plan)
     # Rotation is renderable only when the global frame resolves tip/torque or
@@ -72,6 +76,7 @@ def build_stage_progress_frames(plan: TreatmentPlan) -> list[StageProgressFrame]
             StageProgressFrame(
                 stage_index=stage.index,
                 poses=stage_poses,
+                mesh_transforms={p.tooth.value: mesh_affine(p, movement_frames.get(p.tooth.value)) for p in stage_poses},
                 coordinate_frame=frame_name,
                 rotation_renderable=any(pose.rotation_renderable for pose in stage_poses),
                 data_gaps=gaps,

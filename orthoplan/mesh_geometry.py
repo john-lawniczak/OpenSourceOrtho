@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from functools import lru_cache
 
-from orthoplan.io.mesh_import import read_scan
+from orthoplan.io.mesh_import import MAX_SCAN_BYTES
+from orthoplan.io.mesh_formats import parse_bytes
 from orthoplan.mesh_workspace import resolve_mesh_path
 from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import SegmentedToothMesh, TreatmentPlan
@@ -39,11 +41,18 @@ def reviewed_fragment_triangles(
     if path is None:
         return None
     try:
-        scan = read_scan(path)
+        stat = path.stat()
+        if stat.st_size > MAX_SCAN_BYTES:
+            return None
+        return _fragment_triangles(str(path), stat.st_mtime_ns, stat.st_size)
     except (OSError, ValueError):
         return None
-    # A point cloud has no surface: grouping its points in threes would invent
-    # triangles that are not in the scan, so fail closed instead.
-    if not scan.payload.faces:
-        return None
-    return scan.payload.triangles() or None
+
+
+@lru_cache(maxsize=32)
+def _fragment_triangles(path: str, modified_ns: int, size: int) -> list[Triangle] | None:
+    # Geometry is immutable and keyed by file identity. Quality metadata already
+    # lives in the plan; re-running metadata inspection is unnecessary here.
+    source = Path(path)
+    payload = parse_bytes(source.read_bytes(), suffix=source.suffix, path=source)
+    return payload.triangles() if payload.faces else None

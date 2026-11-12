@@ -13,9 +13,9 @@ from typing import Any
 from orthoplan.model.anatomy import DerivedAnatomy, ReviewStatus
 from orthoplan.model.assets import CaseRecord
 from orthoplan.model.plan import TreatmentPlan
+from orthoplan.cbct_registration import _registration_for_payload
+from orthoplan.volume_coordinates import preserve_mask_provenance
 from orthoplan.model.registration import (
-    RegistrationMethod,
-    RegistrationQuality,
     RegistrationTransform,
 )
 from orthoplan.volume_proposals import (
@@ -61,10 +61,12 @@ def cbct_proposal_payload(payload: dict[str, Any]) -> dict[str, Any]:
                 bone_voxels=_voxels(mask.get("bone_voxels", []), field="bone_voxels"),
                 voxel_spacing_mm=_float3(mask.get("voxel_spacing_mm"), default=(1.0, 1.0, 1.0)),
                 volume_dimensions=_int3_or_none(mask.get("volume_dimensions")),
+                voxel_to_patient_mm=mask.get("voxel_to_patient_mm"),
                 min_root_component_voxels=int(mask.get("min_root_component_voxels", 3)),
                 model_provenance=str(mask.get("model_provenance") or "local-volume-mask-import"),
             )
         )
+        preserve_mask_provenance(proposal, mask)
     except (ValueError, VolumeProposalUnavailable) as exc:
         return {"ok": False, "errors": [str(exc)]}
 
@@ -142,65 +144,6 @@ def _find_cbct_record(plan: TreatmentPlan, record_id: str) -> CaseRecord:
         if record.id == record_id:
             return record
     raise ValueError(f"unknown CBCT/DICOM record {record_id!r}")
-
-
-def _registration_for_payload(
-    plan: TreatmentPlan, cbct_record: CaseRecord, payload: dict[str, Any]
-) -> RegistrationTransform:
-    registration_id = str(payload.get("registration_id") or "")
-    if registration_id:
-        for reg in plan.registrations:
-            if reg.id == registration_id:
-                if not reg.is_acceptable:
-                    raise VolumeProposalUnavailable(
-                        "selected registration is not accepted with quality metrics"
-                    )
-                return reg
-        raise ValueError(f"unknown registration {registration_id!r}")
-
-    source_asset_id = str(payload.get("source_stl_asset_id") or "")
-    if not source_asset_id and plan.scans:
-        source_asset_id = plan.scans[0].asset.id
-    if source_asset_id not in plan.asset_ids:
-        raise ValueError("source_stl_asset_id must reference a scan or mesh asset in the plan")
-
-    accepted = bool(payload.get("registration_accepted"))
-    quality_payload = payload.get("registration_quality")
-    quality = _quality(quality_payload)
-    if not accepted or quality is None:
-        raise VolumeProposalUnavailable(
-            "mask import requires an explicitly accepted registration with quality metrics"
-        )
-    return RegistrationTransform(
-        id=str(payload.get("new_registration_id") or f"imported-{cbct_record.id}-{source_asset_id}"),
-        source_stl_asset_id=source_asset_id,
-        target_cbct_record_id=cbct_record.id,
-        method=RegistrationMethod.IMPORTED,
-        quality=quality,
-        accepted=True,
-        operator=str(payload.get("operator") or "local reviewer"),
-        model_provenance=str(payload.get("registration_provenance") or "imported-registration"),
-        notes="Imported CBCT-to-STL registration accepted by reviewer for proposal generation.",
-    )
-
-
-def _quality(raw: Any) -> RegistrationQuality | None:
-    if not isinstance(raw, dict):
-        return None
-    return RegistrationQuality(
-        method=str(raw.get("method") or "imported"),
-        rmse_mm=_optional_float(raw.get("rmse_mm")),
-        inlier_ratio=_optional_float(raw.get("inlier_ratio")),
-        fitness=_optional_float(raw.get("fitness")),
-        notes=[str(n) for n in raw.get("notes", []) if str(n).strip()]
-        if isinstance(raw.get("notes"), list) else [],
-    )
-
-
-def _optional_float(value: Any) -> float | None:
-    if value is None or value == "":
-        return None
-    return float(value)
 
 
 def _root_voxels(raw: Any) -> dict[str, list[tuple[int, int, int]]]:

@@ -18,14 +18,14 @@
 ## Why
 
 The current segmenter (`orthoplan/segmentation/{heuristic,hybrid,arch_profile}.py`)
-is a dependency-free 1-D valley/graph-cut heuristic. After recent fixes it gets
-the **tooth count** and **boundary labels** right on the bundled real scans
-(14/14 per arch), but the per-tooth meshes are **rough vertical wedge slabs**:
+is a dependency-free 1-D valley/graph-cut heuristic. It produces 14 draft regions
+per bundled arch; that count does not validate anatomical boundaries or FDI identity.
+The per-tooth meshes can be **rough vertical wedge slabs**:
 each cut is a planar-ish slice of the whole shell (crown + gum), so when the 3-D
 viewer separates them they look shattered (see the "broken teeth" report). The
 heuristic is a good *floor*; it is not crown-accurate geometry.
 
-A learned mesh-segmentation model produces clean, curved per-tooth boundaries
+A learned mesh-segmentation model is intended to produce curved per-tooth boundaries
 that follow the gingival margin and interproximal contacts — the geometry the
 "real crowns move at true positions" feature (`viewer3d.js` fragment mode) needs
 to look right.
@@ -85,9 +85,9 @@ arXiv:2305.18277, DilatedToothSegNet (Springer 10.1007/s10278-024-01061-6).
    adjacency-matrix export + per-cell preprocessing work.
 2. **A lighter PointNet++/DGCNN-style face classifier** trained on a
    license-clear dataset — smaller, simpler to export, but needs training.
-3. **Geometry upgrade, no ML:** curvature/normal-based watershed on the mesh
-   graph (needs the half-edge adjacency we do not currently build). Cleaner cuts
-   than the 1-D heuristic without weights, but well short of a trained model.
+3. **Geometry upgrade, no ML:** the optional surface-graph candidate now builds
+   shared-edge adjacency and propagates hybrid seeds with curvature weights.
+   Anatomical improvement over the hybrid still requires reviewed comparisons.
 
 Recommendation: **(1) export MeshSegNet to ONNX** as the model spike (after
 Phase 1), with the heuristic retained as the always-available fallback and the
@@ -100,7 +100,7 @@ The core install must stay light and offline (see `CLAUDE.md` / maintainability
 rules). So:
 
 - The learned backend is an **optional extra** (e.g. `pip install
-  ".[ml-seg]"`), pulling `onnxruntime` + `numpy` only — **never torch** at
+  ".[ml-seg]"`), pulling `onnxruntime`, `numpy`, and `scipy` — **never torch** at
   runtime. Training tooling lives outside the shipped package.
 - Weights are **not committed** to the repo (size + provenance). Resolve from a
   local path / env var / cached download; if absent, `load_local_segmenter()`
@@ -214,3 +214,45 @@ Model spike (next phase, gated on clearing the weights' license) — pending:
   ONNX export and the decimate-to-<=10k-cells preprocessing are the real work.
 - **Training a model from scratch** (e.g. on a license-clear dataset): a separate,
   larger effort, **out of scope** here.
+
+## Executable model contract (November 2026)
+
+A configured model now requires a JSON sidecar next to it, named
+`model.onnx.json` for `model.onnx`. Example structure (replace the hash, tensor
+names, mapping, provenance and license with those of the actual compatible model):
+
+```json
+{
+  "schema": "ortho-face-model-v1",
+  "features": "raw-vertices-normal-centered-centroid-15-v1",
+  "sha256": "<SHA-256 of model.onnx>",
+  "arches": ["maxillary"],
+  "input_layout": "NFC",
+  "output_layout": "NFL",
+  "input_name": "features",
+  "output_name": "logits",
+  "class_to_fdi": {"maxillary": ["0", "11", "21"]},
+  "provenance": "<training/export provenance>",
+  "license": "<actual model license>"
+}
+```
+
+Here N=batch (1), F=faces, C=15 features, L=classes. NCF/NLF are also supported.
+Class zero is context; subsequent classes explicitly identify FDI numbers and
+need not imply a complete arch. This example is a tensor contract, **not dental
+weights**. Features are raw triangle vertices, normal, and centered centroid as
+implemented by `build_cell_features`; arbitrary normalized MeshSegNet exports
+and multi-input adjacency networks do not satisfy this contract automatically.
+
+The adapter verifies hashes, arch support, names, dimensions, finite logits and
+class mapping. It repairs tiny islands through shared-edge topology rather than
+STL face order. Invalid configured models fail explicitly; absent configuration
+uses the hybrid. `tests/test_model_contract.py` executes a synthetic linear ONNX
+fixture using the real runtime. This verifies integration, not tooth accuracy.
+Compare installed candidates on the same independently labeled corpus with:
+
+```sh
+python tools/compare_local_segmenters.py reviewed-corpus.json --output comparison.json
+```
+
+No model is automatically promoted by that comparison.

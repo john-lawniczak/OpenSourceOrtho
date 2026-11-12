@@ -29,9 +29,11 @@ export function parseMissingTeeth(value) {
   return [...seen];
 }
 
+let segmentationController;
+
 export async function proposeSegmentation() {
   const seg = state.segmentation;
-  if (seg.busy) return;
+  if (seg.busy) { segmentationController?.abort(); return; }
   const scans = state.scanSources.map((source) => ({
     reference: source.segmentReference || source.asset?.id || source.url || source.name,
     arch: state.scanArch || source.arch,
@@ -42,13 +44,20 @@ export async function proposeSegmentation() {
     return;
   }
   const missingTeeth = parseMissingTeeth(seg.missingTeeth);
+  const controller = new AbortController();
+  segmentationController = controller;
+  const sources = state.scanSources;
+  const contextWatch = setInterval(() => {
+    if (state.segmentation !== seg || state.scanSources !== sources) controller.abort();
+  }, 250);
   seg.busy = true;
   seg.status = "Proposing per-tooth segmentation on this machine...";
   try {
     // The current plan rides along so the server can derive CBCT boundary
     // priors from any trusted, gate-passing registered anatomy it carries.
     // Strictly additive: without usable anatomy the server segments surface-only.
-    const result = await requestSegmentation({ scans, missing_teeth: missingTeeth, plan: currentPlanJson() });
+    const result = await requestSegmentation({ scans, missing_teeth: missingTeeth, plan: currentPlanJson() }, { signal: controller.signal });
+    controller.signal.throwIfAborted();
     if (result.ok === false) {
       seg.proposal = null;
       seg.status = (result.errors || ["segmentation failed"]).join("; ");
@@ -67,8 +76,10 @@ export async function proposeSegmentation() {
     }
   } catch (error) {
     seg.proposal = null;
-    seg.status = error.message;
+    seg.status = error.name === "AbortError" ? "Segmentation cancelled." : error.message;
   } finally {
+    clearInterval(contextWatch);
+    if (segmentationController === controller) segmentationController = null;
     seg.busy = false;
   }
 }
@@ -103,6 +114,7 @@ export function applySegmentation() {
   const seg = state.segmentation;
   const proposal = seg.proposal;
   if (!proposal) return;
+  if (state.scanUnits !== "mm") { seg.status = "Confirm scan units as mm before using reviewed teeth."; return; }
   const includedIds = new Set();
   const toothMeshes = [];
   let invalid = 0;
@@ -122,15 +134,16 @@ export function applySegmentation() {
     }
     seenTeeth.add(value);
     includedIds.add(link.mesh_asset_id);
-    toothMeshes.push({ ...link, tooth: { system: "FDI", value } });
+    toothMeshes.push({ ...link, reviewed: true, tooth: { system: "FDI", value } });
   }
-  const meshAssets = proposal.plan_fragment.mesh_assets.filter((asset) => includedIds.has(asset.id));
+  const meshAssets = proposal.plan_fragment.mesh_assets.filter((asset) => includedIds.has(asset.id))
+    .map(asset => ({ ...asset, units: "mm" }));
   seg.applied = toothMeshes.length ? { mesh_assets: meshAssets, tooth_meshes: toothMeshes } : null;
   const skippedInvalid = invalid ? ` Skipped ${invalid} tooth(s) with an invalid FDI number (use two digits, each 1-8).` : "";
   const skippedDuplicate = duplicate ? ` Skipped ${duplicate} duplicate tooth number(s); each accepted mesh needs a unique FDI number.` : "";
   const skipped = `${skippedInvalid}${skippedDuplicate}`;
   if (seg.applied) {
-    seg.status = `Applied ${toothMeshes.length} per-tooth mesh(es) to the plan. Still a draft — not a diagnosis.${skipped}`;
+    seg.status = `Applied ${toothMeshes.length} per-tooth mesh(es) to the plan. Ready for geometric previews.${skipped}`;
     // The real crowns now move; default to Overlay so the static scan stays
     // behind them and the rough inter-tooth cuts read as movement against the
     // baseline rather than shattered gaps (Planned hides the shell).

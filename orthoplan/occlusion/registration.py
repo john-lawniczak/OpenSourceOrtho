@@ -119,7 +119,7 @@ def _unavailable(note: str) -> BiteRegistration:
 
 
 def register_bite(
-    upper: list[Vec3], lower: list[Vec3], *, units_confirmed: bool = True
+    upper: list[Vec3], lower: list[Vec3], *, units_confirmed: bool = True, preserve_frame: bool = False
 ) -> BiteRegistration:
     """Register an opposing arch pair into one occlusal frame (as-scanned or estimated)."""
 
@@ -128,7 +128,9 @@ def register_bite(
 
     grid = build_occlusal_grid(upper, lower)
     clearances = grid.clearances()
-    as_scanned = bool(clearances) and _median([abs(c) for c in clearances]) <= _OCCLUSION_BAND
+    if preserve_frame and not clearances:
+        return _unavailable("The supplied bite frame has no shared footprint; it was not repositioned.")
+    as_scanned = bool(clearances) and (preserve_frame or _median([abs(c) for c in clearances]) <= _OCCLUSION_BAND)
 
     if as_scanned:
         offset: Vec3 = (0.0, 0.0, 0.0)
@@ -149,6 +151,8 @@ def register_bite(
         if not approximate
         else "Arches were not pre-registered; this is an APPROXIMATE alignment, not a measured bite."
     )
+    if preserve_frame:
+        notes = "Using the supplied shared frame without repositioning; anatomical validity depends on its review evidence."
     if not units_confirmed:
         notes += " Scan units are unconfirmed, so the millimetre values are not yet trustworthy."
 

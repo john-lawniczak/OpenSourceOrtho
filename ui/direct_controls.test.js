@@ -76,3 +76,4 @@ test("arch response returns warnings and no proposal when gates fail", () => {
   assert.equal(result.proposed.length, 0);
   assert.match(result.warnings.join(" "), /millimeters/);
 });
+

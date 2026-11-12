@@ -1,0 +1,61 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "created_at": "2026-11-10T22:28:29.400106Z",
+  "engine_version": "1.4.0",
+  "scans": [
+    {
+      "filename": "progress-02-upper.stl",
+      "role": "progress",
+      "sequence_index": 2,
+      "sha256": "a5c827a42362790997c2cb849f674c86aab2ed69f3879dea3df21894deec7e62",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 2486880,
+      "face_count": 828960,
+      "bounds": {
+        "min_xyz": [
+          -38.30081558227539,
+          -28.31239128112793,
+          -25.087860107421875
+        ],
+        "max_xyz": [
+          38.30081558227539,
+          51.64572525024414,
+          25.087860107421875
+        ]
+      }
+    },
+    {
+      "filename": "progress-02-lower.stl",
+      "role": "progress",
+      "sequence_index": 2,
+      "sha256": "344eadaf41355c055e7fcb4a6cf7e6bbfd696717536945555ee6a31d40c0240b",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 1384035,
+      "face_count": 461345,
+      "bounds": {
+        "min_xyz": [
+          -53.459102630615234,
+          -14.738746643066406,
+          308.71875
+        ],
+        "max_xyz": [
+          27.163537979125977,
+          44.98448944091797,
+          350.20880126953125
+        ]
+      }
+    }
+  ],
+  "plan_summary": null,
+  "plan_summary_filename": null,
+  "outcome_notes_filename": null,
+  "outcome_notes_sha256": null,
+  "consent_acknowledged": true,
+  "phi_removed": true,
+  "notes": "supplementary visit manifest for reported week 18 stone and Play-Doh test scans. Sequence 2 counts progress visits, not trays. Scale, acquisition date, and cross-time registration remain unverified. Contributor confirms both hardened stone models were chipped due to poor model-making, not actual tooth defects. Exact chip locations are unspecified. Damaged-model test data; not reference tooth geometry. See source-metadata.json and quality-assessment.md. Public redistribution authorized by the contributor on 2026-11-12; see case-root consent.json."
+}

@@ -156,7 +156,7 @@ def test_segment_runs_injected_runner_end_to_end() -> None:
     assert [s.tooth_value for s in segments] == [order[0], order[1]]
 
 
-def test_learned_segmenter_repairs_short_contact_label_islands() -> None:
+def test_learned_segmenter_preserves_disconnected_labels_regardless_of_file_runs() -> None:
     vertices = _triangle_vertices(5)
     order = default_arch_order("maxillary")
     segmenter = LearnedMeshSegmenter(
@@ -167,8 +167,8 @@ def test_learned_segmenter_repairs_short_contact_label_islands() -> None:
 
     segments = segmenter.segment(vertices, arch="maxillary")
 
-    assert [s.tooth_value for s in segments] == [order[0]]
-    assert len(segments[0].triangles) == 5
+    assert [s.tooth_value for s in segments] == [order[0], order[1]]
+    assert [len(s.triangles) for s in segments] == [4, 1]
 
 
 def test_repair_short_label_runs_is_conservative() -> None:

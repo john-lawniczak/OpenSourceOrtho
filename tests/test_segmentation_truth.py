@@ -206,3 +206,11 @@ def test_count_advisory_only_fires_on_non_canonical_arch() -> None:
     advisories = build_count_advisories({"maxillary": full - 1})
     assert len(advisories) == 1
     assert "review" in advisories[0].message.lower()
+
+
+def test_partial_prediction_cannot_hide_unassigned_reference_teeth():
+    arch = build_synthetic_arch(('11', '21'), tris_per_tooth=10)
+    segments = _segments_from_truth(arch)
+    score = score_segmentation(segments[:1], arch)
+    assert score.triangle_label_accuracy == 0.5
+    assert score.region_purity == 0.5

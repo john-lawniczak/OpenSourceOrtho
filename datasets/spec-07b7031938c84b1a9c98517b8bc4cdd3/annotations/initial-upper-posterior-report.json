@@ -1,0 +1,55 @@
+{
+  "status": "draft-needs-boundary-review",
+  "source_sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+  "input_corrections_sha256": "3ea8c437dadf43dde243be5e5562b9c7ebc3ed123a6767e772a6486d2363a2fa",
+  "output_corrections_sha256": "85d0f5be8255a4047829dc74aa396ed457391de9eae46120171ce04aca74ad94",
+  "changed_faces": 198400,
+  "previous_labels": {
+    "0": 138753,
+    "11": 2187,
+    "12": 1860,
+    "13": 11527,
+    "14": 14212,
+    "15": 18355,
+    "16": 38567,
+    "17": 584,
+    "21": 13270,
+    "22": 6227,
+    "23": 9962,
+    "24": 14191,
+    "25": 15557,
+    "26": 43192,
+    "27": 1865
+  },
+  "updated_labels": {
+    "0": 114861,
+    "11": 18019,
+    "12": 8322,
+    "13": 9962,
+    "14": 14191,
+    "15": 16435,
+    "16": 23023,
+    "17": 19291,
+    "21": 15457,
+    "22": 8087,
+    "23": 11527,
+    "24": 14212,
+    "25": 13318,
+    "26": 21748,
+    "27": 21856
+  },
+  "front_21_22_faces_preserved": true,
+  "unlabeled_faces_restored": {
+    "11": 18019,
+    "12": 8322
+  },
+  "other_unlabeled_faces_preserved": true,
+  "limitations": [
+    "Separators use original scan XY coordinates and face centroids; scan units are not assumed to be millimeters.",
+    "Only existing posterior draft masks are split; crown/gum extent and hidden surfaces still need review.",
+    "Painted 21/22 face memberships are preserved. Painted source 13 becomes 23 without altering its surface. Only the confirmed 11/12 draft masks are restored from context; all other context stays unchanged.",
+    "Old draft 17/27 patches on distal/lingual context are cleared, not treated as extra teeth.",
+    "Does not regenerate week 1\u20137 motion fits or transfer labels to other scans.",
+    "Restored 11/12 use existing geometric crown masks, not newly reviewed gumlines or full-crown boundaries."
+  ]
+}

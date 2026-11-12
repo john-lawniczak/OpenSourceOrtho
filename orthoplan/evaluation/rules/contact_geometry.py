@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import math
+from itertools import product
 from dataclasses import dataclass
 
 from orthoplan.arch_contract import arch_from_tooth_value
 from orthoplan.mesh_intersect import triangles_intersect
+from orthoplan.triangle_distance import minimum_triangle_distance
 from orthoplan.model.assets import BoundingBox
 from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import TreatmentPlan
@@ -35,14 +37,18 @@ def staged_contact_candidates(
     triangles_by_tooth = triangles_by_tooth or {}
     root_frames = trusted_movement_frames(plan)
     worst: dict[tuple[str, str], ContactCandidate] = {}
+    previous_poses = {}
     for frame in build_stage_progress_frames(plan):
+        poses = {pose.tooth.value: (pose.translate_x_mm, pose.translate_y_mm, pose.translate_z_mm,
+                                  pose.rotate_tip_deg, pose.rotate_torque_deg, pose.rotate_rotation_deg)
+                 for pose in frame.poses}
         moved_bounds = dict(bounds_by_tooth)
         moved_samples = dict(samples)
         moved_triangles = dict(triangles_by_tooth)
         for pose in frame.poses:
             tooth = pose.tooth.value
             if tooth in bounds_by_tooth:
-                moved_bounds[tooth] = translate_bounds(bounds_by_tooth[tooth], pose)
+                moved_bounds[tooth] = translate_bounds(bounds_by_tooth[tooth], pose, root_frames.get(tooth))
             if samples.get(tooth):
                 root_frame = root_frames.get(tooth)
                 moved_samples[tooth] = [
@@ -55,6 +61,11 @@ def staged_contact_candidates(
                     for tri in triangles_by_tooth[tooth]
                 ]
         for tooth_a, tooth_b in adjacent_pairs(sorted(moved_bounds)):
+            key = (tooth_a, tooth_b)
+            signature = (poses.get(tooth_a, (0,) * 6), poses.get(tooth_b, (0,) * 6))
+            if previous_poses.get(key) == signature:
+                continue
+            previous_poses[key] = signature
             overlap = overlap_depth(moved_bounds[tooth_a], moved_bounds[tooth_b])
             if overlap <= 0:
                 continue
@@ -67,7 +78,12 @@ def staged_contact_candidates(
     return worst
 
 
-def translate_bounds(bounds: BoundingBox, pose) -> BoundingBox:
+def translate_bounds(bounds: BoundingBox, pose, root_frame=None) -> BoundingBox:
+    if root_frame is not None and (pose.rotate_tip_deg or pose.rotate_torque_deg or pose.rotate_rotation_deg):
+        corners = product(*zip(bounds.min_xyz, bounds.max_xyz))
+        moved = [apply_pose_to_vertex(point, pose, root_frame) for point in corners]
+        return BoundingBox(min_xyz=tuple(min(p[i] for p in moved) for i in range(3)),
+                           max_xyz=tuple(max(p[i] for p in moved) for i in range(3)))
     delta = (pose.translate_x_mm, pose.translate_y_mm, pose.translate_z_mm)
     return BoundingBox(
         min_xyz=tuple(bounds.min_xyz[i] + delta[i] for i in range(3)),  # type: ignore[return-value]
@@ -129,13 +145,8 @@ def _min_triangle_distance(
     triangles_a: list[tuple[Vec3, Vec3, Vec3]],
     triangles_b: list[tuple[Vec3, Vec3, Vec3]],
 ) -> float:
-    best = math.inf
-    for tri_a in triangles_a:
-        for tri_b in triangles_b:
-            if triangles_intersect(tri_a, tri_b):
-                return 0.0
-            best = min(best, _triangle_distance(tri_a, tri_b))
-    return 0.0 if not math.isfinite(best) else best
+    return minimum_triangle_distance(triangles_a, triangles_b,
+                                     intersects=triangles_intersect, distance=_triangle_distance)
 
 
 def _triangle_distance(a: tuple[Vec3, Vec3, Vec3], b: tuple[Vec3, Vec3, Vec3]) -> float:

@@ -13,10 +13,12 @@ class ClaudeCodeProvider:
         self.command = command
 
     def complete(self, request: ModelRequest) -> ModelResponse:
-        prompt = f"{request.system}\n\n{request.prompt}"
         try:
             completed = subprocess.run(
-                [self.command, "-p", prompt],
+                [self.command, "-p", "--bare", "--tools", "", "--disallowedTools", "*",
+                 "--no-session-persistence", "--system-prompt", request.system,
+                 *([] if self.model == "claude-code-default" else ["--model", self.model])],
+                input=request.prompt, timeout=120,
                 check=True,
                 capture_output=True,
                 text=True,
@@ -24,8 +26,9 @@ class ClaudeCodeProvider:
         except FileNotFoundError as exc:
             raise RuntimeError("Claude Code CLI command was not found") from exc
         except subprocess.CalledProcessError as exc:
-            detail = (exc.stderr or exc.stdout or str(exc)).strip()
-            raise RuntimeError(f"Claude Code provider failed: {detail}") from exc
+            raise RuntimeError("Claude Code provider failed; check CLI version, authentication and model.") from exc
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError("Claude Code request timed out after 120 seconds.") from exc
 
         return ModelResponse(
             text=completed.stdout.strip(),

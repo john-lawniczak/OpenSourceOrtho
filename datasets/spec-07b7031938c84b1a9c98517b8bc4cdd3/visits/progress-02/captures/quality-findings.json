@@ -1,0 +1,66 @@
+{
+  "status": "advisory-unverified",
+  "lint_passed": true,
+  "lint_note": "Language gate only; not validation of geometric or anatomical correctness.",
+  "source_hashes": {
+    "fusion-h-4/2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl": "fe3668a01e8e6f999e613d8a2ee334c7283263e6af7ad61effae37af6a75a4b6",
+    "fusion-h-6/2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl": "3b6667103e8262750afe58f569938fe5acf8265f3f050995dd45a3b6a3a49208"
+  },
+  "findings": [
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Mixed mesh-quality results",
+      "message": "Fusion_H_4 has fewer boundary edges (2,276 versus 2,934), but Fusion_H_6 has fewer zero-area triangles (10 versus 15) and fewer edges incident to more than two faces (9 versus 15). Both have one vertex-connected component, no duplicate triangles, and finite coordinates. These results do not establish an overall accuracy winner.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Peripheral surface appearance",
+      "message": "In the independent rendered views, Fusion_H_4 appears more compact around the outer margins; Fusion_H_6 shows more conspicuous projecting peripheral surfaces. Both include broad sheet-like surfaces beyond the crown-like regions. Camera orientation, independently fitted panel scale, and approximate depth sorting limit this visual comparison. The views do not determine which scan better reproduces the original teeth.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Retain both captures for region review",
+      "message": "Fusion_H_4 is worth inspecting first for peripheral cleanup because of its more compact visual outline and lower boundary-edge count, but this is a tentative workflow preference, not a ranking of tooth-surface fidelity. Preserve both original captures. Review corresponding crown boundaries and capture provenance before selecting a segmentation input; mark the contributor-reported front-tooth model chip separately from crown boundaries. Exact tooth identity and chip timing remain unknown.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Reference evidence remains missing",
+      "message": "No verified scale, independently reviewed tooth surfaces, or common anatomical registration is available for this comparison. Boundary counts depend on scan margins and tessellation; zero-area faces and edge incidence describe topology rather than tooth accuracy. Neither capture establishes tooth movement or reference anatomy. Self-intersections, winding, and vertex manifoldness were not assessed.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Shared chipped-model limitation",
+      "message": "The contributor confirms both additional captures share one physical lower model and reports a small chip on an unidentified lower front tooth. Agreement between H4 and H6 can describe capture consistency but cannot establish the missing undamaged surface. Keep the chip region unreviewed until its location is marked; do not interpret it as actual tooth damage or tooth movement.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
+    }
+  ]
+}

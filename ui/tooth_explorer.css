@@ -26,7 +26,7 @@
 .tooth-explorer-error { color: var(--warn); }
 .tooth-explorer-error:empty { display: none; }
 .tooth-explorer-viewer {
-  height: 430px;
+  height: clamp(430px, 56vh, 640px);
   width: 100%;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -56,3 +56,6 @@
   .tooth-explorer-viewer { height: 320px; }
   .tooth-explorer-grid fieldset { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+.tooth-roots-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.tooth-roots-toggle input { width: 18px; height: 18px; }

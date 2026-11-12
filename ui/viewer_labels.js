@@ -7,11 +7,12 @@ export function makeTextSprite(text) {
   canvas.height = 64;
   const ctx = canvas.getContext("2d");
   ctx.font = "bold 34px system-ui, sans-serif";
-  ctx.fillStyle = "#8a99a3";
+  ctx.fillStyle = "#60707a";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, 128, 34);
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, toneMapped: false });
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(9, 2.25, 1);
@@ -43,6 +44,7 @@ export function makeToothNumberSprite(text) {
   ctx.textBaseline = "middle";
   ctx.fillText(text, w / 2, h / 2 + 2);
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, toneMapped: false });
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(3.4, 1.9, 1);

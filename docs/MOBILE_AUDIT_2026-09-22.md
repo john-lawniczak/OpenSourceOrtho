@@ -1,8 +1,8 @@
 # Mobile scanner import and comparison audit — 2026-09-22
 
-**Ship rating: 8/10 for the private research-preview branch.** This is not an
-app-store readiness assessment. Public publication remains on hold under the
-[existing release review](RELEASE_READINESS.md#before-a-future-public-publication).
+**Ship rating: 8/10 for the research preview.** This is not an app-store readiness
+assessment. The subsequently authorized public source snapshot is documented in
+the [publication record](PUBLIC_RELEASE_2026-09-22.md).
 
 ## Behavior delivered
 
@@ -28,10 +28,10 @@ See [supported variants and bounds](../mobile/SCAN_IMPORT.md),
 | Medium | Re-parsing scans on slider updates would make dragging expensive. Source identity and arch selection are separate from comparison progress: both visits are loaded once per source, then only the SceneKit mask/OpenGL scissor changes. Android caches shader locations and draws only on interaction. | iOS UI endpoint/midpoint checks and Android manual reveal/rotation checks. No frame-rate benchmark is claimed. |
 | Medium | A week-7 view could still display baseline triangle counts, and near-end slider values could leave a thin unintended reveal. Counts now follow the complete endpoint, mixed-view counts are explicitly labeled Baseline, and the final 1% snaps to exact endpoints. | iOS UI checks all four exact face counts; Android endpoint verification. |
 | Medium | GL shader/allocation failures could escape the render thread as an app crash. `ScanRenderer` now reports initialization failures back to the screen and suppresses further draws on failure. Context recreation rebuilds buffers. | Successful emulator rendering; device-specific GPU failures were not fault-injected. |
-| Medium | The preceding private Android CI run failed before compilation because setup requested the removed SDK `tools` package. `.github/workflows/mobile.yml` now explicitly requests platform-tools, API 34, and build-tools 34.0.0. | [Previous failed run](https://github.com/john-lawniczak/OpenSourceOrtho-dev/actions/runs/35639649618); the new private run is the remote verification. |
+| Medium | The preceding private Android CI run failed before compilation because setup requested the removed SDK `tools` package. `.github/workflows/mobile.yml` now explicitly requests platform-tools, API 34, and build-tools 34.0.0. | The previous development run failed at SDK setup; both native jobs passed after the fix. |
 
-No provider/model behavior changed. No changes were made to dataset originals,
-consent scope, or public publication permissions. Source/renderer/parser modules
+No provider/model behavior changed. The implementation audit did not change dataset originals or consent scope.
+The later publication authorization and exclusions are recorded separately. Source/renderer/parser modules
 remain below the repository thresholds; the two legacy screen files did not grow.
 
 ## Verification

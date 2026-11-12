@@ -64,6 +64,9 @@ export function navigateReadinessAction(action, state, render, doc = document) {
   render();
   const target = doc.getElementById(route.target);
   if (target) {
+    for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName === "DETAILS") parent.open = true;
+    }
     target.setAttribute("tabindex", "-1");
     target.focus({ preventScroll: true });
     target.scrollIntoView({ block: "center", behavior: "auto" });

@@ -75,3 +75,32 @@ def test_labelled_real_scan_manifest_scores_license_clear_case(tmp_path: Path) -
     assert values[("license_clear_labelled_real_scan_cases", "manifest")] == 1.0
     assert values[("scored_labelled_real_scan_cases", "manifest")] == 1.0
     assert values[("labelled_real_scan_triangle_label_accuracy", "non-phi-001")] == 1.0
+
+
+def test_provenance_requires_boolean_true():
+    from orthoplan.validation.segmentation_real_corpus import _provenance_ok
+    assert not _provenance_ok(dict(phi_removed="false", consent_acknowledged=True, commercial_use_allowed=True))
+
+
+def test_omitted_and_duplicate_triangles_cannot_pass_reference_gate(tmp_path):
+    from orthoplan.validation.segmentation_real_corpus import _load_labelled_arch
+    from orthoplan.validation.segmentation_truth import score_segmentation
+    scan, labels = tmp_path / 'scan.stl', tmp_path / 'labels.json'
+    _write_one_triangle_stl(scan)
+    labels.write_text(json.dumps({'triangle_labels': ['11']}))
+    arch = _load_labelled_arch(scan, labels)
+    segments = _StaticSegmenter().segment(arch.vertices, arch='maxillary')
+    assert score_segmentation([], arch).triangle_label_accuracy == 0
+    assert score_segmentation(segments, arch).triangle_label_accuracy == 1
+    assert score_segmentation(segments * 2, arch).triangle_label_accuracy == 0.5
+
+
+def test_external_reviewed_corpus_gate():
+    import os
+    import pytest
+    from orthoplan.validation.segmentation_real_report import labelled_real_scan_report
+    manifest = os.environ.get('OPENSOURCE_ORTHO_LABELLED_SEGMENTATION_CORPUS')
+    if not manifest:
+        pytest.skip('reviewed per-triangle real-scan corpus not configured')
+    report = labelled_real_scan_report(manifest_path=manifest)
+    assert report.passed, 'Reviewed corpus failed the 0.95 accuracy/purity gate'

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paint tooth boundaries</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
+<body><main class="region-review-page">
+<header class="review-header"><a id="reviewWorkspaceLink" href="./">← Workspace</a><span class="review-workflow">Step 2 · Identify teeth</span><h1>Paint tooth boundaries</h1></header>
+<section class="review-baseline-entry" aria-label="USER_ONE baseline painting">
+<strong>USER_ONE · Week 1</strong>
+<div class="controls"><button id="reviewLoadupper" disabled type="button">⌒ Upper</button><button id="reviewLoadlower" disabled type="button">⌣ Lower</button></div>
+<button id="reviewReload" type="button" title="Load the latest saved labels for this arch" disabled>↻ Reload saved</button>
+<span id="reviewSavedupper" class="review-save-badge" hidden></span><span id="reviewSavedlower" class="review-save-badge" hidden></span>
+</section>
+<details class="review-import"><summary>Import scan or corrections</summary>
+<div class="controls"><label>Arch <select id="reviewArch"><option value="" selected>Choose arch…</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample" disabled>Load USER_ONE baseline</button>
+<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div></details>
+<p id="reviewSource" class="review-summary">No scan loaded.</p>
+<section class="review-workbench">
+<div class="review-surface">
+<div class="review-viewport">
+<div class="review-navigation-modes" role="group" aria-label="Drag action">
+<button type="button" data-review-mode="orbit" aria-pressed="true" title="Drag to rotate">↻ Rotate</button>
+<button type="button" data-review-mode="pan" aria-pressed="false" title="Drag to move the whole mouth">✥ Pan</button>
+</div>
+<div id="regionCanvas" class="large-canvas" aria-label="Interactive tooth painting surface"></div>
+<div class="review-viewport-tools" role="group" aria-label="Scan navigation">
+<button id="reviewZoomIn" type="button" aria-label="Zoom in" title="Zoom in" disabled>+</button>
+<button id="reviewZoomOut" type="button" aria-label="Zoom out" title="Zoom out" disabled>−</button>
+<button id="reviewFocus" type="button" aria-label="Focus selected region" title="Focus selected region and orbit around it" disabled>◎</button>
+</div></div>
+<p id="reviewModeHelp" class="review-mode-help" role="status">Choose Upper or Lower to begin.</p>
+<p id="reviewStatus" role="status">Load a scan to begin.</p>
+</div>
+<aside class="review-paint-controls">
+<fieldset id="reviewEditing" disabled><legend>Select a region</legend>
+<p id="reviewArchNotice" class="review-arch-notice"></p>
+<div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
+<p id="reviewSelectionHelp"></p>
+<div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
+<div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox">Label flag</label><label title="Current label edges, not confirmed tooth boundaries"><input id="reviewShowEdges" type="checkbox" checked>Label edges</label></div>
+<details id="reviewFragmentPanel"><summary>Inspect disconnected patches</summary>
+<button id="reviewFindFragments" type="button">Find patches</button>
+<p id="reviewFragmentSummary" role="status">Find patches outside each label’s main connected region.</p>
+<label><input id="reviewShowFragments" type="checkbox" disabled>Highlight patches</label>
+<label class="review-sr-only" for="reviewFragmentChoice">Disconnected patch</label><select id="reviewFragmentChoice" disabled></select>
+<div class="controls"><button id="reviewFragmentPrev" type="button" disabled>← Previous patch</button><button id="reviewFragmentNext" type="button" disabled>Next patch →</button></div>
+<p id="reviewFragmentStatus" role="status"></p>
+<small>White ring: selected patch. Pink: patch surfaces and locator dots, including hidden patches. Rotate to inspect. Labels stay unchanged.</small>
+</details>
+<div class="controls review-tool-buttons"><button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button></div>
+<button id="reviewSpillover" type="button">Correct spillover</button>
+<div id="reviewSplitPanel" hidden><label>Only replace label <select id="reviewSplitSource"></select></label><button id="reviewSplitFlip" type="button" disabled>⇄ Flip direction</button><p id="reviewSplitHint" role="status"></p></div>
+<div class="review-radius-row"><button id="reviewBrushSmaller" type="button" aria-label="Decrease brush radius" aria-keyshortcuts="[">[</button><label>Brush radius <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label><button id="reviewBrushLarger" type="button" aria-label="Increase brush radius" aria-keyshortcuts="]">]</button></div>
+<small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
+<div class="controls"><button id="reviewUndo" aria-keyshortcuts="Meta+Z Control+Z" title="Undo (⌘Z / Ctrl+Z)">Undo</button><button id="reviewRedo" aria-keyshortcuts="Meta+Shift+Z Control+Shift+Z" title="Redo (⌘Shift+Z / Ctrl+Shift+Z)">Redo</button></div>
+<details><summary>Split / merge labels</summary>
+<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
+<label>To FDI <input id="reviewTo" type="number" value="12"></label><label>From FDI <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
+</fieldset>
+<details><summary>Numbering &amp; help</summary>
+<p>Large numbers are FDI; small numbers are US Universal. Right and left mean your own sides. Colors identify labels, not verified anatomy.</p>
+<a href="./tooth-chart.svg" target="_blank" rel="noopener">Open tooth diagram ↗</a>
+<p>Paint crown surfaces, then double-click any surface to center it and rotate to paint the inside. Use Pan to move the whole mouth. Focus keeps view presets centered on that region; Fit scan returns to the whole arch.</p>
+<p>Labels may include gum or span several teeth. Correct boundaries and identity before marking an arch reviewed.</p>
+<p>To split a color spanning two teeth: select that label, click Correct spillover, select the correct destination tooth, then paint only the misplaced surface. Flip direction swaps the two tooth labels. Other labels are protected. Undo reverses a stroke.</p>
+</details>
+</aside></section>
+<section class="review-save-panel" aria-label="Save tooth labels">
+<div class="controls"><button id="reviewSaveLocal" type="button" disabled>Save locally</button><button id="reviewExport" disabled>Download JSON</button><button id="returnCorrections" hidden>Return corrections to case</button><label><input id="reviewChecked" type="checkbox">All boundaries and tooth numbers checked</label></div>
+<p id="reviewSaveStatus" role="status"></p>
+<details id="reviewSaveDetails"><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="3" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each arch separately. Loading a baseline resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
+</section>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+<script type="module" src="./region_review.js"></script></main></body></html>

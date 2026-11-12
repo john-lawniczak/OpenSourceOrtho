@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from orthoplan.io.mesh_import import read_mesh_geometry
+from orthoplan.occlusion.reviewed_bite import apply_reviewed_bite
 from orthoplan.occlusion.grid import build_occlusal_grid
 from orthoplan.occlusion.proximity import (
     PROXIMITY_CAVEAT,
@@ -28,12 +29,13 @@ from orthoplan.segmentation_api import _resolve_scan_path, _scan_arch, _scan_lis
 
 def _resolve_arches(
     payload: dict[str, Any], *, ui_root: Path, workspace: str | Path | None
-) -> tuple[list, list, list[str]]:
+) -> tuple[list, list, list[str], dict]:
     """Resolve the payload's scans into (upper_vertices, lower_vertices, errors)."""
 
     upper: list = []
     lower: list = []
     errors: list[str] = []
+    hashes = {}
     for scan in _scan_list(payload):
         reference = scan.get("reference") or scan.get("url")
         path = _resolve_scan_path(reference, ui_dir=ui_root, workspace=workspace)
@@ -45,11 +47,15 @@ def _resolve_arches(
             errors.append(f"could not determine arch for scan: {reference!r}")
             continue
         _asset, vertices = read_mesh_geometry(path)
+        key = "upper" if arch == "maxillary" else "lower"
+        if key in hashes:
+            raise ValueError("Provide exactly one scan for each arch")
+        hashes[key] = _asset.sha256
         if arch == "maxillary":
             upper = vertices
         else:
             lower = vertices
-    return upper, lower, errors
+    return upper, lower, errors, hashes
 
 
 def proximity_payload(
@@ -59,7 +65,7 @@ def proximity_payload(
 
     try:
         ui_root = Path(ui_dir).resolve()
-        upper, lower, errors = _resolve_arches(payload, ui_root=ui_root, workspace=workspace)
+        upper, lower, errors, hashes = _resolve_arches(payload, ui_root=ui_root, workspace=workspace)
         if not upper or not lower:
             return {
                 "ok": False,
@@ -67,18 +73,30 @@ def proximity_payload(
             }
 
         units_confirmed = bool(payload.get("units_confirmed", False))
-        registration = register_bite(upper, lower, units_confirmed=units_confirmed)
+        review = payload.get("bite_review")
+        if review:
+            if not units_confirmed:
+                raise ValueError("Confirm units before applying a reviewed bite transform")
+            lower = apply_reviewed_bite(review, hashes, lower)
+        registration = register_bite(upper, lower, units_confirmed=units_confirmed, preserve_frame=bool(review))
         if registration.mode == "unavailable":
             return {"ok": False, "errors": [registration.notes]}
 
         grid = build_occlusal_grid(upper, lower, lower_offset=registration.lower_offset)
         pmap = classify_proximity(grid, registration, units_confirmed=units_confirmed)
+        registration_data = registration_to_dict(registration)
+        registration_data.update(evidence="user-reviewed-transform" if review else "geometric-inference",
+                                 source_hashes=hashes, confidence_is_calibrated=False)
+        proximity = proximity_map_to_dict(pmap)
+        if review:
+            registration_data.update(mode="reviewed-transform", lower_to_upper=review["lower_to_upper"])
+            proximity["aligned_to_scan"] = False  # Original lower vertices have not yet been transformed in the client.
         return {
             "ok": True,
             "requires_review": True,
             "caveat": PROXIMITY_CAVEAT,
-            "registration": registration_to_dict(registration),
-            "proximity": proximity_map_to_dict(pmap),
+            "registration": registration_data,
+            "proximity": proximity,
             "warnings": errors,
         }
     except Exception as exc:  # noqa: BLE001 - payload API must never raise

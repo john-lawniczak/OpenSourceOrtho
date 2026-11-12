@@ -1,0 +1,38 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "created_at": "2026-11-12T14:28:31.057583Z",
+  "engine_version": "1.4.0",
+  "scans": [
+    {
+      "filename": "2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl",
+      "role": "progress",
+      "sequence_index": 2,
+      "sha256": "fe3668a01e8e6f999e613d8a2ee334c7283263e6af7ad61effae37af6a75a4b6",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 1743432,
+      "face_count": 581144,
+      "bounds": {
+        "min_xyz": [
+          -45.77325439453125,
+          -15.629999160766602,
+          276.7039489746094
+        ],
+        "max_xyz": [
+          26.354412078857422,
+          26.947248458862305,
+          335.1993713378906
+        ]
+      }
+    }
+  ],
+  "plan_summary": null,
+  "plan_summary_filename": null,
+  "outcome_notes_filename": null,
+  "outcome_notes_sha256": null,
+  "consent_acknowledged": true,
+  "phi_removed": true,
+  "notes": "additional lower capture for reported week 18 (progress-02), contributed November 12, 2026. Retained alongside Fusion_H_6 and the original week 18 pair. Scale, acquisition date, capture method, surface fidelity, and registration are unverified. Contributor confirms H4/H6 share one physical lower model with a small chip on an unidentified front tooth. Chip timing and surface mapping are unconfirmed; the original pair assessment remains separate. Public redistribution authorized by the contributor on 2026-11-12; see case-root consent.json."
+}

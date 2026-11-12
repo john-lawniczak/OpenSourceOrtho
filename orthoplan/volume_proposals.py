@@ -22,6 +22,7 @@ from orthoplan.model.geometry import Vec3
 from orthoplan.model.identity import ToothId
 from orthoplan.model.registration import RegistrationTransform
 from orthoplan.model.registration_gate import gate_registration
+from orthoplan.volume_coordinates import patient_point, patient_centerline, validate_volume_mask
 from orthoplan.volume_geometry import (
     VoxelIndex,
     boundary_voxel_count,
@@ -52,6 +53,7 @@ class VolumeProposalInput:
     bone_voxels: list[VoxelIndex]
     voxel_spacing_mm: tuple[float, float, float] = (1.0, 1.0, 1.0)
     volume_dimensions: tuple[int, int, int] | None = None
+    voxel_to_patient_mm: list[list[float]] | None = None
     min_root_component_voxels: int = 3
     model_provenance: str = "local-volume-threshold-proposal"
 
@@ -66,6 +68,7 @@ def propose_cbct_anatomy_from_volume(payload: VolumeProposalInput) -> DerivedAna
 
 
 def _validate_payload(payload: VolumeProposalInput) -> None:
+    validate_volume_mask(payload)
     if payload.cbct_record.kind not in {"cbct", "dicom"}:
         raise ValueError("volume proposals require a CBCT/DICOM case record")
     if payload.registration.target_cbct_record_id != payload.cbct_record.id:
@@ -90,8 +93,8 @@ def _root_axis_proposals(payload: VolumeProposalInput) -> tuple[list[RootGeometr
         kept, metrics = _clean_root_voxels(voxels, payload)
         if not kept:
             continue
-        points = [_voxel_to_mm(v, payload.voxel_spacing_mm) for v in kept]
-        centerline = _smooth_centerline(_centerline(points))
+        points = [patient_point(v, payload.voxel_spacing_mm, payload.voxel_to_patient_mm) for v in kept]
+        centerline = _smooth_centerline(patient_centerline(points) if payload.voxel_to_patient_mm is not None else _centerline(points))
         metrics.update(_centerline_metrics(centerline))
         confidence = _quality_confidence(metrics, minimum=4, target=24)
         out_of_field = bool(metrics["touches_volume_boundary"])

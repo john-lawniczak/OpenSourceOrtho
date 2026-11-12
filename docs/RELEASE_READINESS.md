@@ -1,13 +1,11 @@
 # Release readiness review — 2026-09-21
 
-**Latest mobile changes:** [2026-09-22 implementation audit](MOBILE_AUDIT_2026-09-22.md)
-supersedes the viewer behavior and native validation counts below. Public
-publication remains on hold.
-
-This candidate improves mobile scan rendering and repository hygiene. Public
-publication is on hold at the maintainer's request. The intended destination is
-a new feature branch in the verified private `OpenSourceOrtho-dev` repository;
-its existing main branch has separate history and must not be overwritten.
+**Publication update — 2026-09-22:** The maintainer authorized a clean public
+snapshot of the completed updates. The [publication record](PUBLIC_RELEASE_2026-09-22.md)
+documents its scope, exclusions, validation, and unchanged history. The
+[mobile implementation audit](MOBILE_AUDIT_2026-09-22.md) supersedes the viewer
+behavior and native validation counts below. The earlier private-publication hold
+has been lifted for this source snapshot; app-store delivery remains separate.
 
 ## Changes ready for review
 
@@ -66,22 +64,19 @@ It is not an exhaustive security audit or a verification of treatment outcomes.
   pins. Optional uninstalled providers/backends and native dependency CVEs were
   not covered by that Python advisory check.
 
-## Before a future public publication
+## Publication disposition
 
-1. Resolve the existing reference video's redistribution status. It is excluded
-   from the HTTP allowlist and mobile bundles, but remains in tracked Git files
-   and history. `consent.json` explicitly records unverified third-party rights;
-   an HTTP restriction does not restrict Git redistribution. Supply a documented
-   basis or prepare a publication snapshot that excludes the video. No history
-   rewrite or rights claim was made in this review.
-2. Preserve the distinction between pseudonymity and anonymity. USER_ONE's public
-   scope deliberately retains original dental geometry, source views, and exact
-   dates under the recorded contribution instructions. The UUID does not remove
-   the identifying potential of those records. No raw CBCT or identifying
-   paperwork belongs in the public snapshot.
-3. Review the precise candidate diff and destination. Do not use a mirror push or
-   overwrite the private main branch. No public branch, tag, release, app-store
-   build, or production deployment is authorized by this review.
+1. The reference video with unverified redistribution rights is omitted from the
+   public snapshot. Metadata marks it unavailable. Original geometry, authorized
+   source renderings, and case metadata remain within the existing consent scope.
+2. USER_ONE is pseudonymous, not anonymous. Original dental geometry and exact
+   case dates retain their identifying potential; no raw CBCT or identifying
+   paperwork is included in this snapshot.
+3. Publication is a single snapshot commit on the existing public `main`, with
+   no private development commits added as ancestors. Existing public history
+   still contains older versions of the omitted files; no history rewrite,
+   force push, mirror push, tag, app-store release, or deployment is part of this
+   publication.
 
 ## Remaining product limits
 

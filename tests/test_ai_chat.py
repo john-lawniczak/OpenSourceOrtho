@@ -14,6 +14,7 @@ from orthoplan.ai_chat import (
 from orthoplan.ai_chat_stream import chat_stream_events, format_sse_event
 from orthoplan.evaluation.providers.base import ModelRequest, ModelResponse
 from orthoplan.evaluation.providers.openai_provider import OpenAIProvider
+from orthoplan.evaluation.providers.compatible_provider import CompatibleProvider
 from orthoplan.model.plan import Stage, ToothDelta, ToothId, TreatmentPlan
 
 
@@ -251,7 +252,7 @@ def test_injected_provider_is_treated_as_explicit_gateway() -> None:
 def test_build_chat_provider_maps_connector_kinds() -> None:
     assert isinstance(build_chat_provider("openai", api_key="k"), OpenAIProvider)
     endpoint_provider = build_chat_provider("open-source", endpoint="http://127.0.0.1:1234/v1")
-    assert isinstance(endpoint_provider, OpenAIProvider)
+    assert isinstance(endpoint_provider, CompatibleProvider)
 
     with pytest.raises(ValueError, match="API key"):
         build_chat_provider("openai")

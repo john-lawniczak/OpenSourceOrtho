@@ -275,3 +275,11 @@ test("arch helpers normalize labels, file names, and FDI quadrants", () => {
   assert.equal(archFromTooth("38"), "mandibular");
   assert.equal(archFromTooth("99"), null);
 });
+
+test("rowsFromPlan retains imported provenance and per-tooth mesh references", () => {
+  const rows = rowsFromPlan({ stages: [{ index: 0, deltas: [
+    { tooth: { value: '11' }, source: 'imported', mesh_asset_id: 'crown-11' },
+  ] }] });
+  assert.equal(rows[0].source, 'imported');
+  assert.equal(rows[0].mesh_asset_id, 'crown-11');
+});

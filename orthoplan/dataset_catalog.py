@@ -12,6 +12,31 @@ from orthoplan.model.dataset import infer_scan_labels, read_manifest
 from orthoplan.model.dataset_consent import read_consent
 
 
+def published_scans(case, manifest, consent):
+    """Validate baseline and explicitly published supplementary visit manifests."""
+    records = [(case, manifest)]
+    for asset in consent.public_assets:
+        if asset.startswith("visits/") and asset.endswith("/manifest.json"):
+            visit = read_manifest(case / asset)
+            if visit.specimen_id != manifest.specimen_id or visit.pseudonym != manifest.pseudonym:
+                raise ValueError(f"Supplementary manifest identity mismatch: {asset}")
+            if not consent.matches_manifest(visit):
+                raise ValueError(f"Inconsistent supplementary publication scope: {asset}")
+            records.append(((case / asset).parent, visit))
+    scans = []
+    for directory, record in records:
+        for scan in record.scans:
+            relative = str((directory / scan.filename).relative_to(case))
+            if relative not in consent.public_assets:
+                raise ValueError(f"Scan outside publication scope: {relative}")
+            if hashlib.sha256((case / relative).read_bytes()).hexdigest() != scan.sha256:
+                raise ValueError(f"Scan hash mismatch: {relative}")
+            if directory == case and infer_scan_labels(scan.filename) != (scan.role, scan.arch, scan.sequence_index):
+                raise ValueError(f"Scan labels disagree with standard filename: {relative}")
+            scans.append(scan)
+    return scans
+
+
 def catalog_entry(case: Path) -> dict:
     manifest = read_manifest(case / "manifest.json")
     consent = read_consent(case / "consent.json")
@@ -29,20 +54,15 @@ def catalog_entry(case: Path) -> dict:
             raise ValueError(f"Missing or unsafe published asset: {case.name}/{asset}")
         total_bytes += path.stat().st_size
     visits: dict[tuple, set] = {}
-    for scan in manifest.scans:
-        if scan.filename not in consent.public_assets:
-            raise ValueError(f"Scan outside publication scope: {scan.filename}")
-        if hashlib.sha256((case / scan.filename).read_bytes()).hexdigest() != scan.sha256:
-            raise ValueError(f"Scan hash mismatch: {scan.filename}")
-        if infer_scan_labels(scan.filename) != (scan.role, scan.arch, scan.sequence_index):
-            raise ValueError(f"Scan labels disagree with standard filename: {scan.filename}")
+    scans = published_scans(case, manifest, consent)
+    for scan in scans:
         visits.setdefault((scan.role, scan.sequence_index), set()).add(scan.arch)
     return {
         "specimen_id": manifest.specimen_id, "uuid": str(identity),
         "pseudonym": manifest.pseudonym, "manifest": f"{case.name}/manifest.json",
         "overview": f"{case.name}/README.md",
-        "roles_present": sorted({s.role for s in manifest.scans}),
-        "scan_count": len(manifest.scans),
+        "roles_present": sorted({s.role for s in scans}),
+        "scan_count": len(scans),
         "scan_pair_count": sum({"maxillary", "mandibular"} <= v for v in visits.values()),
         "has_cbct_metadata": "cbct-metadata.redacted.json" in consent.public_assets,
         "consent_acknowledged": consent.consent_acknowledged,
@@ -81,6 +101,7 @@ def catalog_readme(catalog: dict) -> str:
         "- `media/` contains source renderings and reference media with their provenance.",
         "- `derived/` contains regenerable comparisons, topology reports, and transcriptions.",
         "- `fixtures/` contains engineering fixtures, not measured patient anatomy.",
+        "- `visits/` contains explicitly approved supplementary visits and captures, each with its manifest.",
         "- `.local/` is ignored and never served; raw CBCT and private records stay there.",
         "", "Pseudonyms and UUIDs do not establish anonymity. Case dates remain only where",
         "their retention was explicitly requested. Existing reference-media rights caveats",

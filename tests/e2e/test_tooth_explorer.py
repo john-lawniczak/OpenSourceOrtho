@@ -36,19 +36,30 @@ def rendered_colors(page):
       const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       const count = {blue: 0, red: 0, bluePoint: null};
-      let blueRun = 0;
+      let blueRun = 0, longestRun = 0;
       for (let i = 0; i < pixels.length; i += 4) {
         const [r, g, b] = pixels.slice(i, i + 3);
         if (b > r + 35 && b > g + 20) {
           count.blue++; blueRun++;
-          if (blueRun === 5 && !count.bluePoint) {
-            count.bluePoint = {x: (i / 4) % canvas.width - 2, y: Math.floor(i / 4 / canvas.width)};
+          if (blueRun > longestRun) {
+            longestRun = blueRun;
+            count.bluePoint = {x: (i / 4) % canvas.width - Math.floor(blueRun / 2), y: Math.floor(i / 4 / canvas.width)};
           }
         } else { blueRun = 0; }
         if (r > g + 35 && r > b + 35) count.red++;
       }
       return count;
     }""", "data:image/png;base64," + base64.b64encode(png).decode())
+
+
+def exercise_view_controls(page):
+    page.get_by_role("button", name="Auto-rotate", exact=True).click()
+    expect(page.locator("#toothExplorerRotate")).to_have_attribute("aria-pressed", "true")
+    page.get_by_role("button", name="Pause rotation", exact=True).click()
+    page.get_by_role("button", name="Reset view", exact=True).click()
+    expect(page.locator("#toothExplorerRoots")).to_have_count(0)
+    page.locator("#toothExplorerZoomIn").click()
+    page.locator("#toothExplorerZoomOut").click()
 
 
 def test_tooth_explorer_selection_and_rendering(server_url: str, tmp_path: Path):
@@ -63,12 +74,11 @@ def test_tooth_explorer_selection_and_rendering(server_url: str, tmp_path: Path)
             page.get_by_role("button", name="Open the tooth map and numbering").click()
             canvas = page.locator("#toothExplorerViewer canvas")
             expect(canvas).to_be_visible()
+            exercise_view_controls(page)
             baseline = rendered_colors(page)
             page.locator("#toothExplorerInput").fill("11, 12; 33 34 43 44 11")
-            page.get_by_role("button", name="Highlight teeth", exact=True).click()
-            expect(page.locator("#toothExplorerSummary")).to_have_text(
-                "6 teeth selected: 11, 12, 33, 34, 43, 44."
-            )
+            page.get_by_role("button", name="Find", exact=True).click()
+            expect(page.locator("#toothExplorerSummary")).to_have_text("6 teeth selected: 11, 12, 33, 34, 43, 44.")
             expect(page.locator('#toothExplorerGrid button[aria-pressed="true"]')).to_have_count(6)
             expect(page.locator("#toothExplorerList")).to_contain_text("33 · Lower left canine")
             blue = rendered_colors(page)
@@ -76,28 +86,27 @@ def test_tooth_explorer_selection_and_rendering(server_url: str, tmp_path: Path)
             page.locator("#toothExplorerViewer").screenshot(path=str(tmp_path / "blue-teeth.png"))
             canvas.click(position=blue["bluePoint"])
             expect(page.locator('#toothExplorerGrid button[aria-pressed="true"]')).to_have_count(5)
-            page.get_by_role("button", name="Try 11, 12, 33, 34, 43, 44", exact=True).click()
-            page.get_by_role("button", name="Red", exact=True).click()
+            page.get_by_role("button", name="Try an example", exact=True).click()
+            page.locator("#toothExplorerColor").select_option("#dc2626")
             red = rendered_colors(page)
             assert red["red"] > blue["red"] + 100
             assert red["blue"] < blue["blue"]
             page.locator("#toothExplorerInput").fill("11 19 <bad>")
-            page.get_by_role("button", name="Highlight teeth", exact=True).click()
+            page.get_by_role("button", name="Find", exact=True).click()
             expect(page.locator("#toothExplorerError")).to_contain_text("Selection unchanged")
             expect(page.locator('#toothExplorerGrid button[aria-pressed="true"]')).to_have_count(6)
             page.get_by_role("button", name="FDI 11: Upper right central incisor", exact=True).press("Space")
             expect(page.locator("#toothExplorerSummary")).to_contain_text("5 teeth selected")
             expect(page.locator("#toothExplorerError")).to_be_empty()
-            page.get_by_role("button", name="Yellow", exact=True).click()
-            page.locator("#toothExplorerColor").fill("#8b5cf6")
-            expect(page.locator("#toothExplorerColor")).to_have_value("#8b5cf6")
+            page.locator("#toothExplorerColor").select_option("#facc15")
+            expect(page.locator("#toothExplorerColor")).to_have_value("#facc15")
             page.locator('#panel-toothmap [data-info-back]').click()
             page.get_by_role("button", name="Open the tooth map and numbering").click()
             expect(canvas).to_be_visible()
             expect(page.locator("#toothExplorerSummary")).to_contain_text("5 teeth selected")
             page.get_by_role("button", name="Clear", exact=True).click()
             expect(page.locator('#toothExplorerGrid button[aria-pressed="true"]')).to_have_count(0)
-            page.get_by_role("button", name="Try 11, 12, 33, 34, 43, 44", exact=True).click()
+            page.get_by_role("button", name="Try an example", exact=True).click()
             expect(page.locator('#toothExplorerGrid button[aria-pressed="true"]')).to_have_count(6)
             page.locator("#themeToggle").click()
             page.set_viewport_size({"width": 390, "height": 844})
