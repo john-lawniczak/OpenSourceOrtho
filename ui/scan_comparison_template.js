@@ -36,7 +36,8 @@ export const comparisonTemplate = `
   </nav>
   <div class="comparison-motion-tools">
     <a href="./progress.html">Fit another scan pair</a>
-      <a href="./region-review.html" target="_blank" rel="noopener">Correct tooth regions</a>
+      <a href="./region-review.html?baseline=upper" target="_blank" rel="noopener">Paint USER_ONE upper baseline</a>
+      <a href="./region-review.html?baseline=lower" target="_blank" rel="noopener">Paint USER_ONE lower baseline</a>
     <label>Timing assumption <select id="comparisonTiming"><option value="uniform">Uniform motion</option><option value="smooth">Slow start and finish</option><option value="delayed">Delayed start</option></select></label>
     <label>Tooth <select id="comparisonTooth" disabled><option value="">All teeth</option></select></label>
     <button id="comparisonFocusTooth" type="button" disabled>Focus selected tooth</button>

@@ -19,7 +19,9 @@ export function createRegionSelection(host, scene, geometry, camera) {
   marker.id = "reviewSelectionMarker"; marker.className = "review-selection-marker";
   marker.hidden = true; host.append(marker);
   const bounds = new THREE.Box3(), point = new THREE.Vector3(), center = new THREE.Vector3();
+  let showMarker = true;
   return {
+    setMarkerVisible(visible) { showMarker = visible; },
     update(labels, selected) {
       bounds.makeEmpty();
       let count = 0;
@@ -39,7 +41,7 @@ export function createRegionSelection(host, scene, geometry, camera) {
     },
     positionMarker() {
       point.copy(center).project(camera);
-      const inView = overlay.visible && point.z >= -1 && point.z <= 1
+      const inView = showMarker && overlay.visible && point.z >= -1 && point.z <= 1
         && Math.abs(point.x) <= 1 && Math.abs(point.y) <= 1;
       marker.hidden = !inView;
       if (inView) {

@@ -23,6 +23,7 @@ from orthoplan.generation import generate_plan_payload
 from orthoplan.datasets import resolve_published_asset
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 from orthoplan.occlusion.proximity_api import proximity_payload
+from orthoplan.region_corrections import load_baseline_corrections, save_baseline_corrections
 from orthoplan.segmentation_api import segment_payload
 from orthoplan.server_uploads import handle_case_record_upload, handle_scan_upload
 from orthoplan.setup_compare import compare_setups_payload, live_restage_comparison_payload
@@ -47,6 +48,7 @@ _CONTENT_TYPES = {
 }
 
 JSON_POST_ENDPOINTS = {
+    "/api/region-corrections",
     "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
@@ -97,6 +99,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
+            if path.startswith("/api/region-corrections/"):
+                self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1]))
+                return
             if path.startswith("/api/geometry-jobs/"):
                 result = jobs.get(path.rsplit("/", 1)[-1])
                 self._send_json(404 if result['status'] == 'missing' else 200, result)
@@ -192,6 +197,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/region-corrections":
+        return save_baseline_corrections(payload)
     if path == "/api/geometry-jobs/cancel":
         return jobs.get(str(payload.get("job_id", "")), cancel=True)
     if path == "/api/geometry-jobs":

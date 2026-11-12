@@ -12,6 +12,7 @@ def test_region_merge_undo_brush_and_export(server_url, tmp_path):  # noqa:F811
         page = browser.new_page(viewport={"width": 1200, "height": 1000})
         try:
             page.goto(server_url + "/region-review.html")
+            page.locator("#reviewArch").select_option("upper")
             page.locator("#loadSample").click()
             expect(page.locator("#reviewStatus")).to_contain_text(
                 "0 correction operations", timeout=30000

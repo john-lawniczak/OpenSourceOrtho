@@ -41,3 +41,17 @@
 .review-tooth-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
 .tooth-palette button { background:light-dark(#e6edf0,#304750); color:light-dark(#243d45,#e8f0f2); border:1px solid #82989e; }
 .tooth-palette button[aria-pressed="true"] { background:#ffb000; color:#201600; outline:2px solid #ffb000; font-weight:800; }
+.review-workflow { font-weight:700; color:light-dark(#096a62,#68d7c9); }
+.review-baseline-entry, .review-save-panel { padding:14px; border:1px solid #82989e; border-radius:8px; margin:16px 0; }
+.review-baseline-entry p { margin:8px 0; }
+.review-zoom, .review-brush-shortcuts { display:flex; gap:8px; margin:10px 0; }
+.review-zoom button { flex:1; }
+.review-save-panel h2 { font-size:1rem; margin:0 0 12px; }
+.review-save-panel textarea { box-sizing:border-box; width:100%; font:inherit; }
+#reviewSaveStatus { overflow-wrap:anywhere; }
+#reviewSaveLocal { background:#0f766e; color:white; }
+.sidebar a.glossary-link { display:block; text-decoration:none; }
+.sidebar a.glossary-link small { display:block; opacity:.8; margin-top:4px; }
+.review-paint-controls label:has(input[type="checkbox"]), .review-save-panel label:has(input[type="checkbox"]) { display:flex; align-items:center; gap:8px; }
+.review-save-panel > label { display:block; }
+@media(min-width:851px) { .review-surface { position:sticky; top:12px; } }

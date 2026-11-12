@@ -74,7 +74,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   controls = frameScanView(camera, controls, renderer.domElement, box, scan.autoView ? "auto" : "fit", render);
   return {
-    colorLabels(labels, selected = 0, showOtherColors = false) {
+    colorLabels(labels, selected = 0, showOtherColors = true) {
       activeLabels = labels;
       const palette = new Map([[0, new THREE.Color(0x8a989d)]]);
       for (const id of new Set(labels)) if (id) palette.set(id, showOtherColors ? new THREE.Color().setHSL((id * 0.6180339) % 1, 0.65, 0.55) : new THREE.Color(0x607c8b));
@@ -82,6 +82,13 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       labels.forEach((id, face) => { const color = palette.get(id); for (let i = 0; i < 3; i++) colors.set([color.r, color.g, color.b], face * 9 + i * 3); });
       selection.update(labels, selected);
       geometry.attributes.color.needsUpdate = true; render();
+    },
+    setMarkerVisible(visible) { selection.setMarkerVisible(visible); render(); },
+    zoom(factor) {
+      const offset = camera.position.clone().sub(controls.target);
+      const min = Math.max(box.getBoundingSphere(new THREE.Sphere()).radius * 0.02, camera.near * 2);
+      offset.setLength(Math.max(min, Math.min(camera.far * 0.4, offset.length() * factor)));
+      camera.position.copy(controls.target).add(offset); controls.update(); render();
     },
     focusSelected() {
       const selectedBox = selection.focusBounds();

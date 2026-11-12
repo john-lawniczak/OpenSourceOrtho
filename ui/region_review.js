@@ -1,3 +1,5 @@
+import { setupBrushShortcuts } from "./region_review_shortcuts.js";
+import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
 import { setupReviewControls } from "./region_review_controls.js";
 import { inferArchFromName } from "./core.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
@@ -8,57 +10,82 @@ import { parseStlGeometry } from "./stl.js";
 import { caseStore } from "./progress_case_store.js";
 const el = id => document.getElementById(id);
 let scan, edits, viewer, generation = 0;
+const saving = setupRegionSaving(() => ({ scan, edits }));
+setupBrushShortcuts();
 const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => panel.update(Boolean(scan), selectedCount()) });
 function selectedCount() { return edits ? edits.labels.reduce((count, id) => count + (id === Number(el("reviewTo").value)), 0) : 0; }
 function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value), el("reviewOtherColors").checked); panel.update(Boolean(scan), selectedCount()); }
-function refresh() { selectionChanged(); el("reviewChecked").checked = false; el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
+function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
 function mount() {
   viewer?.dispose();
   panel.arch(scan.arch); el("reviewTool").value = "orbit";
-  el("reviewSource").textContent = `${scan.filename || "USER_ONE baseline"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
+  el("reviewSource").textContent = `${scan.baseline ? "USER_ONE baseline · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
-    brushSettings: () => ({ mode: el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
+    brushSettings: () => ({ mode: el("reviewEditing").disabled ? "orbit" : el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
     onSelectTooth: id => {
+      if (el("reviewEditing").disabled) return;
       if (!id) { el("reviewStatus").textContent = "This surface is unlabeled. Choose its tooth number using the guide, then paint."; return; }
       el("reviewTo").value = id; selectionChanged();
     },
     onStrokeStart: () => edits.beginStroke(),
     onStrokeEnd: () => { edits.endStroke(); refresh(); },
-    onPaint: (faces, settings) => action(() => { edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(); }),
-  }); refresh();
+    onPaint: (faces, settings) => action(() => { const changed = edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(changed > 0); }),
+  }); viewer.setMarkerVisible(el("reviewShowLabel").checked); refresh(); saving.update();
 }
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }
-el("loadSample").onclick = () => action(async () => {
-  const current = ++generation; el("reviewStatus").textContent = "Loading baseline regions…";
-  const pair = await loadObservedPair(el("reviewArch").value), motion = await loadMotionPreview(pair);
-  if (current !== generation) return;
-  scan = pair[0]; const mapping = Object.fromEntries(motion.teeth.map(t => [t.face_label, Number(t.tooth)]));
-  edits = new RegionEdits(motion.faceLabels.map(id => mapping[id] || 0), scan.arch); mount();
-});
+async function loadBaseline(arch) {
+  if (!["upper", "lower"].includes(arch)) throw new Error("Choose Upper or Lower first.");
+  if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; return; }
+  const current = ++generation;
+  el("reviewStatus").textContent = `Loading USER_ONE ${arch} baseline…`;
+  el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
+  try {
+    const [pair, saved] = await Promise.all([loadObservedPair(arch), fetchBaselineSave(arch)]);
+    const motion = saved.saved ? null : await loadMotionPreview(pair);
+    if (current !== generation) return;
+    const nextScan = { ...pair[0], baseline: true };
+    const mapping = motion && Object.fromEntries(motion.teeth.map(t => [t.face_label, Number(t.tooth)]));
+    const count = parseStlFaceCount(nextScan.bytes);
+    const nextEdits = saved.saved ? RegionEdits.restore(saved.corrections, nextScan.sha256, count, arch)
+      : new RegionEdits(motion.faceLabels.map(id => mapping[id] || 0), arch);
+    scan = nextScan; edits = nextEdits; mount(); saving.setSaved(saved);
+    const url = new URL(location.href); url.searchParams.delete("edit"); url.searchParams.set("baseline", arch);
+    history.replaceState(null, "", url);
+  } finally {
+    if (current === generation) { el("reviewArch").value = scan?.arch || ""; panel.update(Boolean(scan), selectedCount()); saving.update(); }
+  }
+}
+function parseStlFaceCount(bytes) {
+  const geometry = parseStlGeometry(bytes), count = geometry.attributes.position.count / 3;
+  geometry.dispose(); return count;
+}
+el("loadSample").onclick = () => action(() => loadBaseline(el("reviewArch").value));
+for (const arch of ["upper", "lower"]) el(`reviewLoad${arch}`).onclick = () => action(() => loadBaseline(arch));
 el("reviewScan").onchange = () => action(async () => {
-  const file = el("reviewScan").files[0]; if (!file) return; const current = ++generation;
+  const file = el("reviewScan").files[0]; if (!file || !saving.canReplace()) return; const current = ++generation;
   const bytes = await file.arrayBuffer(), hash = await crypto.subtle.digest("SHA-256", bytes);
   if (current !== generation) return;
   const inferred = inferArchFromName(file.name);
   const arch = inferred ? (inferred === "mandibular" ? "lower" : "upper") : el("reviewArch").value;
+  if (!["upper", "lower"].includes(arch)) throw new Error("Choose the scan arch before importing this file.");
   const nextScan = { bytes, filename: file.name, arch, autoView: true, rotation: [1,1,1], sha256: Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2,"0")).join("") };
   const geometry = parseStlGeometry(bytes); const count = geometry.attributes.position.count / 3; geometry.dispose();
   if (!count) throw new Error("This scan has no triangles to paint.");
-  scan = nextScan; edits = new RegionEdits(new Uint8Array(count), scan.arch); mount();
+  scan = nextScan; edits = new RegionEdits(new Uint8Array(count), scan.arch); mount(); saving.setSaved(null);
 });
 el("reviewLabels").onchange = () => action(async () => {
   if (!scan) throw new Error("Load the matching scan first.");
   const record = JSON.parse(await el("reviewLabels").files[0].text());
-  const restored = RegionEdits.restore(record, scan.sha256, edits.labels.length, scan.arch); edits = restored; refresh();
+  const restored = RegionEdits.restore(record, scan.sha256, edits.labels.length, scan.arch); edits = restored; refresh(true); el("reviewChecked").checked = record.reviewed;
 });
 for (const [id, fn] of [["reviewUndo", () => edits.undo()], ["reviewRedo", () => edits.redo()], ["reviewMerge", () => edits.merge(Number(el("reviewFrom").value),Number(el("reviewTo").value))]]) {
-  el(id).onclick = () => action(() => { if (!edits) throw new Error("Load a scan first."); fn(); refresh(); });
+  el(id).onclick = () => action(() => { if (!edits) throw new Error("Load a scan first."); fn(); refresh(true); });
 }
 el("reviewExport").onclick = () => action(() => {
   if (!edits) throw new Error("Load a scan first.");
   const blob = new Blob([JSON.stringify(edits.export(scan.sha256, el("reviewChecked").checked))], {type:"application/json"});
-  const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href=url; a.download=`${(scan.filename || "scan").replace(/\.stl$/i, "")}-tooth-corrections.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000);
+  const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href=url; a.download=`${(scan.filename || "scan").replace(/\.stl$/i, "")}-tooth-corrections.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000); saving.exported();
 });
 
 const transferId = new URLSearchParams(location.search).get("edit");
@@ -66,10 +93,11 @@ if (transferId) void action(async () => {
   const record = await caseStore("get",transferId,"edits");
   if (!record) throw new Error("Correction session expired. Reopen from the case.");
   scan=record.scan; edits=RegionEdits.restore(record.labels,scan.sha256,record.labels.face_count,scan.arch);
-  mount(); el("returnCorrections").hidden = record.returnToCase === false;
+  mount(); saving.setSaved(null); el("reviewChecked").checked = record.labels.reviewed; el("returnCorrections").hidden = record.returnToCase === false;
 });
 el("reviewArch").onchange = () => {
-  if (scan) el("reviewStatus").textContent = `Arch choice applies to the next loaded scan. Currently editing ${scan.arch}.`;
+  if (scan?.baseline) void action(() => loadBaseline(el("reviewArch").value));
+  else if (scan) el("reviewStatus").textContent = `Currently editing ${scan.arch}. Choose a baseline button or import another scan to change arches.`;
 };
 el("returnCorrections").onclick = () => action(async () => {
   const record=await caseStore("get",transferId,"edits");
@@ -80,3 +108,9 @@ el("returnCorrections").onclick = () => action(async () => {
 
 el("reviewFocus").onclick = () => viewer?.focusSelected();
 el("reviewOtherColors").onchange = selectionChanged;
+
+el("reviewShowLabel").onchange = () => viewer?.setMarkerVisible(el("reviewShowLabel").checked);
+el("reviewZoomIn").onclick = () => viewer?.zoom(1 / 1.25);
+el("reviewZoomOut").onclick = () => viewer?.zoom(1.25);
+const requestedBaseline = new URLSearchParams(location.search).get("baseline");
+if (!transferId && ["upper", "lower"].includes(requestedBaseline)) void action(() => loadBaseline(requestedBaseline));
