@@ -37,7 +37,14 @@ class OpenAIProvider:
         # Browser-supplied credentials must not inherit a different project's SDK
         # environment. CLI environment credentials retain their explicit scope.
         scope = {"organization": "", "project": ""} if self._api_key is not None else {}
-        client = OpenAI(api_key=api_key, base_url=self._base_url, timeout=120, max_retries=0, **scope)
+        headers = {"Authorization": f"Bearer {api_key}"} if self._api_key is not None else None
+        client = OpenAI(api_key=api_key, base_url=self._base_url, timeout=120, max_retries=0,
+                        default_headers=headers, **scope)
+        if self._api_key is not None:
+            # None after construction omits these headers without re-reading
+            # environment defaults. Empty strings would send blank headers.
+            client.organization = None
+            client.project = None
         try:
             response = client.responses.create(
                 model=self.model,

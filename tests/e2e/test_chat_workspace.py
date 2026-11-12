@@ -144,7 +144,7 @@ def test_stream_updates_existing_turn_and_preserves_safe_text(server_url):
             browser.close()
 
 
-def test_authentication_failure_keeps_prompt_and_opens_connection_settings(server_url):
+def test_authentication_failure_keeps_prompt_and_opens_connection_settings(server_url, tmp_path):
     import json
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
@@ -171,6 +171,10 @@ def test_authentication_failure_keeps_prompt_and_opens_connection_settings(serve
             expect(page.locator(".chat-message.assistant")).to_contain_text("rejected authentication")
             expect(page.locator("#chatInput")).to_have_value("Explain this sample")
             assert requests[0]["api_key"] == "synthetic-key-not-real"
+            reuse = page.get_by_role("button", name="Reuse prompt", exact=True).bounding_box()
+            settings = page.get_by_role("button", name="Connection settings", exact=True).bounding_box()
+            assert settings["x"] >= reuse["x"] + reuse["width"] + 7 or settings["y"] >= reuse["y"] + reuse["height"] + 7
+            page.screenshot(path=str(tmp_path / "chat-auth-recovery.png"))
             page.get_by_role("button", name="Connection settings", exact=True).click()
             expect(page.locator("#chatSettingsDialog")).to_be_visible()
             expect(page.locator("#chatApiKey")).to_be_visible()

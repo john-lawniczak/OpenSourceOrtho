@@ -5,6 +5,9 @@ def openai_error_message(error: Exception) -> str:
     status = getattr(error, "status_code", None)
     kind = type(error).__name__
     code = getattr(error, "code", None)
+    if status == 401 and code == "invalid_api_key":
+        return ("OpenAI reports invalid_api_key (401). In Connection settings, paste a complete, "
+                "active API key. Use the secret value shown when creating the key at platform.openai.com.")
     if status == 401 or kind == "AuthenticationError":
         return ("OpenAI rejected authentication (401). In Settings → OpenAI, paste a complete, "
                 "active API key from platform.openai.com. If it still fails, check the key's "

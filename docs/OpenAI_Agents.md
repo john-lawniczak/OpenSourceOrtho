@@ -309,3 +309,13 @@ settings and retain their prompts. These changes do not validate a user's actual
 key; a successful authenticated request is still required.
 
 See [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes).
+
+Browser-supplied OpenAI credentials now explicitly set the bearer header so an
+ambient SDK authorization header cannot substitute a different credential.
+Organization and project are cleared after construction, which omits those
+headers instead of sending empty values. A real SDK serialization test with a
+mock HTTP transport verifies the endpoint, bearer value and omitted scope headers;
+it uses synthetic credentials and sends no network request. The allowlisted
+`invalid_api_key` error code is shown when supplied by OpenAI; other response
+bodies remain hidden. Authentication of a user's real key remains unverified
+until a real request succeeds. Chat recovery buttons use a spaced, wrapping row.
