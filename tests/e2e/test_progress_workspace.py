@@ -87,7 +87,7 @@ def correct_and_restore(page, tmp_path):
             page.locator(f"#editRegions{i}").click()
         editor = event.value
         expect(editor.locator("#reviewStatus")).to_contain_text("0 correction operations")
-        editor.get_by_text("Advanced: split or merge labels", exact=True).click()
+        editor.get_by_text("Split / merge labels", exact=True).click()
         editor.locator("#reviewMerge").click()
         editor.locator("#returnCorrections").click()
         expect(editor.locator("#reviewStatus")).to_contain_text("Corrections returned")

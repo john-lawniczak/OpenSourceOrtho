@@ -36,4 +36,3 @@ def local_answer(message: str, context: dict[str, Any]) -> str:
         "visual movement timeline with the findings and collect any missing records before relying on "
         f"the preview for clinical decisions.{thread_note}"
     )
-

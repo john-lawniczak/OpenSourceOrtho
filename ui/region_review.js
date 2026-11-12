@@ -71,6 +71,7 @@ function parseStlFaceCount(bytes) {
 el("reviewReload").onclick = () => action(() => loadBaseline(scan?.arch));
 el("loadSample").onclick = () => action(() => loadBaseline(el("reviewArch").value));
 for (const arch of ["upper", "lower"]) el(`reviewLoad${arch}`).onclick = () => action(() => loadBaseline(arch));
+for (const id of ["reviewLoadupper", "reviewLoadlower", "loadSample"]) el(id).disabled = false;
 el("reviewScan").onchange = () => action(async () => {
   const file = el("reviewScan").files[0]; if (!file || !saving.canReplace()) return; const current = ++generation;
   const bytes = await file.arrayBuffer(), hash = await crypto.subtle.digest("SHA-256", bytes);

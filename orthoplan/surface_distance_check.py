@@ -31,5 +31,3 @@ def surface_distance(left, right, *, seconds=5, max_tests=100000):
     except ContactBudgetExceeded:
         return {'status': 'indeterminate', 'distance': None, 'triangle_tests': tests,
                 'reason': 'Computation budget reached; no clearance conclusion'}
-
-

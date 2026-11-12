@@ -98,6 +98,17 @@ def test_missing_approved_asset_fails_before_creating_release(history, tmp_path)
     assert not destination.exists()
 
 
+def test_whitespace_failure_leaves_no_release_branch_or_worktree(history, tmp_path):
+    repo, base, _ = history
+    write(repo, "app.txt", "trailing spaces  \n")
+    source = commit(repo, "Formatting error")
+    destination = tmp_path / "release"
+    result = prepare(repo, source, base, destination, "release/formatting")
+    assert result.returncode != 0
+    assert not destination.exists()
+    assert git(repo, "branch", "--list", "release/formatting") == ""
+
+
 def test_unapproved_symlink_cannot_enter_release(history, tmp_path):
     repo, base, _ = history
     (repo / "linked-secret").symlink_to(".env")

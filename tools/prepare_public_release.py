@@ -26,6 +26,8 @@ def prepare(repo, source, base, destination, branch):
     patch = git(repo, "diff", "--binary", "--full-index", base, tree)
     if not patch:
         raise ValueError("No public changes to release")
+    # Reject formatting errors before creating a branch or a partial worktree.
+    git(repo, "diff", "--check", base, tree)
     git(repo, "worktree", "add", "-b", branch, str(destination), base)
     git(repo, "config", f"branch.{branch}.pushRemote", "private")
     # The release index starts at the public base, not at the private source.

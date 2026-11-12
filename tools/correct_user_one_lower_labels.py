@@ -58,7 +58,7 @@ def generate(case=CASE):
 def write_tables(folder, report):
     fields = ["fdi", "face_count", "connected_components", "estimated_width_mm", "full_projected_span_mm", "within_reference_range", "flags"]
     with (folder / "initial-lower-segmentation-report.csv").open("w") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for tooth in report["teeth"]:
             row = {k: tooth[k] for k in fields}
