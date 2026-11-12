@@ -49,6 +49,16 @@ def open_supplied_sample(page):
     return page.locator('#viewer3d canvas').screenshot()
 
 
+def pick_selected_crown(page, unselected, tmp_path):
+    point = amber_crown_point(page, unselected)
+    assert point is not None, 'Selected real crown must render in amber'
+    page.locator('#viewer3d canvas').screenshot(path=str(tmp_path / 'selected-crown.png'))
+    page.locator('#guidedClearSelection').click()
+    page.locator('#viewer3d canvas').click(position=point)
+    page.locator('#viewer3d canvas').screenshot(path=str(tmp_path / 'picked-crown.png'))
+    print('Crown pick:', point, page.locator('#guidedTeeth [aria-pressed="true"]').all_text_contents())
+
+
 def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
@@ -66,10 +76,7 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             assert not before['fixed_teeth']
             viewer = page.locator('#viewer3d')
             assert tooth.bounding_box()['y'] > viewer.bounding_box()['y']
-            point = amber_crown_point(page, unselected)
-            assert point is not None, 'Selected real crown must render in amber'
-            page.locator('#guidedClearSelection').click()
-            page.locator('#viewer3d canvas').click(position=point)
+            pick_selected_crown(page, unselected, tmp_path)
             expect(tooth).to_have_attribute('aria-pressed', 'true')
             page.locator('[data-manual-nudge="x+"]').first.click()
             expect(page.locator('#applyGoalPreview')).to_be_enabled(timeout=60000)
