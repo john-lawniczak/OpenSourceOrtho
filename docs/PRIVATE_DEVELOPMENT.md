@@ -32,10 +32,16 @@ Preserve its existing history. If branches have diverged, use an integration bra
 and resolve conflicts explicitly; do not reset main or blanket-select one side.
 Fetch the resulting private main before preparing a release.
 
-For the initial transition from `data/user-one-week-18`, the November 12 review
-found 46 conflicting paths against private main. Resolve and test that integration
-before selecting private main as the first release source. The release tool accepts
-an explicit `--source` for a reviewed exception; its default is `private/main`.
+The November 12 integration of private main (`a7ff308`) into
+`data/user-one-week-18` resolved 50 conflicting paths. For 38 paths, private main's
+content exactly matched the earlier public snapshot (`a9d4654`), already an
+ancestor of the feature branch; the newer feature versions were retained. The
+remaining resolutions preserve the current private roadmap, publication records,
+explicit dataset inventory, baseline annotations and week 18 scans. The omitted
+reference video stays omitted. No scan geometry was regenerated for this merge.
+Merge the reviewed feature PR into private main before using it as a release
+source. The release tool accepts an explicit `--source` for a reviewed exception;
+its default is `private/main`.
 
 ## 2. Review publication scope
 
