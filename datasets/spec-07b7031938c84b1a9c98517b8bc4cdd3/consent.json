@@ -77,7 +77,11 @@
     "annotations/initial-lower-segmentation-report.md",
     "annotations/initial-lower-segmentation-views.png",
     "annotations/initial-lower-tooth-corrections.json",
-    "annotations/initial-lower-valley-recipe.json"
+    "annotations/initial-lower-valley-recipe.json",
+    "annotations/initial-upper-context-cleanup-2026-11-12T181002Z.json",
+    "annotations/initial-upper-context-cleanup-2026-11-12T181002Z-report.json",
+    "annotations/initial-upper-left-painted-2026-11-12T182629Z.json",
+    "annotations/initial-upper-left-painted-2026-11-12T182629Z-report.json"
   ],
   "third_party_reference_rights": "unverified",
   "rights_note": "The third-party reference simulation is omitted from this public snapshot because redistribution rights remain unverified. Its descriptive metadata is retained for provenance only; references to the video do not make the file available. Raw CBCT, private records, and original identifying paperwork are excluded. Earlier public Git history is unchanged."

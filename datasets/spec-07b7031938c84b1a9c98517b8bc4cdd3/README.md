@@ -129,14 +129,33 @@ The contributor reports that the wisdom teeth (FDI 18, 28, 38, 48) were removed.
 Extraction dates and any other absent teeth are unspecified. Upper second molars
 are 17 / US 2 and 27 / US 15. See `treatment-context.json`.
 
-The [upper annotation draft](annotations/initial-upper-tooth-corrections.json)
+The current [upper annotation draft](annotations/initial-upper-left-painted-2026-11-12T182629Z.json)
+records the contributor's painting saved November 12, 2026 at 13:26 EST.
+The contributor confirms the patient-left upper teeth (FDI 21–27) are painted
+correctly. This confirmation is recorded without independent anatomical
+verification; the right side and whole-arch benchmark review remain incomplete.
+The [painting report](annotations/initial-upper-left-painted-2026-11-12T182629Z-report.json)
+records all 7,237 changed faces, including edits at the 11/21 boundary, and links
+the prior checkpoint by hash. Saved labels are preserved exactly.
+
+The earlier [context-cleanup checkpoint](annotations/initial-upper-context-cleanup-2026-11-12T181002Z.json)
+records the contributor's context cleanup saved November 12, 2026 at 13:10 EST.
+It clears 42,307 previously labeled faces to context, without reassigning any
+tooth numbers. All 14 upper labels remain. The [checkpoint report](annotations/initial-upper-context-cleanup-2026-11-12T181002Z-report.json)
+records per-tooth counts and hashes linking the previous and current versions.
+This is a draft before final painting, not a reviewed segmentation benchmark.
+Original scan geometry and the local editing history are unchanged.
+
+The previous [geometry-assisted upper draft](annotations/initial-upper-tooth-corrections.json)
 retains painted front surfaces, aligns side numbering with the contributor's
 confirmed 21/22 anchors, and splits posterior masks into premolar/first-molar/
 second-molar labels. The [recipe](annotations/initial-upper-posterior-recipe.json)
 and [report](annotations/initial-upper-posterior-report.json) describe the
 geometry-assisted separators and remaining uncertainty. The previous annotation
 is retained alongside them. The draft is not fully reviewed crown segmentation;
-it does not replace the week 1–7 motion artifact. Reproduce with:
+it does not replace the week 1–7 motion artifact. Reproduce that historical
+geometry-assisted draft with the command below; it does not reproduce the later
+manual cleanup:
 
 ```bash
 python3 tools/correct_user_one_upper_labels.py datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3
