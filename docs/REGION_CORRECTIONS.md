@@ -33,12 +33,12 @@ With `orthoplan serve` running, open
 Start with a few clearly visible teeth, rather than marking an entire arch as
 reviewed at once.
 
-1. Choose **Paint upper baseline** or **Paint lower baseline**. The editor
+1. Choose **Upper** or **Lower**. The editor
    restores the latest local save for that arch, or starts with colored draft
    labels if none exists. It never silently defaults to an upper scan. Changing
    the arch selector while editing a baseline loads the matching baseline and
    numbers; an unsaved-work prompt protects edits before replacing the scan. For a private week 18 capture, set **Lower**
-   first and choose its local STL through **Own STL**, or use **Edit tooth boundaries**
+   first and choose its local STL through **Import scan or corrections → Own STL**, or use **Edit tooth boundaries**
    from the main uploaded-scan viewer. A filename containing an unambiguous lower/upper
    arch label sets the import arch. A newly loaded own scan
    starts gray/unlabeled; import matching correction JSON if available. Private
@@ -49,25 +49,26 @@ reviewed at once.
    thin bounding-box axis as a starting estimate, not a verified anatomical frame.
    These controls change only the camera; original face order, coordinates,
    source hashes, and fitted poses stay unchanged. **Fit scan** preserves the
-   current angle and fits the whole scan. Side **+ Zoom in / − Zoom out** buttons
+   current angle and fits the whole scan. Viewer-edge **+ / −** buttons
    change camera distance without changing labels.
    Establish orientation and tooth numbering before painting. The numbered buttons
    use FDI, offer tooth names, and follow the loaded arch. Uncertain identities
    need notes, not guesses made to complete the labels.
-3. Click a numbered tooth button. Its full name and position from the midline
-   appear beside the scan; the loaded upper/lower arch and numbering range stay
-   visible. Existing faces for that label turn amber with a numbered location
-   marker, while other labels retain their colors by default. **Find selected label** centers
-   and fits its region; rotate if it is behind visible surfaces. These are draft
+3. Click a numbered tooth button. Its name, FDI number and US Universal equivalent appear beside the scan.
+   The palette also shows small US numbers beneath each FDI number. Existing faces for that label turn amber with a numbered location
+   marker, while other labels retain their colors by default. **◎ Focus selected region** centers
+   and fits its region. Double-click a labeled crown in Move view for the same
+   action. After focusing, view presets (including Other side) orbit/frame that
+   region, so its inside remains accessible. **Fit scan** or **Auto view** returns
+   to whole-arch framing. These are draft
    label locations, not confirmed tooth identities. In **Move view**, clicking
-   a labeled surface selects its number without painting. **Show other label
-   colors** is on by default; turn it off to mute other regions. **Show label
-   flag** independently hides or shows the numbered marker.
+   a labeled surface selects its number without painting. **Colors** is on by default; turn it off to mute other regions. **Label flag** independently hides or shows the numbered marker.
    If no faces carry a number, the editor says there is nothing to highlight;
    use the location guide and confirm which crown it is before painting. A tooth
    number alone cannot locate an unpainted or missing tooth.
    Choose **Paint tooth** and drag over its visible crown surface. The brush ring
-   shows the radius. Press **[** to decrease or **]** to increase it by 0.1 scan
+   updates immediately from keyboard shortcuts, buttons and numeric input, even
+   without moving the pointer. Press **[** to decrease or **]** to increase it by 0.1 scan
    units, bounded to 0.1–10; matching buttons sit beside the radius field. These
    shortcuts do not intercept typing in text, numeric or dropdown fields.
    The instruction panel names the active tooth and reports its labeled face count.
@@ -78,12 +79,12 @@ reviewed at once.
 4. Use **Erase to context** to remove gum or extra surface from a tooth label;
    **Split selected source** transfers only the From region under the brush.
    **Merge from → to** changes the entire source region. Split, numeric From/To,
-   and merge controls are under **Advanced: split or merge labels**. Undo mistakes promptly.
+   and merge controls are under **Split / merge labels**. Undo mistakes promptly.
    Mark uncertain boundaries and model defects in accompanying notes/view images;
    the current editor has no dedicated uncertainty or defect layer.
 5. For USER_ONE baselines, use **Save locally** frequently. Partial work keeps
    **I checked all tooth boundaries and numbers on this scan** unchecked. Add
-   uncertainties, missing tooth identities and chip observations in **Notes**.
+   uncertainties, missing tooth identities and chip observations under **Notes & saved file**.
    When the entire arch has been checked, check the review box and save again.
    Each save creates an immutable timestamped JSON snapshot under
    `.orthoplan-region-corrections/USER_ONE/baseline-upper/` or `baseline-lower/`.
@@ -91,7 +92,7 @@ reviewed at once.
    These files survive browser/server restarts and remain outside Git by default.
    `ORTHOPLAN_REGION_CORRECTIONS` can select another local storage directory.
 6. Load the same baseline to resume its latest snapshot, including notes and
-   review status. **Download corrections JSON** gives a portable face-label
+   review status. **Download JSON** gives a portable face-label
    record for any scan; use **Load saved correction JSON** with the identical
    scan to import it. Local snapshots also preserve source identity, notes,
    timestamp and review status; neither save format preserves undo history.
@@ -115,3 +116,11 @@ Contributor markings remain contributor annotations. Independent review and
 measured disagreement are still needed before using them as benchmark reference
 labels. Defects in a scanned model must not be painted into imagined undamaged
 tooth anatomy. Additional annotation controls are tracked in `TODO.md`.
+
+
+The compact editor keeps numbering explanations under **Numbering & help** and
+source/import options under **Import scan or corrections**. Save paths and notes
+are under **Notes & saved file**. Empty save-status rows are hidden.
+
+FDI/US conversion follows the [ADA Universal Tooth Designation System](https://www.ada.org/-/media/project/ada-organization/ada/ada-org/files/publications/cdt/universal_tooth_designation_system_valueset_2.pdf).
+These are numbering equivalents, not anatomical verification of a painted mask.

@@ -1,4 +1,4 @@
-export function mountScanViewToolbar(before, onView) {
+export function mountScanViewToolbar(before, onView, { compact = false } = {}) {
   const bar = document.createElement("div");
   bar.className = "scan-view-controls"; bar.setAttribute("aria-label", "Scan view controls");
   const label = document.createElement("span"); label.textContent = "View"; bar.append(label);
@@ -11,6 +11,7 @@ export function mountScanViewToolbar(before, onView) {
   }
   const note = document.createElement("small");
   note.textContent = "View changes only. Auto view estimates a useful angle; use Other side or Roll if needed.";
-  bar.append(note); before.before(bar);
+  if (!compact) bar.append(note);
+  before.before(bar);
   return bar;
 }

@@ -11,8 +11,8 @@ import { caseStore } from "./progress_case_store.js";
 const el = id => document.getElementById(id);
 let scan, edits, viewer, generation = 0;
 const saving = setupRegionSaving(() => ({ scan, edits }));
-setupBrushShortcuts();
-const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => panel.update(Boolean(scan), selectedCount()) });
+setupBrushShortcuts(() => viewer?.updateBrush());
+const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => { panel.update(Boolean(scan), selectedCount()); viewer?.updateBrush(); } });
 function selectedCount() { return edits ? edits.labels.reduce((count, id) => count + (id === Number(el("reviewTo").value)), 0) : 0; }
 function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value), el("reviewOtherColors").checked); panel.update(Boolean(scan), selectedCount()); }
 function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }

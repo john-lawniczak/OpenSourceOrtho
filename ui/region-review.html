@@ -1,59 +1,55 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Review tooth regions</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
-<body><main><a href="./">← Workspace</a><p class="review-workflow">Step 2 · Teeth &amp; time → Identify teeth → Paint boundaries</p><h1>Paint tooth boundaries</h1>
-<p>This app workspace lets you correct tooth labels for scan analysis. Draft regions and tooth numbers need your review. Original scan bytes stay unchanged.</p>
-<p>Use this after loading scans, before building movement stages. For USER_ONE, paint the <strong>week 1 baseline</strong> for each arch separately. This is a scan-labeling step, not an aligner stage.</p>
+<title>Paint tooth boundaries</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
+<body><main class="region-review-page">
+<header class="review-header"><a href="./">← Workspace</a><span class="review-workflow">Step 2 · Identify teeth</span><h1>Paint tooth boundaries</h1></header>
 <section class="review-baseline-entry" aria-label="USER_ONE baseline painting">
-<strong>USER_ONE · choose the scan you want to paint</strong>
-<div class="controls"><button id="reviewLoadupper" type="button">Paint upper baseline</button><button id="reviewLoadlower" type="button">Paint lower baseline</button></div>
-<p>FDI numbering: 11–18 = upper right, 21–28 = upper left; 31–38 = lower left, 41–48 = lower right. The last digit counts positions from the midline. 18 is an upper right wisdom-tooth position, not a lower tooth. Numbers describe possible positions, not a confirmed inventory of this person’s teeth.</p>
-<p id="reviewSavedupper">upper: checking local saves…</p><p id="reviewSavedlower">lower: checking local saves…</p>
+<strong>USER_ONE · Week 1</strong>
+<div class="controls"><button id="reviewLoadupper" type="button">⌒ Upper</button><button id="reviewLoadlower" type="button">⌣ Lower</button></div>
+<span id="reviewSavedupper" class="review-save-badge" hidden></span><span id="reviewSavedlower" class="review-save-badge" hidden></span>
 </section>
-<ol class="review-steps">
-<li><strong>1 · Load &amp; position</strong>Choose the arch and scan. Use Auto view, Other side, and Roll to get a comfortable angle.</li>
-<li><strong>2 · Choose &amp; paint a tooth</strong>Select its number, choose Paint tooth, then drag over the crown. Paint the surface, not just an outline.</li>
-<li><strong>3 · Inspect &amp; save</strong>Switch to Move view to see the other sides. Save corrections before leaving.</li>
-</ol>
-<div class="controls"><label>Arch to load <select id="reviewArch"><option value="" selected>Choose arch…</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample">Load USER_ONE baseline</button>
-<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Load saved correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div>
+<details class="review-import"><summary>Import scan or corrections</summary>
+<div class="controls"><label>Arch <select id="reviewArch"><option value="" selected>Choose arch…</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample">Load USER_ONE baseline</button>
+<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div></details>
 <p id="reviewSource" class="review-summary">No scan loaded.</p>
-<p id="reviewModeHelp" class="review-mode-help" role="status">Load a scan to begin.</p>
 <section class="review-workbench">
 <div class="review-surface">
+<div class="review-viewport">
 <div id="regionCanvas" class="large-canvas" aria-label="Interactive tooth painting surface"></div>
+<div class="review-viewport-tools" role="group" aria-label="Scan navigation">
+<button id="reviewZoomIn" type="button" aria-label="Zoom in" title="Zoom in" disabled>+</button>
+<button id="reviewZoomOut" type="button" aria-label="Zoom out" title="Zoom out" disabled>−</button>
+<button id="reviewFocus" type="button" aria-label="Focus selected region" title="Focus selected region and orbit around it" disabled>◎</button>
+</div></div>
+<p id="reviewModeHelp" class="review-mode-help" role="status">Choose Upper or Lower to begin.</p>
 <p id="reviewStatus" role="status">Load a scan to begin.</p>
-<p>Selected label = amber with a numbered marker · other labels = colored by default · unlabeled/context = gray. The marker indicates the label’s location, which may be behind visible surfaces. An imported STL starts unlabeled. Rotate to inspect hidden surfaces; a single view cannot show a whole tooth.</p>
 </div>
 <aside class="review-paint-controls">
-<fieldset id="reviewEditing" disabled><legend>Choose a tooth and tool</legend>
-<p>Tooth numbers use FDI. Right and left refer to the person, not the screen. <a href="./tooth-chart.svg" target="_blank" rel="noopener">Open numbering guide</a>.</p>
+<fieldset id="reviewEditing" disabled><legend>Select a region</legend>
 <p id="reviewArchNotice" class="review-arch-notice"></p>
 <div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
-<div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
-<div class="controls"><button id="reviewFocus" type="button" disabled>Find selected label</button>
-<label><input id="reviewOtherColors" type="checkbox" checked>Show other label colors</label>
-<label><input id="reviewShowLabel" type="checkbox" checked>Show label flag</label></div>
-<div class="review-zoom" role="group" aria-label="Zoom scan"><button id="reviewZoomIn" type="button" aria-label="Zoom in">+ Zoom in</button><button id="reviewZoomOut" type="button" aria-label="Zoom out">− Zoom out</button></div>
 <p id="reviewSelectionHelp"></p>
-<div class="controls">
-<button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button>
-<label>Brush radius (scan units) <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label>
-<div class="review-brush-shortcuts"><button id="reviewBrushSmaller" type="button" aria-label="Decrease brush radius" aria-keyshortcuts="[">[ Smaller</button><button id="reviewBrushLarger" type="button" aria-label="Increase brush radius" aria-keyshortcuts="]">] Larger</button></div>
-<small>Shortcuts: [ decreases and ] increases by 0.1. Shortcuts pause while typing in a field.</small><span id="reviewBrushStatus" role="status"></span>
-<button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
-<details><summary>Advanced: split or merge labels</summary><p>Split paints only faces belonging to From. Merge changes the entire From region into To tooth.</p>
+<div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
+<div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox" checked>Label flag</label></div>
+<div class="controls review-tool-buttons"><button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button></div>
+<div class="review-radius-row"><button id="reviewBrushSmaller" type="button" aria-label="Decrease brush radius" aria-keyshortcuts="[">[</button><label>Brush radius <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label><button id="reviewBrushLarger" type="button" aria-label="Increase brush radius" aria-keyshortcuts="]">]</button></div>
+<small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
+<div class="controls"><button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
+<details><summary>Split / merge labels</summary>
 <div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
-<label>To tooth <input id="reviewTo" type="number" value="12"></label><label>From <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
+<label>To FDI <input id="reviewTo" type="number" value="12"></label><label>From FDI <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
 </fieldset>
+<details><summary>Numbering &amp; help</summary>
+<p>Large numbers are FDI; small numbers are US Universal. Right and left mean your own sides. Colors identify labels, not verified anatomy.</p>
+<a href="./tooth-chart.svg" target="_blank" rel="noopener">Open tooth diagram ↗</a>
+<p>Paint crown surfaces, then focus (◎) and rotate to paint the inside. Focus keeps view presets centered on that region; Fit scan returns to the whole arch.</p>
+<p>Labels may include gum or span several teeth. Correct boundaries and identity before marking an arch reviewed.</p>
+</details>
 </aside></section>
-<section class="review-save-panel" aria-label="Save tooth labels"><h2>Save this arch</h2>
-<label>Notes: uncertain teeth, missing teeth or model chips<textarea id="reviewNotes" rows="3" maxlength="4000"></textarea></label>
-<div class="controls"><label><input id="reviewChecked" type="checkbox">I checked all tooth boundaries and numbers on this scan.</label><button id="reviewSaveLocal" type="button" disabled>Save locally</button><button id="reviewExport" disabled>Download corrections JSON</button><button id="returnCorrections" hidden>Return corrections to case</button></div>
-<p id="reviewSaveStatus" role="status">Save locally keeps versioned USER_ONE baseline files on this computer. Download JSON for other scans or a portable copy.</p>
-<p>Load the same baseline to resume its latest local save. Save partial work with the review box off. When both arches are finished and saved, tell us “both baselines are saved” so the files can be validated and incorporated into the dataset.</p>
+<section class="review-save-panel" aria-label="Save tooth labels">
+<div class="controls"><button id="reviewSaveLocal" type="button" disabled>Save locally</button><button id="reviewExport" disabled>Download JSON</button><button id="returnCorrections" hidden>Return corrections to case</button><label><input id="reviewChecked" type="checkbox">All boundaries and tooth numbers checked</label></div>
+<p id="reviewSaveStatus" role="status"></p>
+<details id="reviewSaveDetails"><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="3" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each arch separately. Loading a baseline resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
 </section>
-
-<p>For partial work, leave the checkbox off. Record uncertain areas and model chips separately; labels do not reconstruct missing anatomy. Saved corrections remain separate from fitted motion and anatomy review.</p>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module" src="./region_review.js"></script></main></body></html>

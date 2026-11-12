@@ -11,14 +11,15 @@ export async function fetchBaselineSave(arch) {
 // whole scan reviewed or replaces the published motion-preview labels.
 export function setupRegionSaving(getContext) {
   let dirty = false, revision = 0;
-  function markDirty() { dirty = true; revision++; el("reviewSaveStatus").textContent = "Unsaved changes · save before switching scans or leaving."; }
+  function markDirty() { dirty = true; revision++; el("reviewSaveStatus").textContent = "Unsaved changes"; }
   function setSaved(record) {
     dirty = false;
     el("reviewNotes").value = record?.notes || "";
     el("reviewChecked").checked = record?.corrections?.reviewed === true;
     el("reviewSaveStatus").textContent = record?.saved
-      ? `Restored ${record.review_status} · ${record.saved_at}. Local file: ${record.path}`
-      : "No local snapshot loaded. Save locally to keep USER_ONE baseline labels between sessions.";
+      ? `Restored ${record.review_status}`
+      : "";
+    el("reviewSavePath").textContent = record?.path || "";
   }
   function update() {
     const { scan } = getContext();
@@ -29,8 +30,11 @@ export function setupRegionSaving(getContext) {
     for (const arch of ["upper", "lower"]) {
       try {
         const result = await fetchBaselineSave(arch);
-        el(`reviewSaved${arch}`).textContent = result.saved ? `${arch}: ${result.review_status} saved ${new Date(result.saved_at).toLocaleString()}` : `${arch}: not saved locally yet`;
-      } catch { el(`reviewSaved${arch}`).textContent = `${arch}: local save status unavailable`; }
+        const badge = el(`reviewSaved${arch}`);
+        badge.hidden = !result.saved;
+        badge.textContent = `${arch} · ${result.review_status}`;
+        badge.title = result.saved ? new Date(result.saved_at).toLocaleString() : "";
+      } catch { el(`reviewSaved${arch}`).hidden = true; }
     }
   }
   el("reviewSaveLocal").onclick = async () => {
@@ -48,7 +52,8 @@ export function setupRegionSaving(getContext) {
       if (!response.ok || !result.ok) throw new Error((result.errors || ["Save failed."]).join(" "));
       if (getContext().scan === scan) {
         if (version === revision) dirty = false;
-        el("reviewSaveStatus").textContent = `Saved ${scan.arch} ${result.review_status} locally. ${version !== revision ? "Newer edits are still unsaved. " : ""}File: ${result.path}`;
+        el("reviewSavePath").textContent = result.path;
+        el("reviewSaveStatus").textContent = `Saved ${scan.arch} ${result.review_status} locally${version !== revision ? " · newer edits unsaved" : ""}`;
       }
       await refreshSummary();
     } catch (error) { el("reviewSaveStatus").textContent = `Not saved: ${error.message}`; }

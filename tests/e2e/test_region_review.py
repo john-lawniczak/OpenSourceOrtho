@@ -6,19 +6,23 @@ from playwright.sync_api import expect, sync_playwright  # noqa:E402
 from test_chat_workspace import server_url  # noqa:E402,F401
 
 
+
+@pytest.fixture(autouse=True)
+def isolated_corrections(monkeypatch, tmp_path):
+    monkeypatch.setenv("ORTHOPLAN_REGION_CORRECTIONS", str(tmp_path / "local-labels"))
+
 def test_region_merge_undo_brush_and_export(server_url, tmp_path):  # noqa:F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page(viewport={"width": 1200, "height": 1000})
         try:
             page.goto(server_url + "/region-review.html")
-            page.locator("#reviewArch").select_option("upper")
-            page.locator("#loadSample").click()
+            page.locator("#reviewLoadupper").click()
             expect(page.locator("#reviewStatus")).to_contain_text(
                 "0 correction operations", timeout=30000
             )
             page.screenshot(path=str(tmp_path / "sample-boundary-editor.png"), full_page=True)
-            page.get_by_text("Advanced: split or merge labels", exact=True).click()
+            page.get_by_text("Split / merge labels", exact=True).click()
             page.locator("#reviewMerge").click()
             expect(page.locator("#reviewStatus")).to_contain_text("1 correction operations")
             page.locator("#reviewUndo").click()
@@ -50,13 +54,12 @@ def test_lower_selection_is_locatable_without_relabeling(server_url, tmp_path): 
         page.on("pageerror", lambda error: errors.append(str(error)))
         try:
             page.goto(server_url + "/region-review.html")
-            page.locator("#reviewArch").select_option("lower")
-            page.locator("#loadSample").click()
+            page.locator("#reviewLoadlower").click()
             expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations", timeout=30000)
-            expect(page.locator("#reviewArchNotice")).to_contain_text("Editing LOWER arch")
+            expect(page.locator("#reviewArchNotice")).to_contain_text("Lower · FDI numbering")
             before = export(page, tmp_path, "before-selection.json")
             page.locator('[data-tooth="46"]').click()
-            expect(page.locator("#reviewSelectedTooth")).to_have_text("Selected 46 · Lower right first molar")
+            expect(page.locator("#reviewSelectedTooth")).to_have_text("FDI 46 / US 30 · Lower right first molar")
             expect(page.locator('[data-tooth="46"]')).to_have_attribute("aria-pressed", "true")
             expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 46")
             expect(page.locator("#reviewFocus")).to_be_enabled()
@@ -64,7 +67,7 @@ def test_lower_selection_is_locatable_without_relabeling(server_url, tmp_path): 
             expect(page.locator("#reviewSelectionMarker")).to_be_visible()
             first = page.locator("#regionCanvas").screenshot(path=str(tmp_path / "selected-46.png"))
             page.locator('[data-tooth="31"]').click()
-            expect(page.locator("#reviewSelectedTooth")).to_have_text("Selected 31 · Lower left central incisor")
+            expect(page.locator("#reviewSelectedTooth")).to_have_text("FDI 31 / US 24 · Lower left central incisor")
             expect(page.locator('[data-tooth="46"]')).to_have_attribute("aria-pressed", "false")
             page.locator("#reviewFocus").click()
             expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 31")

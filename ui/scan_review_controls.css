@@ -55,3 +55,29 @@
 .review-paint-controls label:has(input[type="checkbox"]), .review-save-panel label:has(input[type="checkbox"]) { display:flex; align-items:center; gap:8px; }
 .review-save-panel > label { display:block; }
 @media(min-width:851px) { .review-surface { position:sticky; top:12px; } }
+.region-review-page { max-width:1400px; }
+.review-header { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+.review-header h1 { flex-basis:100%; margin:0 0 8px; font-size:1.65rem; }
+.review-header .review-workflow { font-size:.85rem; }
+.region-review-page .review-baseline-entry { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:8px 0; padding:10px 14px; }
+.region-review-page .review-baseline-entry .controls { margin:0; }
+.review-save-badge { font-size:.8rem; border-radius:12px; padding:4px 8px; background:light-dark(#d9eee9,#23443d); }
+.region-review-page .review-import { margin:12px 0; }
+.region-review-page .review-workbench { grid-template-columns:minmax(0,1fr) 340px; gap:16px; }
+.review-viewport { position:relative; }
+.review-viewport-tools { position:absolute; right:10px; top:10px; display:grid; gap:7px; z-index:5; }
+.review-viewport-tools button { width:38px; height:38px; padding:0; font-size:1.5rem; background:#20343c; color:white; box-shadow:0 1px 4px #0005; }
+.region-review-page .review-mode-help { background:none; border:0; padding:0; font-size:.85rem; }
+.region-review-page .review-paint-controls p { margin:8px 0; }
+.review-display-options { display:flex; flex-wrap:wrap; gap:12px; margin:12px 0; }
+.tooth-palette button small { display:block; font-size:.65rem; font-weight:400; opacity:.85; }
+.review-radius-row { display:flex; gap:8px; align-items:end; }
+.review-radius-row button { width:34px; }
+.review-radius-row label { flex:1; }
+.review-radius-row input { max-width:none; width:100%; box-sizing:border-box; }
+.review-sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+#reviewSavePath { overflow-wrap:anywhere; font-size:.85rem; }
+.region-review-page .review-save-panel { margin:14px 0 0; }
+.region-review-page .review-save-panel .controls { margin:0; }
+#regionCanvas { height:62vh; }
+@media(max-width:850px) { .region-review-page .review-workbench { grid-template-columns:1fr; } }
