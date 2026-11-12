@@ -111,8 +111,8 @@
   },
   "consent_acknowledged": true,
   "phi_removed": true,
-  "notes": "Canonical OrthoCAD specimen with initial pair and first progress pair. Sequence index counts scan visits, not treatment stages. New progress units and cross-time registration remain unverified.",
+  "notes": "Canonical OrthoCAD specimen with week 1/baseline and week 7 progress pairs. Sequence index counts scan visits, not treatment stages. Contributor confirms validated cross-visit alignment and tooth correspondence. Progress scale remains unverified; executable alignment and tooth-map records are not linked to the viewer.",
   "outcome_notes_filename": "outcome-notes.md",
-  "outcome_notes_sha256": "ed3713e8142afd501b26ce3149bdad59056b93280750ce1f0991eed19e6ffefc",
+  "outcome_notes_sha256": "fac4aec53318cbde819c8e010ffb7980ba29f79ce524403f78fa9df8003cf8fe",
   "pseudonym": "USER_ONE"
 }

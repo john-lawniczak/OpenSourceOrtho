@@ -1,0 +1,603 @@
+{
+  "schema": "ortho-motion-stress-v1",
+  "kind": "synthetic",
+  "units": "synthetic-mm",
+  "scope": "Single-region fitting with known identity; excludes segmentation and whole-arch registration",
+  "false_motion_thresholds": {
+    "translation_mm": 0.05,
+    "rotation_deg": 1
+  },
+  "real_accuracy": null,
+  "summaries": [
+    {
+      "condition": "exact-repeat",
+      "cases": 6,
+      "translation_rmse_mm": 1.4821483875836085e-17,
+      "rotation_mean_error_deg": 1.8048885935927087e-15,
+      "rotation_max_error_deg": 4.942261482027673e-15,
+      "false_motion_cases": 0
+    },
+    {
+      "condition": "noisy-repeat",
+      "cases": 6,
+      "translation_rmse_mm": 0.0016102276331820225,
+      "rotation_mean_error_deg": 0.08031579601060439,
+      "rotation_max_error_deg": 0.11303812484054236,
+      "false_motion_cases": 0
+    },
+    {
+      "condition": "resampled-repeat",
+      "cases": 6,
+      "translation_rmse_mm": 0.011101164351700488,
+      "rotation_mean_error_deg": 0.9149772983059764,
+      "rotation_max_error_deg": 1.758696959722859,
+      "false_motion_cases": 2
+    },
+    {
+      "condition": "known-motion",
+      "cases": 6,
+      "translation_rmse_mm": 3.9674254802472153e-16,
+      "rotation_mean_error_deg": 1.2891029435389277e-14,
+      "rotation_max_error_deg": 2.019844474354482e-14,
+      "false_motion_cases": 0
+    },
+    {
+      "condition": "partial-surface",
+      "cases": 6,
+      "translation_rmse_mm": 0.024696607897440652,
+      "rotation_mean_error_deg": 0.41567290079352687,
+      "rotation_max_error_deg": 0.9361756696188146,
+      "false_motion_cases": 0
+    },
+    {
+      "condition": "noisy-motion",
+      "cases": 6,
+      "translation_rmse_mm": 0.001567315204358716,
+      "rotation_mean_error_deg": 0.08315551210407136,
+      "rotation_max_error_deg": 0.10701100941161662,
+      "false_motion_cases": 0
+    }
+  ],
+  "cases": [
+    {
+      "seed": 0,
+      "condition": "exact-repeat",
+      "translation_error_mm": 2.1942709178604383e-17,
+      "rotation_error_deg": 7.064798366267057e-16,
+      "p90_surface_residual_mm": 1.4228895207089136e-15,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 3.7367087251761353e-17,
+        "round_trip_rotation_deg": 1.412959673253411e-15,
+        "sampling_shift": 1.4304896245381992e-17,
+        "sampling_rotation_deg": 1.460033670131179e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 1,
+      "condition": "exact-repeat",
+      "translation_error_mm": 8.673617379884035e-19,
+      "rotation_error_deg": 1.943617749367622e-15,
+      "p90_surface_residual_mm": 4.577566798522237e-16,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 1.734723475976807e-18,
+        "round_trip_rotation_deg": 3.887235498735244e-15,
+        "sampling_shift": 1.734723475976807e-17,
+        "sampling_rotation_deg": 5.562572654908955e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 2,
+      "condition": "exact-repeat",
+      "translation_error_mm": 1.3039306074440298e-17,
+      "rotation_error_deg": 1.291705325108289e-15,
+      "p90_surface_residual_mm": 6.77599954797753e-16,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 2.5213237493917618e-17,
+        "round_trip_rotation_deg": 2.5834106502165776e-15,
+        "sampling_shift": 4.6499003098222257e-17,
+        "sampling_rotation_deg": 6.7834838232672335e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 3,
+      "condition": "exact-repeat",
+      "translation_error_mm": 6.938893903907228e-18,
+      "rotation_error_deg": 8.269580589862505e-16,
+      "p90_surface_residual_mm": 4.519132062874506e-16,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 2.110382192020081e-17,
+        "round_trip_rotation_deg": 1.6539161179725006e-15,
+        "sampling_shift": 2.5257955065251657e-17,
+        "sampling_rotation_deg": 2.6820721968595643e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 4,
+      "condition": "exact-repeat",
+      "translation_error_mm": 1.6016862586769483e-17,
+      "rotation_error_deg": 1.1183091094397133e-15,
+      "p90_surface_residual_mm": 9.992007221626409e-16,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 3.118886155653103e-17,
+        "round_trip_rotation_deg": 2.236618218879427e-15,
+        "sampling_shift": 5.745575946153046e-17,
+        "sampling_rotation_deg": 7.775400472161132e-16,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 5,
+      "condition": "exact-repeat",
+      "translation_error_mm": 1.9002943576525368e-17,
+      "rotation_error_deg": 4.942261482027673e-15,
+      "p90_surface_residual_mm": 1.3710242980056706e-15,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 4.3610271956070115e-17,
+        "round_trip_rotation_deg": 9.884522964055347e-15,
+        "sampling_shift": 5.261676819281712e-17,
+        "sampling_rotation_deg": 3.899227509437705e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 0,
+      "condition": "noisy-repeat",
+      "translation_error_mm": 0.0007681633594146773,
+      "rotation_error_deg": 0.06941101248736467,
+      "p90_surface_residual_mm": 0.04787568893447474,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.0008475095663659074,
+        "round_trip_rotation_deg": 0.01777059589553502,
+        "sampling_shift": 0.0020958502886092413,
+        "sampling_rotation_deg": 0.056701644001602804,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 1,
+      "condition": "noisy-repeat",
+      "translation_error_mm": 0.002172183628474519,
+      "rotation_error_deg": 0.11303812484054236,
+      "p90_surface_residual_mm": 0.04984170215607823,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.0011437614662397576,
+        "round_trip_rotation_deg": 0.03836516286988778,
+        "sampling_shift": 0.0007187694893599991,
+        "sampling_rotation_deg": 0.10424692473262046,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 2,
+      "condition": "noisy-repeat",
+      "translation_error_mm": 0.0016397958149236154,
+      "rotation_error_deg": 0.08621080756325036,
+      "p90_surface_residual_mm": 0.04953456830397033,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.00045106307915746533,
+        "round_trip_rotation_deg": 0.037488097502421554,
+        "sampling_shift": 0.0020235177728314285,
+        "sampling_rotation_deg": 0.12027926880648544,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 3,
+      "condition": "noisy-repeat",
+      "translation_error_mm": 0.0009741196019917018,
+      "rotation_error_deg": 0.04484572395302674,
+      "p90_surface_residual_mm": 0.04736142509431193,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.0002902868084745344,
+        "round_trip_rotation_deg": 0.011265882108593743,
+        "sampling_shift": 0.0025836466320832657,
+        "sampling_rotation_deg": 0.0447543684466529,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 4,
+      "condition": "noisy-repeat",
+      "translation_error_mm": 0.0013728860252250842,
+      "rotation_error_deg": 0.09658784190442754,
+      "p90_surface_residual_mm": 0.04840113838116682,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.0008952857823263633,
+        "round_trip_rotation_deg": 0.03369939907285841,
+        "sampling_shift": 0.0016069389518353525,
+        "sampling_rotation_deg": 0.07666725718420138,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 5,
+      "condition": "noisy-repeat",
+      "translation_error_mm": 0.0021739103407302915,
+      "rotation_error_deg": 0.07180126531501468,
+      "p90_surface_residual_mm": 0.050287460318354286,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.0002955713360373697,
+        "round_trip_rotation_deg": 0.052364768398679346,
+        "sampling_shift": 0.001753724576593696,
+        "sampling_rotation_deg": 0.17910097532718783,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 0,
+      "condition": "resampled-repeat",
+      "translation_error_mm": 0.015790359443024333,
+      "rotation_error_deg": 1.758696959722859,
+      "p90_surface_residual_mm": 0.2004298978230444,
+      "false_motion": true,
+      "consistency": {
+        "round_trip_shift": 0.003957500749772139,
+        "round_trip_rotation_deg": 1.4301138826056177,
+        "sampling_shift": 0.017817721524517226,
+        "sampling_rotation_deg": 1.838382679209948,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 1,
+      "condition": "resampled-repeat",
+      "translation_error_mm": 0.01408490597342957,
+      "rotation_error_deg": 0.868190260783277,
+      "p90_surface_residual_mm": 0.19998100226638638,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.011333677389672291,
+        "round_trip_rotation_deg": 0.6127981798263799,
+        "sampling_shift": 0.012463571239693922,
+        "sampling_rotation_deg": 1.6211677342233137,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 2,
+      "condition": "resampled-repeat",
+      "translation_error_mm": 0.007654894963619823,
+      "rotation_error_deg": 0.42480637099578333,
+      "p90_surface_residual_mm": 0.19762429505865275,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.005946655663771746,
+        "round_trip_rotation_deg": 0.8467784844415256,
+        "sampling_shift": 0.013489087946020259,
+        "sampling_rotation_deg": 2.234939648770949,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 3,
+      "condition": "resampled-repeat",
+      "translation_error_mm": 0.006071046917778916,
+      "rotation_error_deg": 1.028086354559246,
+      "p90_surface_residual_mm": 0.19117328618492213,
+      "false_motion": true,
+      "consistency": {
+        "round_trip_shift": 0.005516273350836226,
+        "round_trip_rotation_deg": 0.2904987253979431,
+        "sampling_shift": 0.05331683953424434,
+        "sampling_rotation_deg": 4.875528065292528,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 4,
+      "condition": "resampled-repeat",
+      "translation_error_mm": 0.007454767782543631,
+      "rotation_error_deg": 0.5253427692920328,
+      "p90_surface_residual_mm": 0.19470758162939888,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.009085198621890016,
+        "round_trip_rotation_deg": 2.7189064646953356,
+        "sampling_shift": 0.10636159402101987,
+        "sampling_rotation_deg": 2.1797402804296775,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 5,
+      "condition": "resampled-repeat",
+      "translation_error_mm": 0.011860290126592987,
+      "rotation_error_deg": 0.8847410744826599,
+      "p90_surface_residual_mm": 0.19556505685727202,
+      "false_motion": false,
+      "consistency": {
+        "round_trip_shift": 0.01992257051728464,
+        "round_trip_rotation_deg": 1.2933092211026564,
+        "sampling_shift": 0.006727964591167273,
+        "sampling_rotation_deg": 3.6600533249184806,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 0,
+      "condition": "known-motion",
+      "translation_error_mm": 4.905066750846266e-16,
+      "rotation_error_deg": 2.019844474354482e-14,
+      "p90_surface_residual_mm": 2.3055512673781016e-15,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 6.206723266958637e-16,
+        "round_trip_rotation_deg": 2.0695966317959703e-14,
+        "sampling_shift": 4.1494353474686035e-16,
+        "sampling_rotation_deg": 1.009471252721537e-14,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 1,
+      "condition": "known-motion",
+      "translation_error_mm": 5.763878168445254e-16,
+      "rotation_error_deg": 1.1330891494552043e-14,
+      "p90_surface_residual_mm": 3.1898464434743716e-15,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 9.895529324393847e-16,
+        "round_trip_rotation_deg": 1.52805814060325e-14,
+        "sampling_shift": 7.065756787731808e-16,
+        "sampling_rotation_deg": 7.267691120294705e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 2,
+      "condition": "known-motion",
+      "translation_error_mm": 4.571778070014169e-16,
+      "rotation_error_deg": 6.083269528328376e-15,
+      "p90_surface_residual_mm": 2.6659792048680537e-15,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 4.909734809343086e-16,
+        "round_trip_rotation_deg": 1.2291547217024806e-14,
+        "sampling_shift": 6.769245763143285e-16,
+        "sampling_rotation_deg": 8.741514510188242e-15,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 3,
+      "condition": "known-motion",
+      "translation_error_mm": 1.2177709378935645e-16,
+      "rotation_error_deg": 1.951839803435356e-14,
+      "p90_surface_residual_mm": 1.1443916996305594e-15,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 1.5426364404918866e-16,
+        "round_trip_rotation_deg": 1.5972892308327128e-14,
+        "sampling_shift": 4.062661642740952e-16,
+        "sampling_rotation_deg": 2.4884641650853026e-14,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 4,
+      "condition": "known-motion",
+      "translation_error_mm": 2.5739461938222585e-16,
+      "rotation_error_deg": 1.3139081344624315e-14,
+      "p90_surface_residual_mm": 1.800440285140921e-15,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 4.786021589440077e-16,
+        "round_trip_rotation_deg": 2.0765391103436546e-14,
+        "sampling_shift": 4.886873367543068e-16,
+        "sampling_rotation_deg": 3.2943755249889396e-14,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 5,
+      "condition": "known-motion",
+      "translation_error_mm": 2.8550829216712736e-16,
+      "rotation_error_deg": 7.076091466932551e-15,
+      "p90_surface_residual_mm": 1.4905545222651586e-15,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 3.3605314626410886e-16,
+        "round_trip_rotation_deg": 1.1111317228584669e-14,
+        "sampling_shift": 2.807466526497647e-16,
+        "sampling_rotation_deg": 3.4862082820178166e-14,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 0,
+      "condition": "partial-surface",
+      "translation_error_mm": 0.029199126940744252,
+      "rotation_error_deg": 0.9361756696188146,
+      "p90_surface_residual_mm": 0.5415914485063508,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.0291991269407443,
+        "round_trip_rotation_deg": 0.9361756696188114,
+        "sampling_shift": 0.01756480628675213,
+        "sampling_rotation_deg": 0.780613798788192,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 1,
+      "condition": "partial-surface",
+      "translation_error_mm": 0.028748544470012502,
+      "rotation_error_deg": 0.40833653931119085,
+      "p90_surface_residual_mm": 0.5292631837393147,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.028748544470013015,
+        "round_trip_rotation_deg": 0.4083365393111923,
+        "sampling_shift": 0.034160146021539245,
+        "sampling_rotation_deg": 0.4025717193278072,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 2,
+      "condition": "partial-surface",
+      "translation_error_mm": 0.02994822068889289,
+      "rotation_error_deg": 0.3594343608376677,
+      "p90_surface_residual_mm": 0.5559990564333605,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.029948220688891938,
+        "round_trip_rotation_deg": 0.3594343608376715,
+        "sampling_shift": 0.04504714199439202,
+        "sampling_rotation_deg": 1.6815006215921113,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 3,
+      "condition": "partial-surface",
+      "translation_error_mm": 0.021794017154390034,
+      "rotation_error_deg": 0.16964173439304683,
+      "p90_surface_residual_mm": 0.5245789195609226,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.021794017154390003,
+        "round_trip_rotation_deg": 0.16964173439305547,
+        "sampling_shift": 0.026061302182652367,
+        "sampling_rotation_deg": 1.6067735899147841,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 4,
+      "condition": "partial-surface",
+      "translation_error_mm": 0.019552790313050666,
+      "rotation_error_deg": 0.2669644879383468,
+      "p90_surface_residual_mm": 0.4893415246782939,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.019552790313051672,
+        "round_trip_rotation_deg": 0.266964487938298,
+        "sampling_shift": 0.040034741328523166,
+        "sampling_rotation_deg": 1.0142716644199217,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 5,
+      "condition": "partial-surface",
+      "translation_error_mm": 0.01504260986035927,
+      "rotation_error_deg": 0.3534846126620941,
+      "p90_surface_residual_mm": 0.3924423513868577,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.015042609860360148,
+        "round_trip_rotation_deg": 0.3534846126621119,
+        "sampling_shift": 0.01838619296208946,
+        "sampling_rotation_deg": 1.337462902155302,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 0,
+      "condition": "noisy-motion",
+      "translation_error_mm": 0.0006409250120785452,
+      "rotation_error_deg": 0.07264473520569639,
+      "p90_surface_residual_mm": 0.04796710849058166,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.0007556823813313518,
+        "round_trip_rotation_deg": 0.013849512789159057,
+        "sampling_shift": 0.0019383963969253025,
+        "sampling_rotation_deg": 0.060625674866344695,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 1,
+      "condition": "noisy-motion",
+      "translation_error_mm": 0.0021545310710484244,
+      "rotation_error_deg": 0.10701100941161662,
+      "p90_surface_residual_mm": 0.0497499786297471,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.0007299106204667357,
+        "round_trip_rotation_deg": 0.010125304126013958,
+        "sampling_shift": 0.0008233410140002317,
+        "sampling_rotation_deg": 0.10704279212850655,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 2,
+      "condition": "noisy-motion",
+      "translation_error_mm": 0.0010118013603125447,
+      "rotation_error_deg": 0.10534185678676329,
+      "p90_surface_residual_mm": 0.04952445045628487,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.0009926256284431077,
+        "round_trip_rotation_deg": 0.057715283832012375,
+        "sampling_shift": 0.0018193491396244475,
+        "sampling_rotation_deg": 0.12623732479497407,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 3,
+      "condition": "noisy-motion",
+      "translation_error_mm": 0.0013246145358140032,
+      "rotation_error_deg": 0.03903915254644956,
+      "p90_surface_residual_mm": 0.04744746175953508,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.00023285474539667703,
+        "round_trip_rotation_deg": 0.012786225873968127,
+        "sampling_shift": 0.00247322784597996,
+        "sampling_rotation_deg": 0.05370366163030447,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 4,
+      "condition": "noisy-motion",
+      "translation_error_mm": 0.0014379102148077162,
+      "rotation_error_deg": 0.0907297271998071,
+      "p90_surface_residual_mm": 0.048426895384377985,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.0006275379361247825,
+        "round_trip_rotation_deg": 0.026674759930510935,
+        "sampling_shift": 0.0023398570430915406,
+        "sampling_rotation_deg": 0.11516327871287668,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    },
+    {
+      "seed": 5,
+      "condition": "noisy-motion",
+      "translation_error_mm": 0.0022000321008100393,
+      "rotation_error_deg": 0.08416659147409523,
+      "p90_surface_residual_mm": 0.05029014104449441,
+      "false_motion": null,
+      "consistency": {
+        "round_trip_shift": 0.00047771208668467467,
+        "round_trip_rotation_deg": 0.026592468030753637,
+        "sampling_shift": 0.0015088897281054366,
+        "sampling_rotation_deg": 0.17074298058809725,
+        "interpretation": "Empirical fit consistency; not calibrated measurement uncertainty"
+      }
+    }
+  ]
+}

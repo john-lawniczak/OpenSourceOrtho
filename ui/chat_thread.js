@@ -31,6 +31,22 @@ export function renderChatMessages() {
     if (content.textContent !== message.content) content.textContent = message.content;
     node.classList.toggle("is-pending", Boolean(message.pending));
     node.classList.toggle("is-error", Boolean(message.failed));
+    let actions = node.querySelector(".chat-recovery-actions");
+    let reuse = node.querySelector("[data-reuse-prompt]");
+    let settings = node.querySelector("[data-connection-settings]");
+    if (message.role === "assistant" && message.failed && messages[index - 1]?.role === "user") {
+      if (!actions) { actions = document.createElement("div"); actions.className = "chat-recovery-actions"; node.append(actions); }
+      if (!reuse) { reuse = document.createElement("button"); reuse.type = "button"; actions.append(reuse); }
+      reuse.textContent = "Reuse prompt";
+      reuse.dataset.reusePrompt = String(index - 1);
+      reuse.disabled = state.chat.busy;
+      if (!settings) {
+        settings = document.createElement("button"); settings.type = "button";
+        settings.dataset.connectionSettings = ""; settings.textContent = "Connection settings";
+        settings.onclick = () => el("chatSettingsDialog").showModal(); actions.append(settings);
+      }
+      settings.disabled = state.chat.busy;
+    } else actions?.remove();
     node.querySelector("strong").textContent = message.role === "user" ? "You"
       : message.failed ? "Couldn’t send" : "Plan assistant";
   });

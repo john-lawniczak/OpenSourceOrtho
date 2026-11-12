@@ -1,0 +1,112 @@
+{
+  "schema": "ortho-annotation-checkpoint-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "arch": "upper",
+  "source_filename": "initial-upper.stl",
+  "source_sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+  "saved_at": "2026-11-12T18:10:02.158721+00:00",
+  "provenance": "Contributor manually erased selected tooth-label surfaces to unlabeled context and requested this checkpoint before final painting.",
+  "review_status": "draft",
+  "previous_annotation": "annotations/initial-upper-tooth-corrections.json",
+  "previous_annotation_sha256": "85d0f5be8255a4047829dc74aa396ed457391de9eae46120171ce04aca74ad94",
+  "annotation": "annotations/initial-upper-context-cleanup-2026-11-12T181002Z.json",
+  "annotation_sha256": "589f3452002af55debf76646f115eaade8d24a744f8a8555e59ad7f3f1cd8bed",
+  "scan_geometry_modified": false,
+  "changed_faces": 42307,
+  "cleared_to_context": 42307,
+  "newly_labeled_faces": 0,
+  "reassigned_faces": 0,
+  "labeled_faces": 173141,
+  "unlabeled_faces": 157168,
+  "teeth": [
+    {
+      "fdi": 11,
+      "before_faces": 18019,
+      "after_faces": 15044,
+      "cleared_faces": 2975
+    },
+    {
+      "fdi": 12,
+      "before_faces": 8322,
+      "after_faces": 6581,
+      "cleared_faces": 1741
+    },
+    {
+      "fdi": 13,
+      "before_faces": 9962,
+      "after_faces": 8019,
+      "cleared_faces": 1943
+    },
+    {
+      "fdi": 14,
+      "before_faces": 14191,
+      "after_faces": 12220,
+      "cleared_faces": 1971
+    },
+    {
+      "fdi": 15,
+      "before_faces": 16435,
+      "after_faces": 13471,
+      "cleared_faces": 2964
+    },
+    {
+      "fdi": 16,
+      "before_faces": 23023,
+      "after_faces": 18705,
+      "cleared_faces": 4318
+    },
+    {
+      "fdi": 17,
+      "before_faces": 19291,
+      "after_faces": 12559,
+      "cleared_faces": 6732
+    },
+    {
+      "fdi": 21,
+      "before_faces": 15457,
+      "after_faces": 13458,
+      "cleared_faces": 1999
+    },
+    {
+      "fdi": 22,
+      "before_faces": 8087,
+      "after_faces": 6577,
+      "cleared_faces": 1510
+    },
+    {
+      "fdi": 23,
+      "before_faces": 11527,
+      "after_faces": 9796,
+      "cleared_faces": 1731
+    },
+    {
+      "fdi": 24,
+      "before_faces": 14212,
+      "after_faces": 12325,
+      "cleared_faces": 1887
+    },
+    {
+      "fdi": 25,
+      "before_faces": 13318,
+      "after_faces": 10933,
+      "cleared_faces": 2385
+    },
+    {
+      "fdi": 26,
+      "before_faces": 21748,
+      "after_faces": 18582,
+      "cleared_faces": 3166
+    },
+    {
+      "fdi": 27,
+      "before_faces": 21856,
+      "after_faces": 14871,
+      "cleared_faces": 6985
+    }
+  ],
+  "limitations": [
+    "Contributor draft pending final painting and boundary review.",
+    "This checkpoint records label edits, not verified anatomical accuracy or a finalized benchmark.",
+    "Earlier geometry-assisted recipe/report describe the preceding draft only."
+  ]
+}

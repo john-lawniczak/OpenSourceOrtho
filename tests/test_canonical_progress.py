@@ -42,7 +42,8 @@ def test_progress_comparison_does_not_report_unverified_mm_error():
         assert metric.value_mm is None
         assert metric.status == "unverified-or-unsupported-units"
     comparison = json.loads((CASE / "derived/progress-01-comparison.json").read_text())
-    assert comparison["registration_status"] == "not-validated"
+    assert comparison["registration_status"] == "display-only"
+    assert comparison["input_validation"]["cross_visit_alignment"] == "validated"
     assert comparison["per_tooth_movement_mm"] is None
     assert comparison["tracking_error_mm"] is None
 
@@ -69,3 +70,19 @@ def test_timeline_preserves_confirmed_progress_and_calendar_days():
     assert context["reported_progress"]["wear_interval_days"] is None
     manifest = read_manifest(CASE / "manifest.json")
     assert manifest.plan_summary.wear_interval_days == 5
+
+
+def test_contributor_validation_is_bound_to_the_original_visits_only():
+    timeline = json.loads((CASE / "longitudinal-record.json").read_text())
+    validation = timeline["comparison"]["input_validation"]
+    assert timeline["events"][0]["reported_week"] == 1
+    assert validation["status"] == "contributor-confirmed"
+    assert validation["tooth_correspondence"] == "validated"
+    assert validation["visit_ids"] == ["initial", "progress-01"]
+    manifest = read_manifest(CASE / "manifest.json")
+    assert validation["scans"] == {scan.filename: scan.sha256 for scan in manifest.scans}
+    assert validation["registration_transform_record"] is None
+    assert validation["per_tooth_correspondence_record"] is None
+    source = json.loads((CASE / "progress-01-source-metadata.json").read_text())
+    assert source["input_validation"] == validation
+    assert source["coordinate_frame"]["baseline_registration_verified"] is True

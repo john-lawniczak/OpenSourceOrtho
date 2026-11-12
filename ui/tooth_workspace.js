@@ -14,7 +14,7 @@ export function toothEditBlocker() {
   const tooth = state.manualEdit.selectedTooth;
   if (!tooth) return "Select a crown or its number below the viewer.";
   if (!scaleConfirmed(state.scanUnits)) return "Confirm scan units as mm in Upload.";
-  if (!selectableTeeth().includes(tooth)) return "Identify and review individual teeth in Upload first.";
+  if (!selectableTeeth().includes(tooth)) return "Identify and review individual teeth before editing.";
   if (state.guided.excludedTeeth.includes(tooth)) return "Release this tooth's hold to edit it.";
   if (state.goalPreview) return "Apply or discard the current preview first.";
   if (state.goalBusy) return "Preparing the preview…";
@@ -29,9 +29,8 @@ export function renderToothWorkspace() {
   const scanned = Boolean(state.files.length || state.scanSources.length);
   el("simpleUpload").classList.toggle("has-scans", scanned);
   el("guidedUploadViewerHost").hidden = !scanned;
-  el("uploadGeneratePreview").disabled = !teeth.length || state.scanUnits !== "mm" || state.generation.busy || state.goalBusy || Boolean(state.goalPreview);
   el("toothWorkspace").hidden = !scanned;
-  el("toothSelectionStatus").textContent = teeth.length ? `${teeth.length} reviewed teeth` : "Identify teeth in Upload to enable editing";
+  el("toothSelectionStatus").textContent = teeth.length ? `${teeth.length} reviewed teeth` : "Identify and review teeth in step 2 to enable editing";
   el("guidedTeeth").innerHTML = [["1", "Upper right"], ["2", "Upper left"], ["4", "Lower right"], ["3", "Lower left"]].map(([quadrant, name]) => {
     const ids = teeth.filter(tooth => tooth.startsWith(quadrant));
     if (quadrant === "1" || quadrant === "4") ids.reverse();
@@ -67,7 +66,7 @@ document.body.addEventListener("click", event => {
     renderAll();
   }
   if (button?.id === "askSelectedTooth") {
-    state.chat.collapsed = false;
+    state.chat.collapsed = false; state.chat.caseSource = "workspace";
     el("chatEditMode").checked = true;
     el("chatInput").placeholder = `Describe a geometric change to tooth ${state.manualEdit.selectedTooth}…`;
     renderAll();

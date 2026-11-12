@@ -29,7 +29,8 @@ dev = [
   "ruff>=0.6"
 ]
 providers = [
-  "openai>=1.0"
+  "openai>=1.66",
+  "anthropic>=0.49"
 ]
 mesh = [
   "trimesh>=4.0"
@@ -49,7 +50,19 @@ dicom = [
 # docs/segmentation-learned-backend.md). The core install stays light without this.
 ml-seg = [
   "onnxruntime>=1.17",
-  "numpy>=1.24"
+  "numpy>=1.24",
+  "scipy>=1.10"
+]
+# Offline generation of endpoint-based longitudinal motion previews.
+motion-preview = [
+  "numpy>=1.24",
+  "scipy>=1.10"
+]
+volume-review = [
+  "numpy>=1.24",
+  "pydicom>=3.0",
+  "pylibjpeg>=2.0",
+  "pylibjpeg-libjpeg>=2.1"
 ]
 e2e = [
   "playwright>=1.40"

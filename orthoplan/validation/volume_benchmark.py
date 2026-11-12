@@ -90,7 +90,7 @@ def _fixture_payload(
         },
         bone_voxels=[(x, y, z) for x in range(8) for y in range(2) for z in range(4)],
         voxel_spacing_mm=(0.3, 0.3, 0.5),
-        volume_dimensions=(8, 16, 8),
+        volume_dimensions=(16, 16, 8),
         model_provenance="synthetic-volume-fixture",
     )
 

@@ -4,14 +4,14 @@
   "title": "Sample history",
   "summary": "USER_ONE \u00b7 two observed scan visits.",
   "timing": "104 days between scans. 30 calendar days from recorded treatment start to progress scan. Week 7 is the contributor's progress label. Five-day changes are reported practice, not a recommended schedule.",
-  "limitation": "Independent views at equal source-coordinate scale. Progress scale and cross-time registration are unverified; tooth movement is not measured.",
+  "limitation": "Input alignment and tooth correspondence are validated per contributor confirmation. These previews use independent display centering; progress scale remains unverified and tooth movement is not measured.",
   "context": "38 trays planned. Earlier tray-5 report has no observation date. Current tray per arch, schedule start date, and adherence are unknown.",
   "visits": [
     {
       "id": "initial",
       "label": "Baseline",
       "date": "2026-06-05",
-      "detail": "Pretreatment scan; acquisition date confirmed by contributor.",
+      "detail": "Contributor's week 1 label; recorded pretreatment acquisition date retained.",
       "arches": [
         {
           "name": "Upper",

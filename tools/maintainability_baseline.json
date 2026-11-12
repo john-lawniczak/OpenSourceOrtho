@@ -5,7 +5,7 @@
     "ui/app.js": 1270,
     "ui/guided.js": 482,
     "ui/render.js": 1208,
-    "ui/state.js": 518,
+    "ui/state.js": 436,
     "ui/viewer3d.js": 993
   }
 }

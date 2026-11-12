@@ -1,4 +1,5 @@
-import { renderChat, currentChatModel } from "./chat_view.js";
+import { renderBoundaryEntry } from "./uploaded_boundary_entry.js";
+import { renderChat } from "./chat_view.js";
 export { renderChat } from "./chat_view.js";
 import { buildViewerScanSources } from "./scan_formats.js";
 import {
@@ -30,6 +31,7 @@ import { renderPrintExport } from "./print_export.js";
 import { renderTrustStatus } from "./trust_status.js";
 import { createEvaluationRunner } from "./evaluation_runner.js";
 import { renderAnatomyReview } from "./anatomy_render.js";
+import { observedSampleActive, renderSampleComparison } from "./sample_comparison.js";
 
 let viewer = null;
 let viewerFailed = false;
@@ -133,16 +135,18 @@ function scanStatusText(count, movingFragments) {
   if (state.segmentation.busy) {
     return "Showing your scan. Identifying tooth regions locally…";
   }
-  return "Showing your scan. Review tooth regions in Upload to enable individual selection.";
+  return "Showing your scan. Review tooth regions to enable individual selection.";
 }
 
 function updateViewer(result) {
+  if (observedSampleActive()) { renderBoundaryEntry([]); return; }
   result = state.goalPreview?.evaluation || result;
   if (state.dim !== "3d") return;
   const v = ensureViewer();
   if (!v) return;
   v.resize();
   const allScanSources = buildViewerScanSources(state.files, state.scanSources, inferArchFromName);
+  renderBoundaryEntry(allScanSources);
   const scanSources = filterScanSources(allScanSources);
   v.setVisibleArchFilter(state.scanArchFilter);
   if (allScanSources.length) {
@@ -256,12 +260,6 @@ export function renderAll() {
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
   state.simpleAcknowledged = el("simpleAcknowledged").checked;
-  state.chat.provider = el("chatProvider").value || state.chat.provider;
-  state.chat.model = currentChatModel();
-  state.chat.input = el("chatInput").value;
-  state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
-  state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
-  state.chat.agentEndpoint = el("agentEndpoint").value;
   state.generation.acknowledged = el("generationAck").checked;
   state.generation.notes = el("generationNotes").value;
   const segMissing = el("segmentMissingTeeth");
@@ -296,6 +294,7 @@ export function renderAll() {
   // view is active). Runs before updateViewer so the viewer is in its host
   // before it resizes.
   renderGuided();
+  renderSampleComparison(renderAll);
   renderReviewHeading();
   renderMetadata();
   renderUploadFileList();

@@ -29,7 +29,7 @@ def test_settings_hide_secrets_and_reset_on_provider_change(server_url):
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
         try:
-            page.goto(server_url, wait_until="networkidle")
+            page.goto(server_url)
             page.locator("#chatReopenTab").click()
             expect(page.locator("#chatProvider")).not_to_be_visible()
             page.locator("#openChatSettings").click()
@@ -60,7 +60,7 @@ def test_conversation_keeps_prompts_responses_and_mobile_layout(server_url, tmp_
         errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
-            page.goto(server_url, wait_until="networkidle")
+            page.goto(server_url)
             page.locator("#chatReopenTab").click()
             expect(page.locator(".chat-welcome")).to_be_visible()
             page.locator("#chatInput").fill("What records are missing?")
@@ -84,6 +84,7 @@ def test_conversation_keeps_prompts_responses_and_mobile_layout(server_url, tmp_
             expect(page.locator(".chat-message")).to_have_count(4)
             page.locator("#themeToggle").click()
             page.set_viewport_size({"width": 390, "height": 844})
+            page.locator("#chatInput").focus()
             expect(page.locator("#sendChat")).to_be_in_viewport()
             assert page.locator("#aiChatBlock").evaluate("el => el.scrollWidth <= el.clientWidth")
             page.screenshot(path=str(tmp_path / "chat-mobile.png"))
@@ -116,7 +117,7 @@ def test_stream_updates_existing_turn_and_preserves_safe_text(server_url):
 
         try:
             page.route("**/api/chat/stream", stream)
-            page.goto(server_url, wait_until="networkidle")
+            page.goto(server_url)
             page.locator("#chatReopenTab").click()
             page.locator("#openChatSettings").click()
             page.locator("#chatProvider").select_option("openai")
@@ -140,5 +141,44 @@ def test_stream_updates_existing_turn_and_preserves_safe_text(server_url):
             expect(page.locator("#sendChat")).to_have_text("Send ↑")
             assert requests[-1]["history"] == []
             assert "session_id" not in requests[-1]
+        finally:
+            browser.close()
+
+
+def test_authentication_failure_keeps_prompt_and_opens_connection_settings(server_url, tmp_path):
+    import json
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page()
+        requests = []
+
+        def reject(route):
+            requests.append(route.request.post_data_json)
+            result = {"ok": False, "errors": ["OpenAI rejected authentication (401). In Settings → OpenAI, paste a complete, active API key."]}
+            route.fulfill(status=200, content_type="text/event-stream",
+                          body=f"event: done\ndata: {json.dumps(result)}\n\n")
+
+        try:
+            page.route("**/api/chat/stream", reject)
+            page.goto(server_url)
+            page.locator("#openChatSettings").click()
+            page.locator("#chatProvider").select_option("openai")
+            page.locator("#chatApiKey").fill("  synthetic-key-not-real  ")
+            page.locator("#agentAccessEnabled").check()
+            page.get_by_role("button", name="Done", exact=True).click()
+            page.locator("#chatReopenTab").click()
+            page.locator("#chatInput").fill("Explain this sample")
+            page.locator("#sendChat").click()
+            expect(page.locator(".chat-message.assistant")).to_contain_text("rejected authentication")
+            expect(page.locator("#chatInput")).to_have_value("Explain this sample")
+            assert requests[0]["api_key"] == "synthetic-key-not-real"
+            reuse = page.get_by_role("button", name="Reuse prompt", exact=True).bounding_box()
+            settings = page.get_by_role("button", name="Connection settings", exact=True).bounding_box()
+            assert settings["x"] >= reuse["x"] + reuse["width"] + 7 or settings["y"] >= reuse["y"] + reuse["height"] + 7
+            page.screenshot(path=str(tmp_path / "chat-auth-recovery.png"))
+            page.get_by_role("button", name="Connection settings", exact=True).click()
+            expect(page.locator("#chatSettingsDialog")).to_be_visible()
+            expect(page.locator("#chatApiKey")).to_be_visible()
+            assert "synthetic-key-not-real" not in page.evaluate("JSON.stringify(sessionStorage)")
         finally:
             browser.close()

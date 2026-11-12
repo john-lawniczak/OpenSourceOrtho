@@ -23,7 +23,10 @@ The contributor confirms week 7 and reports five-day tray changes. The source
 scanning date is September 17, 2026, 30 days after the recorded treatment start;
 the progress label does not mean seven elapsed calendar weeks. The two new STLs
 and six source-rendered JPEG views retain their original bytes with neutral
-filenames. Progress scale and cross-time registration are unverified.
+filenames. The contributor confirms validated cross-visit alignment and tooth
+correspondence for the week 1/baseline and week 7 pairs (November 10, 2026).
+Progress scale remains unverified. The viewer has not yet imported an executable
+registration transform or per-tooth map.
 
 The user confirmed that the upper/lower STL pair was acquired on **June 5, 2026**,
 **before treatment**, and that the companion CBCT is from the **same person**.
@@ -113,3 +116,102 @@ attachment transcription retain their provenance references, not downloadable
 video bytes. Earlier public Git history is unchanged. The reference is not an
 outcome record, treatment approval, or evidence that the educational stage
 sequence is clinically correct.
+
+## Reported week 18
+
+[Week 18 scans and model-damage notes](visits/progress-02/README.md) include the
+original upper/lower pair and both Fusion H4/H6 lower captures. Public publication
+was authorized on November 12, 2026; the existing week 1–7 motion fit is unchanged.
+
+## Dentition and baseline annotation
+
+The current [lower checkpoint](annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z.json)
+records the approved clearing of all 38 disconnected lower face labels to context
+on November 12, 2026 at 14:56 EST (11 right, 27 left). All 14 lower labels now have
+one connected region. The [cleanup audit](annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z-report.json)
+retains exact cleared indices and the previous painting's hash. Source triangles,
+main connected crown regions and upper labels are unchanged. Both arches now
+pass the one-connected-region-per-label check; anatomical boundary accuracy and
+independent benchmark acceptance remain unverified.
+
+The previous [lower painting checkpoint](annotations/initial-lower-painted-2026-11-12T194914Z.json)
+preserves the contributor's specified local save from November 12, 2026 at
+14:49 EST, including all 14 lower tooth labels (47–41 and 31–37). Its
+[audit report](annotations/initial-lower-painted-2026-11-12T194914Z-report.json)
+records source and version hashes, changes from the previous draft, and per-tooth
+connectivity. The remaining 11 right-side and 27 left-side disconnected faces
+are retained for inspection. Painting is still a draft pending independent
+boundary review; source geometry is unchanged. The earlier lower valley recipe
+and width report describe the preceding draft, not this saved painting.
+
+The contributor reports that the wisdom teeth (FDI 18, 28, 38, 48) were removed.
+Extraction dates and any other absent teeth are unspecified. Upper second molars
+are 17 / US 2 and 27 / US 15. See `treatment-context.json`.
+
+The current [upper checkpoint](annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z.json)
+records the contributor-approved clearing of all remaining disconnected upper
+label patches on November 12, 2026 at 14:05 EST. The remaining 144 left-side face
+labels were cleared to context; with the prior 116 right-side faces, this totals
+260 cleared label memberships. All 14 upper labels now have exactly one connected
+region. The [cleanup audit](annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z-report.json)
+retains exact face indices and the previous checkpoint hash. Original geometry,
+main connected crown regions and lower labels are unchanged. Connectivity is
+verified; independent anatomical boundary review and benchmark acceptance remain
+pending.
+
+The previous [right-side cleanup checkpoint](annotations/initial-upper-right-fragment-cleanup-2026-11-12T190354Z.json)
+records the contributor-approved clearing of 116 detached upper-right face labels
+to context on November 12, 2026 at 14:03 EST. All seven upper-right labels now
+have one connected region. Upper-left memberships are unchanged, including their
+144 detached faces pending inspection. The [cleanup audit](annotations/initial-upper-right-fragment-cleanup-2026-11-12T190354Z-report.json)
+retains the exact cleared face indices and links the preceding labels by hash.
+Scan triangles were not deleted or changed; anatomical benchmark review remains
+incomplete.
+
+The previous [upper painting checkpoint](annotations/initial-upper-painted-2026-11-12T184456Z.json)
+preserves the contributor's explicitly identified save from November 12, 2026
+at 13:44 EST. The contributor confirms both upper sides (FDI 11–17 and 21–27)
+are painted correctly. The [checkpoint audit](annotations/initial-upper-painted-2026-11-12T184456Z-report.json)
+records all 14 labels and the remaining connectivity issues: 116 right-side
+and 144 left-side faces lie outside their label's main connected component.
+These faces are retained for inspection. Anatomical accuracy is not independently
+verified, the saved reviewed checkbox remains false, and the one-region-per-tooth
+benchmark criterion is not yet met. No lower-arch confirmation is inferred.
+
+The previous [upper-left painting checkpoint](annotations/initial-upper-left-painted-2026-11-12T182629Z.json)
+records the contributor's painting saved November 12, 2026 at 13:26 EST.
+The contributor confirms the patient-left upper teeth (FDI 21–27) are painted
+correctly. This confirmation is recorded without independent anatomical
+verification; at that checkpoint, right-side painting was still pending.
+The [painting report](annotations/initial-upper-left-painted-2026-11-12T182629Z-report.json)
+records all 7,237 changed faces, including edits at the 11/21 boundary, and links
+the prior checkpoint by hash. Saved labels are preserved exactly.
+
+The earlier [context-cleanup checkpoint](annotations/initial-upper-context-cleanup-2026-11-12T181002Z.json)
+records the contributor's context cleanup saved November 12, 2026 at 13:10 EST.
+It clears 42,307 previously labeled faces to context, without reassigning any
+tooth numbers. All 14 upper labels remain. The [checkpoint report](annotations/initial-upper-context-cleanup-2026-11-12T181002Z-report.json)
+records per-tooth counts and hashes linking the previous and current versions.
+This is a draft before final painting, not a reviewed segmentation benchmark.
+Original scan geometry and the local editing history are unchanged.
+
+The previous [geometry-assisted upper draft](annotations/initial-upper-tooth-corrections.json)
+retains painted front surfaces, aligns side numbering with the contributor's
+confirmed 21/22 anchors, and splits posterior masks into premolar/first-molar/
+second-molar labels. The [recipe](annotations/initial-upper-posterior-recipe.json)
+and [report](annotations/initial-upper-posterior-report.json) describe the
+geometry-assisted separators and remaining uncertainty. The previous annotation
+is retained alongside them. The draft is not fully reviewed crown segmentation;
+it does not replace the week 1–7 motion artifact. Reproduce that historical
+geometry-assisted draft with the command below; it does not reproduce the later
+manual cleanup:
+
+```bash
+python3 tools/correct_user_one_upper_labels.py datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3
+```
+
+The contributor also confirmed the previously gray upper-right front crowns as
+11 / US 8 (central) and 12 / US 7 (lateral). Their original draft masks are
+restored only where faces were unlabeled; existing colored surfaces are unchanged.
+The before-restoration annotation is retained for comparison. These crown masks
+still need boundary review.

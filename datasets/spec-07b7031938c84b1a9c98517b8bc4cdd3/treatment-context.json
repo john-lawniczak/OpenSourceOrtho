@@ -49,5 +49,52 @@
       "wear_interval_days": 5,
       "wear_interval_start_date": null
     }
-  ]
+  ],
+  "dentition": {
+    "reported_on": "2026-11-12",
+    "provenance": "Contributor report; not independently verified against clinical records.",
+    "wisdom_teeth_removed": true,
+    "absent_fdi": [
+      "18",
+      "28",
+      "38",
+      "48"
+    ],
+    "extraction_dates": null,
+    "other_missing_teeth": "not specified",
+    "upper_posterior_label_guidance": {
+      "right_second_molar": {
+        "fdi": "17",
+        "us": "2"
+      },
+      "left_second_molar": {
+        "fdi": "27",
+        "us": "15"
+      }
+    },
+    "note": "Contributor states wisdom teeth have been removed. This does not independently confirm every other tooth is present or establish crown boundaries.",
+    "confirmed_upper_front_ids": {
+      "right_central": {
+        "fdi": "11",
+        "us": "8"
+      },
+      "right_lateral": {
+        "fdi": "12",
+        "us": "7"
+      },
+      "left_central": {
+        "fdi": "21",
+        "us": "9"
+      },
+      "left_lateral": {
+        "fdi": "22",
+        "us": "10"
+      },
+      "provenance": "Contributor confirmed front-tooth identities in the displayed upper baseline. Identity confirmation does not validate all surface boundaries."
+    }
+  },
+  "baseline_annotations": {
+    "upper": "annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z.json",
+    "lower": "annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z.json"
+  }
 }

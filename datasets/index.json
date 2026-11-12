@@ -11,13 +11,13 @@
         "initial",
         "progress"
       ],
-      "scan_count": 4,
-      "scan_pair_count": 2,
+      "scan_count": 8,
+      "scan_pair_count": 3,
       "has_cbct_metadata": true,
       "consent_acknowledged": true,
       "exact_dates_retained": true,
-      "public_asset_count": 26,
-      "published_bytes": 64422293
+      "public_asset_count": 88,
+      "published_bytes": 201807227
     }
   ]
 }

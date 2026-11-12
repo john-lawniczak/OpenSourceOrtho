@@ -1,0 +1,40 @@
+{
+  "status": "advisory-unverified",
+  "lint_passed": true,
+  "lint_note": "Language gate only; not a validation of geometric or anatomical correctness.",
+  "findings": [
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Surface appearance is unverified",
+      "message": "The upper rendering appears rougher and more interrupted, with visible openings; the lower appears smoother but also contains broad sheet-like surfaces around the arch. These visual observations do not localize the reported chips or distinguish model-making defects from capture or reconstruction artifacts.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Topology does not establish anatomical fidelity",
+      "message": "Both meshes have open boundary edges, zero-area triangles, and edges with more than two incident faces. Open boundaries can include intentional scan margins. These counts do not measure chip severity, prove the shapes match teeth, or rank scanner accuracy. A closed or repaired mesh would not recover missing original anatomy.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Limit reuse to damaged-model experiments",
+      "message": "Retain this pair for mesh-import, rendering, robustness, and defect-handling experiments with the damage label attached. Exclude it from reference tooth geometry and quantitative tooth-movement or tracking comparisons unless affected regions are independently mapped and the required geometry, scale, and registration are validated. Do not interpret defects as tooth damage or treatment change.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "mesh-quality.json; mesh-views.png; source-metadata.json"
+    }
+  ]
+}

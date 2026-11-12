@@ -24,7 +24,7 @@ def build_history() -> dict:
     scans = {scan["filename"]: scan for scan in comparison["scans"]}
     visits = []
     for event_id, label, detail in [
-        ("initial", "Baseline", "Pretreatment scan; acquisition date confirmed by contributor."),
+        ("initial", "Baseline", "Contributor's week 1 label; recorded pretreatment acquisition date retained."),
         ("progress-01", "Week 7", "User-confirmed progress label with five-day tray changes."),
     ]:
         event = next(e for e in timeline["events"] if e["event_id"] == event_id)
@@ -42,8 +42,9 @@ def build_history() -> dict:
                   "days from recorded treatment start to progress scan. Week 7 is the "
                   "contributor's progress label. Five-day changes are reported practice, "
                   "not a recommended schedule.",
-        "limitation": "Independent views at equal source-coordinate scale. Progress scale "
-                      "and cross-time registration are unverified; tooth movement is not measured.",
+        "limitation": "Input alignment and tooth correspondence are validated per contributor confirmation. "
+                      "These previews use independent display centering; progress scale remains "
+                      "unverified and tooth movement is not measured.",
         "context": "38 trays planned. Earlier tray-5 report has no observation date. "
                    "Current tray per arch, schedule start date, and adherence are unknown.",
         "visits": visits,

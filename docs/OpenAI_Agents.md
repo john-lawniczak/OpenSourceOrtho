@@ -73,7 +73,22 @@ OpenAI-compatible host: this adapter does not implement MCP tool discovery.
 
 Claude Code uses its installed CLI authentication and default model unless a
 model or CLI alias is selected. The selected model is now passed to `--model`;
-the UI no longer asks for an API key that the CLI adapter would ignore.
+the UI labels it **Claude Code (local CLI)** and explains that it takes no key.
+**Claude API (Anthropic)** is a separate `anthropic` connector with a visible
+API-key field. `AnthropicProvider` uses the Python SDK's Messages API with the
+system prompt separate from the user/context message, a 4,096-token output cap,
+120-second timeout, and no retries or tools. It accepts only finished text
+responses; incomplete answers and SDK errors produce sanitized failures.
+All responses still pass the existing finding lint gate. Defaults are Sonnet 5.5,
+with Opus 5.5, Haiku 5.5 and custom IDs available. IDs and protocol were checked
+against [Anthropic's model catalog](https://platform.claude.com/docs/en/models/overview)
+and [Messages API](https://platform.claude.com/docs/en/api/python/messages/create)
+on 2026-11-12. Model access depends on the supplied account.
+
+The `providers` extra installs both OpenAI and Anthropic SDKs. The launcher now
+installs `.[dev,providers]` and checks SDK imports even when its install stamp
+exists. Manual web setup includes that extra too. OpenAI continues to use the
+Responses API, as in the [official Python quickstart](https://developers.openai.com/api/docs/quickstart).
 
 ## Chat Connector Use
 
@@ -93,17 +108,30 @@ accidental credential reuse. Settings close with Done or Escape; configuration
 stays available without occupying the conversation area. Nothing is sent merely
 by configuring a connector. Keys are never written to browser storage or plans.
 
-External requests still require explicit consent to share the full plan context
+External requests still require explicit consent to share the selected case context
 and conversation. Chat uses `context_scope = full_plan`. Generate Plan reuses
 this configuration for its optional advisory review; both paths retain the
 server-side lint gate.
 
-The conversation retains ordered prompts and replies in tab memory. The latest
-16 non-error messages are sent as follow-up context; New chat clears the visible
-thread and server session ID. Stream deltas update an existing assistant turn
-using text nodes, preserving line breaks and never interpreting model HTML.
-The server only streams answers after its existing lint gate. No transcript is
-persisted to disk or browser storage.
+The conversation, unsent prompt, selected provider/models, and panel layout are
+saved in same-origin `sessionStorage` for navigation and reloads in the same tab.
+This is a tab session, not a permanent case record or cross-tab sync. Keys,
+endpoints, consent, and plan snapshots are excluded by an explicit allowlist;
+full-page navigation/reload requires fresh credentials and sharing consent.
+The UI discloses storage failures and reminds users that each new request uses
+the selected context (restoring a transcript does not restore its old plan).
+
+The latest 16 successful messages are sent as follow-up context. Failed turns
+are excluded and their prompts remain available in the composer or **Reuse
+prompt**. Missing credentials open Settings before clearing the draft. New chat
+clears the thread, draft, and server session ID. Pending requests interrupted by
+navigation recover as failed turns with their prompts retained; no request is
+automatically resent. The browser aborts its fetch, but this does not guarantee
+cancellation of an external provider call already running on the server.
+Stream deltas update an existing assistant turn using text nodes, preserving
+line breaks and never interpreting model HTML. The server only streams answers
+after its existing lint gate.
+
 ## Plan Generation Orchestration
 
 Beyond `advise` and chat, the model layer also backs the OPTIONAL review step of
@@ -250,3 +278,79 @@ an explicit model. Claude Code uses its installed CLI authentication. Each live
 test has a 150-second process deadline. A standalone check requires explicit opt-in:
 `python -m orthoplan.validation.provider_smoke --live --provider deepseek`.
 Failures print only provider and exception type, never upstream response bodies.
+
+Local mesh-model integration now requires an explicit, hash-bound ONNX contract
+(`orthoplan/segmentation/model_contract.py`). Feature layout, output shape, arch,
+and FDI mapping are checked before a draft can be rendered. Invalid predictions
+fail the local fitting job; they are not accepted as reviewed tooth geometry.
+See [tool improvement phases](TOOL_IMPROVEMENT_PHASES.md).
+
+### Local endpoint-fit explanations
+
+`/api/motion-review` is a deterministic local helper for two-visit research fits.
+It accepts at most 32 regions with FDI labels, fit statuses and finite numeric
+metrics. It ignores caller prose and generates educational findings through
+`lint_finding()` before returning them. The UI sends only these metadata fields;
+raw surfaces, CBCT pixels and filesystem paths are excluded. It does not contact
+an external provider or infer tooth identity from a small surface residual.
+Explanations prioritize held and weak regions and distinguish a held zero pose
+from evidence of no movement. Imported cases receive a fresh local explanation
+instead of displaying imported advisory text as newly generated findings.
+
+### OpenAI connection failures
+
+The OpenAI adapter defaults explicitly to `https://api.openai.com/v1` rather than
+inheriting an SDK base URL. Request-supplied keys are trimmed and do not inherit
+process organization/project IDs; environment-based CLI credentials retain their
+scope. Explicit adapter base URLs remain supported. Authentication, access, model,
+quota, rate and connection errors use fixed actionable messages without copying
+upstream bodies, key fragments or plan data. Failed chat turns link to Connection
+settings and retain their prompts. These changes do not validate a user's actual
+key; a successful authenticated request is still required.
+
+See [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes).
+
+Browser-supplied OpenAI credentials now explicitly set the bearer header so an
+ambient SDK authorization header cannot substitute a different credential.
+Organization and project are cleared after construction, which omits those
+headers instead of sending empty values. A real SDK serialization test with a
+mock HTTP transport verifies the endpoint, bearer value and omitted scope headers;
+it uses synthetic credentials and sends no network request. The allowlisted
+`invalid_api_key` error code is shown when supplied by OpenAI; other response
+bodies remain hidden. Authentication of a user's real key remains unverified
+until a real request succeeds. Chat recovery buttons use a spaced, wrapping row.
+
+### Selected case context and compact composer
+
+Chat's **Context** selector separates the current planning workspace from
+**USER_ONE scans & saved labels**. Automatic mode follows the sample scan-history
+view; the simulated planning demo uses its workspace plan. Returning from a
+USER_ONE baseline painting page selects USER_ONE explicitly. The selection
+survives same-tab reloads with the conversation, and is visible before sending.
+
+A `case_source: user_one` request in `full_plan` scope builds bounded metadata
+from fixed, specimen-checked manifests: baseline/week 7 scans, week 18
+records (including H4/H6 when installed), latest hash-validated local annotation
+counts and notes, and endpoint-estimate status summaries. No caller-supplied
+filesystem path is accepted. Week 18 records now come from the publication-approved
+`visits/progress-02/` manifests; these records are no longer marked private.
+Other private files remain excluded from public assets;
+the selected provider receives these metadata only on Send with sharing consent.
+The context omits the unrelated workspace plan and never changes authored data.
+USER_ONE chat is read-only; tooth-change previews use the planning workspace.
+
+Raw mesh arrays, label arrays, screenshots, unsaved paint and arbitrary files
+remain unavailable to the model. Source notes remain untrusted. Draft numbering,
+model damage, unverified progress units, and estimates not regenerated from the
+latest painting are explicit limitations. This supplies record awareness, not
+visual assessment of contacts or an enamel/space analysis for IPR.
+
+The composer starts as one line, expands on focus, and collapses on blur, Send,
+or its Collapse button. Draft text survives collapse and reload. Opening the
+chat panel does not automatically expand the composer.
+
+Selected USER_ONE context also supplies `dentition` from the specimen-checked
+`treatment-context.json`: contributor-reported wisdom-tooth removal (18/28/38/48),
+with extraction dates unknown. This is reported history, not an independent
+anatomical finding. Published annotation drafts remain distinct from locally saved
+labels and the existing motion estimates.

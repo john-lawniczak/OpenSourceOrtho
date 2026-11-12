@@ -1,17 +1,24 @@
+import { renderChatContext } from "./chat_context.js";
+import { initializeChatComposer } from "./chat_composer.js";
+import { saveChatSession } from "./chat_persistence.js";
 import { el, state } from "./state.js";
 import { renderChatMessages } from "./chat_thread.js";
 
 const AI_KEY_HELP = {
   local: "Offline. No key needed.",
-  openai: "Use an OpenAI API key. Kept for this tab only.",
-  "claude-code": "Uses your signed-in Claude Code CLI on this machine.",
+  anthropic: "Paste an Anthropic API key here. Use Claude Code instead for local CLI sign-in.",
+  openai: "Paste the complete key from platform.openai.com. Kept for this page only.",
+  "claude-code": "Uses your signed-in Claude Code CLI on this machine. To enter an API key, choose Claude API (Anthropic).",
   deepseek: "Use a DeepSeek API key. Kept for this tab only.",
   glm: "Use a Z.ai standard API key. Kept for this tab only.",
   mcp: "Use your host’s API key and endpoint. Kept for this tab only.",
   "open-source": "Enter your model endpoint. API key is optional.",
 };
 
+initializeChatComposer();
+
 export function renderChat() {
+  renderChatContext();
   document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
   el("aiChatBlock").inert = state.chat.collapsed;
   renderChatConnectorControls();
@@ -42,16 +49,13 @@ export function renderChat() {
   el("aiKeyHelp").textContent = AI_KEY_HELP[state.chat.provider] || AI_KEY_HELP.local;
   el("chatStatus").textContent = state.chat.status;
   for (const id of ["chatProvider", "chatModel", "chatCustomModel", "chatApiKey", "agentEndpoint", "agentAccessEnabled"]) el(id).disabled = state.chat.busy;
-  el("newChat").disabled = state.chat.busy || !state.chat.messages.length;
+  el("newChat").disabled = state.chat.busy || (!state.chat.messages.length && !state.chat.input);
   el("sendChat").textContent = state.chat.busy ? "Thinking…" : "Send ↑";
+  document.body.dataset.chatFocus = state.chat.expanded ? "1" : "";
+  el("expandChat").setAttribute("aria-pressed", String(Boolean(state.chat.expanded)));
+  el("expandChat").textContent = state.chat.expanded ? "Dock" : "Expand";
+  saveChatSession();
   renderChatMessages();
-}
-
-export function currentChatModel() {
-  const custom = el("chatCustomModel")?.value.trim();
-  const selected = el("chatModel")?.value;
-  if (selected === "__custom__") return custom || state.chat.model || "custom-model";
-  return selected || state.chat.model;
 }
 
 function chatConnector(kind) {
@@ -126,16 +130,15 @@ function chatStageLabel() {
 }
 
 
-// View actions never alter the plan or persist conversation content.
+// View actions never alter the plan.
 el("expandChat").addEventListener("click", () => {
-  const expanded = document.body.dataset.chatFocus !== "1";
-  document.body.dataset.chatFocus = expanded ? "1" : "";
-  el("expandChat").setAttribute("aria-pressed", String(expanded));
-  el("expandChat").textContent = expanded ? "Dock" : "Expand";
+  state.chat.expanded = !state.chat.expanded;
+  renderChat();
 });
 el("newChat").addEventListener("click", () => {
   if (state.chat.busy) return;
   state.chat.messages = [];
+  state.chat.input = "";
   state.chat.sessionId = null;
   state.chat.status = "New conversation";
   renderChat();
@@ -145,6 +148,15 @@ el("chatStarters").addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
   state.chat.input = button.textContent;
+  renderChat();
+  el("chatInput").focus();
+});
+
+el("chatMessages").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-reuse-prompt]");
+  if (!button || state.chat.busy) return;
+  const message = state.chat.messages[Number(button.dataset.reusePrompt)];
+  state.chat.input = message.prompt || message.content;
   renderChat();
   el("chatInput").focus();
 });

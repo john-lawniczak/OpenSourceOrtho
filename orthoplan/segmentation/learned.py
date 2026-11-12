@@ -85,11 +85,11 @@ def load_learned_segmenter(
     to keep the heuristic as the default backend.
     """
 
+    weights_by_arch = resolve_weights_by_arch(weights)
     if runner is None and not _onnxruntime_available():
         raise SegmenterUnavailable(
             "onnxruntime is not installed (pip install 'opensource-ortho[ml-seg]')"
         )
-    weights_by_arch = resolve_weights_by_arch(weights)
     return LearnedMeshSegmenter(weights_by_arch, runner=runner)
 
 
@@ -214,24 +214,11 @@ def repair_short_label_runs(labels: list[int], *, min_run: int = _DEFAULT_MIN_LA
 
 
 def _onnx_face_labels(vertices: list[Vec3], arch: ArchName, weights_path: Path) -> list[int]:
-    """Default runner: build features, run the ONNX session, return per-face labels.
-
-    Imports numpy and onnxruntime lazily (the ``ml-seg`` extra). The session I/O is
-    intentionally generic - it feeds the first input and argmaxes per-cell logits -
-    because the exact tensor names/shapes are pinned by the export spike, not here.
-    """
-
-    import numpy as np  # noqa: PLC0415 - optional extra, imported on use only
-    import onnxruntime as ort  # noqa: PLC0415
-
-    facets = _facets(vertices)
-    centroids = [_tri_centroid(tri) for tri in facets]
-    features = np.asarray(build_cell_features(facets, centroids), dtype=np.float32)
-    session = ort.InferenceSession(str(weights_path), providers=["CPUExecutionProvider"])
-    raw = session.run(None, {session.get_inputs()[0].name: features[np.newaxis, ...]})[0]
-    logits = np.squeeze(raw)
-    labels = logits.argmax(axis=-1) if logits.ndim > 1 else logits
-    return [int(value) for value in np.asarray(labels).reshape(-1)]
+    """Run a hash-bound explicit model contract; never guess tensor layout."""
+    from orthoplan.segmentation.model_contract import run_contract
+    order = default_arch_order(arch)
+    labels = run_contract(vertices, arch, weights_path)
+    return [order.index(str(value))+1 if str(value) in order else 0 for value in labels]
 
 
 class LearnedMeshSegmenter:
@@ -251,6 +238,7 @@ class LearnedMeshSegmenter:
         self._weights_by_arch = weights_by_arch
         self._runner = runner or _onnx_face_labels
         self._min_label_run = min_label_run
+        self._injected_runner = runner is not None
 
     def segment(
         self,
@@ -266,9 +254,19 @@ class LearnedMeshSegmenter:
         if not facets:
             return []
         centroids = [_tri_centroid(tri) for tri in facets]
-        labels = repair_short_label_runs(
-            self._runner(vertices, arch, weights_path), min_run=self._min_label_run
-        )
+        labels = self._runner(vertices, arch, weights_path)
+        if len(labels) != len(facets) or any(type(v) is not int or not 0 <= v <= len(default_arch_order(arch)) for v in labels):
+            raise SegmenterUnavailable("Model returned invalid face labels")
+        # STL face ordering has no anatomical meaning. Repair only shared-edge neighbors.
+        if self._min_label_run > 1:
+            try:
+                from orthoplan.segmentation.topology import repair_face_islands
+                labels = repair_face_islands(facets, labels)
+            except ImportError:
+                pass
+        if not self._injected_runner and tooth_values is not None:
+            full_order = default_arch_order(arch)
+            labels = [tooth_values.index(full_order[v-1])+1 if v and full_order[v-1] in tooth_values else 0 for v in labels]
         return segments_from_labels(
             facets, centroids, labels, arch=arch, tooth_values=tooth_values
         )

@@ -8,6 +8,7 @@ from orthoplan.model.geometry import Vec3
 from orthoplan.model.plan import TreatmentPlan
 from orthoplan.model.review_tier import root_bone_aware_ready
 from orthoplan.planning.transforms import PIVOT_LABEL, ToothPose
+from orthoplan.planning.registered_anatomy import scan_space_pair
 
 ROOT_AWARE_PIVOT_LABEL = "root-derived center of resistance (reviewed CBCT anatomy)"
 
@@ -46,6 +47,10 @@ def trusted_movement_frames(plan: TreatmentPlan) -> dict[str, RootAwareMovementF
         root = roots.get(tooth)
         if root is None:
             continue
+        pair = scan_space_pair(plan, root, axis)
+        if pair is None:
+            continue
+        root, axis = pair
         center = _center_of_resistance(axis, root)
         frames[tooth] = RootAwareMovementFrame(axis=axis, root=root, center_of_resistance=center)
     return frames

@@ -1,0 +1,329 @@
+{
+  "schema": "ortho-annotation-checkpoint-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "arch": "lower",
+  "source_filename": "initial-lower.stl",
+  "source_sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+  "saved_at": "2026-11-12T19:49:14.364789+00:00",
+  "source_snapshot_filename": "20261112T194914364789Z-010f848a2a19454394b38ab1fbb25efb.json",
+  "provenance": "Contributor identified this saved lower painting and requested it be recorded, committed and pushed. Saved label bytes are preserved exactly; no cleanup or relabeling applied.",
+  "review_status": "contributor-painted-draft",
+  "saved_reviewed_checkbox": false,
+  "previous_annotation": "annotations/initial-lower-tooth-corrections.json",
+  "previous_annotation_sha256": "2a6a49d77de3137bde3d88e642c0bc7b96215a96797d806dc919a624937b168b",
+  "annotation": "annotations/initial-lower-painted-2026-11-12T194914Z.json",
+  "annotation_sha256": "c9d75ab7a4ec9764e22894521428901c87eb17030dfe469e48289336c0e3da4f",
+  "scan_geometry_modified": false,
+  "changed_faces": 58426,
+  "cleared_to_context": 9416,
+  "newly_labeled_faces": 42097,
+  "reassigned_faces": 6913,
+  "labeled_faces": 160649,
+  "unlabeled_faces": 126152,
+  "transitions": [
+    {
+      "from_fdi": 0,
+      "to_fdi": 31,
+      "faces": 379
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 32,
+      "faces": 757
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 33,
+      "faces": 1615
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 34,
+      "faces": 3979
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 35,
+      "faces": 3256
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 36,
+      "faces": 5879
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 37,
+      "faces": 1963
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 41,
+      "faces": 1094
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 42,
+      "faces": 1963
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 43,
+      "faces": 1328
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 44,
+      "faces": 3582
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 45,
+      "faces": 3958
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 46,
+      "faces": 7498
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 47,
+      "faces": 4846
+    },
+    {
+      "from_fdi": 31,
+      "to_fdi": 0,
+      "faces": 590
+    },
+    {
+      "from_fdi": 31,
+      "to_fdi": 32,
+      "faces": 688
+    },
+    {
+      "from_fdi": 31,
+      "to_fdi": 41,
+      "faces": 133
+    },
+    {
+      "from_fdi": 32,
+      "to_fdi": 0,
+      "faces": 191
+    },
+    {
+      "from_fdi": 32,
+      "to_fdi": 33,
+      "faces": 679
+    },
+    {
+      "from_fdi": 33,
+      "to_fdi": 0,
+      "faces": 808
+    },
+    {
+      "from_fdi": 33,
+      "to_fdi": 34,
+      "faces": 918
+    },
+    {
+      "from_fdi": 34,
+      "to_fdi": 0,
+      "faces": 449
+    },
+    {
+      "from_fdi": 34,
+      "to_fdi": 35,
+      "faces": 202
+    },
+    {
+      "from_fdi": 35,
+      "to_fdi": 0,
+      "faces": 486
+    },
+    {
+      "from_fdi": 36,
+      "to_fdi": 0,
+      "faces": 486
+    },
+    {
+      "from_fdi": 36,
+      "to_fdi": 35,
+      "faces": 184
+    },
+    {
+      "from_fdi": 37,
+      "to_fdi": 0,
+      "faces": 1461
+    },
+    {
+      "from_fdi": 37,
+      "to_fdi": 36,
+      "faces": 393
+    },
+    {
+      "from_fdi": 41,
+      "to_fdi": 0,
+      "faces": 215
+    },
+    {
+      "from_fdi": 41,
+      "to_fdi": 42,
+      "faces": 634
+    },
+    {
+      "from_fdi": 42,
+      "to_fdi": 0,
+      "faces": 109
+    },
+    {
+      "from_fdi": 42,
+      "to_fdi": 43,
+      "faces": 382
+    },
+    {
+      "from_fdi": 43,
+      "to_fdi": 0,
+      "faces": 685
+    },
+    {
+      "from_fdi": 43,
+      "to_fdi": 44,
+      "faces": 1294
+    },
+    {
+      "from_fdi": 44,
+      "to_fdi": 0,
+      "faces": 692
+    },
+    {
+      "from_fdi": 44,
+      "to_fdi": 45,
+      "faces": 753
+    },
+    {
+      "from_fdi": 45,
+      "to_fdi": 0,
+      "faces": 958
+    },
+    {
+      "from_fdi": 45,
+      "to_fdi": 46,
+      "faces": 358
+    },
+    {
+      "from_fdi": 46,
+      "to_fdi": 0,
+      "faces": 313
+    },
+    {
+      "from_fdi": 46,
+      "to_fdi": 45,
+      "faces": 8
+    },
+    {
+      "from_fdi": 47,
+      "to_fdi": 0,
+      "faces": 1973
+    },
+    {
+      "from_fdi": 47,
+      "to_fdi": 46,
+      "faces": 287
+    }
+  ],
+  "teeth": [
+    {
+      "fdi": 47,
+      "face_count": 16454,
+      "connected_components": 3,
+      "faces_outside_largest_component": 2
+    },
+    {
+      "fdi": 46,
+      "face_count": 19597,
+      "connected_components": 3,
+      "faces_outside_largest_component": 3
+    },
+    {
+      "fdi": 45,
+      "face_count": 10712,
+      "connected_components": 4,
+      "faces_outside_largest_component": 3
+    },
+    {
+      "fdi": 44,
+      "face_count": 10999,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 43,
+      "face_count": 9794,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 42,
+      "face_count": 7806,
+      "connected_components": 3,
+      "faces_outside_largest_component": 2
+    },
+    {
+      "fdi": 41,
+      "face_count": 7360,
+      "connected_components": 2,
+      "faces_outside_largest_component": 1
+    },
+    {
+      "fdi": 31,
+      "face_count": 7059,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 32,
+      "face_count": 7030,
+      "connected_components": 3,
+      "faces_outside_largest_component": 8
+    },
+    {
+      "fdi": 33,
+      "face_count": 8765,
+      "connected_components": 6,
+      "faces_outside_largest_component": 8
+    },
+    {
+      "fdi": 34,
+      "face_count": 11407,
+      "connected_components": 4,
+      "faces_outside_largest_component": 3
+    },
+    {
+      "fdi": 35,
+      "face_count": 10305,
+      "connected_components": 4,
+      "faces_outside_largest_component": 4
+    },
+    {
+      "fdi": 36,
+      "face_count": 17145,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 37,
+      "face_count": 16216,
+      "connected_components": 3,
+      "faces_outside_largest_component": 4
+    }
+  ],
+  "right_faces_outside_largest_components": 11,
+  "left_faces_outside_largest_components": 27,
+  "benchmark_ready": false,
+  "limitations": [
+    "Saved painting has not undergone independent anatomical review.",
+    "Disconnected labeled faces are retained, not automatically cleared; inspection and any cleanup require a separate decision.",
+    "Earlier lower valley recipe and width report describe the previous draft, not this painting."
+  ]
+}

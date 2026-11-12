@@ -16,7 +16,7 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 
 from test_chat_workspace import server_url  # noqa: E402,F401
 
-def test_viewer_renders_3d_canvas(server_url: str) -> None:
+def test_viewer_renders_3d_canvas(server_url: str) -> None:  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         try:
             browser = pw.chromium.launch(headless=True)
@@ -47,7 +47,7 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:
     assert not errors, f"uncaught page errors: {errors}"
 
 
-def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None:
+def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None:  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         try:
             browser = pw.chromium.launch(headless=True)
@@ -65,6 +65,7 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
             page.wait_for_selector("#panel-upload.is-active", timeout=15000)
             assert page.locator(".journey-nav").count() == 0
             page.click(".sample-launch")
+            page.click('[data-sample-view="simulation"]')
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
@@ -99,7 +100,7 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
     assert not errors, f"uncaught page errors: {errors}"
 
 
-def test_guided_build_review_and_print_status_happy_path(server_url: str) -> None:
+def test_guided_build_review_and_print_status_happy_path(server_url: str) -> None:  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         try:
             browser = pw.chromium.launch(headless=True)
@@ -116,7 +117,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
             page.click('[data-user-mode="advanced"]')
             page.click(".sample-launch")
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
-
+            page.click('[data-sample-view="simulation"]')
             page.click('[data-gstep-nav="plan"]')
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
             page.wait_for_selector('#guidedTeeth [data-select-tooth="11"]', timeout=90000)
@@ -151,7 +152,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
     assert not errors, f"uncaught page errors: {errors}"
 
 
-def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> None:
+def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> None:  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         try:
             browser = pw.chromium.launch(headless=True)
@@ -201,7 +202,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
 
 
 def test_acquisition_print_export_and_visual_screenshots(
-    server_url: str,
+    server_url: str,  # noqa: F811 - pytest fixture injection
     tmp_path: Path,
 ) -> None:
     with sync_playwright() as pw:
@@ -253,7 +254,7 @@ def test_acquisition_print_export_and_visual_screenshots(
     assert not errors, f"uncaught page errors: {errors}"
 
 
-def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) -> None:
+def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) -> None:  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         try:
             browser = pw.chromium.launch(headless=True)

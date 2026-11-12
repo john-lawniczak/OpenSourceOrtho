@@ -46,9 +46,13 @@ for explicit requests and are never stored in app state, browser storage, plans,
 case snapshots, or reports. Generate Plan reuses this connection for optional
 advisory review. Closing settings does not send a request.
 
-The visible transcript stays in tab memory. Follow-ups send the latest 16
-non-error messages; New chat clears the thread and session ID. Streamed output
-updates the existing assistant turn after server-side linting.
+The transcript, draft, provider/model choices and panel layout survive navigation
+and reloads in this tab via `sessionStorage`. Keys, endpoints and consent are
+excluded; re-enter them after full-page navigation. Follow-ups send the latest
+16 successful messages. Failed sends retain their prompt for retry; interrupted
+requests never resend automatically. New chat clears the thread, draft and
+session ID. Each new request uses the current workspace. Streamed output updates
+the existing assistant turn after server-side linting.
 
 ## Current Endpoints
 
@@ -68,8 +72,9 @@ For any non-local provider the server:
    machine by accident.
 2. Builds a live provider via `ai_connectors.build_chat_provider`:
    - `openai` - `OpenAIProvider` with the request-supplied key.
+   - `anthropic` - `AnthropicProvider` (Claude Messages API, Anthropic API key).
    - `claude-code` - `ClaudeCodeProvider` (local `claude` CLI, no key).
-   - `mcp` / `open-source` - `OpenAIProvider` pointed at the
+   - `mcp` / `open-source` - `CompatibleProvider` pointed at the
      supplied OpenAI-compatible `endpoint` (key optional).
 3. Sends the safety system prompt plus the selected context scope and returns the
    model's text. Provider/credential failures are returned as `ok:false` data,

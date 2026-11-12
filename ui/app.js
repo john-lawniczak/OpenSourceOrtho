@@ -1,4 +1,6 @@
+import { initializeChatPersistence } from "./chat_persistence.js";
 import { installToothWorkspace } from "./tooth_workspace.js";
+import { bindCbctRegistration } from "./cbct_registration_review.js";
 import { discardGoalPreview, requestToothGoal, renderGoalPreview } from "./tooth_goal_ui.js";
 import { sendChatMessage } from "./chat_controller.js";
 import { confirmWorkspaceMode, updateChatSetting } from "./chat_settings.js";
@@ -28,10 +30,8 @@ import {
   toggleExcludedTooth,
 } from "./guided.js";
 import {
-  applySampleRootBoneFixture,
   enterSample,
   exitSample,
-  prepareSampleSegmentation,
   sampleActive,
 } from "./sample.js";
 import { applySegmentation, proposeSegmentation, setSegmentInclude, setSegmentToothEdit } from "./segment.js";
@@ -45,6 +45,8 @@ import {
   scheduleSetupCompare,
   useLatestVersionBaseline,
 } from "./setup_compare.js";
+
+initializeChatPersistence(renderChat);
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";
@@ -213,6 +215,7 @@ el("cbctMaskFile").addEventListener("change", async (event) => {
   await loadCbctMaskFile((event.target.files || [])[0]);
   event.target.value = "";
 });
+bindCbctRegistration(state, renderAll);
 
 document.body.addEventListener("input", (event) => {
   const target = event.target;
@@ -353,13 +356,8 @@ document.body.addEventListener("click", (event) => {
     } else {
       enterSample();
       requestViewerRefit();
-      // Load the root/bone fixture first so segmentation can use CBCT boundary
-      // priors, then segment the bundled scans in the background so the preview
-      // animates real per-tooth crowns.
-      const sampleSession = state.segmentation;
-      applySampleRootBoneFixture()
-        .then(() => state.segmentation === sampleSession && prepareSampleSegmentation())
-        .then(() => renderAll());
+      // Observed visits load first. The separate simulation prepares its
+      // fixture and draft segmentation only when explicitly selected.
     }
     renderAll();
   }
@@ -376,7 +374,7 @@ document.body.addEventListener("click", (event) => {
     exitSample();
     renderAll();
   }
-  if (button?.id === "guidedBuild" || button?.id === "uploadGeneratePreview") {
+  if (button?.id === "guidedBuild") {
     generatePlan();
     renderAll();
   }
@@ -527,7 +525,7 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
-    el(state.chat.collapsed ? "chatReopenTab" : "chatInput").focus();
+    el(state.chat.collapsed ? "chatReopenTab" : "chatCaseSource").focus();
   }
   if (button?.id === "generatePlan") {
     generatePlan();
@@ -764,6 +762,7 @@ async function proposeCbctAnatomy() {
       cbct_record_id: cbct.id,
       source_stl_asset_id: source.asset.id,
       registration_accepted: workflow.registrationAccepted,
+      registration_review: workflow.registrationReview,
       registration_quality: {
         method: "local-review",
         rmse_mm: workflow.rmseMm,

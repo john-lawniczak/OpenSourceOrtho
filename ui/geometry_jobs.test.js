@@ -20,13 +20,18 @@ test('abort during creation cancels the resulting server job', async t => {
 
 test('completed job returns engine response and releases server storage', async t => {
   const calls=[];
+  let cleanupConsumed = false;
   t.mock.method(globalThis, 'fetch', async url => {
     calls.push(url);
-    return {ok:true,json:async()=>url.endsWith('/geometry-jobs') ? {ok:true,job_id:'done'} :
-      {ok:true,status:'complete',result:{ok:true,frames:[]}}};
+    return {ok:true,json:async()=> {
+      if (url.endsWith('/cancel')) cleanupConsumed = true;
+      return url.endsWith('/geometry-jobs') ? {ok:true,job_id:'done'} :
+        {ok:true,status:'complete',result:{ok:true,frames:[]}};
+    }};
   });
   assert.deepEqual(await geometryJob('evaluate', {}), {ok:true,frames:[]});
   assert.ok(calls.includes('/api/geometry-jobs/cancel'));
+  assert.equal(cleanupConsumed, true);
 });
 
 test('transient worker saturation is retried without dropping a scan operation', async t => {

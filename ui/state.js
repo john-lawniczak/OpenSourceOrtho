@@ -1,3 +1,4 @@
+import { createChatState } from "./chat_defaults.js";
 import { geometryJob } from "./geometry_jobs.js";
 import { scanUploadContentType } from "./scan_formats.js";
 
@@ -53,75 +54,7 @@ export const state = {
   // computes findings, gaps, timeline, or frames itself.
   lastEval: null,
   engineError: null,
-  chat: {
-    provider: "local",
-    model: "local-educational-helper",
-    connectors: [
-      {
-        kind: "local",
-        label: "Local educational helper",
-        model: "local-educational-helper",
-        models: ["local-educational-helper"],
-        enabled: true,
-        shares_patient_data: false,
-        requires_api_key: false,
-      },
-      {
-        kind: "openai",
-        label: "OpenAI",
-        model: "gpt-6.1-sol",
-        models: ["gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna"],
-        shares_patient_data: true,
-        requires_api_key: true,
-        supports_streaming: true,
-      },
-      {
-        kind: "claude-code",
-        label: "Claude Code",
-        model: "claude-code-default",
-        models: ["claude-code-default", "opus", "sonnet", "haiku"],
-        shares_patient_data: true,
-        requires_api_key: true,
-      },
-      {
-        kind: "mcp",
-        label: "OpenAI-compatible host",
-        model: "mcp-model",
-        models: ["mcp-model"],
-        shares_patient_data: true,
-        requires_api_key: true,
-        supports_streaming: true,
-        allow_custom_model: true,
-      },
-      {
-        kind: "open-source",
-        label: "Local / open-weight model",
-        model: "local-model",
-        models: ["local-model"],
-        shares_patient_data: true,
-        requires_api_key: false,
-        allow_custom_model: true,
-      },
-    ],
-    modelByProvider: {
-      local: "local-educational-helper",
-      openai: "gpt-6.1-sol",
-      "claude-code": "claude-code-default",
-      mcp: "mcp-model",
-      "open-source": "local-model",
-    },
-    // The assistant always has the full plan context (no user-facing scope toggle).
-    contextScope: "full_plan",
-    input: "",
-    messages: [],
-    status: "Ask about this plan. The local helper stays on this machine.",
-    busy: false,
-    collapsed: true,
-    apiKeyPresent: false,
-    agentAccessEnabled: false,
-    agentEndpoint: "",
-    sessionId: null,
-  },
+  chat: createChatState(),
   // Latest /api/generate-plan orchestration result, shown in the Review panel.
   generation: {
     busy: false,
@@ -343,8 +276,9 @@ export async function listCaseVersions(caseId) {
   return response.json();
 }
 
-export async function askPlanAssistant(payload) {
+export async function askPlanAssistant(payload, signal) {
   const response = await fetch("/api/chat", {
+    signal,
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -356,8 +290,9 @@ export async function askPlanAssistant(payload) {
   return response.json();
 }
 
-export async function streamPlanAssistant(payload, { onDelta, onDone }) {
+export async function streamPlanAssistant(payload, { onDelta, onDone }, signal) {
   const response = await fetch("/api/chat/stream", {
+    signal,
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

@@ -24,3 +24,6 @@ tools/record_commit_status.sh
 tools/update_dev_status.py
 tools/bump_version.py
 tools/publish_snapshot.sh
+
+# User-painted labels stay local until explicitly incorporated into a dataset.
+.orthoplan-region-corrections/
