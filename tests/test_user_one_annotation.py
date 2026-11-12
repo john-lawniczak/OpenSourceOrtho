@@ -3,14 +3,16 @@ import base64
 import hashlib
 import json
 
-import numpy as np
+import pytest
 
 from orthoplan.datasets import SAMPLE_CASE_DIR, resolve_published_asset, SAMPLE_SPECIMEN_ID
 from orthoplan.region_corrections import baseline_source, validate_corrections
-from tools.correct_user_one_upper_labels import correct_labels, restoration_masks
 
 
 def test_upper_posterior_draft_is_reproducible_and_preserves_user_paint():
+    np = pytest.importorskip("numpy")
+    from tools.correct_user_one_upper_labels import correct_labels, restoration_masks
+
     folder = SAMPLE_CASE_DIR / "annotations"
     before = json.loads((folder / "initial-upper-before-posterior-correction.json").read_text())
     after = json.loads((folder / "initial-upper-tooth-corrections.json").read_text())
