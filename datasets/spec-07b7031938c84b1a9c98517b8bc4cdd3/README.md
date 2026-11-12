@@ -125,7 +125,16 @@ was authorized on November 12, 2026; the existing week 1–7 motion fit is uncha
 
 ## Dentition and baseline annotation
 
-The current [lower painting checkpoint](annotations/initial-lower-painted-2026-11-12T194914Z.json)
+The current [lower checkpoint](annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z.json)
+records the approved clearing of all 38 disconnected lower face labels to context
+on November 12, 2026 at 14:56 EST (11 right, 27 left). All 14 lower labels now have
+one connected region. The [cleanup audit](annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z-report.json)
+retains exact cleared indices and the previous painting's hash. Source triangles,
+main connected crown regions and upper labels are unchanged. Both arches now
+pass the one-connected-region-per-label check; anatomical boundary accuracy and
+independent benchmark acceptance remain unverified.
+
+The previous [lower painting checkpoint](annotations/initial-lower-painted-2026-11-12T194914Z.json)
 preserves the contributor's specified local save from November 12, 2026 at
 14:49 EST, including all 14 lower tooth labels (47–41 and 31–37). Its
 [audit report](annotations/initial-lower-painted-2026-11-12T194914Z-report.json)

@@ -1,0 +1,234 @@
+{
+  "schema": "ortho-annotation-checkpoint-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "arch": "lower",
+  "source_filename": "initial-lower.stl",
+  "source_sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+  "saved_at": "2026-11-12T19:56:42.711582+00:00",
+  "provenance": "Contributor explicitly approved removing the 38 small disconnected lower label patches. Cleared only those label memberships to context; source triangles and the main connected crown regions remain unchanged.",
+  "review_status": "contributor-painted-topology-cleaned",
+  "previous_annotation": "annotations/initial-lower-painted-2026-11-12T194914Z.json",
+  "previous_annotation_sha256": "c9d75ab7a4ec9764e22894521428901c87eb17030dfe469e48289336c0e3da4f",
+  "annotation": "annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z.json",
+  "annotation_sha256": "8c2d36afe20d80b958bffee3332af28603891fad2699c0cb8b2e946804bb6c67",
+  "scan_geometry_modified": false,
+  "changed_faces": 38,
+  "cleared_to_context": 38,
+  "newly_labeled_faces": 0,
+  "reassigned_faces": 0,
+  "removed_by_tooth": [
+    {
+      "fdi": 47,
+      "cleared_faces": 2,
+      "source_face_indices": [
+        2196,
+        5240
+      ]
+    },
+    {
+      "fdi": 46,
+      "cleared_faces": 3,
+      "source_face_indices": [
+        117106,
+        191656,
+        191657
+      ]
+    },
+    {
+      "fdi": 45,
+      "cleared_faces": 3,
+      "source_face_indices": [
+        182851,
+        187142,
+        229537
+      ]
+    },
+    {
+      "fdi": 44,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 43,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 42,
+      "cleared_faces": 2,
+      "source_face_indices": [
+        230953,
+        243521
+      ]
+    },
+    {
+      "fdi": 41,
+      "cleared_faces": 1,
+      "source_face_indices": [
+        216974
+      ]
+    },
+    {
+      "fdi": 31,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 32,
+      "cleared_faces": 8,
+      "source_face_indices": [
+        232616,
+        232617,
+        232618,
+        232619,
+        237797,
+        237798,
+        237799,
+        270746
+      ]
+    },
+    {
+      "fdi": 33,
+      "cleared_faces": 8,
+      "source_face_indices": [
+        199220,
+        199221,
+        203468,
+        203469,
+        203471,
+        203496,
+        207686,
+        253271
+      ]
+    },
+    {
+      "fdi": 34,
+      "cleared_faces": 3,
+      "source_face_indices": [
+        199222,
+        199254,
+        253272
+      ]
+    },
+    {
+      "fdi": 35,
+      "cleared_faces": 4,
+      "source_face_indices": [
+        189335,
+        210715,
+        210716,
+        232213
+      ]
+    },
+    {
+      "fdi": 36,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 37,
+      "cleared_faces": 4,
+      "source_face_indices": [
+        3633,
+        26478,
+        26479,
+        26480
+      ]
+    }
+  ],
+  "right_faces_outside_largest_components": 0,
+  "left_faces_outside_largest_components": 0,
+  "teeth": [
+    {
+      "fdi": 47,
+      "face_count": 16452,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 46,
+      "face_count": 19594,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 45,
+      "face_count": 10709,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 44,
+      "face_count": 10999,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 43,
+      "face_count": 9794,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 42,
+      "face_count": 7804,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 41,
+      "face_count": 7359,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 31,
+      "face_count": 7059,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 32,
+      "face_count": 7022,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 33,
+      "face_count": 8757,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 34,
+      "face_count": 11404,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 35,
+      "face_count": 10301,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 36,
+      "face_count": 17145,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 37,
+      "face_count": 16212,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    }
+  ],
+  "benchmark_ready": false,
+  "limitations": [
+    "All 14 lower labels have one connected region under exact-coordinate welding and shared manifold edges.",
+    "Connectivity alone does not establish anatomically correct boundaries.",
+    "Independent anatomical review and benchmark acceptance remain pending.",
+    "No upper-arch labels or scan geometry were modified."
+  ]
+}

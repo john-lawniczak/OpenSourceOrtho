@@ -20,7 +20,7 @@ criteria; feature availability and evidence quality must be reported separately.
 | Area | Current evidence/status | Next measured result |
 |---|---|---|
 | Source intake and units | Source hashes recorded; USER_ONE scale unverified | Verified scale provenance and rejected stale-source cases |
-| Boundary correction | 3D brush/split/merge/erase and JSON export exist | Reviewed face labels, gum leakage, boundary IoU, correction time |
+| Boundary correction | USER_ONE upper/lower painting saved; 28 labels each have one connected region | Independent boundary review, gum leakage, per-tooth IoU, correction time |
 | Automatic segmentation | Local drafts and model adapter exist; trained dental model evaluation pending | Held-out boundary/identity/coverage comparison and correction effort |
 | Registration and correspondence | Fit and ambiguity diagnostics exist | Reference-frame sensitivity, identity errors, repeat-scan false motion |
 | Motion preview | Estimated intermediate poses exist; real pose accuracy unknown | Translation/rotation errors where independent reference poses exist |
@@ -82,6 +82,41 @@ pending. Do not check off an evidence task or promote a model based on synthetic
 tests alone. Missing reviewed data must not disable clearly labeled best-effort
 previews; show uncertainty, held regions, and missing inputs explicitly.
 
+## Immediate next steps — USER_ONE segmentation benchmark
+
+Both baseline arches are painted and versioned. Contributor-approved cleanup
+cleared 260 upper and 38 lower detached face labels to context without changing
+the source geometry. All 28 tooth labels have one connected region. This verifies
+connectivity, not anatomical accuracy. Current checkpoints:
+[upper](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z.json)
+and [lower](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z.json).
+
+- [ ] **Finish boundary review.** Inspect chewing surfaces, inner surfaces,
+  interproximal contacts, gum margins and FDI identities on both arches. Obtain
+  a second knowledgeable review; record reviewer, scope, disagreements and
+  uncertain regions separately from the contributor's painting confirmation.
+- [ ] **Freeze benchmark v1.** Bind immutable label maps to original scan hashes,
+  tooth inventory, annotation/review versions, scale provenance and unresolved
+  uncertainty. Preserve previous checkpoints. Do not promote these development
+  labels to independently reviewed truth solely because connectivity passes.
+- [ ] **Score automatic segmentation against the reference.** Compare the original
+  automatic proposals and candidate algorithms on the same source faces. Report
+  tooth identification, per-tooth IoU/precision/recall, boundary distances, gum
+  leakage and coverage. Declare units and unavailable correction-time measures;
+  do not infer an anatomical accuracy percentage from connectivity.
+- [ ] **Refit the week 1–7 exploratory preview using corrected baseline regions.**
+  Review endpoint identities/boundaries as needed, preserve the previous fit,
+  and bind regenerated results to both scan and annotation hashes. Compare
+  endpoint residuals, ambiguity and unmatched regions; residuals alone do not
+  establish motion accuracy. Keep weeks 2–6 explicitly estimated and separate
+  from authored treatment-plan data. Existing fits have not incorporated this
+  latest painting.
+- [ ] **Expand to other independently reviewed cases.** Obtain appropriately
+  licensed/consented scans from different people, split development and held-out
+  evaluation by person, and measure generalization and correction effort. Keep
+  USER_ONE results case-specific; multiple visits of one person are not an
+  independent population test set.
+
 ## Phase 1 — establish evidence and provenance foundations
 
 **Purpose:** make later improvements measurable and reproducible.
@@ -92,9 +127,9 @@ previews; show uncertainty, held regions, and missing inputs explicitly.
 - [ ] Add a review-package workflow for a small USER_ONE week 1/week 7 tooth subset:
   export masks and candidate identities, import independent corrections, and
   record review provenance without treating automatic fits as ground truth.
-- [ ] Start with a small contributor annotation session in the existing 3D editor:
-  paint crown faces, separate gum/context, correct identities, and save the JSON.
-  Record which teeth/surfaces were inspected, uncertainty, annotator role, and time.
+- [ ] Complete review metadata for the saved contributor baseline annotations:
+  record which teeth/surfaces were inspected, uncertainty, annotator role, and
+  time where available; do not invent missing historical correction times.
   Keep contributor labels distinct from independently reviewed reference labels.
 - [ ] Add per-tooth/partial review records, unknown-boundary and model-defect masks,
   and source-bound comments; a single whole-scan checkbox cannot express partial
