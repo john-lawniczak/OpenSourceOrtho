@@ -105,5 +105,16 @@
     "reference_tooth_geometry": false,
     "model_findings": "quality-findings.json",
     "week_1_to_7_validation_applies": false
-  }
+  },
+  "additional_captures": [
+    {
+      "capture_id": "fusion-h-6",
+      "arch": "mandibular",
+      "reported_week": 18,
+      "contribution_date": "2026-11-12",
+      "manifest": "captures/fusion-h-6/manifest.json",
+      "source_metadata": "captures/fusion-h-6/source-metadata.json",
+      "scope_note": "Separate additional capture at the same reported visit; original-pair capture and evaluation statements do not apply automatically."
+    }
+  ]
 }
