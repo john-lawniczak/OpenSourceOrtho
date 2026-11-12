@@ -9,23 +9,29 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
-def amber_crown_point(page):
+def amber_crown_point(page, unselected):
     png = page.locator('#viewer3d canvas').screenshot()
-    return page.evaluate("""async data => {
+    return page.evaluate("""async ([data, baseline]) => {
       const image = new Image(); image.src = data; await image.decode();
+      const before = new Image(); before.src = baseline; await before.decode();
       const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
-      const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
+      const ctx = canvas.getContext('2d'); ctx.drawImage(before, 0, 0);
+      const prior = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      ctx.drawImage(image, 0, 0);
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       let run = 0, longest = 0, point = null;
       for (let i = 0; i < pixels.length; i += 4) {
         const [r, g, b] = pixels.slice(i, i + 3);
-        if (r > g + 20 && g > b + 25) {
+        if ((i / 4) % canvas.width === 0) run = 0;
+        const change = Math.abs(r - prior[i]) + Math.abs(g - prior[i + 1]) + Math.abs(b - prior[i + 2]);
+        if (change > 60 && r > g + 20 && g > b + 25) {
           run++;
           if (run > longest) { longest = run; point = {x: (i / 4) % canvas.width - Math.floor(run / 2), y: Math.floor(i / 4 / canvas.width)}; }
         } else run = 0;
       }
       return point;
-    }""", 'data:image/png;base64,' + base64.b64encode(png).decode())
+    }""", ['data:image/png;base64,' + base64.b64encode(data).decode()
+           for data in (png, unselected)])
 
 
 def open_supplied_sample(page):
@@ -35,6 +41,12 @@ def open_supplied_sample(page):
     expect(page.locator('#sampleBanner')).to_contain_text('STL')
     # Keep the lower scan from occluding the upper crown during pixel picking.
     page.locator('#scanArchFilter').select_option('maxillary')
+    tooth = page.locator('#guidedTeeth [data-select-tooth="11"]')
+    expect(tooth).to_be_visible(timeout=90000)
+    page.wait_for_load_state('networkidle')
+    page.locator('#guidedClearSelection').click()
+    expect(tooth).to_have_attribute('aria-pressed', 'false')
+    return page.locator('#viewer3d canvas').screenshot()
 
 
 def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path):  # noqa: F811 - pytest fixture injection
@@ -45,9 +57,8 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
         page.on('pageerror', lambda error: errors.append(str(error)))
         try:
             page.goto(server_url, wait_until='networkidle')
-            open_supplied_sample(page)
+            unselected = open_supplied_sample(page)
             tooth = page.locator('#guidedTeeth [data-select-tooth="11"]')
-            expect(tooth).to_be_visible(timeout=90000)
             tooth.click()
             expect(tooth).to_have_attribute('aria-pressed', 'true')
             before = json.loads(page.locator('#planJson').input_value())
@@ -55,7 +66,7 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             assert not before['fixed_teeth']
             viewer = page.locator('#viewer3d')
             assert tooth.bounding_box()['y'] > viewer.bounding_box()['y']
-            point = amber_crown_point(page)
+            point = amber_crown_point(page, unselected)
             assert point is not None, 'Selected real crown must render in amber'
             page.locator('#guidedClearSelection').click()
             page.locator('#viewer3d canvas').click(position=point)

@@ -129,8 +129,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
 
             page.click('[data-gstep-nav="review"]')
             page.wait_for_selector('#guided .gstep[data-gstep="review"].is-active', timeout=15000)
-            review_text = page.locator("#guidedSummary").inner_text()
-            assert "aligner stage" in review_text
+            expect(page.locator("#guidedSummary")).to_contain_text("aligner stage", timeout=60000)
             assert "Projected" in page.locator("#guidedDurationSummary").inner_text()
 
             page.click('[data-gstep-nav="print"]')
