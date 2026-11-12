@@ -9,8 +9,8 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
-def amber_crown_point(page, unselected):
-    png = page.locator('#viewer3d canvas').screenshot()
+def amber_crown_point(page, unselected, tmp_path):
+    png = page.locator('#viewer3d canvas').screenshot(path=str(tmp_path / 'selected-crown.png'), scale='css')
     return page.evaluate("""async ([data, baseline]) => {
       const image = new Image(); image.src = data; await image.decode();
       const before = new Image(); before.src = baseline; await before.decode();
@@ -43,16 +43,19 @@ def open_supplied_sample(page):
     page.locator('#scanArchFilter').select_option('maxillary')
     tooth = page.locator('#guidedTeeth [data-select-tooth="11"]')
     expect(tooth).to_be_visible(timeout=90000)
+    # Expose the movable crown instead of a sliver behind the whole-scan overlay.
+    page.locator('[data-view="planned"]').click()
     page.wait_for_load_state('networkidle')
+    page.locator('.scan-view-controls:visible [data-scan-view="face"]').click()
     page.locator('#guidedClearSelection').click()
     expect(tooth).to_have_attribute('aria-pressed', 'false')
-    return page.locator('#viewer3d canvas').screenshot()
+    return page.locator('#viewer3d canvas').screenshot(scale='css')
 
 
 def pick_selected_crown(page, unselected, tmp_path):
-    point = amber_crown_point(page, unselected)
+    page.wait_for_load_state('networkidle')
+    point = amber_crown_point(page, unselected, tmp_path)
     assert point is not None, 'Selected real crown must render in amber'
-    page.locator('#viewer3d canvas').screenshot(path=str(tmp_path / 'selected-crown.png'))
     page.locator('#guidedClearSelection').click()
     page.locator('#viewer3d canvas').click(position=point)
     page.locator('#viewer3d canvas').screenshot(path=str(tmp_path / 'picked-crown.png'))
@@ -62,7 +65,7 @@ def pick_selected_crown(page, unselected, tmp_path):
 def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
-        page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        page = browser.new_page(viewport={"width": 1440, "height": 1800})
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         try:
