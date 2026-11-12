@@ -26,8 +26,9 @@ def test_user_one_has_scan_records_latest_labels_and_no_raw_data(monkeypatch, tm
     save_baseline_corrections({"arch": "upper", "corrections": corrections, "notes": "Front labels checked so far"})
     context = user_one_chat_context()
     case = context["selected_case"]
-    assert len(case["scans"]) >= 4
-    assert {1, 7}.issubset({s["week"] for s in case["scans"]})
+    assert len(case["scans"]) == 8
+    assert {1, 7, 18} == {s["week"] for s in case["scans"]}
+    assert not any(s["private_record"] for s in case["scans"])
     annotation = case["saved_baseline_labels"][0]
     assert annotation["labeled_faces_by_fdi"] == {"21": 1, "22": 1}
     assert annotation["review_status"] == "draft" and annotation["notes"] == "Front labels checked so far"

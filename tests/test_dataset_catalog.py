@@ -39,7 +39,8 @@ def test_catalog_outputs_are_current_and_identity_is_preserved():
     entry = next(e for e in catalog["cases"] if e["specimen_id"] == SAMPLE_SPECIMEN_ID)
     assert entry["pseudonym"] == "USER_ONE"
     assert entry["uuid"] == "07b70319-38c8-4b1a-9c98-517b8bc4cdd3"
-    assert entry["scan_pair_count"] == 2
+    assert entry["scan_pair_count"] == 3
+    assert entry["scan_count"] == 8
     assert "2026-" not in json.dumps(catalog)
 
 
@@ -51,6 +52,33 @@ def test_catalog_rejects_changed_scan_bytes_and_duplicate_pseudonyms(tmp_path):
         build_catalog(tmp_path)
     (case / "initial-upper.stl").write_bytes(b"changed")
     with pytest.raises(ValueError, match="hash mismatch"):
+        build_catalog(tmp_path)
+
+
+@pytest.mark.parametrize("damage", ["hash", "identity", "scope"])
+def test_supplementary_visits_are_validated(tmp_path, damage):
+    case = _case(tmp_path)
+    visit = case / "visits/progress-02"
+    visit.mkdir(parents=True)
+    scan = b"supplementary scan"
+    (visit / "progress-02-upper.stl").write_bytes(scan)
+    manifest = json.loads((case / "manifest.json").read_text())
+    manifest["scans"][0].update(filename="progress-02-upper.stl", role="progress", sequence_index=2,
+                                sha256=hashlib.sha256(scan).hexdigest())
+    (visit / "manifest.json").write_text(json.dumps(manifest))
+    consent = json.loads((case / "consent.json").read_text())
+    consent["public_assets"] += ["visits/progress-02/manifest.json", "visits/progress-02/progress-02-upper.stl"]
+    (case / "consent.json").write_text(json.dumps(consent))
+    assert build_catalog(tmp_path)["cases"][0]["scan_count"] == 2
+    if damage == "hash":
+        (visit / "progress-02-upper.stl").write_bytes(b"changed")
+    elif damage == "identity":
+        manifest["specimen_id"] = f"spec-{uuid.uuid4().hex}"
+        (visit / "manifest.json").write_text(json.dumps(manifest))
+    else:
+        consent["public_assets"].remove("visits/progress-02/progress-02-upper.stl")
+        (case / "consent.json").write_text(json.dumps(consent))
+    with pytest.raises(ValueError, match="hash mismatch|identity mismatch|outside publication scope"):
         build_catalog(tmp_path)
 
 

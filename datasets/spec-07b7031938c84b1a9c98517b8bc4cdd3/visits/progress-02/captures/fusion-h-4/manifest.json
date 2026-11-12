@@ -34,5 +34,5 @@
   "outcome_notes_sha256": null,
   "consent_acknowledged": true,
   "phi_removed": true,
-  "notes": "Private-only additional lower capture for reported week 18 (progress-02), contributed November 12, 2026. Retained alongside Fusion_H_6 and the original week 18 pair. Scale, acquisition date, capture method, surface fidelity, and registration are unverified. Contributor confirms H4/H6 share one physical lower model with a small chip on an unidentified front tooth. Chip timing and surface mapping are unconfirmed; the original pair assessment remains separate. Consent acknowledgement covers this private contribution only; public redistribution is not authorized."
+  "notes": "additional lower capture for reported week 18 (progress-02), contributed November 12, 2026. Retained alongside Fusion_H_6 and the original week 18 pair. Scale, acquisition date, capture method, surface fidelity, and registration are unverified. Contributor confirms H4/H6 share one physical lower model with a small chip on an unidentified front tooth. Chip timing and surface mapping are unconfirmed; the original pair assessment remains separate. Public redistribution authorized by the contributor on 2026-11-12; see case-root consent.json."
 }

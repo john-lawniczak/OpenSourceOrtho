@@ -329,10 +329,12 @@ USER_ONE baseline painting page selects USER_ONE explicitly. The selection
 survives same-tab reloads with the conversation, and is visible before sending.
 
 A `case_source: user_one` request in `full_plan` scope builds bounded metadata
-from fixed, specimen-checked manifests: baseline/week 7 scans, private week 18
+from fixed, specimen-checked manifests: baseline/week 7 scans, week 18
 records (including H4/H6 when installed), latest hash-validated local annotation
 counts and notes, and endpoint-estimate status summaries. No caller-supplied
-filesystem path is accepted. Private files remain excluded from public assets;
+filesystem path is accepted. Week 18 records now come from the publication-approved
+`visits/progress-02/` manifests; these records are no longer marked private.
+Other private files remain excluded from public assets;
 the selected provider receives these metadata only on Send with sharing consent.
 The context omits the unrelated workspace plan and never changes authored data.
 USER_ONE chat is read-only; tooth-change previews use the planning workspace.

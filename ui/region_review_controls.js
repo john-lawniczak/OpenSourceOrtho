@@ -7,6 +7,13 @@ export function setupReviewControls({ selectTooth, changeMode }) {
   }
   el("reviewTool").onchange = changeMode;
   el("reviewTo").onchange = selectTooth;
+  el("reviewSpillover").onclick = () => {
+    el("reviewFrom").value = el("reviewTo").value;
+    el("reviewSplitSource").value = el("reviewFrom").value;
+    el("reviewTool").value = "split"; changeMode();
+  };
+  el("reviewSplitSource").onchange = () => { el("reviewFrom").value = el("reviewSplitSource").value; changeMode(); };
+  el("reviewFrom").onchange = () => { el("reviewSplitSource").value = el("reviewFrom").value; changeMode(); };
   return {
     arch(arch) {
       const lower = arch === "lower";
@@ -14,6 +21,7 @@ export function setupReviewControls({ selectTooth, changeMode }) {
       el("reviewFrom").value = lower ? 31 : 11;
       el("reviewTo").value = lower ? 32 : 12;
       el("reviewTeeth").replaceChildren();
+      el("reviewSplitSource").replaceChildren(new Option("0 · Unlabeled", "0"));
       el("reviewArchNotice").textContent = lower
         ? "Lower · FDI numbering"
         : "Upper · FDI numbering";
@@ -26,6 +34,11 @@ export function setupReviewControls({ selectTooth, changeMode }) {
           const id = String(number), button = document.createElement("button"); button.type = "button";
           button.textContent = id; button.dataset.tooth = id;
           const us = document.createElement("small"); us.textContent = `US ${universalToothNumber(id)}`; button.append(us);
+          const kind = document.createElement("small");
+          kind.textContent = ["", "Central", "Lateral", "Canine", "Premolar 1", "Premolar 2", "Molar 1", "Molar 2", "Wisdom"][number % 10];
+          button.append(kind);
+          button.dataset.kind = number % 10 <= 3 ? "front" : number % 10 <= 5 ? "premolar" : "molar";
+          el("reviewSplitSource").append(new Option(`${id} · ${toothName(id)}`, id));
           button.title = toothName(id); button.setAttribute("aria-label", `FDI ${id} · US ${universalToothNumber(id)} · ${toothName(id)}`);
           button.onclick = () => { el("reviewTo").value = id; selectTooth(); };
           row.append(button);
@@ -36,6 +49,12 @@ export function setupReviewControls({ selectTooth, changeMode }) {
     update(loaded, count = 0) {
       el("reviewEditing").disabled = !loaded; el("reviewExport").disabled = !loaded;
       const id = el("reviewTo").value, mode = el("reviewTool").value;
+      const source = el("reviewFrom").value;
+      el("reviewSplitPanel").hidden = mode !== "split";
+      el("reviewSplitSource").value = source;
+      el("reviewSplitHint").textContent = source === id
+        ? "Now choose the correct destination tooth above."
+        : `Paint ${source} → ${id}. All other labels stay protected.`;
       for (const button of el("reviewTeeth").querySelectorAll("button")) button.setAttribute("aria-pressed", String(button.dataset.tooth === id));
       for (const button of document.querySelectorAll("[data-review-mode]")) button.setAttribute("aria-pressed", String(button.dataset.reviewMode === mode));
       el("regionCanvas").dataset.mode = mode;
@@ -50,7 +69,7 @@ export function setupReviewControls({ selectTooth, changeMode }) {
         pan: "Drag to move the mouth · Scroll to zoom · Double-click any surface to focus",
         brush: `Paint tooth ${id} · [ smaller · ] larger`,
         erase: "Erase to context · [ smaller · ] larger",
-        split: `Split ${el("reviewFrom").value} → ${id}`,
+        split: source === id ? "Choose the destination tooth, then paint the spillover." : `Paint only misplaced ${source} surfaces → ${id} · Undo restores the stroke`,
       };
       el("reviewModeHelp").textContent = loaded ? messages[mode] : "Choose Upper or Lower to begin.";
     },

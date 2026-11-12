@@ -57,5 +57,5 @@
   "outcome_notes_sha256": null,
   "consent_acknowledged": true,
   "phi_removed": true,
-  "notes": "Private-only supplementary visit manifest for reported week 18 stone and Play-Doh test scans. Sequence 2 counts progress visits, not trays. Scale, acquisition date, and cross-time registration remain unverified. Public redistribution is not authorized by this record. Contributor confirms both hardened stone models were chipped due to poor model-making, not actual tooth defects. Exact chip locations are unspecified. Damaged-model test data; not reference tooth geometry. See source-metadata.json and quality-assessment.md."
+  "notes": "supplementary visit manifest for reported week 18 stone and Play-Doh test scans. Sequence 2 counts progress visits, not trays. Scale, acquisition date, and cross-time registration remain unverified. Contributor confirms both hardened stone models were chipped due to poor model-making, not actual tooth defects. Exact chip locations are unspecified. Damaged-model test data; not reference tooth geometry. See source-metadata.json and quality-assessment.md. Public redistribution authorized by the contributor on 2026-11-12; see case-root consent.json."
 }

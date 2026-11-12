@@ -13,11 +13,18 @@ New to dental terms (IPR, tip, torque, FDI numbering)? See the
 app from the **Key Terms** button in the sidebar. To contribute your own
 scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md).
 
-For repository work, follow the [private development and public release workflow](docs/PRIVATE_DEVELOPMENT.md).
-Routine commits go to the private development repository; a public release is a
-separately reviewed, single commit based on public `main`.
+Maintainers follow the [private development and public release workflow](docs/PRIVATE_DEVELOPMENT.md):
+feature branches → private `main` → one reviewed commit on public `main`.
+Public contributors can submit PRs from public forks.
 
 ## 1. Start The App
+
+For a persistent command that works from any directory, install once from this
+checkout with `pipx install --python python3.11 --editable '.[providers,motion-preview]'`
+and `pipx ensurepath`, then run **`happysmile`**. Keep the checkout in place;
+see [installation details](README.md#run-locally). The development venv below
+is an alternative.
+
 
 Before buying scanning equipment, read [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
 for existing-record requests, budget comparisons, and checks for usable STL data.

@@ -87,3 +87,7 @@
 .review-navigation-modes button[aria-pressed="true"] { background:#0f766e; }
 #regionCanvas[data-mode="pan"] { cursor:grab; }
 #regionCanvas[data-mode="pan"]:active { cursor:grabbing; }
+.review-tooth-row button[data-kind="premolar"] { border-bottom:3px solid #68d7c9; }
+.review-tooth-row button[data-kind="molar"] { border-bottom:3px double #bccbd0; }
+#reviewSplitPanel { margin:8px 0; padding:10px; border-left:3px solid #e9ab36; }
+#reviewSplitPanel select { width:100%; }

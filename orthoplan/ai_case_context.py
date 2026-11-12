@@ -10,9 +10,9 @@ from orthoplan.hashing import canonical_json, sha256_text
 from orthoplan.region_corrections import load_baseline_corrections
 
 # Fixed repository records only: a request cannot provide a filesystem path.
-_VISITS = [("manifest.json", None), ("private/progress-02/manifest.json", 18),
-           ("private/progress-02/captures/fusion-h-4/manifest.json", 18),
-           ("private/progress-02/captures/fusion-h-6/manifest.json", 18)]
+_VISITS = [("manifest.json", None), ("visits/progress-02/manifest.json", 18),
+           ("visits/progress-02/captures/fusion-h-4/manifest.json", 18),
+           ("visits/progress-02/captures/fusion-h-6/manifest.json", 18)]
 _SCAN_FIELDS = ("filename", "sha256", "arch", "units", "face_count", "vertex_count", "bounds", "provenance")
 
 

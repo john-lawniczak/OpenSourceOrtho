@@ -74,12 +74,13 @@
     }
   ],
   "sharing_scope": {
-    "destination": "john-lawniczak/OpenSourceOrtho-dev",
-    "visibility": "private",
-    "authorization_basis": "Contributor requested adding both personal week 18 STL files to the existing case and pushing to the private development repository.",
-    "public_redistribution_authorized": false,
-    "public_assets": [],
-    "manifest_consent_scope": "Private repository contribution only; the case-root publication consent is unchanged."
+    "destination": "john-lawniczak/OpenSourceOrtho",
+    "visibility": "public",
+    "authorized_on": "2026-11-12",
+    "authorization_basis": "On 2026-11-12 the contributor explicitly requested including USER_ONE week 18 STL scans and chipped-model metadata in the public OSS repository. Includes the original upper/lower pair, Fusion H4/H6 lower captures, and accompanying evaluations. This is a publication-scope record, not a signed consent form.",
+    "public_redistribution_authorized": true,
+    "public_assets_record": "case-root consent.json",
+    "manifest_consent_scope": "Publication of this visit and its model-damage metadata; other private contributions remain excluded."
   },
   "comparison": {
     "per_tooth_movement": null,
@@ -125,5 +126,13 @@
       "source_metadata": "captures/fusion-h-4/source-metadata.json",
       "scope_note": "Additional capture at the same reported visit; retained alongside Fusion_H_6. Original-pair capture and evaluation statements do not apply automatically."
     }
-  ]
+  ],
+  "prior_sharing_scope": {
+    "destination": "john-lawniczak/OpenSourceOrtho-dev",
+    "visibility": "private",
+    "authorization_basis": "Contributor requested adding both personal week 18 STL files to the existing case and pushing to the private development repository.",
+    "public_redistribution_authorized": false,
+    "public_assets": [],
+    "manifest_consent_scope": "Private repository contribution only; the case-root publication consent is unchanged."
+  }
 }

@@ -32,7 +32,7 @@ function mount() {
     onStrokeStart: () => edits.beginStroke(),
     onStrokeEnd: () => { edits.endStroke(); refresh(); },
     onPaint: (faces, settings) => action(() => { const changed = edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(changed > 0); }),
-  }); viewer.setMarkerVisible(el("reviewShowLabel").checked); refresh(); saving.update();
+  }); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
 }
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }
 async function loadBaseline(arch) {
@@ -112,6 +112,7 @@ el("reviewFocus").onclick = () => viewer?.focusSelected();
 el("reviewOtherColors").onchange = selectionChanged;
 
 el("reviewShowLabel").onchange = () => viewer?.setMarkerVisible(el("reviewShowLabel").checked);
+el("reviewShowEdges").onchange = () => viewer?.setBoundariesVisible(el("reviewShowEdges").checked);
 el("reviewZoomIn").onclick = () => viewer?.zoom(1 / 1.25);
 el("reviewZoomOut").onclick = () => viewer?.zoom(1.25);
 const requestedBaseline = new URLSearchParams(location.search).get("baseline");

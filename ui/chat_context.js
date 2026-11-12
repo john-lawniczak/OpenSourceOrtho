@@ -13,6 +13,6 @@ export function renderChatContext() {
   el("chatEditMode").closest("label").hidden = userOne;
   if (userOne) el("chatEditMode").checked = false;
   el("chatContextHint").textContent = userOne
-    ? "USER_ONE · scans, saved labels & notes, including private week 18 records."
+    ? "USER_ONE · scans, saved labels & notes, including week 18 records."
     : "Current planning workspace · select USER_ONE to discuss the saved sample scans.";
 }

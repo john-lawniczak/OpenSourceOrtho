@@ -1,6 +1,6 @@
 # Week 18 damaged-model mesh evaluation
 
-**Private USER_ONE data — both stone models chipped.**
+**USER_ONE contributed data — both stone models chipped.**
 
 The contributor confirms that both hardened stone models were chipped and poorly made. The defects are not a reflection of the actual teeth. This is contributor-reported provenance, not a diagnosis inferred from the meshes. Exact affected regions and chip timing are not separately documented.
 
@@ -40,7 +40,7 @@ From the repository root, with NumPy and Matplotlib installed in the virtual env
 
 ```bash
 MPLCONFIGDIR=/private/tmp/ortho-week18-matplotlib .venv/bin/python \
-  datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/private/progress-02/evaluate_meshes.py
+  datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/evaluate_meshes.py
 ```
 
 The script regenerates the measured inventory and figure. Self-intersections, vertex manifoldness, winding, scanner accuracy, true tooth shape, physical scale, bite relationship, and registration are not evaluated. Rendering is an approximate depth-sorted orthographic inspection, not a surface-error measurement.

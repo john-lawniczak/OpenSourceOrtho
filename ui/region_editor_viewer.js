@@ -1,4 +1,5 @@
 import { createRegionSelection } from "./region_selection_view.js";
+import { createBoundaryView } from "./region_boundary_view.js";
 import { frameScanView } from "./scan_view_camera.js";
 import { mountScanViewToolbar } from "./scan_view_toolbar.js";
 import * as THREE from "./vendor/three.module.js";
@@ -10,11 +11,12 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   const renderer = new THREE.WebGLRenderer({ antialias: true }); host.replaceChildren(renderer.domElement);
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x172830);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x506070, 3));
-  const geometry = comparisonGeometry(scan), material = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  const geometry = comparisonGeometry(scan), material = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
   const mesh = new THREE.Mesh(geometry, material); scene.add(mesh);
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 2000);
   const pose = historyCamera(scan.arch); camera.up.set(...pose.up); camera.position.set(...pose.position).multiplyScalar(0.55);
   const selection = createRegionSelection(host, scene, geometry, camera);
+  const boundaries = createBoundaryView(scene, geometry);
   let activeLabels = [], pointerStart = null, lastHit = null, focused = false, pointBounds = null, selectedLabel = 0;
   let controls = new OrbitControls(camera, renderer.domElement); controls.addEventListener("change", render);
   const box = geometry.boundingBox.clone();
@@ -120,11 +122,13 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       if (selected) palette.set(selected, new THREE.Color(0xffbf47));
       labels.forEach((id, face) => { const color = palette.get(id); for (let i = 0; i < 3; i++) colors.set([color.r, color.g, color.b], face * 9 + i * 3); });
       selection.update(labels, selected);
+      boundaries.update(labels);
       geometry.attributes.color.needsUpdate = true;
       if (focused && changedSelection && !pointBounds) focusSelected();
       render();
     },
     setMarkerVisible(visible) { selection.setMarkerVisible(visible); render(); },
+    setBoundariesVisible(visible) { boundaries.visible(visible); render(); },
     zoom(factor) {
       const offset = camera.position.clone().sub(controls.target);
       const min = Math.max(box.getBoundingSphere(new THREE.Sphere()).radius * 0.02, camera.near * 2);
@@ -132,6 +136,6 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       camera.position.copy(controls.target).add(offset); controls.update(); render();
     },
     focusSelected, updateBrush,
-    dispose() { selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
+    dispose() { boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
   };
 }

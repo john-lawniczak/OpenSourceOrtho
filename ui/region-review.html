@@ -35,8 +35,10 @@
 <div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
 <p id="reviewSelectionHelp"></p>
 <div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
-<div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox" checked>Label flag</label></div>
+<div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox" checked>Label flag</label><label title="Current label edges, not confirmed tooth boundaries"><input id="reviewShowEdges" type="checkbox" checked>Label edges</label></div>
 <div class="controls review-tool-buttons"><button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button></div>
+<button id="reviewSpillover" type="button">Correct spillover</button>
+<div id="reviewSplitPanel" hidden><label>Only replace label <select id="reviewSplitSource"></select></label><p id="reviewSplitHint" role="status"></p></div>
 <div class="review-radius-row"><button id="reviewBrushSmaller" type="button" aria-label="Decrease brush radius" aria-keyshortcuts="[">[</button><label>Brush radius <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label><button id="reviewBrushLarger" type="button" aria-label="Increase brush radius" aria-keyshortcuts="]">]</button></div>
 <small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
 <div class="controls"><button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
@@ -49,6 +51,7 @@
 <a href="./tooth-chart.svg" target="_blank" rel="noopener">Open tooth diagram ↗</a>
 <p>Paint crown surfaces, then double-click any surface to center it and rotate to paint the inside. Use Pan to move the whole mouth. Focus keeps view presets centered on that region; Fit scan returns to the whole arch.</p>
 <p>Labels may include gum or span several teeth. Correct boundaries and identity before marking an arch reviewed.</p>
+<p>To split a color spanning two teeth: select that label, click Correct spillover, select the correct destination tooth, then paint only the misplaced surface. Other labels are protected. Undo reverses a stroke.</p>
 </details>
 </aside></section>
 <section class="review-save-panel" aria-label="Save tooth labels">

@@ -1,6 +1,6 @@
 # Week 18 additional lower capture comparison
 
-Private USER_ONE data; evaluated November 12, 2026. This assessment covers
+USER_ONE contributed data; evaluated November 12, 2026. This assessment covers
 `2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl` and `2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl`, separate captures at the same reported
 week 18 visit. Both original files are retained without repair or registration.
 
@@ -51,10 +51,10 @@ From the repository root:
 
 ```bash
 MPLCONFIGDIR=/private/tmp/ortho-week18-matplotlib .venv/bin/python \
-  datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/private/progress-02/captures/evaluate_captures.py
+  datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/evaluate_captures.py
 ```
 
 The script regenerates the measured inventory and figure using all triangles.
 Advisory interpretation requires a separate review if the sources or outputs
 change. Original November 10 pair evaluations retain their two-scan scope.
-All capture files and evaluation artifacts remain outside public asset allowlists.
+The contributor authorized publication of these captures and evaluation artifacts on 2026-11-12; see case-root consent.json.

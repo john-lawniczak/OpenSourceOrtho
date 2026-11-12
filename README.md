@@ -39,6 +39,9 @@ current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
 
+Maintainer releases follow [private development → one public commit](docs/PRIVATE_DEVELOPMENT.md).
+Public contributors can submit PRs from public forks; private repository access is not required.
+
 Need your own dental data? Start with [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
 for acquisition options, cost tradeoffs, export requests, and quality checks.
 
@@ -296,34 +299,28 @@ Use Python 3.11 or 3.12 if possible. Some fresh Homebrew Python 3.14 builds can 
 inside `ensurepip`/`pyexpat` on macOS; if that happens, create the venv with a stable
 Python executable such as `python3.11`.
 
-Fast path from the repo root:
+Install the application command once from this checkout with
+[pipx](https://pipx.pypa.io/):
 
 ```bash
-./happysmile
+pipx install --python python3.11 --editable '.[providers,motion-preview]'
+pipx ensurepath
 ```
 
-That script creates `.venv` if needed, installs the editable dev package once,
-and starts the local server at `http://127.0.0.1:8000`. You can pass the same
-server flags through it:
+Then run it from any directory, without activating a virtual environment:
 
 ```bash
-./happysmile --host 127.0.0.1 --port 8123
-```
-
-The more literal alias works too:
-
-```bash
-./run-openortho
-```
-
-After an editable install with the virtual environment active, these console
-commands are also available:
-
-```bash
-openortho
 happysmile
-orthoplan serve
+# Optional server address:
+happysmile --host 127.0.0.1 --port 8123
 ```
+
+`happysmile` and `openortho` are installed Python console commands, equivalent to
+`orthoplan serve`. No root launcher scripts are needed. The editable installation
+uses this checkout's UI and datasets and picks up code changes; keep the checkout
+in place. After dependency changes, run `pipx reinstall opensource-ortho`. If you
+move the checkout, reinstall from its new location. The server runs while the
+terminal command is running; Ctrl+C stops it.
 
 Manual setup remains:
 

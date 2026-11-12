@@ -1,82 +1,126 @@
 # Private development and public releases
 
-Routine development belongs in `john-lawniczak/OpenSourceOrtho-dev`, which is
-private. The public repository is `john-lawniczak/OpenSourceOrtho`.
+## Maintainer workflow
 
-## Where the local private version lives
+**Private feature branch → private main → reviewed public snapshot → one public commit.**
 
-The existing `OpenSourceOrtho` checkout holds both public and private branches;
-the directory name does not determine repository visibility. On this machine it
-is `/Users/johnlaw/repos/johnlaw/OpenSourceOrtho`. There is no separate local
-`OpenSourceOrtho-dev` directory. The `data/user-one-week-18` branch contains the
-private scan bundle locally and tracks the same branch on the `private` remote.
+The maintainer integrates work in `john-lawniczak/OpenSourceOrtho-dev` (`private`).
+Public releases go to `john-lawniczak/OpenSourceOrtho` (`origin`). These are separate
+histories: never merge private main into public main or push private main to origin.
+Public contributors can fork the public repository and open PRs; private access
+is not required.
 
-Check the current branch and its destination with `git status --short --branch`
-and `git remote -v`. Switching to public `main` changes the working tree to the
-public version; the private branch and its committed files remain in local Git.
+Keep `TODO.md` tracked on private branches. It is deliberately excluded from every
+public snapshot by `public-release.json`. `.gitignore` alone does not exclude a
+tracked file. Local case stores, painted labels, secrets, and development logs also
+stay out. The public roadmap belongs in `docs/TOOL_IMPROVEMENT_PHASES.md`.
 
-## Local setup
+## 1. Develop and integrate privately
 
-Use `private` for the development remote and `origin` for the public remote.
-Verify visibility before pushing personal contributions:
+Configure each checkout once:
 
 ```bash
-gh repo view john-lawniczak/OpenSourceOrtho-dev --json nameWithOwner,isPrivate
 git config remote.pushDefault private
 git config push.default current
-```
-
-For a new development branch, fetch public `main` and branch from it, or continue
-an existing private branch that already contains the work you need. Fetch and
-inspect remote changes before merging. Preserve any existing private history.
-
-```bash
-git fetch origin
-git switch -c work/my-change origin/main
-git config branch.work/my-change.pushRemote private
-# Make and validate the changes, then commit.
+git fetch private
+git switch -c work/my-change private/main
 git push -u private HEAD
 ```
 
-After setting the upstream, ordinary `git push` goes to the private repository.
-These settings are local to each checkout; repeat setup in a new clone. Explicit
-pushes to `origin`, `backup`, or `gitlab` bypass the private default, so reserve
-those for an authorized release. Use authenticated HTTPS if SSH is unavailable.
+After implementation, review and tests, merge the feature PR into **private main**.
+Preserve its existing history. If branches have diverged, use an integration branch
+and resolve conflicts explicitly; do not reset main or blanket-select one side.
+Fetch the resulting private main before preparing a release.
 
-This checkout's local post-merge hook may create a version-bump commit when a
-fast-forward lands on a merge commit. For a sync that must exactly match upstream,
-use `OPEN_SOURCE_ORTHO_BUMPING=1 git merge --ff-only origin/main` and verify the tip.
+For the initial transition from `data/user-one-week-18`, the November 12 review
+found 46 conflicting paths against private main. Resolve and test that integration
+before selecting private main as the first release source. The release tool accepts
+an explicit `--source` for a reviewed exception; its default is `private/main`.
 
-## Private case contributions
+## 2. Review publication scope
 
-Store private visit bundles at `datasets/<existing-specimen-id>/private/<visit>/`.
-Keep the same specimen ID and pseudonym. Each bundle has a supplementary manifest,
-source metadata, and unchanged scan bytes. Its manifest covers only that visit;
-the case-root manifest remains the published subset.
+Only committed source files are considered. `public-release.json` excludes private
+notes and local records even if accidentally tracked. Dataset files inside a
+`spec-*` case must also appear explicitly in that case's committed `consent.json`
+`public_assets`. Never approve an entire private directory with a wildcard.
 
-Do not add private files to the case's `consent.json` public asset allowlist or
-public catalog. A private bundle's consent acknowledgement covers its documented
-private contribution scope only. The HTTP dataset resolver does not serve assets
-outside the case-root allowlist. Git privacy still depends on pushing to the
-private repository and excluding these files from release trees.
+The contributor authorized publication on **2026-11-12** of USER_ONE's reported
+week 18 original upper/lower scans, both Fusion H4/H6 lower captures, and their
+chipped-model metadata and evaluations. These unchanged scans now live under
+`datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/` and are individually
+allowlisted. The historical private sharing records remain as provenance.
+`datasets/**/private/` continues to mean unpublished contributions. This specific
+authorization does not cover other private contributions, raw CBCT, local painting
+sessions, credentials, or the third-party reference video.
 
-## Publish one clean commit when ready
+## 3. Prepare a public release worktree
 
-1. Fetch public `origin/main` and create a separate release worktree/branch from
-   that exact tip. Record the selected private development commit.
-2. Transfer only reviewed, publication-approved changes into the release tree.
-   Exclude `datasets/**/private/`, ignored local records, credentials, and assets
-   outside the documented publication scope. Do not merge the private branch or
-   copy its entire tree without filtering. Squashing alone does not remove data.
-3. Review the complete staged diff and file list. Run the relevant tests,
-   `python3 tools/build_dataset_catalog.py --check`,
-   `python3 tools/check_maintainability.py --strict`, and `git diff --cached --check`.
-4. Create one commit whose sole parent is the fetched public `main`. Confirm
-   that it contains no private records or private development ancestry.
-5. With explicit authorization to publish, push that release commit to the
-   public repository. If public `main` advanced, rebuild on its new tip;
-   do not force-push public history.
+```bash
+git fetch private
+git fetch origin
+python3 tools/prepare_public_release.py --source private/main
+python3 tools/prepare_public_release.py --source private/main --base origin/main \
+  --branch release/2026-11-12 --worktree ../OpenSourceOrtho-public-release
+```
 
-The week 18 contribution is private-only. A future public release needs an
-explicit scope decision before including its scans or metadata. This workflow
-does not change any previously published case permissions.
+Use a fresh branch name and nonexistent destination each time. The first command
+only audits exclusions. The second stages a filtered snapshot in a separate
+worktree based on the exact public tip. It never commits, merges or pushes.
+A private-source SHA, public-base SHA, snapshot tree hash and exclusion inventory
+are recorded in that worktree's Git metadata as `release-review.json` (not public).
+The source branch and its working tree are left untouched. Uncommitted changes are
+not exported; commit intended changes privately first.
+
+The snapshot represents the selected source tree, including deletions. Review
+upstream public changes and integrate them privately before export so a later
+snapshot does not undo community contributions. Do not merge the previous private
+release history into public main. Avoid the obsolete local `publish_snapshot.sh`:
+it created a new repository and exported every tracked file.
+
+## 4. Validate the exact staged release
+
+Inside the release worktree, install the relevant project extras and run:
+
+```bash
+git diff --cached --stat
+git diff --cached --name-status
+git diff --cached --check
+python3 tools/build_dataset_catalog.py --check
+python3 tools/check_maintainability.py --strict
+ruff check .
+pytest -q
+node --test
+pytest tests/e2e -q
+```
+
+Run the full CI dependency matrix, including mesh-processing, motion-preview,
+learned segmentation and volume-review extras. Review the complete diff, dataset
+scope, binary sizes and credentials, not just the test results. Fix browser failures
+before release. Keep fixes in private development and regenerate the snapshot when
+possible. Include behavior changes and validation in release notes/PR description;
+update `docs/OpenAI_Agents.md` for provider behavior changes.
+
+## 5. Commit and publish once
+
+```bash
+git commit -m "Release scan review and longitudinal research improvements"
+git rev-list --count origin/main..HEAD
+git rev-list --parents -n 1 HEAD
+```
+
+The count must be **1**, and the sole parent must equal the recorded public-base
+SHA. Check the committed file list again: no TODO, private data or local stores.
+Fetch origin once more. If public main advanced, reconcile those changes privately
+and rebuild on its new tip; never force-push public main.
+
+After the concrete release diff is approved for publication:
+
+```bash
+git push origin HEAD:refs/heads/release/2026-11-12
+```
+
+Open a PR into public main and **squash merge** it after CI succeeds. Public main
+gains exactly one commit; a normal merge adds an extra merge commit. Record the
+public release SHA and private source SHA in the private release/PR record. Retain
+private history, and use the same sequence for the next batch. Routine pushes
+continue to go to private; publishing always names origin explicitly.

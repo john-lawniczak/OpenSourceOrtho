@@ -37,7 +37,7 @@ reviewed at once.
    restores the latest local save for that arch, or starts with colored draft
    labels if none exists. It never silently defaults to an upper scan. Changing
    the arch selector while editing a baseline loads the matching baseline and
-   numbers; an unsaved-work prompt protects edits before replacing the scan. For a private week 18 capture, set **Lower**
+   numbers; an unsaved-work prompt protects edits before replacing the scan. For a week 18 capture, set **Lower**
    first and choose its local STL through **Import scan or corrections → Own STL**, or use **Edit tooth boundaries**
    from the main uploaded-scan viewer. A filename containing an unambiguous lower/upper
    arch label sets the import arch. A newly loaded own scan
@@ -138,3 +138,16 @@ saved labels** in chat. Save locally first to include your latest label counts
 and notes in the next message. Unsaved painting and the rendered image are not
 sent to the provider. The assistant receives summaries of the draft labels,
 not confirmed tooth identities or a clinical surface assessment.
+
+## Correct a label that crosses teeth
+
+Each palette button shows FDI, US number and tooth type. On the upper left,
+21/22 are central/lateral incisors, 23 is canine, 24/25 are premolars, and 26/27
+are the first/second molars. Colors and white **Label edges** show the current
+annotation, not confirmed tooth boundaries.
+
+Select the overextended label → **Correct spillover** → select the destination
+tooth → brush only the misplaced surface. The source selector protects every
+other label. Rotate to inspect the inside and chewing surface; Undo reverses a
+stroke. Save locally when finished. A screenshot cannot establish the full 3D
+boundary, so the editor never automatically splits or renumbers saved teeth.

@@ -116,3 +116,9 @@ attachment transcription retain their provenance references, not downloadable
 video bytes. Earlier public Git history is unchanged. The reference is not an
 outcome record, treatment approval, or evidence that the educational stage
 sequence is clinically correct.
+
+## Reported week 18
+
+[Week 18 scans and model-damage notes](visits/progress-02/README.md) include the
+original upper/lower pair and both Fusion H4/H6 lower captures. Public publication
+was authorized on November 12, 2026; the existing week 1–7 motion fit is unchanged.

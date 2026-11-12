@@ -28,12 +28,15 @@ Codex hooks run the maintainability check before commit-status updates.
 
 ## Private development and public releases
 
-Develop and push to the private `john-lawniczak/OpenSourceOrtho-dev` repository
-(`private` remote). The public `origin` is for fetching released work and explicit
-releases only. Publish reviewed changes as one new commit based on public `main`,
-without merging private development history. Follow
-[docs/PRIVATE_DEVELOPMENT.md](docs/PRIVATE_DEVELOPMENT.md).
+Maintainer sequence: private feature branch → private `main` → filtered public
+release branch based on public `main` → one public commit. Routine maintainer
+pushes go to `john-lawniczak/OpenSourceOrtho-dev` (`private`). Public contributors
+can use public forks and PRs. Never merge private ancestry into the public repo.
+Use `tools/prepare_public_release.py` and [docs/PRIVATE_DEVELOPMENT.md](docs/PRIVATE_DEVELOPMENT.md).
 
-`datasets/**/private/` contains private contributions. Exclude it from public
-release trees and dataset asset allowlists unless publication is explicitly
-authorized. Private contribution permission does not grant public redistribution.
+Keep `TODO.md` on private branches; `public-release.json` excludes it from public
+snapshots even though it is tracked. Dataset publication also requires individual
+`consent.json` asset entries. `datasets/**/private/` remains excluded. USER_ONE week
+18 scans and chipped-model metadata were explicitly approved for publication on
+2026-11-12 and moved to `visits/progress-02/`; this does not authorize other private
+contributions. Local painted labels stay local until separately incorporated.
