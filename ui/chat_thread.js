@@ -31,6 +31,13 @@ export function renderChatMessages() {
     if (content.textContent !== message.content) content.textContent = message.content;
     node.classList.toggle("is-pending", Boolean(message.pending));
     node.classList.toggle("is-error", Boolean(message.failed));
+    let reuse = node.querySelector("button");
+    if (message.role === "assistant" && message.failed && messages[index - 1]?.role === "user") {
+      if (!reuse) { reuse = document.createElement("button"); reuse.type = "button"; node.append(reuse); }
+      reuse.textContent = "Reuse prompt";
+      reuse.dataset.reusePrompt = String(index - 1);
+      reuse.disabled = state.chat.busy;
+    } else reuse?.remove();
     node.querySelector("strong").textContent = message.role === "user" ? "You"
       : message.failed ? "Couldn’t send" : "Plan assistant";
   });

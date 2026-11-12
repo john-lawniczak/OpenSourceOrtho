@@ -1,5 +1,5 @@
 import { renderBoundaryEntry } from "./uploaded_boundary_entry.js";
-import { renderChat, currentChatModel } from "./chat_view.js";
+import { renderChat } from "./chat_view.js";
 export { renderChat } from "./chat_view.js";
 import { buildViewerScanSources } from "./scan_formats.js";
 import {
@@ -260,12 +260,6 @@ export function renderAll() {
   state.scanArch = el("scanArch").value;
   state.simpleGoal = el("simpleGoal").value;
   state.simpleAcknowledged = el("simpleAcknowledged").checked;
-  state.chat.provider = el("chatProvider").value || state.chat.provider;
-  state.chat.model = currentChatModel();
-  state.chat.input = el("chatInput").value;
-  state.chat.apiKeyPresent = Boolean(el("chatApiKey").value.trim());
-  state.chat.agentAccessEnabled = el("agentAccessEnabled").checked;
-  state.chat.agentEndpoint = el("agentEndpoint").value;
   state.generation.acknowledged = el("generationAck").checked;
   state.generation.notes = el("generationNotes").value;
   const segMissing = el("segmentMissingTeeth");

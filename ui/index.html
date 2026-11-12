@@ -908,7 +908,7 @@
             </div>
             <details class="chat-context-summary"><summary>What the assistant can see</summary>
               <p>Your plan, scan formats and dimensions, tooth regions, stages, checks, current step and selected tooth. Raw scan surfaces and images stay local. Changes require Preview and Apply.</p>
-            </details><p class="chat-boundary">History stays in this tab.</p>
+            </details><p id="chatPersistenceNotice" class="chat-boundary" role="status">Chat and drafts stay in this tab.</p>
           </div>
         </section>
         <button id="chatReopenTab" class="chat-reopen-tab" type="button" hidden aria-label="Show AI chat">Ask AI</button>
@@ -943,7 +943,7 @@
           <span>Allow sharing my full plan and conversation with this provider.</span>
           <input id="agentAccessEnabled" type="checkbox" />
         </label>
-        <p class="viewer-caveat">Keys stay in this tab and are never saved. External requests use the selected provider when you send a message or request an AI plan review.</p>
+        <p class="viewer-caveat">Keys are never saved. Re-enter them after a page reload or full-page navigation. External requests use the selected provider when you send a message or request an AI plan review.</p>
         <button class="primary-action" value="done">Done</button>
       </form>
     </dialog>

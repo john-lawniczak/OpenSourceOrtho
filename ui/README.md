@@ -98,8 +98,8 @@ leaving that mode; it never reuses simulated tooth transforms.
 ## Plan AI
 
 The **Plan assistant** opens from **Ask AI** and can expand into a larger
-conversation workspace. Ordered prompts and replies stay in tab memory; New chat
-clears the thread. The latest 16 non-error messages accompany follow-ups. Replies
+conversation workspace. Ordered prompts, replies and drafts survive navigation
+and reloads via tab `sessionStorage`; New chat clears the thread and draft. The latest 16 non-error messages accompany follow-ups. Replies
 render as text, including streamed updates, without interpreting model HTML.
 
 **Settings** contains separate provider/model selectors, a session-only key,
@@ -109,6 +109,7 @@ The local helper stays offline. External models receive full plan context and
 conversation only with explicit consent when sending a message or requesting an
 optional AI generation review. Keys are never saved in browser storage or plans.
 
+`chat_persistence.js` owns tab storage and interrupted-request recovery;
 `chat_controller.js` owns requests, `chat_view.js` owns connection presentation,
 `chat_thread.js` owns transcript updates, and `chat_settings.js` owns settings
 changes. The server retains its existing output lint gate.

@@ -11,12 +11,13 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from orthoplan.evaluation.providers.anthropic_provider import AnthropicProvider
 from orthoplan.evaluation.providers.base import ModelProvider
 from orthoplan.evaluation.providers.compatible_provider import CompatibleProvider
 from orthoplan.evaluation.providers.claude_code_provider import ClaudeCodeProvider
 from orthoplan.evaluation.providers.openai_provider import OpenAIProvider
 
-ConnectorKind = Literal["local", "openai", "claude-code", "mcp", "open-source", "deepseek", "glm"]
+ConnectorKind = Literal["local", "openai", "anthropic", "claude-code", "mcp", "open-source", "deepseek", "glm"]
 
 
 class AIConnector(BaseModel):
@@ -57,16 +58,7 @@ def connector_catalog() -> list[AIConnector]:
             allow_custom_model=True,
             notes="Live connector; supply an API key in Connector Settings to enable.",
         ),
-        AIConnector(
-            id="claude-code", kind="claude-code",
-            label="Claude Code",
-            model="claude-code-default",
-            shares_patient_data=True,
-            requires_api_key=False,
-            models=["claude-code-default", "opus", "sonnet", "haiku"],
-            allow_custom_model=True,
-            notes="Live CLI connector; requires the local Claude Code CLI on PATH.",
-        ),
+        *_claude_connectors(),
         AIConnector(id="deepseek", kind="deepseek", label="DeepSeek", model="deepseek-flash",
                     endpoint="https://api.deepseek.com", shares_patient_data=True,
                     requires_api_key=True, models=["deepseek-flash", "deepseek-v4-pro"],
@@ -122,6 +114,10 @@ def build_chat_provider(
         if not api_key:
             raise ValueError("Add an API key in Connector Settings to use the OpenAI connector.")
         return OpenAIProvider(model=model or "gpt-6.1-sol", api_key=api_key)
+    if kind == "anthropic":
+        if not api_key:
+            raise ValueError("Add an Anthropic API key in Settings to use Claude API.")
+        return AnthropicProvider(model=model or connector_for(kind).model, api_key=api_key)
     if kind == "claude-code":
         return ClaudeCodeProvider(model=model or "claude-code-default")
     if kind in {"deepseek", "glm"}:
@@ -137,3 +133,27 @@ def build_chat_provider(
         # URL. A key is optional for local/open hosts that do not require one.
         return CompatibleProvider(model=model or "local-model", api_key=api_key or "not-required", base_url=endpoint, name=kind)
     raise ValueError(f"Unsupported chat connector: {kind}")
+
+
+def _claude_connectors() -> list[AIConnector]:
+    """Distinguish API-key authentication from local CLI sign-in."""
+    return [
+        AIConnector(
+            id="anthropic", kind="anthropic", label="Claude API (Anthropic)",
+            model="claude-sonnet-5-5", shares_patient_data=True,
+            requires_api_key=True,
+            models=["claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5"],
+            allow_custom_model=True,
+            notes="Use an Anthropic API key; separate from Claude Code CLI sign-in.",
+        ),
+        AIConnector(
+            id="claude-code", kind="claude-code",
+            label="Claude Code (local CLI)",
+            model="claude-code-default",
+            shares_patient_data=True,
+            requires_api_key=False,
+            models=["claude-code-default", "opus", "sonnet", "haiku"],
+            allow_custom_model=True,
+            notes="Live CLI connector; requires the local Claude Code CLI on PATH.",
+        ),
+    ]

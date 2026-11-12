@@ -1,3 +1,4 @@
+import { saveChatSession } from "./chat_persistence.js";
 import { el, state } from "./state.js";
 
 // Native dialog supplies focus trapping, Escape dismissal, and focus restoration.
@@ -36,6 +37,7 @@ export function updateChatSetting(target) {
   if (target.id === "chatInput") state.chat.input = target.value;
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;
+  saveChatSession();
 }
 
 function defaultModelForProvider(provider) {

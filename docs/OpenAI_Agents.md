@@ -73,7 +73,22 @@ OpenAI-compatible host: this adapter does not implement MCP tool discovery.
 
 Claude Code uses its installed CLI authentication and default model unless a
 model or CLI alias is selected. The selected model is now passed to `--model`;
-the UI no longer asks for an API key that the CLI adapter would ignore.
+the UI labels it **Claude Code (local CLI)** and explains that it takes no key.
+**Claude API (Anthropic)** is a separate `anthropic` connector with a visible
+API-key field. `AnthropicProvider` uses the Python SDK's Messages API with the
+system prompt separate from the user/context message, a 4,096-token output cap,
+120-second timeout, and no retries or tools. It accepts only finished text
+responses; incomplete answers and SDK errors produce sanitized failures.
+All responses still pass the existing finding lint gate. Defaults are Sonnet 5.5,
+with Opus 5.5, Haiku 5.5 and custom IDs available. IDs and protocol were checked
+against [Anthropic's model catalog](https://platform.claude.com/docs/en/models/overview)
+and [Messages API](https://platform.claude.com/docs/en/api/python/messages/create)
+on 2026-11-12. Model access depends on the supplied account.
+
+The `providers` extra installs both OpenAI and Anthropic SDKs. The launcher now
+installs `.[dev,providers]` and checks SDK imports even when its install stamp
+exists. Manual web setup includes that extra too. OpenAI continues to use the
+Responses API, as in the [official Python quickstart](https://developers.openai.com/api/docs/quickstart).
 
 ## Chat Connector Use
 
@@ -98,12 +113,25 @@ and conversation. Chat uses `context_scope = full_plan`. Generate Plan reuses
 this configuration for its optional advisory review; both paths retain the
 server-side lint gate.
 
-The conversation retains ordered prompts and replies in tab memory. The latest
-16 non-error messages are sent as follow-up context; New chat clears the visible
-thread and server session ID. Stream deltas update an existing assistant turn
-using text nodes, preserving line breaks and never interpreting model HTML.
-The server only streams answers after its existing lint gate. No transcript is
-persisted to disk or browser storage.
+The conversation, unsent prompt, selected provider/models, and panel layout are
+saved in same-origin `sessionStorage` for navigation and reloads in the same tab.
+This is a tab session, not a permanent case record or cross-tab sync. Keys,
+endpoints, consent, and plan snapshots are excluded by an explicit allowlist;
+full-page navigation/reload requires fresh credentials and sharing consent.
+The UI discloses storage failures and reminds users that each new request uses
+the current workspace (restoring a transcript does not restore its old plan).
+
+The latest 16 successful messages are sent as follow-up context. Failed turns
+are excluded and their prompts remain available in the composer or **Reuse
+prompt**. Missing credentials open Settings before clearing the draft. New chat
+clears the thread, draft, and server session ID. Pending requests interrupted by
+navigation recover as failed turns with their prompts retained; no request is
+automatically resent. The browser aborts its fetch, but this does not guarantee
+cancellation of an external provider call already running on the server.
+Stream deltas update an existing assistant turn using text nodes, preserving
+line breaks and never interpreting model HTML. The server only streams answers
+after its existing lint gate.
+
 ## Plan Generation Orchestration
 
 Beyond `advise` and chat, the model layer also backs the OPTIONAL review step of

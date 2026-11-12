@@ -19,8 +19,8 @@ fi
 . ".venv/bin/activate"
 
 INSTALL_STAMP=".venv/.opensource-ortho-dev-installed"
-if [ ! -x ".venv/bin/orthoplan" ] || [ ! -f "$INSTALL_STAMP" ] || [ "pyproject.toml" -nt "$INSTALL_STAMP" ]; then
-  python -m pip install -e ".[dev]"
+if [ ! -x ".venv/bin/orthoplan" ] || [ ! -f "$INSTALL_STAMP" ] || [ "pyproject.toml" -nt "$INSTALL_STAMP" ] || ! python -c "import openai, anthropic" 2>/dev/null; then
+  python -m pip install -e ".[dev,providers]"
   touch "$INSTALL_STAMP"
 fi
 

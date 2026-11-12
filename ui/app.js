@@ -1,3 +1,4 @@
+import { initializeChatPersistence } from "./chat_persistence.js";
 import { installToothWorkspace } from "./tooth_workspace.js";
 import { bindCbctRegistration } from "./cbct_registration_review.js";
 import { discardGoalPreview, requestToothGoal, renderGoalPreview } from "./tooth_goal_ui.js";
@@ -44,6 +45,8 @@ import {
   scheduleSetupCompare,
   useLatestVersionBaseline,
 } from "./setup_compare.js";
+
+initializeChatPersistence(renderChat);
 
 const savedTheme = localStorage.getItem("orthoplan-theme");
 if (savedTheme === "dark") state.theme = "dark";

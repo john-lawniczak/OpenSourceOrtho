@@ -25,7 +25,7 @@ for existing-record requests, budget comparisons, and checks for usable STL data
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,motion-preview]"
+pip install -e ".[dev,motion-preview,providers]"
 orthoplan serve
 ```
 
@@ -188,6 +188,17 @@ endpoint. Enable full-plan and conversation sharing for external models, then
 click **Done** to return to chat. Settings remain accessible in the top bar.
 Switching providers clears the key, endpoint, and consent. Generate Plan reuses
 this connection for optional review. The local helper needs no key and stays offline.
+
+For a Claude API key, choose **Claude API (Anthropic)**. **Claude Code (local CLI)**
+uses your locally signed-in CLI instead. The launcher installs the SDKs for API
+providers; if using an existing manual installation, run
+`python -m pip install -e ".[providers]"` in the app's virtual environment.
+
+Your conversation and unsent prompt survive page navigation and reloads in the
+same tab. **New chat** clears both. Keys and sharing consent are not saved and
+must be entered again after a reload or full-page navigation. Failed sends keep
+the prompt for retry; **Reuse prompt** copies an earlier failed question back to
+the composer. New requests use the current workspace, even when old chat remains.
 
 ## 3. Render Local Per-Tooth Meshes
 
