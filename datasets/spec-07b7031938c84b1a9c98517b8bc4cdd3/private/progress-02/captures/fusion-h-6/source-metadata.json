@@ -59,7 +59,12 @@
     "reference_tooth_geometry": false,
     "surface_fidelity_reviewed": false,
     "prior_pair_assessment_applies": false,
-    "note": "Intake validates file structure and records geometry metadata only. This capture is not included in the original pair topology report or views."
+    "note": "Compared with the other additional lower capture using exact-coordinate topology and independent surface views. No anatomical reference or scale verification; original-pair reports retain their separate scope.",
+    "topology_report": "../mesh-quality.json",
+    "views": "../mesh-views.png",
+    "assessment": "../quality-assessment.md",
+    "reproduction_script": "../evaluate_captures.py",
+    "model_findings": "../quality-findings.json"
   },
   "missing_data": [
     "confirmed acquisition date",

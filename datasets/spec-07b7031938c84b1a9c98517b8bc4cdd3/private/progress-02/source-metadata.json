@@ -115,6 +115,15 @@
       "manifest": "captures/fusion-h-6/manifest.json",
       "source_metadata": "captures/fusion-h-6/source-metadata.json",
       "scope_note": "Separate additional capture at the same reported visit; original-pair capture and evaluation statements do not apply automatically."
+    },
+    {
+      "capture_id": "fusion-h-4",
+      "arch": "mandibular",
+      "reported_week": 18,
+      "contribution_date": "2026-11-12",
+      "manifest": "captures/fusion-h-4/manifest.json",
+      "source_metadata": "captures/fusion-h-4/source-metadata.json",
+      "scope_note": "Additional capture at the same reported visit; retained alongside Fusion_H_6. Original-pair capture and evaluation statements do not apply automatically."
     }
   ]
 }
