@@ -1,4 +1,4 @@
-import { setupBrushShortcuts } from "./region_review_shortcuts.js";
+import { setupReviewShortcuts } from "./region_review_shortcuts.js";
 import { loadBaselineCaseData } from "./region_case_data.js";
 import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
 import { setupReviewControls } from "./region_review_controls.js";
@@ -13,7 +13,7 @@ import { caseStore } from "./progress_case_store.js";
 const el = id => document.getElementById(id);
 let scan, edits, viewer, generation = 0;
 const saving = setupRegionSaving(() => ({ scan, edits }));
-setupBrushShortcuts(() => viewer?.updateBrush());
+setupReviewShortcuts(() => viewer?.updateBrush());
 const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => { panel.update(Boolean(scan), selectedCount()); viewer?.updateBrush(); } });
 const fragments = setupFragmentReview(() => ({ scan, edits, viewer }), id => {
   el("reviewTo").value = id; el("reviewTool").value = "orbit"; selectionChanged(); viewer?.updateBrush();
@@ -89,7 +89,13 @@ el("reviewLabels").onchange = () => action(async () => {
   const restored = RegionEdits.restore(record, scan.sha256, edits.labels.length, scan.arch); edits = restored; refresh(true); el("reviewChecked").checked = record.reviewed;
 });
 for (const [id, fn] of [["reviewUndo", () => edits.undo()], ["reviewRedo", () => edits.redo()], ["reviewMerge", () => edits.merge(Number(el("reviewFrom").value),Number(el("reviewTo").value))]]) {
-  el(id).onclick = () => action(() => { if (!edits) throw new Error("Load a scan first."); fn(); refresh(true); });
+  el(id).onclick = () => action(() => {
+    if (!edits) throw new Error("Load a scan first.");
+    edits.endStroke();
+    if (id === "reviewUndo" && !edits.undoStack.length) return;
+    if (id === "reviewRedo" && !edits.redoStack.length) return;
+    fn(); refresh(true);
+  });
 }
 el("reviewExport").onclick = () => action(() => {
   if (!edits) throw new Error("Load a scan first.");

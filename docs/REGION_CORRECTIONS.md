@@ -62,7 +62,7 @@ reviewed at once.
    region, so its inside remains accessible. **Fit scan** or **Auto view** returns
    to whole-arch framing. These are draft
    label locations, not confirmed tooth identities. In **Move view**, clicking
-   a labeled surface selects its number without painting. **Colors** is on by default; turn it off to mute other regions. **Label flag** independently hides or shows the numbered marker.
+   a labeled surface selects its number without painting. **Colors** is on by default; turn it off to mute other regions. **Label flag** is off by default; turn it on to show the numbered marker.
    If no faces carry a number, the editor says there is nothing to highlight;
    use the location guide and confirm which crown it is before painting. A tooth
    number alone cannot locate an unpainted or missing tooth.
@@ -155,6 +155,17 @@ unlabeled context cannot become a selected tooth through this control.
 Rotate to inspect the inside and chewing surface; Undo reverses a
 stroke. Save locally when finished. A screenshot cannot establish the full 3D
 boundary, so the editor never automatically splits or renumbers saved teeth.
+
+### View and brush controls
+
+**Default view** restores the full arch's source-front view and resets pan,
+roll, focus and zoom. USER_ONE's upper crowns point down and lower crowns point
+up. Other view presets can remain focused on a selected region. These controls
+change the camera only. The brush-radius input is compact; decimals and the
+existing `[` / `]` controls remain available.
+Use **⌘Z** on macOS or **Ctrl+Z** to undo painting; add **Shift** to redo.
+When a text or numeric field has focus, these shortcuts keep their normal
+text-editing behavior instead of changing tooth labels.
 
 ### Locate disconnected patches
 

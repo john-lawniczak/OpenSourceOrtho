@@ -125,6 +125,16 @@ was authorized on November 12, 2026; the existing week 1–7 motion fit is uncha
 
 ## Dentition and baseline annotation
 
+The current [lower painting checkpoint](annotations/initial-lower-painted-2026-11-12T194914Z.json)
+preserves the contributor's specified local save from November 12, 2026 at
+14:49 EST, including all 14 lower tooth labels (47–41 and 31–37). Its
+[audit report](annotations/initial-lower-painted-2026-11-12T194914Z-report.json)
+records source and version hashes, changes from the previous draft, and per-tooth
+connectivity. The remaining 11 right-side and 27 left-side disconnected faces
+are retained for inspection. Painting is still a draft pending independent
+boundary review; source geometry is unchanged. The earlier lower valley recipe
+and width report describe the preceding draft, not this saved painting.
+
 The contributor reports that the wisdom teeth (FDI 18, 28, 38, 48) were removed.
 Extraction dates and any other absent teeth are unspecified. Upper second molars
 are 17 / US 2 and 27 / US 15. See `treatment-context.json`.

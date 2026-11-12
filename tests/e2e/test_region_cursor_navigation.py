@@ -37,6 +37,7 @@ def test_stationary_brush_updates_from_keys_buttons_and_input(server_url, tmp_pa
             assert large > small * 1.7
             # Numeric input and buttons update the ring at its last hover point.
             page.locator("#reviewRadius").fill("4")
+            assert page.locator("#reviewRadius").bounding_box()["width"] <= 100
             assert amber_width(canvas.screenshot()) > large * 1.7
             page.locator("#reviewBrushSmaller").click()
             expect(page.locator("#reviewRadius")).to_have_value("3.9")
@@ -45,6 +46,33 @@ def test_stationary_brush_updates_from_keys_buttons_and_input(server_url, tmp_pa
             zoom = page.locator("#reviewZoomIn").bounding_box()
             assert viewport["x"] < zoom["x"] < viewport["x"] + viewport["width"]
             assert viewport["y"] < zoom["y"] < viewport["y"] + 60
+        finally:
+            browser.close()
+
+
+def test_default_view_restores_full_upper_after_focus_roll_and_zoom(server_url, tmp_path, monkeypatch):  # noqa: F811
+    from test_boundary_intake import export
+
+    monkeypatch.setenv("ORTHOPLAN_REGION_CORRECTIONS", str(tmp_path / "labels"))
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1000})
+        try:
+            page.goto(server_url + "/region-review.html?baseline=upper")
+            expect(page.locator("#reviewSource")).to_contain_text("initial-upper.stl", timeout=30000)
+            default = page.get_by_role("button", name="Default view", exact=True)
+            default.click()
+            canvas = page.locator("#regionCanvas canvas")
+            before_view = canvas.screenshot(path=str(tmp_path / "upper-default-view.png"))
+            before_labels = export(page, tmp_path, "before-default.json")
+            page.locator("#reviewFocus").click()
+            page.locator('[data-scan-view="roll-left"]').click()
+            page.locator("#reviewZoomIn").click()
+            assert canvas.screenshot() != before_view
+            default.click()
+            assert canvas.screenshot() == before_view
+            assert export(page, tmp_path, "after-default.json") == before_labels
+            expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations")
         finally:
             browser.close()
 
@@ -58,6 +86,7 @@ def test_focused_view_presets_keep_marker_centered(server_url, tmp_path, monkeyp
             page.goto(server_url + "/region-review.html?baseline=upper")
             expect(page.locator("#reviewSource")).to_contain_text("initial-upper.stl", timeout=30000)
             page.locator('[data-tooth="21"]').click()
+            page.locator("#reviewShowLabel").check()
             page.locator("#reviewFocus").click()
             for command in ["flip", "above", "side", "face"]:
                 page.locator(f'[data-scan-view="{command}"]').click()
@@ -83,6 +112,7 @@ def test_pan_moves_mouth_without_painting_and_survives_presets(server_url, tmp_p
             page.goto(server_url + "/region-review.html?baseline=upper")
             expect(page.locator("#reviewSource")).to_contain_text("initial-upper.stl", timeout=30000)
             page.locator('[data-tooth="21"]').click()
+            page.locator("#reviewShowLabel").check()
             page.locator("#reviewFocus").click()
             page.get_by_role("button", name="✥ Pan", exact=True).click()
             page.locator('[data-scan-view="flip"]').click()

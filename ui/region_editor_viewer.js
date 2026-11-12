@@ -2,6 +2,7 @@ import { createRegionSelection } from "./region_selection_view.js";
 import { createBoundaryView } from "./region_boundary_view.js";
 import { createFragmentView } from "./region_fragment_view.js";
 import { frameScanView } from "./scan_view_camera.js";
+import { scanFrontPose } from "./scan_view_pose.js";
 import { mountScanViewToolbar } from "./scan_view_toolbar.js";
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
@@ -23,11 +24,18 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   let controls = new OrbitControls(camera, renderer.domElement); controls.addEventListener("change", render);
   const box = geometry.boundingBox.clone();
   const viewControls = mountScanViewToolbar(host.closest(".review-viewport") || host, command => {
+    if (command === "default") {
+      focused = false; pointBounds = null; lastHit = null; cursor.visible = false;
+      const front = scanFrontPose(scan.rotation), center = box.getCenter(new THREE.Vector3());
+      camera.up.fromArray(front.up); controls.target.copy(center);
+      camera.position.copy(center).add(new THREE.Vector3(...front.direction));
+      command = "fit";
+    }
     if (["auto", "fit"].includes(command)) focused = false;
     const viewBox = focused ? pointBounds || selection.focusBounds() || box : box;
     controls = frameScanView(camera, controls, renderer.domElement, viewBox, command, render);
     configureNavigation();
-  }, { compact: true });
+  }, { compact: true, defaultView: true });
   const cursor = new THREE.Mesh(new THREE.RingGeometry(0.94, 1, 48), new THREE.MeshBasicMaterial({ color: 0xffbf47, side: THREE.DoubleSide, depthTest: false }));
   cursor.visible = false; cursor.renderOrder = 10; scene.add(cursor);
   const p = geometry.attributes.position, colors = new Float32Array(p.count * 3);

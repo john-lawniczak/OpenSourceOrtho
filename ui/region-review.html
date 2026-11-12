@@ -35,7 +35,7 @@
 <div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
 <p id="reviewSelectionHelp"></p>
 <div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
-<div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox" checked>Label flag</label><label title="Current label edges, not confirmed tooth boundaries"><input id="reviewShowEdges" type="checkbox" checked>Label edges</label></div>
+<div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox">Label flag</label><label title="Current label edges, not confirmed tooth boundaries"><input id="reviewShowEdges" type="checkbox" checked>Label edges</label></div>
 <details id="reviewFragmentPanel"><summary>Inspect disconnected patches</summary>
 <button id="reviewFindFragments" type="button">Find patches</button>
 <p id="reviewFragmentSummary" role="status">Find patches outside each label’s main connected region.</p>
@@ -50,7 +50,7 @@
 <div id="reviewSplitPanel" hidden><label>Only replace label <select id="reviewSplitSource"></select></label><button id="reviewSplitFlip" type="button" disabled>⇄ Flip direction</button><p id="reviewSplitHint" role="status"></p></div>
 <div class="review-radius-row"><button id="reviewBrushSmaller" type="button" aria-label="Decrease brush radius" aria-keyshortcuts="[">[</button><label>Brush radius <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label><button id="reviewBrushLarger" type="button" aria-label="Increase brush radius" aria-keyshortcuts="]">]</button></div>
 <small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
-<div class="controls"><button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
+<div class="controls"><button id="reviewUndo" aria-keyshortcuts="Meta+Z Control+Z" title="Undo (⌘Z / Ctrl+Z)">Undo</button><button id="reviewRedo" aria-keyshortcuts="Meta+Shift+Z Control+Shift+Z" title="Redo (⌘Shift+Z / Ctrl+Shift+Z)">Redo</button></div>
 <details><summary>Split / merge labels</summary>
 <div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
 <label>To FDI <input id="reviewTo" type="number" value="12"></label><label>From FDI <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>

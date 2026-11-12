@@ -59,6 +59,7 @@ def test_lower_selection_is_locatable_without_relabeling(server_url, tmp_path): 
             page.locator("#reviewLoadlower").click()
             expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations", timeout=30000)
             expect(page.locator("#reviewArchNotice")).to_contain_text("Lower · FDI numbering")
+            page.locator("#reviewShowLabel").check()
             before = export(page, tmp_path, "before-selection.json")
             page.locator('[data-tooth="46"]').click()
             expect(page.locator("#reviewSelectedTooth")).to_have_text("FDI 46 / US 30 · Lower right first molar")

@@ -45,6 +45,7 @@ def verify_restore_and_rejection(page, tmp_path, painted):
 
 
 def verify_selected_surface(page, tmp_path, canvas, box, painted):
+    page.locator("#reviewShowLabel").check()
     expect(page.locator("#reviewSelectionMarker")).to_have_text("Label 31")
     expect(page.locator("#reviewSelectionMarker")).to_be_visible()
     expect(page.locator("#reviewFocus")).to_be_enabled()

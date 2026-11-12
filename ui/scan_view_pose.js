@@ -1,5 +1,11 @@
 import * as THREE from "./vendor/three.module.js";
 
+// The editor maps source (x,y,z) to display (x,z,-y), after its documented
+// sign rotations. Restore source front (-Y) and source vertical (+Z).
+export function scanFrontPose(rotation = [1, 1, 1]) {
+  return { direction: [0, 0, rotation[1]], up: [0, rotation[2], 0] };
+}
+
 // Display framing only: never rotate source vertices, labels, or fitted poses.
 // A thin bounding-box axis is a useful starting view, not anatomical registration.
 export function scanViewPose(box, view = "auto") {
