@@ -107,7 +107,8 @@ def main() -> None:
         "specimen_id": manifest["specimen_id"],
         "method": "Full binary STL triangle inventory and independent orthographic views",
         "generator": "tools/compare_canonical_progress.py",
-        "registration_status": "not-validated",
+        "registration_status": "display-only",
+        "input_validation": json.loads((CASE / "longitudinal-record.json").read_text())["comparison"].get("input_validation"),
         "coordinate_scale": "Source units; progress millimeter scale unverified",
         "scans": records,
         "display": {"projection": "XY, camera along positive Z",
@@ -118,10 +119,10 @@ def main() -> None:
         "per_tooth_movement_mm": None,
         "tracking_error_mm": None,
         "limitations": [
-            "Different export frames; no validated shared bite or cross-time registration",
+            "Input cross-visit alignment and tooth correspondence are contributor-confirmed validated; this figure uses display-only rotations and centering, not an imported registration transform.",
             "Whole-arch shells include soft tissue, attachments, and scan coverage differences",
             "Triangle count and bounds changes describe files, not treatment effectiveness",
-            "No final outcome, reviewed tooth correspondence, or verified progress scale",
+            "No final outcome, machine-readable per-tooth correspondence record, or verified progress scale",
         ],
     }
     (CASE / "derived/progress-01-comparison.json").write_text(json.dumps(report, indent=2) + "\n")

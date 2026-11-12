@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev, 'data/**', 'work/**']
   pull_request:
 
 jobs:
@@ -50,6 +50,27 @@ jobs:
       - name: Robust shell backend tests
         run: pytest tests/test_shell_backend.py tests/test_validation_benchmarks.py -q
 
+  motion-preview:
+    name: Endpoint matching and motion preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline fitting tools
+        run: pip install -e ".[dev,motion-preview,ml-seg,volume-review]" onnx
+      - name: Fit known motions and verify sample artifacts
+        run: >-
+          pytest tests/test_endpoint_motion.py tests/test_sample_motion_artifacts.py
+          tests/test_motion_benchmark.py tests/test_motion_corrections.py
+          tests/test_motion_registration.py tests/test_motion_workflow.py
+          tests/test_motion_simulation.py tests/test_surface_topology.py
+          tests/test_model_contract.py tests/test_match_review.py
+          tests/test_full_surface_contact.py tests/test_dicom_volume_review.py
+          tests/test_motion_stress.py tests/test_motion_review.py
+          tests/test_correspondence_assignment.py tests/test_user_one_annotation.py -q
+
   e2e:
     name: 3D viewer smoke (Playwright)
     runs-on: ubuntu-latest
@@ -59,8 +80,18 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install
-        run: pip install -e ".[dev,e2e]"
+        run: pip install -e ".[dev,e2e,motion-preview]"
       - name: Install Chromium
         run: python -m playwright install --with-deps chromium
       - name: Viewer smoke
-        run: pytest tests/e2e -q
+        run: pytest tests/e2e/test_tooth_goals.py -q --basetemp "${{ runner.temp }}/ortho-pick"
+      - name: Browser suite
+        run: pytest tests/e2e --ignore=tests/e2e/test_tooth_goals.py -q --basetemp "${{ runner.temp }}/ortho-e2e"
+      - name: Browser failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure-screenshots
+          path: |
+            ${{ runner.temp }}/ortho-pick/**/*.png
+            ${{ runner.temp }}/ortho-e2e/**/*.png

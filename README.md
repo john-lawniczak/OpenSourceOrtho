@@ -27,10 +27,22 @@ exports, manufacturing-oriented QA, monitoring records, and retention handoff.
 The current build is not distributed as a medical device, is not complete
 treatment-planning software, and does not replace a licensed professional.
 
+A central research goal is to derive usable per-tooth matches from scans taken at
+different visits, then simulate the intervening motion. Missing weekly scans
+should lead to clearly labeled best-effort estimates, with inspectable match
+quality. The USER_ONE example now fits local segmentation drafts to the week 1
+and week 7 endpoints and renders estimated weeks 2–6. See
+[Endpoint-based weekly progress](docs/SCAN_HISTORY.md) for the method and limits.
+
 Most project documentation lives in [docs/](docs/README.md), including the
 current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
+See the [acquisition photos and week 18 scan results](HOW_TO.md#user_one-photo-walkthrough)
+and [tooth-painting example](docs/REGION_CORRECTIONS.md#painting-example).
+
+Maintainer releases follow [private development → one public commit](docs/PRIVATE_DEVELOPMENT.md).
+Public contributors can submit PRs from public forks; private repository access is not required.
 
 Need your own dental data? Start with [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
 for acquisition options, cost tradeoffs, export requests, and quality checks.
@@ -82,13 +94,12 @@ context first:
   produce questions for a dental professional, not a do-it-yourself treatment plan.
 - **Technician mode**: a professional planning workspace for staged movement, records,
   clinical controls, findings, mesh rendering, print metadata, and plan JSON.
-- **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
-  (same step chips), pre-loaded with the two bundled test-case STL scans and a
-  Balanced 10-day pace. It starts at step 1 so a first-time viewer can walk the
-  whole flow, and it renders the real scans in 3D (the per-tooth movement layer is
-  marker/schematic until reviewed per-tooth meshes are applied). It snapshots and
-  restores your working state, so opening it never changes your own plan, uploads,
-  or editors.
+- **Sample test case**: USER_ONE's scan history opens on the original week 1
+  surface. Week buttons show original endpoints and fitted per-tooth estimates
+  for weeks 2–6. Select a draft tooth to inspect its motion and fit quality; at
+  week 7 compare the estimated endpoint with the recorded scan. The separate
+  planning demo uses hypothetical targets. Opening either example snapshots and
+  restores your own working state.
 - **Print / send**: the final guided step builds printable 3D files (one model
   per stage plus a manifest) via `POST /api/print-package` and offers a zip
   download and a pre-filled email draft (`.eml`) you can open in your mail app to
@@ -134,15 +145,12 @@ context first:
   proposals until deterministic checks and human review run, and fail closed
   when scale, reviewed segmentation, roots, or reviewed anatomy are missing.
 - **Plan AI chat**: a scoped advisory chat panel that can explain the current
-  plan context, findings, data gaps, and timeline. The AI box shows a **single
-  model dropdown** (each option carries its provider) and an **API-key field with
-  plain-language instructions**, so it is obvious how to enable a real model; the
-  key field is hidden for the **local helper**, which works without any key or
-  external service. Live connectors for OpenAI (GPT), Claude (Anthropic), and any
-  OpenAI-compatible host (MCP / open-source / self-hosted local models) are
-  available and gated behind explicit per-session consent that data leaves the
-  machine. The chat always sends the full plan context. The key is read only when
-  you press **Ask AI** and is never persisted.
+  plan context, findings, data gaps, and timeline. **Settings** in the top bar
+  contains provider/model selectors and API-key fields. **Claude API (Anthropic)**
+  accepts a key; **Claude Code (local CLI)** uses local CLI sign-in. The local
+  helper works offline. External providers require explicit sharing consent.
+  Chat history and drafts survive navigation and reloads in the same tab; keys
+  and consent are never saved. Failed sends keep their prompt for retry.
 
 It is not an autonomous diagnostic system, clinical approval system, or complete treatment-planning system. The project focuses on geometric representation, configured-rule checks, staged tooth-movement proposals, visualization, printable package generation, and advisory evaluation under explicitly declared data limitations. Any physical use is the user's own responsibility and risk. The software and outputs are provided without warranty or liability for diagnosis, treatment, manufacturing, fit, materials, injury, regulatory compliance, or other use. The roadmap intentionally separates STL-only surface review from CBCT/DICOM-enhanced root/bone-aware review.
 
@@ -247,13 +255,13 @@ Case** to return - your own work is untouched.
 
 In the guided **Review** step (or the Technician Review panel), use **Plan AI** to
 ask educational questions about the active plan. The default local helper stays on
-this machine and needs no key. To use an external model, pick it from the single
-**model dropdown** (e.g. GPT-5.5, Claude Opus 4.8, or an open-source / self-hosted
-endpoint) in the AI box and paste your API key in the field shown there; the model
-endpoint and egress-consent options live under **Connector settings**. The key is
-read only when you press **Ask AI**; it is never written to plans, case snapshots,
-or `localStorage` and is never echoed back by the server. See
-[docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
+this machine and needs no key. Open the top-bar **Settings**, select a provider
+and model, enter its API key, and enable sharing. Choose **Claude API (Anthropic)**
+for an Anthropic key or **Claude Code (local CLI)** for local CLI authentication.
+Compatible hosts also need an endpoint. Keys are read only for explicit requests
+and are never stored in plans, browser storage, or case snapshots. Chat and draft
+text stay in this tab across navigation and reloads; **New chat** clears them.
+See [docs/AI_CHAT_MCP.md](docs/AI_CHAT_MCP.md).
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the plain-language system overview.
 
@@ -293,41 +301,35 @@ Use Python 3.11 or 3.12 if possible. Some fresh Homebrew Python 3.14 builds can 
 inside `ensurepip`/`pyexpat` on macOS; if that happens, create the venv with a stable
 Python executable such as `python3.11`.
 
-Fast path from the repo root:
+Install the application command once from this checkout with
+[pipx](https://pipx.pypa.io/):
 
 ```bash
-./happysmile
+pipx install --python python3.11 --editable '.[providers,motion-preview]'
+pipx ensurepath
 ```
 
-That script creates `.venv` if needed, installs the editable dev package once,
-and starts the local server at `http://127.0.0.1:8000`. You can pass the same
-server flags through it:
+Then run it from any directory, without activating a virtual environment:
 
 ```bash
-./happysmile --host 127.0.0.1 --port 8123
-```
-
-The more literal alias works too:
-
-```bash
-./run-openortho
-```
-
-After an editable install with the virtual environment active, these console
-commands are also available:
-
-```bash
-openortho
 happysmile
-orthoplan serve
+# Optional server address:
+happysmile --host 127.0.0.1 --port 8123
 ```
+
+`happysmile` and `openortho` are installed Python console commands, equivalent to
+`orthoplan serve`. No root launcher scripts are needed. The editable installation
+uses this checkout's UI and datasets and picks up code changes; keep the checkout
+in place. After dependency changes, run `pipx reinstall opensource-ortho`. If you
+move the checkout, reinstall from its new location. The server runs while the
+terminal command is running; Ctrl+C stops it.
 
 Manual setup remains:
 
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,providers]"
 orthoplan serve
 ```
 
@@ -342,7 +344,7 @@ If your shell has a working `python3` but not `python`, use:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,providers]"
 orthoplan serve --host 127.0.0.1 --port 8000
 ```
 
@@ -352,7 +354,7 @@ If venv creation fails partway through, remove the broken environment and recrea
 rm -rf .venv
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,providers]"
 orthoplan serve
 ```
 

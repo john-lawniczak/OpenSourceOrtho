@@ -1,20 +1,13 @@
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
-// Sample test case: an isolated, self-contained walkthrough that reuses the real
-// guided wizard UI (same step chips: upload -> teeth & time -> details -> review
-// -> 3D preview -> print) so a first-time viewer sees exactly what a guided user
-// sees, pre-filled with the bundled test-case records. It starts at step 1 so the
-// user walks the whole flow: (1) the two test-case STL scans are already loaded,
-// (2) a Balanced 10-day pace with every tooth selected, (4) a plain summary and
-// timeline, (5) the 3D preview rendered from the exact test-case STL models.
+// Sample test case: isolated observed history plus a separately selected
+// simulated planning walkthrough that reuses the guided wizard.
 //
 // Opening it snapshots the user's working state and restores it on exit, so
 // nothing the sample does leaks into the user's own plan, uploads, or editors.
 //
-// The 3D preview shows the real STL scans in OVERLAY view. On entry the sample
-// also runs the on-device auto-segmenter on the bundled scans and applies the
-// per-tooth draft (see prepareSampleSegmentation), so the planned layer animates
-// the scan's own crowns moving crowded -> aligned across stages as the slider
-// drags. If segmentation is unavailable, the scan remains visible without individual selection.
+// The default view compares original baseline and week 7 observations. The
+// separately selected planning simulation can prepare an auto-segmented draft;
+// its staged movements must never be presented as this person's observed history.
 
 import { isolateSampleSettings } from "./sample_settings.js";
 import { el, state } from "./state.js";
@@ -97,22 +90,17 @@ export function enterSample() {
   // step chips and panels; the sample flag drives the banner and isolation.
   state.userMode = "simple";
   state.sample.active = true;
+  state.sample.view = "observed";
   // Open directly on the shared scan selection and stage viewer.
   state.guided.step = "plan";
   state.activeStep = "review";
   state.simpleAcknowledged = true;
-  state.sampleStatus =
-    "Loading the root/bone-aware sample fixture, then segmenting the bundled scans into "
-    + "individual 3D teeth on this machine (a few seconds)... "
-    + "The sample is isolated from your own files.";
+  state.sampleStatus = "Week 1–7 scan history. The planning simulation is a separate example.";
   el("planTitle").value = `Sample test case · ${sampleDataset.pseudonym}`;
   el("planId").value = "sample-test-case";
   el("simpleGoal").value = "crowding";
   el("wearInterval").value = "10";
-  // x8 keeps the segmented real crowns visibly moving without flinging them off
-  // the arch (the schematic demo uses higher values, but those are placeholder
-  // pegs - real crowns at true scan scale read as broken above ~x8).
-  el("exaggeration").value = "8";
+  el("exaggeration").value = "1";
   el("scanUnits").value = "mm";
   el("simpleAcknowledged").checked = true;
 }

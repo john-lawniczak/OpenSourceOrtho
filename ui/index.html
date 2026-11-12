@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OpenSource Ortho - aligner planning workspace</title>
+    <link rel="stylesheet" href="./scan_review_controls.css" />
     <meta name="description" content="OpenSource Ortho: an open, safety-boundary-first clear-aligner planning playground and research toolkit." />
     <meta name="theme-color" content="#0f766e" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -14,6 +15,7 @@
     <link rel="stylesheet" href="./tooth_workspace.css" />
     <link rel="stylesheet" href="./chat.css" />
     <link rel="stylesheet" href="./reference_workspace.css" />
+    <link rel="stylesheet" href="./scan_comparison.css" />
     <script type="importmap">
       { "imports": { "three": "./vendor/three.module.js" } }
     </script>
@@ -54,6 +56,7 @@
           <button class="step" data-step="review" type="button">Review</button>
         </nav>
 
+        <a class="glossary-link" href="./region-review.html">Paint tooth boundaries <small>Step 2 · Identify teeth</small></a>
         <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Tooth Map</button>
         <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open the glossary of key terms">Glossary</button>
         <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging guide</button>
@@ -134,7 +137,6 @@
 
           <section class="gstep" data-gstep="upload">
             <h3 id="uploadHeading">1 · Upload your scan files</h3>
-            <p id="uploadIntroduction">Add upper or lower 3D scans. Common mesh and point-cloud formats are supported.</p>
             <div id="guidedUploadHost">
               <div id="simpleUpload" class="upload-stack">
                 <label class="upload-target" for="simpleStlFile">
@@ -147,9 +149,6 @@
             </div>
             <div id="guidedScanMetadataHost"></div>
             <div id="guidedUploadViewerHost" class="guided-viewer-host"></div>
-            <div id="guidedSegmentationHost"></div>
-            <button id="uploadGeneratePreview" class="primary-action" type="button" disabled>Generate staged preview</button>
-            <p class="guided-hint">Confirm mm units and use reviewed teeth to enable the geometry proposal. Your AI connection can review it.</p>
             <details class="guided-help"><summary>See the upload-to-preview workflow</summary>
               <video controls preload="none" poster="./workflow-poster.jpg" aria-label="Sample workflow: select, edit, and preview stages">
                 <source src="./workflow-demo.webm" type="video/webm" />
@@ -165,6 +164,15 @@
 
           <section class="gstep" data-gstep="plan">
             <h3>2 · Explore teeth &amp; stages</h3>
+            <section class="boundary-entry" aria-label="Paint tooth boundaries">
+              <strong>Identify teeth before choosing movements</strong>
+              <p>Correct tooth boundaries in the painting workspace. For USER_ONE, label the week 1 upper and lower baselines and save each arch locally.</p>
+              <a href="./region-review.html">Open tooth painting</a>
+              <a href="./region-review.html?baseline=upper">Paint USER_ONE upper</a>
+              <a href="./region-review.html?baseline=lower">Paint USER_ONE lower</a>
+              <p>Saved labels remain a separate annotation record until validated and incorporated; saving does not automatically update this movement preview.</p>
+            </section>
+            <div id="guidedSegmentationHost"></div>
             <div class="guided-action-strip">
               <span>Select a tooth below, then nudge it or describe a change in chat.</span>
 
@@ -323,6 +331,8 @@
           <details class="workflow-card disclosure">
             <summary>Root & bone workflow · advanced</summary>
             <div class="record-upload-grid">
+              <a href="./volume-review.html" target="_blank" rel="noopener">Prepare and inspect local CBCT masks</a>
+              <label>Import landmark registration report<input id="cbctRegistrationFile" type="file" accept=".json,application/json" /></label>
               <label class="upload-target compact-upload" for="cbctMaskFile">
                 <span class="upload-icon" aria-hidden="true">↑</span>
                 <span>Import root/bone mask JSON</span>
@@ -895,9 +905,12 @@
           </div>
           <div class="ai-chat-body">
             <div class="chat-session-bar"><span id="chatStatus" class="chat-status" role="status">Ready</span><button id="newChat" type="button">New chat</button></div>
+            <label class="chat-case-context">Context <select id="chatCaseSource"><option value="auto">Current view (automatic)</option><option value="user_one">USER_ONE scans &amp; saved labels</option><option value="workspace">Planning workspace</option></select></label>
+            <p id="chatContextHint" class="chat-context-hint"></p>
             <div id="chatMessages" class="chat-messages" role="log" aria-label="Conversation history" aria-live="polite" aria-relevant="additions text"></div>
             <div id="chatStarters" class="chat-starters"><button type="button">What are the main limitations?</button><button type="button">Explain the data gaps</button></div>
-            <div class="chat-composer">
+            <div id="chatComposer" class="chat-composer" data-expanded="false">
+            <button id="collapseChatComposer" class="chat-composer-collapse" type="button" aria-label="Collapse message composer" aria-expanded="false" aria-controls="chatInput">⌄ Collapse</button>
             <label class="chat-input">
               <span class="sr-only">Message the plan assistant</span>
               <textarea id="chatInput" rows="3" maxlength="2000" placeholder="Ask about your plan…"></textarea>
@@ -906,8 +919,8 @@
             <div class="chat-composer-footer"><small>Enter to send · Shift + Enter for a new line</small><button class="primary-action" id="sendChat" type="button">Send ↑</button></div>
             </div>
             <details class="chat-context-summary"><summary>What the assistant can see</summary>
-              <p>Your plan, scan formats and dimensions, tooth regions, stages, checks, current step and selected tooth. Raw scan surfaces and images stay local. Changes require Preview and Apply.</p>
-            </details><p class="chat-boundary">History stays in this tab.</p>
+              <p>The selected context supplies planning data or USER_ONE scan visits, saved label summaries, notes and motion-estimate status. USER_ONE includes week 18 metadata when present. Unsaved painting, raw surfaces and images are not sent. Changes require Preview and Apply.</p>
+            </details><p id="chatPersistenceNotice" class="chat-boundary" role="status">Chat and drafts stay in this tab.</p>
           </div>
         </section>
         <button id="chatReopenTab" class="chat-reopen-tab" type="button" hidden aria-label="Show AI chat">Ask AI</button>
@@ -939,10 +952,10 @@
           <input id="agentEndpoint" type="url" placeholder="http://127.0.0.1:PORT" />
         </label>
         <label class="toggle" id="chatSharingField">
-          <span>Allow sharing my full plan and conversation with this provider.</span>
+          <span>Allow sharing my selected case context and conversation with this provider.</span>
           <input id="agentAccessEnabled" type="checkbox" />
         </label>
-        <p class="viewer-caveat">Keys stay in this tab and are never saved. External requests use the selected provider when you send a message or request an AI plan review.</p>
+        <p class="viewer-caveat">Keys are never saved. Re-enter them after a page reload or full-page navigation. External requests use the selected provider when you send a message or request an AI plan review.</p>
         <button class="primary-action" value="done">Done</button>
       </form>
     </dialog>

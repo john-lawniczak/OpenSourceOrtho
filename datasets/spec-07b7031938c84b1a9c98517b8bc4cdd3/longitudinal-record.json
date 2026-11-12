@@ -11,7 +11,9 @@
         "initial-upper.stl",
         "initial-lower.stl"
       ],
-      "metadata": "source-export-metadata.json"
+      "metadata": "source-export-metadata.json",
+      "reported_week": 1,
+      "reported_week_provenance": "Contributor refers to the existing baseline pair as week 1 in the 2026-11-10 follow-up; the previously recorded acquisition date and pretreatment status are retained."
     },
     {
       "event_id": "cbct",
@@ -70,18 +72,39 @@
   "comparison": {
     "report": "derived/progress-01-comparison.json",
     "figure": "derived/progress-01-comparison.png",
-    "registration_status": "not-validated",
+    "registration_status": "contributor-confirmed-validated",
     "per_tooth_movement": null,
     "tracking_error": null,
     "clinical_outcome": null,
-    "final_scan_available": false
+    "final_scan_available": false,
+    "input_validation": {
+      "status": "contributor-confirmed",
+      "confirmed_on": "2026-11-10",
+      "visit_ids": [
+        "initial",
+        "progress-01"
+      ],
+      "cross_visit_alignment": "validated",
+      "tooth_correspondence": "validated",
+      "basis": "Contributor confirms that the week 1 and week 7 STL files have validated cross-visit alignment and tooth correspondence.",
+      "scans": {
+        "initial-upper.stl": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+        "initial-lower.stl": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+        "progress-01-upper.stl": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+        "progress-01-lower.stl": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb"
+      },
+      "registration_transform_record": null,
+      "per_tooth_correspondence_record": null,
+      "viewer_application": "Display orientation and independent centering only; an executable registration transform and tooth map have not been linked to this viewer.",
+      "scope_note": "Applies to the original week 1/baseline and week 7 pairs only. Week 18 consists of personal molds and scans; both stone models were chipped."
+    }
   },
   "missing_data": [
     "confirmed progress scale",
     "current tray per arch",
     "five-day schedule start date and adherence",
     "updated IPR and attachment history",
-    "reviewed per-tooth segmentation and stable registration landmarks",
+    "machine-readable registration transform and per-tooth correspondence record for the viewer",
     "observed refinements and final outcome"
   ],
   "reuse": "Longitudinal scan research and reproducibility; this individual record does not specify movements or appliances for another person."

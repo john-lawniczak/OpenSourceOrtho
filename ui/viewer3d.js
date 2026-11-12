@@ -1,3 +1,5 @@
+import { frameScanView } from "./scan_view_camera.js";
+import { mountScanViewToolbar } from "./scan_view_toolbar.js";
 import { orientedMeshMatrix } from "./mesh_affine.js";
 import { createFragmentLoader } from "./viewer_fragments.js";
 import { schematicToothPose, syntheticToothGeometry } from "./tooth_geometry.js";
@@ -162,7 +164,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
   camera.position.set(0, 42, 46);
 
-  const controls = new OrbitControls(camera, renderer.domElement);
+  let controls = new OrbitControls(camera, renderer.domElement);
   controls.addEventListener("change", () => { needsRender = true; });
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
@@ -184,6 +186,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1,
       -((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 + 1,
     );
+    camera.updateMatrixWorld(true);
+    proxies.updateMatrixWorld(true);
     raycaster.setFromCamera(ndc, camera);
     const hits = raycaster.intersectObjects(proxies.children, false);
     for (const hit of hits) {
@@ -283,6 +287,10 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   // zoomed; an explicit recenter() re-frames on demand.
   let fitted = false;
   let visibleArchFilter = "both";
+  const scanViews = mountScanViewToolbar(container.parentElement, command => {
+    controls = frameScanView(camera, controls, renderer.domElement, visibleScanBox(), command, () => { needsRender = true; });
+  });
+  scanViews.hidden = true;
 
   function resize() {
     needsRender = true;
@@ -352,6 +360,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       .map((item) => item.tooth?.value));
 
     for (const pose of poses) {
+      if (!archVisible(archOf(pose.tooth))) continue;
       // Render the exact affine transform supplied by the engine.
       if (fragmentMode) {
         const fragment = fragmentCache.get(String(pose.tooth));
@@ -462,6 +471,10 @@ export function createViewer(container, { schematicOnly = false } = {}) {
 
   function fitCameraToScene() {
     let box = visibleScanBox();
+    if (box && !box.isEmpty()) {
+      controls = frameScanView(camera, controls, renderer.domElement, box, "auto", () => { needsRender = true; });
+      return;
+    }
     // When a scan is visible, frame the scan geometry itself. Movement overlays
     // can be intentionally exaggerated or stage-shifted; using them as the fit
     // target makes a selected upper/lower STL feel off-center when the user zooms.
@@ -505,8 +518,9 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   }
 
   function positionArchLabels() {
-    upperLabel.visible = visibleArchFilter === "both" || visibleArchFilter === "upper";
-    lowerLabel.visible = visibleArchFilter === "both" || visibleArchFilter === "lower";
+    const arches = new Set(visibleScanChildren().map(mesh => mesh.userData.arch));
+    upperLabel.visible = uploadedScans.children.length ? arches.has("upper") : visibleArchFilter !== "lower";
+    lowerLabel.visible = uploadedScans.children.length ? arches.has("lower") : visibleArchFilter !== "upper";
     upperLabel.position.copy(archLabelPos.upper || UPPER_LABEL_POS);
     lowerLabel.position.copy(archLabelPos.lower || LOWER_LABEL_POS);
   }
@@ -648,6 +662,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       if (child.geometry) child.geometry.dispose();
     });
     uploadedScans.clear();
+    scanViews.hidden = !scanSources.length;
     // The proximity overlay belongs to the previous scan pair; drop it so a new
     // scan never shows a stale, misaligned occlusion map.
     clearProximity();
@@ -887,6 +902,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     });
     clearProximity();
     clearScaleBar();
+    scanViews.remove();
     window.removeEventListener("resize", resize);
     controls.dispose();
     renderer.dispose();
@@ -922,8 +938,8 @@ function orientScanGeometry(geometry) {
 }
 
 function sourceKey(source) {
-  if (source.file) return `${source.name}:${source.file.size}:${source.file.lastModified}`;
-  return `${source.name}:${source.url}`;
+  if (source.file) return `${source.name}:${source.arch || ""}:${source.file.size}:${source.file.lastModified}`;
+  return `${source.name}:${source.arch || ""}:${source.url}`;
 }
 
 async function sourceBuffer(source) {

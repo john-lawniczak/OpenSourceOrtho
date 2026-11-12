@@ -15,6 +15,14 @@ export function toothName(tooth) {
   return FDI_TEETH.includes(id) ? `${quadrants[id[0]]} ${names[Number(id[1]) - 1]}` : "Unknown tooth";
 }
 
+// ADA Universal permanent-tooth numbering; stored annotation IDs remain FDI.
+export function universalToothNumber(tooth) {
+  const id = String(tooth);
+  if (!FDI_TEETH.includes(id)) return null;
+  const position = Number(id[1]);
+  return { 1: 9 - position, 2: 8 + position, 3: 25 - position, 4: 24 + position }[id[0]];
+}
+
 export function parseToothSelection(text) {
   const tokens = String(text).trim().split(/[\s,;]+/).filter(Boolean);
   return {

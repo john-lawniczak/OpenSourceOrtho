@@ -73,3 +73,18 @@ body[data-chat-focus="1"] .ai-rail .ai-chat { height: calc(100dvh - 92px); }
 .chat-settings-dialog form > .ai-chat-heading button { border: 0; background: var(--panel-alt); color: var(--ink); width: 32px; height: 32px; font-size: 20px; cursor: pointer; }
 .chat-settings-dialog .toggle { border-radius: 10px; padding: 12px; font-size: 13px; }
 .chat-settings-dialog form > .primary-action { border-radius: 10px; }
+
+.chat-recovery-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.chat-recovery-actions button { padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--panel-alt); color:var(--ink); }
+
+.chat-case-context { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; }
+.chat-case-context select { flex:1; min-width:0; padding:6px; }
+.chat-context-hint { margin:5px 0 0; color:var(--muted); font-size:11px; }
+.chat-composer-collapse { display:block; margin:0 0 4px auto; border:0; background:none; color:var(--muted); font-size:11px; cursor:pointer; }
+.chat-composer[data-expanded="false"] { padding:10px 12px; }
+.chat-composer[data-expanded="false"] textarea { height:24px; min-height:24px; max-height:24px; overflow:hidden; }
+.chat-composer[data-expanded="false"] .chat-edit-mode,
+.chat-composer[data-expanded="false"] .chat-composer-footer,
+.chat-composer[data-expanded="false"] .chat-composer-collapse { display:none; }
+
+#chatComposer .chat-edit-mode[hidden] { display:none; }

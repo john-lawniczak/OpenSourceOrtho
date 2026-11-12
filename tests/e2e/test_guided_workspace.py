@@ -6,7 +6,7 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
-def test_settings_and_phase_navigation_stay_in_place(server_url):
+def test_settings_and_phase_navigation_stay_in_place(server_url):  # noqa: F811 - pytest fixture injection
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
@@ -21,6 +21,7 @@ def test_settings_and_phase_navigation_stay_in_place(server_url):
                 expect(page.locator(f'.gstep[data-gstep="{step}"]')).to_be_visible()
                 assert page.evaluate('window.scrollY') == 0
             page.locator('#sampleLaunch').click()
+            page.locator('[data-sample-view="simulation"]').click()
             page.locator('#openChatSettings').click()
             page.locator('[data-user-mode="advanced"]').click()
             expect(page.locator('#chatSettingsDialog')).not_to_be_visible()

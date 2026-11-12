@@ -1,0 +1,281 @@
+{
+  "schema": "ortho-annotation-checkpoint-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "arch": "upper",
+  "source_filename": "initial-upper.stl",
+  "source_sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+  "saved_at": "2026-11-12T18:44:56.804533+00:00",
+  "source_snapshot_filename": "20261112T184456804533Z-491baa2883854a7fbbba58a5dae46e54.json",
+  "provenance": "Contributor explicitly identified this local save and clarified that the upper-right teeth are now updated, following the prior upper-left confirmation. Saved label bytes are preserved exactly.",
+  "review_status": "contributor-confirmed-painting-needs-topology-review",
+  "contributor_confirmed_fdi": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+  ],
+  "independently_verified_anatomy": false,
+  "saved_reviewed_checkbox": false,
+  "benchmark_ready": false,
+  "previous_annotation": "annotations/initial-upper-left-painted-2026-11-12T182629Z.json",
+  "previous_annotation_sha256": "4d3670c1975670e4ccd9a12424d6d2b80d94f6638431dcf9d35b7e971a3aa334",
+  "annotation": "annotations/initial-upper-painted-2026-11-12T184456Z.json",
+  "annotation_sha256": "1be53b68e0fb46a015c8b3846d8d6036271173b4f9942d000c1880d50230eb37",
+  "scan_geometry_modified": false,
+  "changed_faces": 13530,
+  "cleared_to_context": 1224,
+  "newly_labeled_faces": 4488,
+  "reassigned_faces": 7818,
+  "labeled_faces": 177657,
+  "unlabeled_faces": 152652,
+  "transitions": [
+    {
+      "from_fdi": 0,
+      "to_fdi": 11,
+      "faces": 842
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 12,
+      "faces": 660
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 13,
+      "faces": 832
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 14,
+      "faces": 569
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 15,
+      "faces": 368
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 16,
+      "faces": 272
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 17,
+      "faces": 942
+    },
+    {
+      "from_fdi": 0,
+      "to_fdi": 21,
+      "faces": 3
+    },
+    {
+      "from_fdi": 11,
+      "to_fdi": 0,
+      "faces": 226
+    },
+    {
+      "from_fdi": 11,
+      "to_fdi": 12,
+      "faces": 1938
+    },
+    {
+      "from_fdi": 11,
+      "to_fdi": 21,
+      "faces": 33
+    },
+    {
+      "from_fdi": 13,
+      "to_fdi": 0,
+      "faces": 80
+    },
+    {
+      "from_fdi": 13,
+      "to_fdi": 12,
+      "faces": 305
+    },
+    {
+      "from_fdi": 14,
+      "to_fdi": 0,
+      "faces": 397
+    },
+    {
+      "from_fdi": 14,
+      "to_fdi": 13,
+      "faces": 2601
+    },
+    {
+      "from_fdi": 15,
+      "to_fdi": 0,
+      "faces": 296
+    },
+    {
+      "from_fdi": 15,
+      "to_fdi": 14,
+      "faces": 2352
+    },
+    {
+      "from_fdi": 15,
+      "to_fdi": 16,
+      "faces": 362
+    },
+    {
+      "from_fdi": 16,
+      "to_fdi": 0,
+      "faces": 37
+    },
+    {
+      "from_fdi": 16,
+      "to_fdi": 17,
+      "faces": 212
+    },
+    {
+      "from_fdi": 17,
+      "to_fdi": 0,
+      "faces": 172
+    },
+    {
+      "from_fdi": 17,
+      "to_fdi": 16,
+      "faces": 15
+    },
+    {
+      "from_fdi": 21,
+      "to_fdi": 0,
+      "faces": 16
+    }
+  ],
+  "teeth": [
+    {
+      "fdi": 11,
+      "face_count": 13254,
+      "connected_components": 27,
+      "faces_outside_largest_component": 48,
+      "largest_component_percent": 99.638,
+      "largest_detached_component_faces": 5
+    },
+    {
+      "fdi": 12,
+      "face_count": 9484,
+      "connected_components": 3,
+      "faces_outside_largest_component": 3,
+      "largest_component_percent": 99.968,
+      "largest_detached_component_faces": 2
+    },
+    {
+      "fdi": 13,
+      "face_count": 11067,
+      "connected_components": 5,
+      "faces_outside_largest_component": 6,
+      "largest_component_percent": 99.946,
+      "largest_detached_component_faces": 2
+    },
+    {
+      "fdi": 14,
+      "face_count": 12143,
+      "connected_components": 8,
+      "faces_outside_largest_component": 9,
+      "largest_component_percent": 99.926,
+      "largest_detached_component_faces": 2
+    },
+    {
+      "fdi": 15,
+      "face_count": 10829,
+      "connected_components": 11,
+      "faces_outside_largest_component": 45,
+      "largest_component_percent": 99.584,
+      "largest_detached_component_faces": 35
+    },
+    {
+      "fdi": 16,
+      "face_count": 19105,
+      "connected_components": 6,
+      "faces_outside_largest_component": 5,
+      "largest_component_percent": 99.974,
+      "largest_detached_component_faces": 1
+    },
+    {
+      "fdi": 17,
+      "face_count": 13526,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0,
+      "largest_component_percent": 100.0,
+      "largest_detached_component_faces": 0
+    },
+    {
+      "fdi": 21,
+      "face_count": 13339,
+      "connected_components": 8,
+      "faces_outside_largest_component": 16,
+      "largest_component_percent": 99.88,
+      "largest_detached_component_faces": 5
+    },
+    {
+      "fdi": 22,
+      "face_count": 6509,
+      "connected_components": 9,
+      "faces_outside_largest_component": 23,
+      "largest_component_percent": 99.647,
+      "largest_detached_component_faces": 16
+    },
+    {
+      "fdi": 23,
+      "face_count": 10442,
+      "connected_components": 11,
+      "faces_outside_largest_component": 39,
+      "largest_component_percent": 99.627,
+      "largest_detached_component_faces": 15
+    },
+    {
+      "fdi": 24,
+      "face_count": 11872,
+      "connected_components": 16,
+      "faces_outside_largest_component": 25,
+      "largest_component_percent": 99.789,
+      "largest_detached_component_faces": 5
+    },
+    {
+      "fdi": 25,
+      "face_count": 11064,
+      "connected_components": 20,
+      "faces_outside_largest_component": 29,
+      "largest_component_percent": 99.738,
+      "largest_detached_component_faces": 8
+    },
+    {
+      "fdi": 26,
+      "face_count": 19618,
+      "connected_components": 9,
+      "faces_outside_largest_component": 11,
+      "largest_component_percent": 99.944,
+      "largest_detached_component_faces": 4
+    },
+    {
+      "fdi": 27,
+      "face_count": 15405,
+      "connected_components": 2,
+      "faces_outside_largest_component": 1,
+      "largest_component_percent": 99.994,
+      "largest_detached_component_faces": 1
+    }
+  ],
+  "topology_method": "Connected components through shared manifold edges after exact-coordinate vertex welding; disconnected faces are reported, never automatically deleted.",
+  "right_faces_outside_largest_components": 116,
+  "left_faces_outside_largest_components": 144,
+  "limitations": [
+    "Both upper sides are contributor-confirmed; no independent anatomical correctness claim.",
+    "260 faces remain outside their labels largest connected components (116 right, 144 left); the one-connected-region-per-tooth target is not yet met.",
+    "Tiny islands can reflect paint boundaries or source topology and require inspection before removal.",
+    "The saved whole-arch reviewed checkbox remains false. No inferred approval, lower-arch confirmation, automatic cleanup or geometry modification."
+  ]
+}

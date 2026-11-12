@@ -13,7 +13,18 @@ New to dental terms (IPR, tip, torque, FDI numbering)? See the
 app from the **Key Terms** button in the sidebar. To contribute your own
 scans and results for testing, see [Contributing Data](docs/DATA_CONTRIBUTION.md).
 
+Maintainers follow the [private development and public release workflow](docs/PRIVATE_DEVELOPMENT.md):
+feature branches → private `main` → one reviewed commit on public `main`.
+Public contributors can submit PRs from public forks.
+
 ## 1. Start The App
+
+For a persistent command that works from any directory, install once from this
+checkout with `pipx install --python python3.11 --editable '.[providers,motion-preview]'`
+and `pipx ensurepath`, then run **`happysmile`**. Keep the checkout in place;
+see [installation details](README.md#run-locally). The development venv below
+is an alternative.
+
 
 Before buying scanning equipment, read [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
 for existing-record requests, budget comparisons, and checks for usable STL data.
@@ -21,7 +32,7 @@ for existing-record requests, budget comparisons, and checks for usable STL data
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,motion-preview,providers]"
 orthoplan serve
 ```
 
@@ -46,16 +57,55 @@ in the top bar:
 - **Technician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
 
-To see a complete, isolated example, click **Sample Test Case** in the left
-sidebar: it runs the guided wizard pre-loaded with the two bundled test-case STL
-scans, redacted CBCT metadata, a safe root/bone engineering fixture, and a
-10-day stage spacing. It opens directly on the shared scan viewer. The 3D
-preview shows the real scans with sample-only per-tooth segmentation and the
-root/bone-aware fixture path: accepted fixture STL-to-CBCT registration, trusted
-derived root/axis landmarks, anatomical frames, root/bone context, and CBCT
-boundary priors. This is a workflow fixture, not clinical interpretation of raw
-CBCT. It snapshots and restores your own work, so nothing leaks into your
-editors; use **Exit Sample Test Case** to return.
+After uploading your own scan, use **Auto view**, **Other side**, and **Roll
+left/right** to adjust its display; **Fit scan** brings the entire surface into
+view. These controls do not alter scan coordinates. Click **Edit tooth boundaries**
+below the viewer, confirm the arch, then choose a tooth number and **Paint tooth**.
+Switch to **Move view** to rotate between brush strokes. See the
+[boundary-review walkthrough](docs/REGION_CORRECTIONS.md).
+
+Click **Sample Test Case** to open USER_ONE's **Scan history**.
+Use **Previous week**, **Next week**, or the week buttons. Weeks 1 and 7 display
+whole original scans. Weeks 2–6 display **SIMULATED ESTIMATE** frames derived from
+the endpoint geometry using local segmentation and tooth-region matching.
+Both arches share one 3D scene and camera by default, with upper crowns above the lower teeth.
+Their combined placement is a display arrangement, not a measured bite registration.
+The default zoom includes one additional **+** step. Choose **Upper teeth** or **Lower teeth** for a closer single-arch view; upper crowns point down in the default
+front view. Rotate, zoom, or double-click a crown to focus. Select a draft tooth
+from the **Tooth** menu to highlight its region and see its estimated shift,
+rotation, and endpoint surface residual. The camera stays in place between weeks.
+At week 7, **Inspect estimated endpoint** alternates the fitted baseline regions
+with the recorded scan so discrepancies remain visible.
+
+The **Timing assumption** menu offers uniform motion, slow start/finish, and delayed start between
+the two endpoint labels. It does not establish the actual weekly timing or path.
+Weak matches are flagged but remain usable in the exploratory preview; unmatched
+or numerically unusable regions stay fixed and are explicitly counted. Strict
+production segmentation thresholds do not disable this research simulation.
+Draft boundaries can include gum; surface context outside the moving masks stays
+fixed. Distances remain **scan units**, since the progress scale is unverified.
+To fit your own scans, open **Fit another scan pair**. Upload two visits, confirm
+the shared units, fit, correct tooth regions, and regenerate. **Save locally**
+keeps source scans and fitted results in this browser. See
+[the two-visit workflow](docs/TWO_VISIT_WORKFLOW.md),
+[boundary corrections](docs/REGION_CORRECTIONS.md), and
+[timing and proximity hints](docs/SIMULATION_ASSUMPTIONS.md).
+
+The contributor labels the earlier observation **Week 1 / baseline**; its recorded
+June 5, 2026 pretreatment date is retained. September 17 is the reported week 7.
+The contributor confirms validated input alignment and tooth correspondence for
+these originals. The new algorithm's segmentation, whole-arch best-fit alignment,
+and motion estimates are separate, unreviewed derived artifacts. The week 18
+personal molds/scans of chipped stone models are excluded from fitting.
+See [the method and regeneration instructions](docs/SCAN_HISTORY.md).
+
+Choose **Simulated planning demo** separately for hypothetical edits and Plan AI,
+and to explore synthetic stages with
+draft per-tooth segmentation, a redacted CBCT/root-bone engineering fixture, and
+10-day stage spacing. Those movements are not USER_ONE's recorded history.
+The fixture exercises registration and anatomy-review paths; it is not a clinical
+interpretation of raw CBCT. The sample snapshots and restores your work;
+use **Exit Sample Test Case** to return.
 
 Optional tools start collapsed to keep the workspace focused. Open a section
 heading for additional records, segmentation, saved versions, setup comparison,
@@ -85,6 +135,55 @@ orthoplan report examples/basic_plan.json --reviewer "Reviewer Name" --out repor
 
 In the 3D preview you can toggle **Tooth #** to overlay FDI tooth numbers on each
 tooth, which helps when choosing which teeth to move.
+
+### USER_ONE photo walkthrough
+
+**Materials → impressions → stone casts → scanning setup → STL upload**
+
+These photos show USER_ONE's acquisition process. For acquisition options and
+limitations, see [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md).
+
+| Impression material | Scanner equipment | Model stone |
+| --- | --- | --- |
+| ![Two containers of impression putty](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/01-user-one-impression-putty.jpg) | ![3DMakerpro Fox scanner packaging](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/02-user-one-scanner-equipment.jpg) | ![Bag of yellow model stone](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/03-user-one-model-stone.jpg) |
+
+| Both impressions | Lower impression | Upper impression |
+| --- | --- | --- |
+| ![Upper and lower impressions in blue trays](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/04-user-one-upper-lower-impressions.jpg) | ![Lower impression close-up](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/05-user-one-lower-impression.jpg) | ![Upper impression close-up](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/06-user-one-upper-impression.jpg) |
+
+| Stone-filled impressions | Tray-side view |
+| --- | --- |
+| ![Stone material filling the impressions](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/07-user-one-stone-filled-impressions.jpg) | ![Stone-filled trays from another angle](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/08-user-one-stone-filled-trays.jpg) |
+
+| Lower cast | Casts together | Front view |
+| --- | --- | --- |
+| ![Lower stone cast on a turntable](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/09-user-one-lower-cast-on-turntable.jpg) | ![Casts stacked on a turntable](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/10-user-one-stacked-casts-on-turntable.jpg) | ![Front view of casts placed together](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/11-user-one-casts-front-view.jpg) |
+
+**Final step: week 18 scan results**
+
+USER_ONE associates the photos above with these reported week 18 scans.
+The original upper/lower pair and both additional lower captures are retained.
+
+![Week 18 upper and lower scan surfaces from three angles](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/mesh-views.png)
+
+| Original upper | Original lower | Additional lower H4 | Additional lower H6 |
+| --- | --- | --- | --- |
+| [Upper STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/progress-02-upper.stl) | [Lower STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/progress-02-lower.stl) | [H4 STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/fusion-h-4/2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl) | [H6 STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/fusion-h-6/2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl) |
+
+<details>
+<summary>Compare the additional lower scans: H4 and H6</summary>
+
+![Week 18 lower captures H4 and H6, each from three angles](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/mesh-views.png)
+
+</details>
+
+The stone models were chipped; these are model defects, not reported tooth damage.
+Scale and bite alignment remain unverified. See the [scan evaluations](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/README.md)
+and [photo provenance](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/README.md).
+
+After exporting a scan, start at **Upload**, confirm the arch and units, then use
+**Teeth & time → Identify teeth → Paint boundaries** to review tooth labels.
+See the [painting example](docs/REGION_CORRECTIONS.md#painting-example).
 
 ### Auto-segmenting teeth (experimental)
 
@@ -145,6 +244,42 @@ endpoint. Enable full-plan and conversation sharing for external models, then
 click **Done** to return to chat. Settings remain accessible in the top bar.
 Switching providers clears the key, endpoint, and consent. Generate Plan reuses
 this connection for optional review. The local helper needs no key and stays offline.
+
+For a Claude API key, choose **Claude API (Anthropic)**. **Claude Code (local CLI)**
+uses your locally signed-in CLI instead. The launcher installs the SDKs for API
+providers; if using an existing manual installation, run
+`python -m pip install -e ".[providers]"` in the app's virtual environment.
+
+Your conversation and unsent prompt survive page navigation and reloads in the
+same tab. **New chat** clears both. Keys and sharing consent are not saved and
+must be entered again after a reload or full-page navigation. Failed sends keep
+the prompt for retry; **Reuse prompt** copies an earlier failed question back to
+the composer. New requests use the current workspace, even when old chat remains.
+
+### Paint USER_ONE baseline tooth boundaries
+
+This belongs in **step 2: Teeth & time**, after scans are loaded and before
+movement stages are authored. Open **Paint tooth boundaries** in the sidebar,
+use the links in step 2, or choose an upper/lower painting link from Scan history.
+
+1. Choose **Upper** or **Lower**. Only the matching
+   FDI tooth numbers appear: upper 11–18 / 21–28; lower 31–38 / 41–48. An upper
+   number such as 18 should never label the lower scan.
+2. Choose a tooth, then **Paint tooth**. Colors are on by default. **Label
+   flag** toggles the marker; **◎** focuses the selected region. Double-click a
+   labeled crown in Move view to focus it, then use **Other side** to inspect the
+   inside. **Fit scan** returns to the full arch. Small US numbers below the FDI
+   numbers help identify teeth. Use the viewer-edge **+ / −** zoom buttons and **[ / ]** to adjust the brush by 0.1 scan units
+   (shortcuts pause while typing in fields).
+3. Use **Save locally** for each arch. Leave the review checkbox off for drafts;
+   check it only after inspecting all boundaries and numbers. Notes can record
+   uncertain identities, missing teeth, and model chips. Loading a baseline again
+   resumes its latest save. **Download JSON** creates a portable copy.
+4. Once both arches are finished and saved, say **both baselines are saved**.
+   The versioned files are in `.orthoplan-region-corrections/USER_ONE/` under
+   `baseline-upper/` and `baseline-lower/`. They stay local until validated and
+   deliberately incorporated into the private dataset. Saving does not
+   automatically change the movement preview or train a model.
 
 ## 3. Render Local Per-Tooth Meshes
 
@@ -272,7 +407,7 @@ includes a captioned video recorded from the bundled sample, not an outcome pred
 
 Use **Your Teeth Profile** above **Sample Test Case** to return to your own scans.
 The sample supplies upper and lower STL files; its upload controls are disabled.
-Exit the sample before adding a personal scan. Click a segmented crown or its
+Exit the sample before adding a personal scan. In the **Simulated planning demo**, click a segmented crown or its
 FDI number beneath the viewer to select the actual region. Guided views hide
 floating number badges and unsegmented marker proxies. Automatic tooth regions
 are approximate; inspect/correct the segmentation before treating a region as
@@ -321,3 +456,29 @@ No reviewed per-triangle real-scan labels are bundled; synthetic regression test
 and renderer/engine transform agreement do not establish real-scan accuracy.
 The 3D fragment renderer now consumes engine affine transforms, including trusted
 root-aware rotations, rather than approximating that movement in JavaScript.
+
+## Research review tools
+
+On **Fit another scan pair**, use **Edit baseline directly** or **Edit later directly**,
+return corrections, then **Apply returned corrections** and regenerate. **Review endpoint
+matches** can assign each baseline region to one later region or hold it. **Explain this fit**
+provides a local evidence-based review order. **Proximity hints → Check fitted tooth surfaces**
+checks all triangles for a selected pair at the estimated pose; a budget limit reports an
+indeterminate result. Save before downloading a portable `.orthocase` backup.
+
+Open [local CBCT review](http://127.0.0.1:8000/volume-review.html) for three-plane pixel review
+and seeded draft masks; install `pip install -e ".[dev,motion-preview,volume-review]"` and
+follow [LOCAL_CBCT_REVIEW.md](docs/LOCAL_CBCT_REVIEW.md) to prepare a private review packet.
+Import a landmark registration report in the main root/bone workflow, inspect and explicitly
+accept its transform, then import masks as proposals. No anatomical review is inferred.
+[Opposing-arch bite review](http://127.0.0.1:8000/bite-review.html) uses a shared coordinate frame
+and supports scan-bound reviewed transform imports.
+
+See the [research tool scorecard](docs/TOOL_SCORECARD.md) for implemented improvements,
+remaining limitations, and the distinction between workflow maturity and anatomical accuracy.
+
+In **Plan assistant → Context**, choose **USER_ONE scans & saved labels** to
+ask about the stored sample records even when the planning workspace is empty.
+This includes saved annotation notes and counts, scan visits, and estimate status;
+raw surfaces and unsaved painting stay local. The composer expands when clicked
+and collapses when you click away or send, keeping draft text.

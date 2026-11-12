@@ -34,7 +34,7 @@ class GeometryJobs:
         self.monitor.start()
 
     def start(self, operation, payload, *, workspace, ui_dir):
-        if operation not in ("evaluate", "segment"):
+        if operation not in ("evaluate", "segment", "motion", "contact"):
             raise ValueError("Unsupported geometry operation")
         if not isinstance(payload, dict):
             raise ValueError("Geometry payload must be an object")

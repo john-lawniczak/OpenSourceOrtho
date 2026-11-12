@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "exclude": [
+    "TODO.md",
+    "**/TODO.md",
+    "docs/Dev_history.md",
+    "CLAUDE.local.md",
+    ".githooks/*",
+    ".env",
+    ".env.*",
+    "**/.env",
+    "**/.env.*",
+    ".orthoplan-*",
+    "**/.orthoplan-*",
+    "datasets/**/private/*",
+    "datasets/**/.local/*",
+    "datasets/**/records/*",
+    "datasets/**/local-cbct-record.json",
+    "tools/record_commit_status.sh",
+    "tools/update_dev_status.py",
+    "tools/bump_version.py",
+    "tools/publish_snapshot.sh"
+  ]
+}
