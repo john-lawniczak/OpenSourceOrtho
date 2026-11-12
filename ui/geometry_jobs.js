@@ -2,10 +2,12 @@
 export async function geometryJob(operation, payload, { signal } = {}) {
   let jobId;
   const cancel = () => {
+    // Drain the response so Chromium completes the keepalive request rather
+    // than leaving cleanup pending after the geometry operation finishes.
     if (jobId) void fetch('/api/geometry-jobs/cancel', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job_id: jobId }), keepalive: true,
-    }).catch(() => {});
+    }).then(response => response.json()).catch(() => {});
   };
   const check = async response => {
     const result = await response.json();

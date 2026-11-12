@@ -38,6 +38,8 @@ Most project documentation lives in [docs/](docs/README.md), including the
 current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
+See the [acquisition photos and week 18 scan results](HOW_TO.md#user_one-photo-walkthrough)
+and [tooth-painting example](docs/REGION_CORRECTIONS.md#painting-example).
 
 Maintainer releases follow [private development → one public commit](docs/PRIVATE_DEVELOPMENT.md).
 Public contributors can submit PRs from public forks; private repository access is not required.

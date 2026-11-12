@@ -26,6 +26,15 @@ reviewed corpus have been supplied in this change, so no superiority score is
 claimed. The independent motion scorer in `MOTION_BENCHMARK.md` complements that
 boundary benchmark with correspondence and pose errors.
 
+## Painting example
+
+![USER_ONE upper baseline with colored crown labels and tooth selection controls](../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/user-one-baseline-upper-painting.png)
+
+USER_ONE's **week 1 upper baseline** during label editing. Colors separate tooth
+labels; gray is unlabeled/context. Select a tooth number, paint its crown, rotate
+to inspect hidden surfaces, then **Save locally**. This screenshot is an editing
+example; the versioned annotation files hold the saved labels.
+
 ## A first contributor review session
 
 With `orthoplan serve` running, open

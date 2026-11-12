@@ -159,11 +159,31 @@ limitations, see [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md)
 | --- | --- | --- |
 | ![Lower stone cast on a turntable](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/09-user-one-lower-cast-on-turntable.jpg) | ![Casts stacked on a turntable](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/10-user-one-stacked-casts-on-turntable.jpg) | ![Front view of casts placed together](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/11-user-one-casts-front-view.jpg) |
 
-The casts together show a display arrangement, not a measured bite registration.
+**Final step: week 18 scan results**
+
+USER_ONE associates the photos above with these reported week 18 scans.
+The original upper/lower pair and both additional lower captures are retained.
+
+![Week 18 upper and lower scan surfaces from three angles](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/mesh-views.png)
+
+| Original upper | Original lower | Additional lower H4 | Additional lower H6 |
+| --- | --- | --- | --- |
+| [Upper STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/progress-02-upper.stl) | [Lower STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/progress-02-lower.stl) | [H4 STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/fusion-h-4/2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl) | [H6 STL](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/fusion-h-6/2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl) |
+
+<details>
+<summary>Compare the additional lower scans: H4 and H6</summary>
+
+![Week 18 lower captures H4 and H6, each from three angles](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/captures/mesh-views.png)
+
+</details>
+
+The stone models were chipped; these are model defects, not reported tooth damage.
+Scale and bite alignment remain unverified. See the [scan evaluations](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/README.md)
+and [photo provenance](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/README.md).
+
 After exporting a scan, start at **Upload**, confirm the arch and units, then use
 **Teeth & time → Identify teeth → Paint boundaries** to review tooth labels.
-The photos do not establish scan accuracy; see the
-[photo provenance record](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/process/README.md).
+See the [painting example](docs/REGION_CORRECTIONS.md#painting-example).
 
 ### Auto-segmenting teeth (experimental)
 
