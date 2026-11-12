@@ -65,7 +65,8 @@ volume-review = [
   "pylibjpeg-libjpeg>=2.1"
 ]
 e2e = [
-  "playwright>=1.40"
+  "playwright>=1.40",
+  "pillow>=10.0"
 ]
 
 [project.scripts]
@@ -80,3 +81,7 @@ pythonpath = ["."]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
+# Keep the established rule set stable across Ruff default changes.
+select = ["E4", "E7", "E9", "F"]

@@ -69,7 +69,7 @@ jobs:
           tests/test_model_contract.py tests/test_match_review.py
           tests/test_full_surface_contact.py tests/test_dicom_volume_review.py
           tests/test_motion_stress.py tests/test_motion_review.py
-          tests/test_correspondence_assignment.py -q
+          tests/test_correspondence_assignment.py tests/test_user_one_annotation.py -q
 
   e2e:
     name: 3D viewer smoke (Playwright)
