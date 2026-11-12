@@ -129,7 +129,27 @@ The contributor reports that the wisdom teeth (FDI 18, 28, 38, 48) were removed.
 Extraction dates and any other absent teeth are unspecified. Upper second molars
 are 17 / US 2 and 27 / US 15. See `treatment-context.json`.
 
-The current [upper painting checkpoint](annotations/initial-upper-painted-2026-11-12T184456Z.json)
+The current [upper checkpoint](annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z.json)
+records the contributor-approved clearing of all remaining disconnected upper
+label patches on November 12, 2026 at 14:05 EST. The remaining 144 left-side face
+labels were cleared to context; with the prior 116 right-side faces, this totals
+260 cleared label memberships. All 14 upper labels now have exactly one connected
+region. The [cleanup audit](annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z-report.json)
+retains exact face indices and the previous checkpoint hash. Original geometry,
+main connected crown regions and lower labels are unchanged. Connectivity is
+verified; independent anatomical boundary review and benchmark acceptance remain
+pending.
+
+The previous [right-side cleanup checkpoint](annotations/initial-upper-right-fragment-cleanup-2026-11-12T190354Z.json)
+records the contributor-approved clearing of 116 detached upper-right face labels
+to context on November 12, 2026 at 14:03 EST. All seven upper-right labels now
+have one connected region. Upper-left memberships are unchanged, including their
+144 detached faces pending inspection. The [cleanup audit](annotations/initial-upper-right-fragment-cleanup-2026-11-12T190354Z-report.json)
+retains the exact cleared face indices and links the preceding labels by hash.
+Scan triangles were not deleted or changed; anatomical benchmark review remains
+incomplete.
+
+The previous [upper painting checkpoint](annotations/initial-upper-painted-2026-11-12T184456Z.json)
 preserves the contributor's explicitly identified save from November 12, 2026
 at 13:44 EST. The contributor confirms both upper sides (FDI 11–17 and 21–27)
 are painted correctly. The [checkpoint audit](annotations/initial-upper-painted-2026-11-12T184456Z-report.json)

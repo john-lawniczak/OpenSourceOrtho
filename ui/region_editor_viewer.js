@@ -1,5 +1,6 @@
 import { createRegionSelection } from "./region_selection_view.js";
 import { createBoundaryView } from "./region_boundary_view.js";
+import { createFragmentView } from "./region_fragment_view.js";
 import { frameScanView } from "./scan_view_camera.js";
 import { mountScanViewToolbar } from "./scan_view_toolbar.js";
 import * as THREE from "./vendor/three.module.js";
@@ -17,6 +18,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   const pose = historyCamera(scan.arch); camera.up.set(...pose.up); camera.position.set(...pose.position).multiplyScalar(0.55);
   const selection = createRegionSelection(host, scene, geometry, camera);
   const boundaries = createBoundaryView(scene, geometry);
+  const fragments = createFragmentView(scene, geometry);
   let activeLabels = [], pointerStart = null, lastHit = null, focused = false, pointBounds = null, selectedLabel = 0;
   let controls = new OrbitControls(camera, renderer.domElement); controls.addEventListener("change", render);
   const box = geometry.boundingBox.clone();
@@ -35,7 +37,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
     centers[face * 3 + axis] = (p.array[face * 9 + axis] + p.array[face * 9 + axis + 3] + p.array[face * 9 + axis + 6]) / 3;
     normals[face * 3 + axis] = geometry.attributes.normal.array[face * 9 + axis];
   }
-  function render() { camera.updateMatrixWorld(); selection.positionMarker(); renderer.render(scene, camera); }
+  function render() { camera.updateMatrixWorld(); selection.positionMarker(); fragments.positionMarker(camera, host.clientHeight); renderer.render(scene, camera); }
   function resize() { renderer.setSize(host.clientWidth, host.clientHeight); camera.aspect = host.clientWidth / host.clientHeight; camera.updateProjectionMatrix(); render(); }
   function hitAt(event) {
     const rect = renderer.domElement.getBoundingClientRect(), ray = new THREE.Raycaster();
@@ -129,6 +131,21 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
     },
     setMarkerVisible(visible) { selection.setMarkerVisible(visible); render(); },
     setBoundariesVisible(visible) { boundaries.visible(visible); render(); },
+    showFragments(groups, visible = true) { fragments.update(groups); fragments.visible(visible); render(); },
+    focusFragment(group) {
+      const patch = fragments.bounds(group), center = patch.box.getCenter(new THREE.Vector3());
+      fragments.focus(group);
+      const minimum = box.getSize(new THREE.Vector3()).length() * 0.12;
+      const size = patch.box.getSize(new THREE.Vector3()).max(new THREE.Vector3(minimum, minimum, minimum));
+      pointBounds = new THREE.Box3().setFromCenterAndSize(center, size); focused = true;
+      if (patch.normal.lengthSq() > 0) {
+        controls.target.copy(center); camera.position.copy(center).add(patch.normal);
+        if (Math.abs(camera.up.dot(patch.normal)) > 0.95) camera.up.set(1, 0, 0);
+      }
+      lastHit = null; cursor.visible = false;
+      controls = frameScanView(camera, controls, renderer.domElement, pointBounds, "fit", render);
+      configureNavigation();
+    },
     zoom(factor) {
       const offset = camera.position.clone().sub(controls.target);
       const min = Math.max(box.getBoundingSphere(new THREE.Sphere()).radius * 0.02, camera.near * 2);
@@ -136,6 +153,6 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       camera.position.copy(controls.target).add(offset); controls.update(); render();
     },
     focusSelected, updateBrush,
-    dispose() { boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
+    dispose() { fragments.dispose(); boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
   };
 }

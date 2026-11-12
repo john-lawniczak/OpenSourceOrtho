@@ -36,6 +36,15 @@
 <p id="reviewSelectionHelp"></p>
 <div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
 <div class="review-display-options"><label><input id="reviewOtherColors" type="checkbox" checked>Colors</label><label><input id="reviewShowLabel" type="checkbox" checked>Label flag</label><label title="Current label edges, not confirmed tooth boundaries"><input id="reviewShowEdges" type="checkbox" checked>Label edges</label></div>
+<details id="reviewFragmentPanel"><summary>Inspect disconnected patches</summary>
+<button id="reviewFindFragments" type="button">Find patches</button>
+<p id="reviewFragmentSummary" role="status">Find patches outside each label’s main connected region.</p>
+<label><input id="reviewShowFragments" type="checkbox" disabled>Highlight patches</label>
+<label class="review-sr-only" for="reviewFragmentChoice">Disconnected patch</label><select id="reviewFragmentChoice" disabled></select>
+<div class="controls"><button id="reviewFragmentPrev" type="button" disabled>← Previous patch</button><button id="reviewFragmentNext" type="button" disabled>Next patch →</button></div>
+<p id="reviewFragmentStatus" role="status"></p>
+<small>White ring: selected patch. Pink: patch surfaces and locator dots, including hidden patches. Rotate to inspect. Labels stay unchanged.</small>
+</details>
 <div class="controls review-tool-buttons"><button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button></div>
 <button id="reviewSpillover" type="button">Correct spillover</button>
 <div id="reviewSplitPanel" hidden><label>Only replace label <select id="reviewSplitSource"></select></label><button id="reviewSplitFlip" type="button" disabled>⇄ Flip direction</button><p id="reviewSplitHint" role="status"></p></div>

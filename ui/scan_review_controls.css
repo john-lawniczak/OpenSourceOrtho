@@ -92,3 +92,6 @@
 #reviewSplitPanel { margin:8px 0; padding:10px; border-left:3px solid #e9ab36; }
 #reviewSplitPanel select { width:100%; }
 #reviewSplitFlip { margin-top:8px; }
+#reviewFragmentPanel { margin:10px 0; padding:8px; border:1px solid var(--line, #607c8b); border-radius:8px; }
+#reviewFragmentPanel select { width:100%; margin:8px 0; }
+#reviewFragmentPanel small { display:block; color:var(--muted, #a8bac2); }

@@ -155,3 +155,21 @@ unlabeled context cannot become a selected tooth through this control.
 Rotate to inspect the inside and chewing surface; Undo reverses a
 stroke. Save locally when finished. A screenshot cannot establish the full 3D
 boundary, so the editor never automatically splits or renumbers saved teeth.
+
+### Locate disconnected patches
+
+Open **Inspect disconnected patches → Find patches** in the painting panel.
+The inspector counts triangles outside each tooth label's largest connected
+region, using exact source coordinates and shared manifold edges. The totals
+refer to the patient's right and left, not the screen.
+
+Choose a patch from the tooth-numbered list or use **Previous/Next patch**.
+The camera centers on it; a white ring marks the selected location. Pink surfaces
+show the patches, and pink locator dots remain visible even behind other surfaces.
+Rotate to inspect hidden areas, and use **Fit scan** to return to the whole arch.
+**Highlight patches** toggles the overlay.
+
+Inspection does not change labels or create an edit. Painting, importing labels,
+undo and redo clear stale results; run Find patches again after editing. Tiny
+disconnected regions may be brush leftovers or source mesh gaps, so they are
+not automatically deleted. Zero patches alone does not verify anatomical accuracy.

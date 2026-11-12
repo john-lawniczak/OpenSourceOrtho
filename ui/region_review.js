@@ -2,6 +2,7 @@ import { setupBrushShortcuts } from "./region_review_shortcuts.js";
 import { loadBaselineCaseData } from "./region_case_data.js";
 import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
 import { setupReviewControls } from "./region_review_controls.js";
+import { setupFragmentReview } from "./region_fragment_review.js";
 import { inferArchFromName } from "./core.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
 import { loadMotionPreview } from "./scan_motion_data.js";
@@ -14,9 +15,12 @@ let scan, edits, viewer, generation = 0;
 const saving = setupRegionSaving(() => ({ scan, edits }));
 setupBrushShortcuts(() => viewer?.updateBrush());
 const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => { panel.update(Boolean(scan), selectedCount()); viewer?.updateBrush(); } });
+const fragments = setupFragmentReview(() => ({ scan, edits, viewer }), id => {
+  el("reviewTo").value = id; el("reviewTool").value = "orbit"; selectionChanged(); viewer?.updateBrush();
+});
 function selectedCount() { return edits ? edits.labels.reduce((count, id) => count + (id === Number(el("reviewTo").value)), 0) : 0; }
 function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value), el("reviewOtherColors").checked); panel.update(Boolean(scan), selectedCount()); }
-function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
+function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; fragments.invalidate(); } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
 function mount() {
   viewer?.dispose();
   el("reviewWorkspaceLink").href = scan.baseline ? "./?chat_case=user_one" : "./";
@@ -33,7 +37,7 @@ function mount() {
     onStrokeStart: () => edits.beginStroke(),
     onStrokeEnd: () => { edits.endStroke(); refresh(); },
     onPaint: (faces, settings) => action(() => { const changed = edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(changed > 0); }),
-  }); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
+  }); fragments.reset(); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
 }
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }
 async function loadBaseline(arch) {

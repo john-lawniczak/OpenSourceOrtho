@@ -1,0 +1,339 @@
+{
+  "schema": "ortho-annotation-checkpoint-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "arch": "upper",
+  "source_filename": "initial-upper.stl",
+  "source_sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+  "saved_at": "2026-11-12T19:05:42.473861+00:00",
+  "provenance": "Contributor explicitly authorized clearing all remaining disconnected upper tooth-label patches and committing the update. Only the 144 remaining left-side label memberships were cleared; scan triangles and main connected crown regions are unchanged.",
+  "review_status": "contributor-confirmed-painting-topology-cleaned",
+  "previous_annotation": "annotations/initial-upper-right-fragment-cleanup-2026-11-12T190354Z.json",
+  "previous_annotation_sha256": "2167c6a1d59147548b99f45c6d5f0a2f381b49b2aacab19a0b9e5e584f3eb44a",
+  "annotation": "annotations/initial-upper-fragment-cleanup-2026-11-12T190542Z.json",
+  "annotation_sha256": "e6c7a0440b5d8bb521af59d4840f97f1b581698557e7f27d07056cf9cb793397",
+  "scan_geometry_modified": false,
+  "changed_faces": 144,
+  "cleared_to_context": 144,
+  "cumulative_cleared_faces_in_fragment_cleanup": 260,
+  "newly_labeled_faces": 0,
+  "reassigned_faces": 0,
+  "right_label_memberships_unchanged": true,
+  "removed_by_tooth": [
+    {
+      "fdi": 11,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 12,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 13,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 14,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 15,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 16,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 17,
+      "cleared_faces": 0,
+      "source_face_indices": []
+    },
+    {
+      "fdi": 21,
+      "cleared_faces": 16,
+      "source_face_indices": [
+        151140,
+        151141,
+        203758,
+        208433,
+        208434,
+        208435,
+        208436,
+        249385,
+        249386,
+        254423,
+        254607,
+        254608,
+        259235,
+        259243,
+        267860,
+        267862
+      ]
+    },
+    {
+      "fdi": 22,
+      "cleared_faces": 23,
+      "source_face_indices": [
+        236332,
+        241033,
+        241034,
+        241035,
+        241036,
+        244595,
+        245376,
+        245377,
+        245378,
+        245379,
+        250199,
+        250200,
+        250201,
+        250202,
+        255094,
+        255095,
+        255096,
+        255098,
+        259354,
+        263743,
+        263747,
+        268840,
+        268842
+      ]
+    },
+    {
+      "fdi": 23,
+      "cleared_faces": 39,
+      "source_face_indices": [
+        219026,
+        259757,
+        259758,
+        268762,
+        268763,
+        273483,
+        287108,
+        287109,
+        290741,
+        291225,
+        295290,
+        295292,
+        295310,
+        295824,
+        295825,
+        295826,
+        296715,
+        296716,
+        296717,
+        296718,
+        296719,
+        296769,
+        296770,
+        297703,
+        297704,
+        297705,
+        297706,
+        298842,
+        298848,
+        298849,
+        298850,
+        298852,
+        298931,
+        298932,
+        298933,
+        299451,
+        299452,
+        299453,
+        299454
+      ]
+    },
+    {
+      "fdi": 24,
+      "cleared_faces": 25,
+      "source_face_indices": [
+        191816,
+        191817,
+        200194,
+        200195,
+        200196,
+        204571,
+        204572,
+        204606,
+        204607,
+        204608,
+        209359,
+        212409,
+        213982,
+        235198,
+        235219,
+        244560,
+        244561,
+        248886,
+        248888,
+        258549,
+        263173,
+        286267,
+        290318,
+        290319,
+        312430
+      ]
+    },
+    {
+      "fdi": 25,
+      "cleared_faces": 29,
+      "source_face_indices": [
+        151833,
+        167797,
+        171835,
+        216717,
+        219244,
+        223479,
+        223490,
+        228148,
+        228156,
+        232562,
+        241468,
+        246093,
+        246096,
+        262955,
+        266996,
+        266997,
+        267173,
+        267184,
+        272302,
+        281586,
+        281622,
+        281623,
+        285882,
+        285883,
+        285884,
+        285885,
+        285886,
+        289848,
+        289984
+      ]
+    },
+    {
+      "fdi": 26,
+      "cleared_faces": 11,
+      "source_face_indices": [
+        107507,
+        111645,
+        111646,
+        111647,
+        175849,
+        180698,
+        189130,
+        189139,
+        198227,
+        210152,
+        324477
+      ]
+    },
+    {
+      "fdi": 27,
+      "cleared_faces": 1,
+      "source_face_indices": [
+        224406
+      ]
+    }
+  ],
+  "right_faces_outside_largest_components": 0,
+  "left_faces_outside_largest_components": 0,
+  "teeth": [
+    {
+      "fdi": 11,
+      "face_count": 13206,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 12,
+      "face_count": 9481,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 13,
+      "face_count": 11061,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 14,
+      "face_count": 12134,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 15,
+      "face_count": 10784,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 16,
+      "face_count": 19100,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 17,
+      "face_count": 13526,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 21,
+      "face_count": 13323,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 22,
+      "face_count": 6486,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 23,
+      "face_count": 10403,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 24,
+      "face_count": 11847,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 25,
+      "face_count": 11035,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 26,
+      "face_count": 19607,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    },
+    {
+      "fdi": 27,
+      "face_count": 15404,
+      "connected_components": 1,
+      "faces_outside_largest_component": 0
+    }
+  ],
+  "benchmark_ready": false,
+  "limitations": [
+    "All 14 upper tooth labels have one connected region under exact-coordinate welding and shared manifold edges.",
+    "Connectivity does not establish anatomically correct tooth boundaries.",
+    "The whole-arch reviewed checkbox remains false; independent benchmark review is pending.",
+    "No lower-arch labels or scan geometry were modified."
+  ]
+}
