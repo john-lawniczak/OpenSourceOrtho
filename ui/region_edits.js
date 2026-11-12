@@ -2,6 +2,18 @@
 export class RegionEdits {
   constructor(labels, arch) {
     this.labels = new Uint8Array(labels); this.arch = arch; this.undoStack = []; this.redoStack = [];
+    this.stroke = null;
+  }
+  beginStroke() { this.endStroke(); this.stroke = new Map(); }
+  endStroke() {
+    if (!this.stroke) return;
+    const changes = [...this.stroke.values()].filter(([i, before]) => this.labels[i] !== before)
+      .map(([i, before]) => [i, before, this.labels[i]]);
+    this.stroke = null; this.record(changes);
+  }
+  record(changes) {
+    if (!changes.length) return;
+    this.undoStack.push(changes); this.undoStack = this.undoStack.slice(-50); this.redoStack = [];
   }
   valid(id) { return id === 0 || (Number.isInteger(id) && (this.arch === "upper" ? /^[12][1-8]$/ : /^[34][1-8]$/).test(String(id))); }
   paint(faces, target, source = null) {
@@ -13,7 +25,9 @@ export class RegionEdits {
       if (before !== target && (source === null || before === source)) changes.push([face, before, target]);
     }
     changes.forEach(([i, , after]) => { this.labels[i] = after; });
-    if (changes.length) { this.undoStack.push(changes); this.undoStack = this.undoStack.slice(-50); this.redoStack = []; }
+    if (this.stroke) {
+      for (const change of changes) if (!this.stroke.has(change[0])) this.stroke.set(change[0], change);
+    } else this.record(changes);
     return changes.length;
   }
   merge(source, target) { return this.paint(Array.from(this.labels.keys()).filter(i => this.labels[i] === source), target, source); }

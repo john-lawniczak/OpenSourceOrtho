@@ -16,6 +16,8 @@ def test_region_merge_undo_brush_and_export(server_url, tmp_path):  # noqa:F811
             expect(page.locator("#reviewStatus")).to_contain_text(
                 "0 correction operations", timeout=30000
             )
+            page.screenshot(path=str(tmp_path / "sample-boundary-editor.png"), full_page=True)
+            page.get_by_text("Advanced: split or merge labels", exact=True).click()
             page.locator("#reviewMerge").click()
             expect(page.locator("#reviewStatus")).to_contain_text("1 correction operations")
             page.locator("#reviewUndo").click()

@@ -1,3 +1,4 @@
+import { renderBoundaryEntry } from "./uploaded_boundary_entry.js";
 import { renderChat, currentChatModel } from "./chat_view.js";
 export { renderChat } from "./chat_view.js";
 import { buildViewerScanSources } from "./scan_formats.js";
@@ -138,13 +139,14 @@ function scanStatusText(count, movingFragments) {
 }
 
 function updateViewer(result) {
-  if (observedSampleActive()) return;
+  if (observedSampleActive()) { renderBoundaryEntry([]); return; }
   result = state.goalPreview?.evaluation || result;
   if (state.dim !== "3d") return;
   const v = ensureViewer();
   if (!v) return;
   v.resize();
   const allScanSources = buildViewerScanSources(state.files, state.scanSources, inferArchFromName);
+  renderBoundaryEntry(allScanSources);
   const scanSources = filterScanSources(allScanSources);
   v.setVisibleArchFilter(state.scanArchFilter);
   if (allScanSources.length) {

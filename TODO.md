@@ -332,3 +332,15 @@ Related records: [implementation phases](docs/TOOL_IMPROVEMENT_PHASES.md),
 
 These changes improve the matcher and its inspectability. They do not establish
 anatomical identity accuracy or replace the independently reviewed benchmark.
+
+## Completed follow-up: import views and painting guidance
+
+- [x] Fit imported surfaces using an estimated display view; provide explicit
+  face-on, above, side, flip, roll, and fit camera controls without changing meshes.
+- [x] Open an uploaded surface directly in the source-bound correction editor.
+- [x] Add numbered tooth selection, active-tooth highlighting, brush footprint,
+  move/paint/erase guidance, arch-aware defaults, and one-stroke undo/redo.
+
+These are usability improvements, not new boundary-accuracy evidence. Automatic
+contour filling, isolation, per-tooth review, uncertainty layers, and measured
+correction-effort comparisons remain open.

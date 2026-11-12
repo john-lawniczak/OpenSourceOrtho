@@ -17,3 +17,13 @@ test("corrections are hash bound and invalid paint is atomic", () => {
   assert.deepEqual([...RegionEdits.restore(record,"abc",2,"upper").labels],[11,12]);
   assert.throws(()=>RegionEdits.restore(record,"other",2,"upper"));
 });
+test("a drag stroke undoes all moves together and retains each original label", () => {
+  const edits = new RegionEdits([31, 0, 32, 0], "lower");
+  edits.beginStroke(); edits.paint([0, 1], 33); edits.paint([1, 2], 33);
+  edits.endStroke(); assert.equal(edits.undoStack.length, 1);
+  assert.deepEqual([...edits.labels], [33, 33, 33, 0]);
+  edits.undo(); assert.deepEqual([...edits.labels], [31, 0, 32, 0]);
+  edits.redo(); assert.deepEqual([...edits.labels], [33, 33, 33, 0]);
+  edits.beginStroke(); edits.paint([3], 33); edits.paint([3], 0); edits.endStroke();
+  assert.equal(edits.undoStack.length, 1);
+});

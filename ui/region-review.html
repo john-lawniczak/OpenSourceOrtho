@@ -1,13 +1,37 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Review tooth regions</title><link rel="stylesheet" href="./progress_workspace.css"></head>
-<body><main><a href="./">← Workspace</a><h1>Review tooth regions</h1>
-<p>Brush corrected boundaries, split a region into another tooth number, or merge fragments. Original scan bytes stay unchanged.</p>
-<div class="controls"><label>Sample arch <select id="reviewArch"><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample">Load USER_ONE baseline</button>
-<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review tooth regions</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
+<body><main><a href="./">← Workspace</a><h1>Paint tooth boundaries</h1>
+<p>Give each tooth its own surface label. Original scan bytes stay unchanged.</p>
+<ol class="review-steps">
+<li><strong>1 · Load &amp; position</strong>Choose the arch and scan. Use Auto view, Other side, and Roll to get a comfortable angle.</li>
+<li><strong>2 · Choose &amp; paint a tooth</strong>Select its number, choose Paint tooth, then drag over the crown. Paint the surface, not just an outline.</li>
+<li><strong>3 · Inspect &amp; save</strong>Switch to Move view to see the other sides. Save corrections before leaving.</li>
+</ol>
+<div class="controls"><label>Scan arch <select id="reviewArch"><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample">Load USER_ONE baseline</button>
+<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Load saved correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div>
+<p id="reviewSource" class="review-summary">No scan loaded.</p>
+<p id="reviewModeHelp" class="review-mode-help" role="status">Load a scan to begin.</p>
+<section class="review-workbench">
+<div class="review-surface">
+<div id="regionCanvas" class="large-canvas" aria-label="Interactive tooth painting surface"></div>
+<p id="reviewStatus" role="status">Load a scan to begin.</p>
+<p>Selected tooth = amber · other teeth = colored · unlabeled/context = gray. An imported STL starts unlabeled. Rotate to inspect hidden surfaces; a single view cannot show a whole tooth.</p>
+</div>
+<aside class="review-paint-controls">
+<fieldset id="reviewEditing" disabled><legend>Choose a tooth and tool</legend>
+<p>Tooth numbers use FDI. Right and left refer to the person, not the screen. <a href="./tooth-chart.svg" target="_blank" rel="noopener">Open numbering guide</a>.</p>
+<div id="reviewTeeth" class="tooth-palette" aria-label="Choose a tooth to paint"></div>
+<div class="controls">
+<button type="button" data-review-mode="orbit">Move view</button><button type="button" data-review-mode="brush">Paint tooth</button><button type="button" data-review-mode="erase">Erase to context</button>
+<label>Brush radius (scan units) <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label>
+<button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
+<details><summary>Advanced: split or merge labels</summary><p>Split paints only faces belonging to From. Merge changes the entire From region into To tooth.</p>
 <div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
-<label>From <input id="reviewFrom" type="number" value="11"></label><label>To tooth <input id="reviewTo" type="number" value="12"></label><label>Brush radius (scan units) <input id="reviewRadius" type="number" min="0.1" max="10" step="0.1" value="1"></label>
-<button id="reviewMerge">Merge from → to</button><button id="reviewUndo">Undo</button><button id="reviewRedo">Redo</button></div>
-<div id="regionCanvas" class="large-canvas"></div><p id="reviewStatus" role="status">Load a scan to begin.</p>
-<label><input id="reviewChecked" type="checkbox">I checked these tooth boundaries and numbers.</label><button id="reviewExport">Save corrections</button><button id="returnCorrections" hidden>Return corrections to case</button>
-<p>Corrected labels remain separate from fitted motion and anatomy review. Import this correction file in the two-visit workflow to refit.</p>
+<label>To tooth <input id="reviewTo" type="number" value="12"></label><label>From <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
+</fieldset>
+<div class="controls"><label><input id="reviewChecked" type="checkbox">I checked all tooth boundaries and numbers on this scan.</label><button id="reviewExport" disabled>Save corrections</button><button id="returnCorrections" hidden>Return corrections to case</button></div>
+</aside></section>
+<p>For partial work, leave the checkbox off. Record uncertain areas and model chips separately; labels do not reconstruct missing anatomy. Saved corrections remain separate from fitted motion and anatomy review.</p>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module" src="./region_review.js"></script></main></body></html>

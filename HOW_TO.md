@@ -50,6 +50,13 @@ in the top bar:
 - **Technician**: advanced staged movement, clinical controls, findings, print
   metadata, and plan JSON.
 
+After uploading your own scan, use **Auto view**, **Other side**, and **Roll
+left/right** to adjust its display; **Fit scan** brings the entire surface into
+view. These controls do not alter scan coordinates. Click **Edit tooth boundaries**
+below the viewer, confirm the arch, then choose a tooth number and **Paint tooth**.
+Switch to **Move view** to rotate between brush strokes. See the
+[boundary-review walkthrough](docs/REGION_CORRECTIONS.md).
+
 Click **Sample Test Case** to open USER_ONE's **Scan history**.
 Use **Previous week**, **Next week**, or the week buttons. Weeks 1 and 7 display
 whole original scans. Weeks 2–6 display **SIMULATED ESTIMATE** frames derived from
