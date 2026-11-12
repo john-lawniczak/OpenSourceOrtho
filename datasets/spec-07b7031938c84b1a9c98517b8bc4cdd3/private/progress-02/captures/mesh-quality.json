@@ -15,7 +15,7 @@
   "input_geometry_modified": false,
   "scans": [
     {
-      "filename": "fusion-h-4/Fusion_H_4.stl",
+      "filename": "fusion-h-4/2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl",
       "sha256": "fe3668a01e8e6f999e613d8a2ee334c7283263e6af7ad61effae37af6a75a4b6",
       "finite_coordinates": true,
       "face_count": 581144,
@@ -35,7 +35,7 @@
       ]
     },
     {
-      "filename": "fusion-h-6/Fusion_H_6.stl",
+      "filename": "fusion-h-6/2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl",
       "sha256": "3b6667103e8262750afe58f569938fe5acf8265f3f050995dd45a3b6a3a49208",
       "finite_coordinates": true,
       "face_count": 587840,
@@ -55,6 +55,38 @@
       ]
     }
   ],
+  "source_model_damage": {
+    "fusion-h-4": {
+      "status": "contributor-reported",
+      "recorded_on": "2026-11-12",
+      "description": "Both additional captures are scans of the same physical lower model. Contributor reports a small slight chip on a lower front tooth; tooth number is unknown.",
+      "physical_model_id": "user-one-week-18-lower-h4-h6",
+      "same_physical_model_confirmed": true,
+      "affected_arches": [
+        "mandibular"
+      ],
+      "affected_region_reported": "lower front tooth",
+      "affected_tooth_number": null,
+      "reference_damage_map_available": false,
+      "timing_relative_to_scanning": "Not confirmed",
+      "scope_note": "Model defect reported by contributor; not evidence of a defect in the actual tooth. Relationship to the original November 10 pair is not confirmed."
+    },
+    "fusion-h-6": {
+      "status": "contributor-reported",
+      "recorded_on": "2026-11-12",
+      "description": "Both additional captures are scans of the same physical lower model. Contributor reports a small slight chip on a lower front tooth; tooth number is unknown.",
+      "physical_model_id": "user-one-week-18-lower-h4-h6",
+      "same_physical_model_confirmed": true,
+      "affected_arches": [
+        "mandibular"
+      ],
+      "affected_region_reported": "lower front tooth",
+      "affected_tooth_number": null,
+      "reference_damage_map_available": false,
+      "timing_relative_to_scanning": "Not confirmed",
+      "scope_note": "Model defect reported by contributor; not evidence of a defect in the actual tooth. Relationship to the original November 10 pair is not confirmed."
+    }
+  },
   "not_assessed": [
     "self-intersections",
     "vertex manifoldness",
@@ -65,7 +97,9 @@
     "physical scale",
     "bite accuracy",
     "cross-time registration",
-    "capture method and model condition"
+    "capture method",
+    "chip location and timing",
+    "repair or trimming history"
   ],
   "display": {
     "file": "mesh-views.png",

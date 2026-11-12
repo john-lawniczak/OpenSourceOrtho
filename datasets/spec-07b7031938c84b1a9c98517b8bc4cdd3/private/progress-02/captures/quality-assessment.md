@@ -1,7 +1,7 @@
 # Week 18 additional lower capture comparison
 
 Private USER_ONE data; evaluated November 12, 2026. This assessment covers
-`Fusion_H_4.stl` and `Fusion_H_6.stl`, separate captures at the same reported
+`2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl` and `2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl`, separate captures at the same reported
 week 18 visit. Both original files are retained without repair or registration.
 
 ## Measured file properties
@@ -18,6 +18,9 @@ week 18 visit. Both original files are retained without repair or registration.
 | Non-finite face records | 0 | 0 |
 | Binary STL length valid | Yes | Yes |
 
+Repository filenames use the November 12 contribution/filing date; acquisition
+dates remain unverified. Original source filenames are retained in metadata.
+
 Both SHA-256 hashes match the per-capture manifests and the Desktop source
 files. Boundary edges show that neither surface is closed. Counts use exact
 coordinate deduplication, without tolerance welding. Scale remains unverified.
@@ -31,9 +34,11 @@ export. They remain unverified; the gate checks language, not anatomy.
 
 **Peripheral surface appearance.** In the independent rendered views, Fusion_H_4 appears more compact around the outer margins; Fusion_H_6 shows more conspicuous projecting peripheral surfaces. Both include broad sheet-like surfaces beyond the crown-like regions. Camera orientation, independently fitted panel scale, and approximate depth sorting limit this visual comparison. The views do not determine which scan better reproduces the original teeth.
 
-**Retain both captures for region review.** Fusion_H_4 is worth inspecting first for peripheral cleanup because of its more compact visual outline and lower boundary-edge count, but this is a tentative workflow preference, not a ranking of tooth-surface fidelity. Preserve both original captures. Review corresponding crown boundaries and capture provenance before selecting a segmentation input; do not transfer the original pair damage report to these files without confirmation.
+**Retain both captures for region review.** Fusion_H_4 is worth inspecting first for peripheral cleanup because of its more compact visual outline and lower boundary-edge count, but this is a tentative workflow preference, not a ranking of tooth-surface fidelity. Preserve both original captures. Review corresponding crown boundaries and capture provenance before selecting a segmentation input; mark the contributor-reported front-tooth model chip separately from crown boundaries. Exact tooth identity and chip timing remain unknown.
 
 **Reference evidence remains missing.** No verified scale, independently reviewed tooth surfaces, or common anatomical registration is available for this comparison. Boundary counts depend on scan margins and tessellation; zero-area faces and edge incidence describe topology rather than tooth accuracy. Neither capture establishes tooth movement or reference anatomy. Self-intersections, winding, and vertex manifoldness were not assessed.
+
+**Shared chipped-model limitation.** The contributor confirms both additional captures share one physical lower model and reports a small chip on an unidentified lower front tooth. Agreement between H4 and H6 can describe capture consistency but cannot establish the missing undamaged surface. Keep the chip region unreviewed until its location is marked; do not interpret it as actual tooth damage or tooth movement.
 
 ## Evidence and reproduction
 

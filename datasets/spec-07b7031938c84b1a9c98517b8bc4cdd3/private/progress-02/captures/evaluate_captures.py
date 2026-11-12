@@ -46,12 +46,13 @@ def render_views(scans):
     for row, scan in enumerate(scans):
         triangles = read_triangles(BUNDLE / scan["filename"], scan["sha256"])
         for ax, (permutation, signs, direction) in zip(axes[row], views):
-            title = f'{Path(scan["filename"]).name} | camera {direction}'
+            capture = Path(scan["filename"]).parent.name
+            title = f'USER_ONE lower | week 18 | {capture}\nFiled 2026-11-12 | camera {direction}'
             draw_view(ax, triangles, permutation, signs, title)
     fig.suptitle("USER_ONE | reported week 18 | additional lower captures", fontsize=18)
     fig.text(0.5, 0.025,
              "All source triangles; independent panel centering and scale; units unverified.\n"
-             "No registration or repair. Capture method and model condition are unconfirmed.",
+             "Same lower model; contributor reports a small front-tooth chip, exact location/timing unknown.",
              ha="center", fontsize=11)
     fig.subplots_adjust(top=0.91, bottom=0.09, hspace=0.12, wspace=0.03)
     fig.savefig(BUNDLE / "mesh-views.png", dpi=120)
@@ -61,6 +62,10 @@ def render_views(scans):
 def main():
     scans, records = inspect_captures()
     parent = json.loads((BUNDLE.parent / "source-metadata.json").read_text())
+    damage = {
+        capture: json.loads((BUNDLE / capture / "source-metadata.json").read_text())["capture"]["source_model_damage"]
+        for capture in CAPTURES
+    }
     report = {
         "schema": "opensource-ortho-scan-topology-v1",
         "specimen_id": parent["specimen_id"], "progress_record_id": "progress-02",
@@ -68,10 +73,11 @@ def main():
         "dependencies": {"numpy": np.__version__, "matplotlib": matplotlib.__version__},
         "method": "Exact-coordinate vertex deduplication; undirected edge incidence and vertex connectivity; float64 triangle areas; all original triangles",
         "input_geometry_modified": False, "scans": records,
+        "source_model_damage": damage,
         "not_assessed": ["self-intersections", "vertex manifoldness", "winding consistency",
                          "scanner accuracy", "anatomical fidelity", "complete anatomical coverage",
                          "physical scale", "bite accuracy", "cross-time registration",
-                         "capture method and model condition"],
+                         "capture method", "chip location and timing", "repair or trimming history"],
         "display": {
             "file": "mesh-views.png", "projection": "Independent orthographic views",
             "camera_directions": ["+Z", "-Z", "+Y"],

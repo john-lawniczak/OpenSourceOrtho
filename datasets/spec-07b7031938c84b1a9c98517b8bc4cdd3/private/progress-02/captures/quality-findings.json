@@ -3,8 +3,8 @@
   "lint_passed": true,
   "lint_note": "Language gate only; not validation of geometric or anatomical correctness.",
   "source_hashes": {
-    "fusion-h-4/Fusion_H_4.stl": "fe3668a01e8e6f999e613d8a2ee334c7283263e6af7ad61effae37af6a75a4b6",
-    "fusion-h-6/Fusion_H_6.stl": "3b6667103e8262750afe58f569938fe5acf8265f3f050995dd45a3b6a3a49208"
+    "fusion-h-4/2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl": "fe3668a01e8e6f999e613d8a2ee334c7283263e6af7ad61effae37af6a75a4b6",
+    "fusion-h-6/2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl": "3b6667103e8262750afe58f569938fe5acf8265f3f050995dd45a3b6a3a49208"
   },
   "findings": [
     {
@@ -34,7 +34,7 @@
       "category": "data_gap",
       "provenance": "MODEL",
       "title": "Retain both captures for region review",
-      "message": "Fusion_H_4 is worth inspecting first for peripheral cleanup because of its more compact visual outline and lower boundary-edge count, but this is a tentative workflow preference, not a ranking of tooth-surface fidelity. Preserve both original captures. Review corresponding crown boundaries and capture provenance before selecting a segmentation input; do not transfer the original pair damage report to these files without confirmation.",
+      "message": "Fusion_H_4 is worth inspecting first for peripheral cleanup because of its more compact visual outline and lower boundary-edge count, but this is a tentative workflow preference, not a ranking of tooth-surface fidelity. Preserve both original captures. Review corresponding crown boundaries and capture provenance before selecting a segmentation input; mark the contributor-reported front-tooth model chip separately from crown boundaries. Exact tooth identity and chip timing remain unknown.",
       "code": null,
       "data_gap": null,
       "clinician_question": null,
@@ -50,6 +50,17 @@
       "data_gap": null,
       "clinician_question": null,
       "reference": "mesh-quality.json; mesh-views.png; fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Shared chipped-model limitation",
+      "message": "The contributor confirms both additional captures share one physical lower model and reports a small chip on an unidentified lower front tooth. Agreement between H4 and H6 can describe capture consistency but cannot establish the missing undamaged surface. Keep the chip region unreviewed until its location is marked; do not interpret it as actual tooth damage or tooth movement.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": "fusion-h-4/source-metadata.json; fusion-h-6/source-metadata.json"
     }
   ]
 }

@@ -55,19 +55,23 @@ neither replaces the original pair or the other capture.
 
 | Capture | Original file | Manifest | Source metadata |
 | --- | --- | --- | --- |
-| Fusion H4 | [Fusion_H_4.stl](captures/fusion-h-4/Fusion_H_4.stl) | [Manifest](captures/fusion-h-4/manifest.json) | [Provenance](captures/fusion-h-4/source-metadata.json) |
-| Fusion H6 | [Fusion_H_6.stl](captures/fusion-h-6/Fusion_H_6.stl) | [Manifest](captures/fusion-h-6/manifest.json) | [Provenance](captures/fusion-h-6/source-metadata.json) |
+| Fusion H4 | [2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl](captures/fusion-h-4/2026-11-12_USER_ONE_lower_week-18_fusion-h-4.stl) | [Manifest](captures/fusion-h-4/manifest.json) | [Provenance](captures/fusion-h-4/source-metadata.json) |
+| Fusion H6 | [2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl](captures/fusion-h-6/2026-11-12_USER_ONE_lower_week-18_fusion-h-6.stl) | [Manifest](captures/fusion-h-6/manifest.json) | [Provenance](captures/fusion-h-6/source-metadata.json) |
 
 The additional captures have a separate [comparative evaluation](captures/quality-assessment.md),
 [topology inventory](captures/mesh-quality.json), and
 [surface views](captures/mesh-views.png). H4 contains 581,144 triangles; H6 contains
 587,840. Both preserve every source byte. Acquisition date, scale, capture method,
-model condition, and anatomical registration remain unverified for both.
+and anatomical registration remain unverified for both. The contributor confirms
+H4 and H6 share the same physical lower model, with a small chip on an unidentified
+front tooth. The chip location, timing, and any repair/trimming history are not
+yet mapped. This reports model damage, not actual tooth damage.
 
 Both binary STLs have valid declared record lengths and no non-finite face
 records. H4 is 29,057,284 bytes; H6 is 29,392,084 bytes. These are file checks,
-not a surface-fidelity assessment. November 12 is the contribution date. The
-original pair's damage report, topology inventory, and views do not assess these
+not a surface-fidelity assessment. November 12 in the filenames is the
+contribution/filing date, not a verified acquisition date. The original pair's
+damage report, topology inventory, and views do not assess these
 captures; those artifacts and their reproduction script retain their original
 two-scan scope.
 
