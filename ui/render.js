@@ -509,6 +509,7 @@ const scheduleEvaluate = createEvaluationRunner({
       renderEngineErrors(result.errors || ["plan was rejected by the engine"]);
     } else {
       state.lastEval = result;
+      renderGuided();
       renderEvaluation(result);
     }
     renderTrustStatus(el("trustStatusStrip"), state, renderAll);
@@ -516,6 +517,7 @@ const scheduleEvaluate = createEvaluationRunner({
   onError(error) {
     state.lastEval = null;
     state.engineError = error.message;
+    renderGuided();
     renderEngineOffline();
     renderTrustStatus(el("trustStatusStrip"), state, renderAll);
   },
