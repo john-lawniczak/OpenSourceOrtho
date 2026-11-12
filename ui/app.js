@@ -525,7 +525,7 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
-    el(state.chat.collapsed ? "chatReopenTab" : "chatInput").focus();
+    el(state.chat.collapsed ? "chatReopenTab" : "chatCaseSource").focus();
   }
   if (button?.id === "generatePlan") {
     generatePlan();

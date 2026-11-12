@@ -1,3 +1,5 @@
+import { selectedChatCase } from "./chat_context.js";
+import { collapseChatComposer } from "./chat_composer.js";
 import { requestToothGoal } from "./tooth_goal_ui.js";
 import { askPlanAssistant, el, state, streamPlanAssistant } from "./state.js";
 import { planJson } from "./plan.js";
@@ -10,7 +12,7 @@ export async function sendChatMessage(uiContext) {
   const history = state.chat.messages
     .filter((item) => !item.failed && !item.pending && (item.role === "user" || item.role === "assistant"))
     .slice(-16).map(({ role, content }) => ({ role, content }));
-  const editing = el("chatEditMode").checked;
+  const editing = selectedChatCase() === "workspace" && el("chatEditMode").checked;
   const user = { role: "user", prompt: message,
     content: editing ? `Tooth ${state.manualEdit.selectedTooth} · ${message}` : message };
   const pending = { role: "assistant", content: "Reading your plan…", pending: true };
@@ -19,6 +21,7 @@ export async function sendChatMessage(uiContext) {
   state.chat.status = "Reading your plan…";
   state.chat.messages.push(user, pending);
   state.chat.input = "";
+  collapseChatComposer();
   renderChat();
   try {
     if (editing) {
@@ -48,7 +51,7 @@ export async function sendChatMessage(uiContext) {
       pending.pending = false;
       state.chat.busy = false;
       renderChat();
-      if (!state.chat.collapsed) el("chatInput").focus();
+
     }
   }
 }
@@ -69,7 +72,7 @@ async function requestAnswer(message, history, uiContext, pending, signal) {
   // Credentials stay in the DOM and are transmitted only on explicit send.
   const payload = {
     plan: planJson(), message, history, provider: state.chat.provider, model: state.chat.model,
-    context_scope: state.chat.contextScope,
+    context_scope: state.chat.contextScope, case_source: selectedChatCase(),
     ui_context: { ...uiContext, selected_tooth: state.manualEdit.selectedTooth,
       stage_index: Number(el("stageSlider").value || 0), view: state.view, sample: state.sample.active },
     api_key: el("chatApiKey").value.trim() || undefined,

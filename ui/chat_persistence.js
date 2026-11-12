@@ -9,6 +9,7 @@ let storageAvailable = true;
 export function saveChatSession() {
   const chat = state.chat;
   const data = {
+    caseSource: chat.caseSource || "auto",
     version: 1, provider: chat.provider, modelByProvider: chat.modelByProvider,
     input: chat.input, collapsed: chat.collapsed, expanded: chat.expanded,
     sessionId: chat.sessionId,
@@ -22,7 +23,7 @@ export function saveChatSession() {
   }
   const notice = el("chatPersistenceNotice");
   if (notice) notice.textContent = storageAvailable
-    ? "Chat and drafts survive navigation and reloads in this tab. New chat clears them. New requests use the current workspace."
+    ? "Chat and drafts survive navigation and reloads in this tab. New chat clears them. New requests use the selected context."
     : "Browser storage is unavailable or full. Keep this page open to retain your chat and draft.";
 }
 
@@ -64,6 +65,7 @@ function restoreChatSession() {
       const model = data.modelByProvider?.[provider];
       if (typeof model === "string" && model.length <= 200) chat.modelByProvider[provider] = model;
     }
+    if (["auto", "workspace", "user_one"].includes(data.caseSource)) chat.caseSource = data.caseSource;
     chat.input = typeof data.input === "string" ? data.input : "";
     chat.collapsed = data.collapsed === true;
     chat.expanded = data.expanded === true;
@@ -73,7 +75,7 @@ function restoreChatSession() {
       role: item.role, content: item.content, pending: item.pending === true, failed: item.failed === true,
       prompt: typeof item.prompt === "string" ? item.prompt : undefined,
     }));
-    chat.status = "Conversation restored · new requests use the current workspace";
+    chat.status = "Conversation restored · new requests use the selected context";
     recoverPendingTurn();
   } catch {
     state.chat.status = "Saved chat could not be restored";
@@ -82,6 +84,11 @@ function restoreChatSession() {
 
 export function initializeChatPersistence(render) {
   restoreChatSession();
+  const entry = new URL(location.href);
+  if (entry.searchParams.get("chat_case") === "user_one") {
+    state.chat.caseSource = "user_one";
+    entry.searchParams.delete("chat_case"); history.replaceState(history.state, "", entry);
+  }
   window.addEventListener("pagehide", () => {
     activeRequest?.abort();
     activeRequest = null;

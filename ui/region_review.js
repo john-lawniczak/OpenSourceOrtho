@@ -18,6 +18,7 @@ function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("revie
 function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
 function mount() {
   viewer?.dispose();
+  el("reviewWorkspaceLink").href = scan.baseline ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch); el("reviewTool").value = "orbit";
   el("reviewSource").textContent = `${scan.baseline ? "USER_ONE baseline · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;

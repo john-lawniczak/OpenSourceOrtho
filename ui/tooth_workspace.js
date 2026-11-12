@@ -66,7 +66,7 @@ document.body.addEventListener("click", event => {
     renderAll();
   }
   if (button?.id === "askSelectedTooth") {
-    state.chat.collapsed = false;
+    state.chat.collapsed = false; state.chat.caseSource = "workspace";
     el("chatEditMode").checked = true;
     el("chatInput").placeholder = `Describe a geometric change to tooth ${state.manualEdit.selectedTooth}…`;
     renderAll();

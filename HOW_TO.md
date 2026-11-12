@@ -420,3 +420,9 @@ and supports scan-bound reviewed transform imports.
 
 See the [research tool scorecard](docs/TOOL_SCORECARD.md) for implemented improvements,
 remaining limitations, and the distinction between workflow maturity and anatomical accuracy.
+
+In **Plan assistant → Context**, choose **USER_ONE scans & saved labels** to
+ask about the stored sample records even when the planning workspace is empty.
+This includes saved annotation notes and counts, scan visits, and estimate status;
+raw surfaces and unsaved painting stay local. The composer expands when clicked
+and collapses when you click away or send, keeping draft text.

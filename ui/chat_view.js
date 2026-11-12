@@ -1,3 +1,5 @@
+import { renderChatContext } from "./chat_context.js";
+import { initializeChatComposer } from "./chat_composer.js";
 import { saveChatSession } from "./chat_persistence.js";
 import { el, state } from "./state.js";
 import { renderChatMessages } from "./chat_thread.js";
@@ -13,7 +15,10 @@ const AI_KEY_HELP = {
   "open-source": "Enter your model endpoint. API key is optional.",
 };
 
+initializeChatComposer();
+
 export function renderChat() {
+  renderChatContext();
   document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
   el("aiChatBlock").inert = state.chat.collapsed;
   renderChatConnectorControls();

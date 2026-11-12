@@ -16,7 +16,7 @@ def chat_page(server_url):
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
-        page.goto(server_url, wait_until="networkidle")
+        page.goto(server_url, wait_until="load")
         page.locator("#chatReopenTab").click()
         yield page
         browser.close()
@@ -33,6 +33,7 @@ def configure(page, provider="anthropic", key="test-key"):
 def test_navigation_reload_and_new_chat_preserve_draft_and_history(chat_page, server_url):
     page = chat_page
     page.locator("#chatInput").fill("Explain the missing records")
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#sendChat")).to_have_text("Send ↑")
     expect(page.locator(".chat-message")).to_have_count(2)
@@ -43,16 +44,16 @@ def test_navigation_reload_and_new_chat_preserve_draft_and_history(chat_page, se
     expect(page.locator("#chatInput")).to_have_value("Unsent question\nabout this scan")
     expect(page.locator(".chat-message")).to_have_count(2)
     page.locator("#expandChat").click()
-    page.goto(server_url + "/region-review.html", wait_until="networkidle")
-    page.go_back(wait_until="networkidle")
+    page.goto(server_url + "/region-review.html", wait_until="load")
+    page.go_back(wait_until="load")
     expect(page.locator("#chatInput")).to_have_value("Unsent question\nabout this scan")
     expect(page.locator(".chat-message")).to_have_count(2)
     expect(page.locator("#expandChat")).to_have_text("Dock")
-    page.reload(wait_until="networkidle")
+    page.reload(wait_until="load")
     expect(page.locator("#chatInput")).to_have_value("Unsent question\nabout this scan")
     expect(page.locator(".chat-message")).to_have_count(2)
     page.locator("#newChat").click()
-    page.reload(wait_until="networkidle")
+    page.reload(wait_until="load")
     expect(page.locator(".chat-message")).to_have_count(0)
     expect(page.locator("#chatInput")).to_have_value("")
 
@@ -65,7 +66,8 @@ def test_claude_key_and_consent_are_never_persisted(chat_page, tmp_path):
     assert "test-secret-not-real" not in snapshot
     stored = page.evaluate("JSON.parse(sessionStorage.getItem('orthoplan-chat-session-v1'))")
     assert "agentAccessEnabled" not in stored and "apiKey" not in stored and "agentEndpoint" not in stored
-    page.reload(wait_until="networkidle")
+    page.reload(wait_until="load")
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#chatSettingsDialog")).to_be_visible()
     expect(page.locator("#chatProvider")).to_have_value("anthropic")
@@ -90,11 +92,13 @@ def test_failure_keeps_prompt_and_retry_excludes_failed_turn(chat_page):
     page.route("**/api/chat", respond)
     configure(page)
     page.locator("#chatInput").fill("My original question")
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#chatInput")).to_have_value("My original question")
     expect(page.get_by_role("button", name="Reuse prompt")).to_be_visible()
-    page.reload(wait_until="networkidle")
+    page.reload(wait_until="load")
     configure(page)
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#chatStatus")).to_have_text("Ready")
     assert requests[-1]["history"] == []
@@ -107,10 +111,11 @@ def test_pending_navigation_recovers_prompt_without_auto_resend(chat_page, serve
     page = chat_page
     page.route("**/api/chat", lambda route: None)
     page.locator("#chatInput").fill("Interrupted question")
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#sendChat")).to_have_text("Thinking…")
     page.goto(server_url + "/region-review.html", wait_until="domcontentloaded")
-    page.goto(server_url, wait_until="networkidle")
+    page.goto(server_url, wait_until="load")
     expect(page.locator("#chatInput")).to_have_value("Interrupted question")
     expect(page.locator("#sendChat")).to_have_text("Send ↑")
     expect(page.locator(".chat-message.assistant")).to_contain_text("interrupted by navigation")
@@ -137,10 +142,12 @@ def test_followup_after_reload_sends_preserved_successful_history(chat_page):
 
     page.route("**/api/chat", respond)
     page.locator("#chatInput").fill("First question")
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#chatStatus")).to_have_text("Ready")
-    page.reload(wait_until="networkidle")
+    page.reload(wait_until="load")
     page.locator("#chatInput").fill("Follow-up")
+    page.locator("#chatInput").focus()
     page.locator("#sendChat").click()
     expect(page.locator("#chatStatus")).to_have_text("Ready")
     assert requests[-1]["session_id"] == "kept-session"

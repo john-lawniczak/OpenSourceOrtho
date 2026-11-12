@@ -34,6 +34,7 @@ export function updateChatSetting(target) {
     state.chat.model = target.value.trim();
     if (state.chat.model) state.chat.modelByProvider[state.chat.provider] = state.chat.model;
   }
+  if (target.id === "chatCaseSource") state.chat.caseSource = target.value;
   if (target.id === "chatInput") state.chat.input = target.value;
   if (target.id === "chatApiKey") state.chat.apiKeyPresent = Boolean(target.value.trim());
   if (target.id === "agentAccessEnabled") state.chat.agentAccessEnabled = target.checked;

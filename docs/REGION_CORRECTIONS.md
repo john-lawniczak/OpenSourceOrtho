@@ -132,3 +132,9 @@ The view presets then turn around that location; **Fit scan** returns to the arc
 Saving from an older draft is rejected if another snapshot was saved since it
 loaded. Download JSON to retain those edits before reloading; existing snapshots
 remain unchanged.
+
+Returning to **Workspace** from a USER_ONE baseline selects **USER_ONE scans &
+saved labels** in chat. Save locally first to include your latest label counts
+and notes in the next message. Unsaved painting and the rendered image are not
+sent to the provider. The assistant receives summaries of the draft labels,
+not confirmed tooth identities or a clinical surface assessment.

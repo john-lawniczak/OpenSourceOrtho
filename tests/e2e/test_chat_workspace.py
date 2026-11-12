@@ -84,6 +84,7 @@ def test_conversation_keeps_prompts_responses_and_mobile_layout(server_url, tmp_
             expect(page.locator(".chat-message")).to_have_count(4)
             page.locator("#themeToggle").click()
             page.set_viewport_size({"width": 390, "height": 844})
+            page.locator("#chatInput").focus()
             expect(page.locator("#sendChat")).to_be_in_viewport()
             assert page.locator("#aiChatBlock").evaluate("el => el.scrollWidth <= el.clientWidth")
             page.screenshot(path=str(tmp_path / "chat-mobile.png"))

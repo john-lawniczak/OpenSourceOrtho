@@ -108,7 +108,7 @@ accidental credential reuse. Settings close with Done or Escape; configuration
 stays available without occupying the conversation area. Nothing is sent merely
 by configuring a connector. Keys are never written to browser storage or plans.
 
-External requests still require explicit consent to share the full plan context
+External requests still require explicit consent to share the selected case context
 and conversation. Chat uses `context_scope = full_plan`. Generate Plan reuses
 this configuration for its optional advisory review; both paths retain the
 server-side lint gate.
@@ -119,7 +119,7 @@ This is a tab session, not a permanent case record or cross-tab sync. Keys,
 endpoints, consent, and plan snapshots are excluded by an explicit allowlist;
 full-page navigation/reload requires fresh credentials and sharing consent.
 The UI discloses storage failures and reminds users that each new request uses
-the current workspace (restoring a transcript does not restore its old plan).
+the selected context (restoring a transcript does not restore its old plan).
 
 The latest 16 successful messages are sent as follow-up context. Failed turns
 are excluded and their prompts remain available in the composer or **Reuse
@@ -319,3 +319,30 @@ it uses synthetic credentials and sends no network request. The allowlisted
 `invalid_api_key` error code is shown when supplied by OpenAI; other response
 bodies remain hidden. Authentication of a user's real key remains unverified
 until a real request succeeds. Chat recovery buttons use a spaced, wrapping row.
+
+### Selected case context and compact composer
+
+Chat's **Context** selector separates the current planning workspace from
+**USER_ONE scans & saved labels**. Automatic mode follows the sample scan-history
+view; the simulated planning demo uses its workspace plan. Returning from a
+USER_ONE baseline painting page selects USER_ONE explicitly. The selection
+survives same-tab reloads with the conversation, and is visible before sending.
+
+A `case_source: user_one` request in `full_plan` scope builds bounded metadata
+from fixed, specimen-checked manifests: baseline/week 7 scans, private week 18
+records (including H4/H6 when installed), latest hash-validated local annotation
+counts and notes, and endpoint-estimate status summaries. No caller-supplied
+filesystem path is accepted. Private files remain excluded from public assets;
+the selected provider receives these metadata only on Send with sharing consent.
+The context omits the unrelated workspace plan and never changes authored data.
+USER_ONE chat is read-only; tooth-change previews use the planning workspace.
+
+Raw mesh arrays, label arrays, screenshots, unsaved paint and arbitrary files
+remain unavailable to the model. Source notes remain untrusted. Draft numbering,
+model damage, unverified progress units, and estimates not regenerated from the
+latest painting are explicit limitations. This supplies record awareness, not
+visual assessment of contacts or an enamel/space analysis for IPR.
+
+The composer starts as one line, expands on focus, and collapses on blur, Send,
+or its Collapse button. Draft text survives collapse and reload. Opening the
+chat panel does not automatically expand the composer.

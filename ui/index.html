@@ -905,9 +905,12 @@
           </div>
           <div class="ai-chat-body">
             <div class="chat-session-bar"><span id="chatStatus" class="chat-status" role="status">Ready</span><button id="newChat" type="button">New chat</button></div>
+            <label class="chat-case-context">Context <select id="chatCaseSource"><option value="auto">Current view (automatic)</option><option value="user_one">USER_ONE scans &amp; saved labels</option><option value="workspace">Planning workspace</option></select></label>
+            <p id="chatContextHint" class="chat-context-hint"></p>
             <div id="chatMessages" class="chat-messages" role="log" aria-label="Conversation history" aria-live="polite" aria-relevant="additions text"></div>
             <div id="chatStarters" class="chat-starters"><button type="button">What are the main limitations?</button><button type="button">Explain the data gaps</button></div>
-            <div class="chat-composer">
+            <div id="chatComposer" class="chat-composer" data-expanded="false">
+            <button id="collapseChatComposer" class="chat-composer-collapse" type="button" aria-label="Collapse message composer" aria-expanded="false" aria-controls="chatInput">⌄ Collapse</button>
             <label class="chat-input">
               <span class="sr-only">Message the plan assistant</span>
               <textarea id="chatInput" rows="3" maxlength="2000" placeholder="Ask about your plan…"></textarea>
@@ -916,7 +919,7 @@
             <div class="chat-composer-footer"><small>Enter to send · Shift + Enter for a new line</small><button class="primary-action" id="sendChat" type="button">Send ↑</button></div>
             </div>
             <details class="chat-context-summary"><summary>What the assistant can see</summary>
-              <p>Your plan, scan formats and dimensions, tooth regions, stages, checks, current step and selected tooth. Raw scan surfaces and images stay local. Changes require Preview and Apply.</p>
+              <p>The selected context supplies planning data or USER_ONE scan visits, saved label summaries, notes and motion-estimate status. USER_ONE includes private week 18 metadata when present. Unsaved painting, raw surfaces and images are not sent. Changes require Preview and Apply.</p>
             </details><p id="chatPersistenceNotice" class="chat-boundary" role="status">Chat and drafts stay in this tab.</p>
           </div>
         </section>
@@ -949,7 +952,7 @@
           <input id="agentEndpoint" type="url" placeholder="http://127.0.0.1:PORT" />
         </label>
         <label class="toggle" id="chatSharingField">
-          <span>Allow sharing my full plan and conversation with this provider.</span>
+          <span>Allow sharing my selected case context and conversation with this provider.</span>
           <input id="agentAccessEnabled" type="checkbox" />
         </label>
         <p class="viewer-caveat">Keys are never saved. Re-enter them after a page reload or full-page navigation. External requests use the selected provider when you send a message or request an AI plan review.</p>
