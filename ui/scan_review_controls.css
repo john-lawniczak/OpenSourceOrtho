@@ -91,3 +91,4 @@
 .review-tooth-row button[data-kind="molar"] { border-bottom:3px double #bccbd0; }
 #reviewSplitPanel { margin:8px 0; padding:10px; border-left:3px solid #e9ab36; }
 #reviewSplitPanel select { width:100%; }
+#reviewSplitFlip { margin-top:8px; }

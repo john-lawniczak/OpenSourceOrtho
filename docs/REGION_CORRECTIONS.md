@@ -148,6 +148,10 @@ annotation, not confirmed tooth boundaries.
 
 Select the overextended label → **Correct spillover** → select the destination
 tooth → brush only the misplaced surface. The source selector protects every
-other label. Rotate to inspect the inside and chewing surface; Undo reverses a
+other label. **⇄ Flip direction** swaps the source and destination teeth (for
+example, 12 → 11 becomes 11 → 12) and updates the selected tooth. Flipping alone
+does not edit any faces. Choose two different, present teeth to enable it;
+unlabeled context cannot become a selected tooth through this control.
+Rotate to inspect the inside and chewing surface; Undo reverses a
 stroke. Save locally when finished. A screenshot cannot establish the full 3D
 boundary, so the editor never automatically splits or renumbers saved teeth.

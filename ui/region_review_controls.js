@@ -14,6 +14,14 @@ export function setupReviewControls({ selectTooth, changeMode }) {
   };
   el("reviewSplitSource").onchange = () => { el("reviewFrom").value = el("reviewSplitSource").value; changeMode(); };
   el("reviewFrom").onchange = () => { el("reviewSplitSource").value = el("reviewFrom").value; changeMode(); };
+  el("reviewSplitFlip").onclick = () => {
+    if (el("reviewSplitFlip").disabled) return;
+    const source = el("reviewFrom").value;
+    el("reviewFrom").value = el("reviewTo").value;
+    el("reviewSplitSource").value = el("reviewFrom").value;
+    el("reviewTo").value = source;
+    selectTooth(); changeMode();
+  };
   return {
     arch(arch, absentTeeth = []) {
       const lower = arch === "lower";
@@ -57,6 +65,13 @@ export function setupReviewControls({ selectTooth, changeMode }) {
       const source = el("reviewFrom").value;
       el("reviewSplitPanel").hidden = mode !== "split";
       el("reviewSplitSource").value = source;
+      const presentTeeth = [...el("reviewTeeth").querySelectorAll("button")]
+        .filter(button => !button.disabled).map(button => button.dataset.tooth);
+      el("reviewSplitFlip").disabled = !loaded || mode !== "split" || source === id
+        || !presentTeeth.includes(source) || !presentTeeth.includes(id);
+      el("reviewSplitFlip").title = el("reviewSplitFlip").disabled
+        ? "Choose two different, present tooth labels to flip."
+        : `Swap to ${id} → ${source}; labels change only when you paint.`;
       el("reviewSplitHint").textContent = source === id
         ? "Now choose the correct destination tooth above."
         : `Paint ${source} → ${id}. All other labels stay protected.`;

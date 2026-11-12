@@ -129,11 +129,21 @@ The contributor reports that the wisdom teeth (FDI 18, 28, 38, 48) were removed.
 Extraction dates and any other absent teeth are unspecified. Upper second molars
 are 17 / US 2 and 27 / US 15. See `treatment-context.json`.
 
-The current [upper annotation draft](annotations/initial-upper-left-painted-2026-11-12T182629Z.json)
+The current [upper painting checkpoint](annotations/initial-upper-painted-2026-11-12T184456Z.json)
+preserves the contributor's explicitly identified save from November 12, 2026
+at 13:44 EST. The contributor confirms both upper sides (FDI 11–17 and 21–27)
+are painted correctly. The [checkpoint audit](annotations/initial-upper-painted-2026-11-12T184456Z-report.json)
+records all 14 labels and the remaining connectivity issues: 116 right-side
+and 144 left-side faces lie outside their label's main connected component.
+These faces are retained for inspection. Anatomical accuracy is not independently
+verified, the saved reviewed checkbox remains false, and the one-region-per-tooth
+benchmark criterion is not yet met. No lower-arch confirmation is inferred.
+
+The previous [upper-left painting checkpoint](annotations/initial-upper-left-painted-2026-11-12T182629Z.json)
 records the contributor's painting saved November 12, 2026 at 13:26 EST.
 The contributor confirms the patient-left upper teeth (FDI 21–27) are painted
 correctly. This confirmation is recorded without independent anatomical
-verification; the right side and whole-arch benchmark review remain incomplete.
+verification; at that checkpoint, right-side painting was still pending.
 The [painting report](annotations/initial-upper-left-painted-2026-11-12T182629Z-report.json)
 records all 7,237 changed faces, including edits at the 11/21 boundary, and links
 the prior checkpoint by hash. Saved labels are preserved exactly.
