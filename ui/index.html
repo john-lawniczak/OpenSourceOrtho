@@ -238,7 +238,7 @@
           <section class="gstep" data-gstep="preview">
             <h3>5 · See the full 3D plan</h3>
 
-            <div id="guidedPreviewHost"></div>
+            <div id="guidedPreviewHost" class="guided-viewer-host"></div>
             <details class="guided-help">
               <summary>Stage slider</summary>
               <p>Stage 0 is the starting position. Later stages show each tray in sequence.</p>
@@ -521,7 +521,7 @@
                       <button class="dim is-active" data-dim="3d" type="button">3D</button>
                       <button class="dim" data-dim="2d" type="button">2D</button>
                     </span>
-                    <button class="viewer-aux" id="toothLabelToggle" type="button" aria-pressed="false" title="Show or hide FDI tooth numbers over the teeth">Tooth #</button>
+                    <button class="viewer-aux" id="toothLabelToggle" type="button" role="switch" aria-checked="true" title="Show or hide selectable tooth numbers around the scan">Tooth numbers</button>
                     <button class="viewer-aux" id="proximityToggle" type="button" aria-pressed="false" title="Show where the upper and lower arches meet (geometric proximity of the registered surfaces, not bite force)">Bite proximity</button>
                     <button class="viewer-aux" id="scaleToggle" type="button" aria-pressed="false" title="Show a true-scale millimetre reference bar beside the loaded scan (needs confirmed mm units)">Scale</button>
                     <button class="viewer-aux" id="registeredBiteToggle" type="button" aria-pressed="false" title="Move the lower arch into the registered occlusion. Only changes separate-frame scans; arches scanned in occlusion already show the true bite.">Registered bite</button>

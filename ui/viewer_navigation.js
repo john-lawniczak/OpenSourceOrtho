@@ -22,5 +22,5 @@ export function mountViewerNavigation(host, getControls, onFocus) {
     bar.querySelector("small").textContent = mode === "pan" ? "Drag to pan · scroll/pinch to zoom · choose Rotate to turn the scan" : "Drag to rotate · scroll/pinch to zoom · right-drag to pan";
   });
   apply();
-  return { apply, setFocusAvailable: enabled => { bar.querySelector("[data-viewer-focus]").disabled = !enabled; }, get mode() { return mode; }, dispose: () => bar.remove() };
+  return { element: bar, apply, setFocusAvailable: enabled => { bar.querySelector("[data-viewer-focus]").disabled = !enabled; }, get mode() { return mode; }, dispose: () => bar.remove() };
 }

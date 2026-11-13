@@ -158,7 +158,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.18;
-  container.replaceChildren(renderer.domElement);
+  container.prepend(renderer.domElement);
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xfbfdfe);
@@ -289,6 +289,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     controls = frameScanView(camera, controls, renderer.domElement, visibleScanBox(), command, () => { needsRender = true; }, visibleScanView(visibleScanChildren()));
     navigation.apply();
   }, { defaultView: true });
+  scanViews.after(navigation.element);
   scanViews.hidden = true;
 
   function resize() {
@@ -873,7 +874,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     scanViews.remove(); navigation.dispose();
     window.removeEventListener("resize", resize);
     controls.dispose();
-    renderer.dispose();
+    renderer.dispose(); renderer.domElement.remove();
   }
 
   window.addEventListener("resize", resize);

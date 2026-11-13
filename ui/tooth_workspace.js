@@ -1,4 +1,5 @@
 // The shared viewer owns one selection, whether picked by raycast or FDI button.
+import { renderViewerToothNumbers } from "./viewer_tooth_numbers.js";
 import { el, state } from "./state.js";
 import { renderProfile } from "./teeth_profile.js";
 import { toothName, universalToothNumber, toothFromNumber } from "./tooth_selection.js";
@@ -26,6 +27,7 @@ export function renderToothWorkspace() {
   renderProfile();
   const teeth = selectableTeeth();
   const selected = state.manualEdit.selectedTooth;
+  renderViewerToothNumbers(teeth, selected, state.showToothLabels);
   const blocker = toothEditBlocker();
   const scanned = Boolean(state.files.length || state.scanSources.length);
   el("simpleUpload").classList.toggle("has-scans", scanned);

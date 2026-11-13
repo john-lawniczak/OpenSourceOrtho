@@ -212,7 +212,7 @@ function updateViewer(result) {
     stageIndex: Number(el("stageSlider").value || 0),
     view: state.view,
     exaggeration: state.userMode === "simple" ? 1 : (numberValue("exaggeration") || 1),
-    showToothLabels: state.userMode === "simple" ? false : state.showToothLabels,
+    showToothLabels: false, // Accessible number buttons surround the shared viewer.
     labelTeeth: state.userMode === "simple" ? [state.manualEdit.selectedTooth].filter(Boolean) : null,
     showScale: state.showScale,
     unitsConfirmed: scaleConfirmed(state.scanUnits),
@@ -253,7 +253,7 @@ export function renderAll() {
   el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
   const toothLabelBtn = el("toothLabelToggle");
   if (toothLabelBtn) {
-    toothLabelBtn.setAttribute("aria-pressed", state.showToothLabels ? "true" : "false");
+    toothLabelBtn.setAttribute("aria-checked", String(state.showToothLabels));
     toothLabelBtn.classList.toggle("is-active", state.showToothLabels);
   }
   state.scanUnits = el("scanUnits").value;
