@@ -7,8 +7,8 @@ import pytest
 from orthoplan.region_corrections import baseline_source, load_baseline_corrections, save_baseline_corrections
 
 
-def record(arch="lower", reviewed=False):
-    source = baseline_source(arch)
+def record(arch="lower", reviewed=False, visit="initial"):
+    source = baseline_source(arch, visit)
     labels = bytes([31 if arch == "lower" else 11]) + bytes(source["face_count"] - 1)
     return {"schema": "ortho-region-corrections-v1", "source_sha256": source["sha256"],
             "arch": arch, "face_count": source["face_count"], "labels_base64": base64.b64encode(labels).decode(),
@@ -68,3 +68,43 @@ def test_stale_browser_draft_cannot_supersede_newer_labels(tmp_path):
     assert not stale["ok"] and "Reload saved" in stale["errors"][0]
     assert load_baseline_corrections("upper", root=tmp_path)["path"] == newer["path"]
     assert len(list(tmp_path.rglob("*.json"))) == 2
+
+
+@pytest.mark.parametrize("arch", ["upper", "lower"])
+def test_week_seven_isolated_from_baseline_and_resumes_versions(tmp_path, arch):
+    baseline = save_baseline_corrections({"arch": arch, "corrections": record(arch)}, root=tmp_path)
+    payload = {"arch": arch, "visit": "progress-01", "corrections": record(arch, visit="progress-01"),
+               "notes": "Week 7 partial boundaries", "base_saved_at": None}
+    first = save_baseline_corrections(payload, root=tmp_path)
+    assert first["ok"] and first["visit"] == "progress-01"
+    assert f"week-7-{arch}" in first["path"]
+    assert first["filename"] == f"progress-01-{arch}.stl"
+    assert load_baseline_corrections(arch, root=tmp_path)["path"] == baseline["path"]
+    restored = load_baseline_corrections(arch, visit="progress-01", root=tmp_path)
+    assert restored["corrections"] == payload["corrections"]
+    assert restored["notes"] == payload["notes"]
+    assert not save_baseline_corrections(payload, root=tmp_path)["ok"]
+    newer = save_baseline_corrections({**payload, "base_saved_at": first["saved_at"]}, root=tmp_path)
+    assert newer["ok"] and newer["path"] != first["path"]
+    assert len(list(tmp_path.rglob("*.json"))) == 3
+
+
+def test_visit_binding_rejects_wrong_mesh_and_unknown_visit(tmp_path):
+    payload = {"arch": "upper", "visit": "progress-01", "corrections": record("upper")}
+    assert not save_baseline_corrections(payload, root=tmp_path)["ok"]
+    for visit in ["../initial", "progress-02", "", None]:
+        assert not save_baseline_corrections({**payload, "visit": visit}, root=tmp_path)["ok"]
+        assert not load_baseline_corrections("upper", visit=visit, root=tmp_path)["ok"]
+    assert not list(tmp_path.rglob("*.json"))
+
+
+def test_automatic_seed_stays_unreviewed_and_retains_origin(tmp_path):
+    correction = {**record("upper", visit="progress-01"), "provenance": "automatic-draft"}
+    payload = {"arch": "upper", "visit": "progress-01", "corrections": correction}
+    saved = save_baseline_corrections(payload, root=tmp_path)
+    assert saved["ok"] and saved["review_status"] == "draft"
+    restored = load_baseline_corrections("upper", visit="progress-01", root=tmp_path)
+    assert restored["corrections"]["provenance"] == "automatic-draft"
+    rejected = save_baseline_corrections({**payload, "corrections": {**correction, "reviewed": True}}, root=tmp_path)
+    assert not rejected["ok"]
+    assert len(list(tmp_path.rglob("*.json"))) == 1

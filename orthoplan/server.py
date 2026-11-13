@@ -101,7 +101,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             path = self.path.split("?", 1)[0]
             if path.startswith("/api/region-corrections/"):
-                self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1]))
+                visit = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query).get("visit", ["initial"])[0]
+                self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1], visit=visit))
                 return
             if path.startswith("/api/geometry-jobs/"):
                 result = jobs.get(path.rsplit("/", 1)[-1])

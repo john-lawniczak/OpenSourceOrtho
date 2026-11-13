@@ -2,10 +2,10 @@
 
 Open **Paint tooth boundaries** in the app sidebar or in Guided **step 2: Teeth
 & time**, after loading scans and before building movement stages. Scan history
-also links directly to each USER_ONE baseline. **Edit tooth boundaries** under
+also links directly to USER_ONE week 1 and week 7 upper/lower scans. **Edit tooth boundaries** under
 an uploaded scan brings that surface into the editor. The direct URL is
 `/region-review.html`. This is a scan-labeling task, not an aligner stage; for
-USER_ONE it uses the week 1 baseline, with separate upper and lower annotations.
+USER_ONE, choose week 1 or week 7 with separate upper and lower annotations.
 Load the sample baseline or your own STL, then optionally import its correction
 JSON. Choose **Move view** to navigate; **Paint tooth** paints the chosen tooth number;
 Split only paints faces belonging to the From tooth; Merge changes the complete
@@ -193,3 +193,31 @@ Inspection does not change labels or create an edit. Painting, importing labels,
 undo and redo clear stale results; run Find patches again after editing. Tiny
 disconnected regions may be brush leftovers or source mesh gaps, so they are
 not automatically deleted. Zero patches alone does not verify anatomical accuracy.
+
+## Week 7 annotations
+
+Select **Scan visit → Week 7 · observed scan**, then **Upper** or **Lower**.
+The editor loads the original `progress-01` STL with its verified source hash and
+recorded display orientation. A matching local save resumes automatically;
+otherwise the surface starts gray/unpainted. Week 1 face labels are not reused
+on week 7 topology. Use the same painting, undo, notes, Download JSON and
+**Save locally** controls as week 1. Leave the review checkbox off for partial work.
+
+Snapshots live in `.orthoplan-region-corrections/USER_ONE/week-7-upper/` and
+`week-7-lower/`, with visit, filename, hash, face count, notes and review status.
+Switching visit or arch prompts before discarding unsaved edits. Each save is
+immutable, rejects a stale browser draft and validates labels against that visit's
+mesh. Existing `baseline-upper/` and `baseline-lower/` saves remain separate.
+Saving does not publish annotations or refit the motion preview. Once both week 7
+arches are saved, they can be inspected locally before deliberate incorporation.
+
+A collaborator can seed week 7 colors locally with
+`python tools/seed_week_seven_labels.py --save` (requires the motion-preview extras).
+It projects the latest saved week 1 crown labels onto the registered week 7 mesh,
+checks distance, normal agreement and round-trip correspondence, and leaves
+contact buffers and discarded disconnected fragments gray. It refuses to replace
+existing week 7 saves. Source hashes, baseline snapshot identity, registration
+checks and per-tooth counts are recorded in an ignored local audit folder.
+These are **automatic drafts**: inferred labels on observed geometry. The editor
+preserves that origin until painting or explicit boundary review; review every
+number and boundary, especially where teeth moved or a projected mask is incomplete.
