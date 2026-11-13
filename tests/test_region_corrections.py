@@ -7,8 +7,8 @@ import pytest
 from orthoplan.region_corrections import baseline_source, load_baseline_corrections, save_baseline_corrections
 
 
-def record(arch="lower", reviewed=False, visit="initial"):
-    source = baseline_source(arch, visit)
+def record(arch="lower", reviewed=False, visit="initial", capture="original"):
+    source = baseline_source(arch, visit, capture)
     labels = bytes([31 if arch == "lower" else 11]) + bytes(source["face_count"] - 1)
     return {"schema": "ortho-region-corrections-v1", "source_sha256": source["sha256"],
             "arch": arch, "face_count": source["face_count"], "labels_base64": base64.b64encode(labels).decode(),
@@ -122,3 +122,23 @@ def test_automatic_seed_stays_unreviewed_and_retains_origin(tmp_path):
     rejected = save_baseline_corrections({**payload, "corrections": {**correction, "reviewed": True}}, root=tmp_path)
     assert not rejected["ok"]
     assert len(list(tmp_path.rglob("*.json"))) == 1
+
+
+def test_week_eighteen_capture_saves_are_source_bound_and_isolated(tmp_path):
+    saves = {}
+    for capture in ["original", "fusion-h-4", "fusion-h-6"]:
+        payload = {"arch": "lower", "visit": "progress-02", "capture": capture,
+                   "corrections": record(visit="progress-02", capture=capture),
+                   "notes": f"Notes for {capture}", "base_saved_at": None}
+        saved = save_baseline_corrections(payload, root=tmp_path)
+        assert saved["ok"]
+        saves[capture] = saved
+        assert not save_baseline_corrections(payload, root=tmp_path)["ok"]
+    assert len({save["corrections"]["source_sha256"] for save in saves.values()}) == 3
+    for capture, saved in saves.items():
+        assert load_baseline_corrections("lower", visit="progress-02", capture=capture, root=tmp_path)["path"] == saved["path"]
+    wrong = {"arch": "lower", "visit": "progress-02", "capture": "fusion-h-4", "corrections": saves["fusion-h-6"]["corrections"]}
+    assert not save_baseline_corrections(wrong, root=tmp_path)["ok"]
+    assert len(list(tmp_path.rglob("*.json"))) == 3
+    for arch, visit, capture in [("upper", "progress-02", "fusion-h-4"), ("lower", "initial", "fusion-h-4"), ("lower", "progress-02", "../other")]:
+        assert not load_baseline_corrections(arch, visit=visit, capture=capture, root=tmp_path)["ok"]

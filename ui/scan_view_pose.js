@@ -21,6 +21,13 @@ export function scanViewPose(box, view = "auto", { arch, front } = {}) {
   }
   if (front && ["default", "face"].includes(view)) return front;
   const up = front?.up || [0, 1, 0], archSign = arch === "upper" ? -1 : 1;
+  // A documented painting camera may use a different front/up basis. Keep its
+  // Above and Side buttons relative to that frame instead of fixed world axes.
+  if (front && (front.direction[0] || front.direction[1] || up[0] || up[2])) {
+    if (view === "above") return { direction: up.map(v => archSign * v), up: front.direction.map(v => -archSign * v) };
+    if (view === "side") return { direction: new THREE.Vector3().fromArray(up)
+      .cross(new THREE.Vector3().fromArray(front.direction)).multiplyScalar(archSign).normalize().toArray(), up };
+  }
   const poses = {
     face: { direction: [0, 0, -1], up },
     above: { direction: [0, archSign * up[1], 0], up: [0, 0, -archSign * (front?.direction[2] || 1)] },

@@ -1,4 +1,5 @@
 import { renderBoundaryEntry } from "./uploaded_boundary_entry.js";
+import { focusedTeeth, renderFocusTeeth } from "./plan_focus.js";
 import { renderChat } from "./chat_view.js";
 export { renderChat } from "./chat_view.js";
 import { buildViewerScanSources } from "./scan_formats.js";
@@ -204,6 +205,7 @@ function updateViewer(result) {
   v.setSelectionEnabled(scanLoaded ? segFragments.length > 0 : scaleConfirmed(state.scanUnits));
   v.setSelectedTooth(state.manualEdit.selectedTooth);
   v.update({
+    highlightTeeth: focusedTeeth(),
     frames: visibleResult.frames,
     toothFrames: visibleResult.tooth_frames,
     attachments: visibleResult.clinical_controls?.attachments || [],
@@ -294,6 +296,7 @@ export function renderAll() {
   // before it resizes.
   renderGuided();
   renderSampleComparison(renderAll);
+  renderFocusTeeth(renderAll);
   renderReviewHeading();
   renderMetadata();
   renderUploadFileList();

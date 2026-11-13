@@ -1,4 +1,5 @@
 import { toothName, universalToothNumber } from "./tooth_selection.js";
+import { focusedTeeth } from "./plan_focus.js";
 
 // Stable arch rows surround the scan so labels do not overlap as the camera turns.
 let host, signature = "";
@@ -12,7 +13,8 @@ export function renderViewerToothNumbers(teeth, selected, visible) {
     document.getElementById("viewer3d").append(host);
   }
   host.hidden = !visible || !teeth.length;
-  const key = JSON.stringify([teeth, selected]); if (key === signature) return;
+  const focus = focusedTeeth();
+  const key = JSON.stringify([teeth, selected, focus]); if (key === signature) return;
   signature = key;
   const available = new Set(teeth);
   host.replaceChildren();
@@ -23,6 +25,7 @@ export function renderViewerToothNumbers(teeth, selected, visible) {
     for (const id of ids.map(String)) {
       const button = document.createElement("button"); button.type = "button"; button.textContent = id;
       button.dataset.selectTooth = id; button.disabled = !available.has(id);
+      button.classList.toggle("is-plan-focus", focus.includes(id));
       button.setAttribute("aria-pressed", String(selected === id));
       button.setAttribute("aria-label", `FDI ${id} · US ${universalToothNumber(id)} · ${toothName(id)}`);
       button.title = button.disabled ? `No identified region for FDI ${id}` : `FDI ${id} · US ${universalToothNumber(id)}`;

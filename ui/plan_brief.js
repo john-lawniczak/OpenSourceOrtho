@@ -1,4 +1,5 @@
 import { el, state } from "./state.js";
+import { seedSampleFocus } from "./plan_focus.js";
 
 const drafts = new Map();
 let mounted = false;
@@ -19,18 +20,19 @@ function draft(context) {
 
 async function loadSampleGoals(context, entry) {
   entry.loading = true; entry.attempted = true; entry.error = false;
-  entry.status = "Loading sample goals…";
+  if (!entry.hasSaved) entry.status = "Loading sample goals…";
   const revision = entry.revision;
   try {
     const response = await fetch("/api/sample-plan-brief");
     if (!response.ok) throw new Error("Sample goals unavailable");
     const data = await response.json();
     if (!data.ok || typeof data.text !== "string") throw new Error("Sample goals unavailable");
-    if (entry.revision !== revision) return;
+    seedSampleFocus(data.focus_teeth);
+    if (entry.revision !== revision || entry.hasSaved) return;
     entry.text = data.text;
     entry.status = data.available ? "User-reported sample goals. Your edits save in this browser." : "No supplied goals in this installation. Add your own discussion notes.";
   } catch {
-    if (entry.revision === revision) {
+    if (entry.revision === revision && !entry.hasSaved) {
       entry.status = "Could not load sample goals. Retry, or write your own notes.";
       entry.error = true;
     }
@@ -90,7 +92,7 @@ export function renderPlanBrief() {
   if (!el("planBriefText")) return;
   if (!mounted) mount();
   const context = key(), entry = draft(context);
-  if (state.sample.active && !entry.hasSaved && !entry.attempted) void loadSampleGoals(context, entry);
+  if (state.sample.active && !entry.attempted) void loadSampleGoals(context, entry);
   if (el("planBriefText").value !== entry.text) el("planBriefText").value = entry.text;
   el("planBriefStatus").textContent = entry.status;
   el("samplePlanBriefCaveat").hidden = !state.sample.active;

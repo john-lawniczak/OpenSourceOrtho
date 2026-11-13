@@ -23,6 +23,7 @@ export const comparisonTemplate = `
     </div>
   </div>
   <nav class="comparison-timeline" aria-label="Reported scan weeks">
+    <label class="scan-highlight-toggle"><input id="highlightScanWeeks" type="checkbox" role="switch" checked> Highlight recorded scan weeks</label>
     <div class="comparison-week-navigation">
       <button id="comparisonPrevious" type="button" disabled>← Previous week</button>
       <output id="comparisonWeekLabel" aria-live="polite">Week 1 of 18</output>
@@ -36,18 +37,19 @@ export const comparisonTemplate = `
     <p class="comparison-scan-key">Blue border · Recorded scan weeks</p>
   </nav>
   <div class="comparison-motion-tools">
-    <a href="./progress.html">Fit another scan pair</a>
+    <a href="./progress.html" id="openScanPair">Compare two scans</a>
       <a href="./region-review.html?baseline=upper" target="_blank" rel="noopener">Paint USER_ONE upper baseline</a>
       <a href="./region-review.html?baseline=lower" target="_blank" rel="noopener">Paint USER_ONE lower baseline</a>
       <a href="./region-review.html?baseline=upper&amp;visit=progress-01" target="_blank" rel="noopener">Paint USER_ONE week 7 upper</a>
       <a href="./region-review.html?baseline=lower&amp;visit=progress-01" target="_blank" rel="noopener">Paint USER_ONE week 7 lower</a>
       <a href="./region-review.html?baseline=upper&amp;visit=progress-02" target="_blank" rel="noopener">Paint USER_ONE week 18 upper</a>
-      <a href="./region-review.html?baseline=lower&amp;visit=progress-02" target="_blank" rel="noopener">Paint USER_ONE week 18 lower</a>
+      <a href="./region-review.html?baseline=lower&amp;visit=progress-02&amp;capture=fusion-h-4" target="_blank" rel="noopener">Paint USER_ONE week 18 lower</a>
     <label>Timing assumption <select id="comparisonTiming"><option value="uniform">Uniform motion</option><option value="smooth">Slow start and finish</option><option value="delayed">Delayed start</option></select></label>
     <label>Tooth <select id="comparisonTooth" disabled><option value="">All teeth</option></select></label>
     <button id="comparisonFocusTooth" type="button" disabled>Focus selected tooth</button>
     <button id="comparisonEndpointFit" type="button" aria-pressed="false" hidden>Inspect estimated endpoint</button>
   </div>
+  <p class="comparison-help">Compare two scans opens a separate tool for uploading two visits and estimating positions between them. Return here to continue this sample.</p>
   <details><summary>Proximity hints</summary><p id="comparisonProximity" class="comparison-help"></p></details>
   <p id="comparisonMatchDetail" class="comparison-help" aria-live="polite"></p>
   <button id="comparisonMotionRetry" type="button" hidden>Retry motion preview</button>

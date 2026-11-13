@@ -150,7 +150,7 @@ function plannedQuaternion(pose, frame) {
 
 export function createViewer(container, { schematicOnly = false } = {}) {
   let needsRender = true;
-  const highlightMaterial = new THREE.MeshStandardMaterial({ roughness: 0.55 });
+  const highlightMaterial = new THREE.MeshStandardMaterial({ roughness: 0.55, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
   let rootsVisible = !schematicOnly;
   const toothGeometry = (tooth) => (!schematicOnly && meshGeometryCache.get(tooth)) || syntheticToothGeometry(tooth, rootsVisible);
   const renderer = new THREE.WebGLRenderer({ antialias: true });

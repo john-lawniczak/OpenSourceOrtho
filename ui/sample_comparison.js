@@ -142,7 +142,7 @@ function mount(renderAll) {
   modes.setAttribute("role", "group");
   modes.setAttribute("aria-label", "Sample example mode");
   modes.innerHTML = `<button type="button" data-sample-view="observed">Scan history</button>
-    <button type="button" data-sample-view="simulation">Painted tooth workspace</button>
+    <button type="button" data-sample-view="simulation">Explore individual teeth</button>
     <p id="sampleSimulationNote" hidden>Exploratory workspace — painted regions are contributor drafts. Proposed stages are separate from observed history. Week 7 arches are arranged for viewing; their displayed gap is not a measured bite.</p>
     <label id="sampleVisitControl" hidden>Painted scan <select id="samplePaintedVisit"><option value="progress-01">Week 7 · latest saved painting</option><option value="initial">Week 1 · baseline painting</option></select></label>
     <button id="sampleReloadPainting" type="button" hidden>Reload saved painting</button>`;
@@ -150,6 +150,9 @@ function mount(renderAll) {
   panel.id = "sampleComparison";
   panel.innerHTML = comparisonTemplate;
   el("viewerBlock").prepend(modes, panel);
+  el("highlightScanWeeks").addEventListener("change", event => {
+    panel.classList.toggle("scan-highlights-off", !event.target.checked);
+  });
   modes.addEventListener("click", async event => {
     const button = event.target.closest("[data-sample-view]");
     if (!button) return;

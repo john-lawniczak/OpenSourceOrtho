@@ -24,3 +24,16 @@ test("week 18 byte integrity failures are surfaced without requesting older scan
   assert.equal(calls.length, 3);
   assert.ok(calls.every(url => url.includes("visits/progress-02/")));
 });
+
+test("alternative lower painting captures retain their own identities", () => {
+  for (const capture of ["fusion-h-4", "fusion-h-6"]) {
+    const manifest = read(`captures/${capture}/manifest.json`), source = read(`captures/${capture}/source-metadata.json`);
+    const scan = weekEighteenMetadata(manifest, source, "lower", capture);
+    assert.equal(scan.capture, capture);
+    assert.equal(scan.sha256, manifest.scans[0].sha256);
+    assert.ok(scan.filename.includes(`captures/${capture}/`));
+    assert.throws(() => weekEighteenMetadata(manifest, source, "upper", capture), /Invalid/);
+    source.capture_id = "other";
+    assert.throws(() => weekEighteenMetadata(manifest, source, "lower", capture), /provenance/);
+  }
+});

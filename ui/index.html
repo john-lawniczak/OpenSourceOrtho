@@ -58,7 +58,7 @@
 
         <a class="glossary-link" href="./region-review.html"><span aria-hidden="true">🖌</span> Edit Tooth Precision <small>Paint tooth edges and numbers</small></a>
         <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Home · Tooth Map</button>
-        <button class="glossary-link" data-step-target="notes" type="button">Saved painting notes</button>
+        <button class="glossary-link" data-step-target="notes" type="button">My Notes</button>
         <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open the glossary of key terms">Glossary</button>
         <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging guide</button>
 
@@ -227,6 +227,12 @@
               <p id="planBriefScope" class="viewer-caveat">These are discussion goals. Writing notes does not prescribe movements, set gap sizes, select restorations, or apply IPR. Notes are saved separately in this browser and are not automatically sent to AI or included in movement-plan exports.</p>
               <p id="samplePlanBriefCaveat" class="viewer-caveat" hidden>The sample preview has not been generated from these restoration goals. Reported size differences and tooth history still need professional assessment.</p>
             </section>
+            <form id="focusTeethForm" class="workflow-card">
+              <h4>Focus teeth</h4><p>Choose the teeth discussed in your plan. Use the Focus teeth toggle above to show their painted regions in blue.</p>
+              <label>FDI tooth numbers <input id="focusTeethInput" placeholder="12, 22, 31" maxlength="120" aria-describedby="focusTeethStatus" /></label>
+              <button type="submit">Save focus teeth</button><p id="focusTeethStatus" role="status"></p>
+              <p class="viewer-caveat">A visual reminder only. This does not create movements or infer tooth boundaries from your notes.</p>
+            </form>
             <details class="guided-help"><summary>Watch tooth selection and navigation</summary>
               <video controls preload="none" poster="./workflow-poster.jpg" aria-label="USER_ONE painted tooth selection and camera controls">
                 <source src="./workflow-demo.webm" type="video/webm" />
@@ -536,6 +542,7 @@
                     <button class="mode" data-view="planned" type="button">Planned</button>
                     <button class="mode" data-view="overlay" type="button">Overlay</button>
                     <button class="viewer-aux" id="toothLabelToggle" type="button" role="switch" aria-checked="true" title="Show or hide selectable tooth numbers around the scan">Tooth numbers</button>
+                    <button id="focusTeethToggle" type="button" role="switch" aria-checked="false">Focus teeth</button>
                     <button class="viewer-aux" id="proximityToggle" type="button" aria-pressed="false" title="Show where the upper and lower arches meet (geometric proximity of the registered surfaces, not bite force)">Bite proximity</button>
                     <button class="viewer-aux" id="scaleToggle" type="button" aria-pressed="false" title="Show a true-scale millimetre reference bar beside the loaded scan (needs confirmed mm units)">Scale</button>
                     <button class="viewer-aux" id="registeredBiteToggle" type="button" aria-pressed="false" title="Move the lower arch into the registered occlusion. Only changes separate-frame scans; arches scanned in occlusion already show the true bite.">Registered bite</button>
@@ -734,7 +741,7 @@
         </section>
 
         <section class="panel" id="panel-notes">
-          <div class="panel-heading"><h2>Saved painting notes</h2><p>Read your latest saved notes, or reopen the matching painting to edit them.</p></div>
+          <div class="panel-heading"><h2>My Notes</h2><p>Read your latest saved notes, or reopen the matching painting to edit them.</p></div>
           <button id="refreshPaintingNotes" type="button">Refresh saved notes</button>
           <p id="paintingNotesStatus" role="status"></p>
           <div id="paintingNotesList" class="painting-notes-list"></div>
@@ -972,7 +979,7 @@
           <button class="mode-choice is-active" data-user-mode="advanced" type="button">Technician</button>
         </div><p>Guided keeps the focus on your scan. Technician adds advanced controls.</p></fieldset>
             <div class="ai-connector">
-              <label>Provider
+              <label>AI Model Provider
                 <select id="chatProvider"></select>
               </label>
               <label>Model
@@ -1002,5 +1009,6 @@
     <script type="module" src="./app.js"></script>
     <script type="module" src="./tooth_explorer.js"></script>
     <script type="module" src="./painting_notes.js"></script>
+    <script type="module" src="./scan_pair_workspace.js"></script>
   </body>
 </html>

@@ -15,7 +15,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   const geometry = comparisonGeometry(scan), material = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
   const mesh = new THREE.Mesh(geometry, material); scene.add(mesh);
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 2000);
-  const viewContext = { arch: scan.arch }, pose = scanFrontPose(scan.arch);
+  const viewContext = { arch: scan.arch, front: scan.paintingFront }, pose = scan.paintingFront || scanFrontPose(scan.arch);
   camera.up.fromArray(pose.up); camera.position.fromArray(pose.direction).multiplyScalar(100);
   const selection = createRegionSelection(host, scene, geometry, camera);
   const boundaries = createBoundaryView(scene, geometry);

@@ -133,7 +133,7 @@ ambiguous; fitted translations and rotations are unchanged by this diagnostic.
 
 ## Painted USER_ONE workspace
 
-The test case's **Painted tooth workspace** opens the saved week 7 upper and
+The test case's **Explore individual teeth** opens the saved week 7 upper and
 lower regions. Choose **Week 1** to inspect the baseline painting, or **Reload
 saved painting** after saving another draft. Section 3 accepts either FDI or US
 Universal numbers; the selected crown uses exactly that annotation's source
@@ -175,3 +175,28 @@ proximity values. Week 18 painting links open that exact arch and visit with
 separate saves. After painting, a new endpoint fit can attempt a best-effort
 week 1–18 research preview, retaining uncertainty for model chips and unmatched
 regions. Painting alone does not regenerate it.
+
+## Week 18 painting selection
+
+The scan-history painting buttons prepare the original `progress-02-upper.stl`
+and the additional lower **Fusion H4** capture. There is only one supplied upper
+capture. H4 is a tentative lower painting preference because its margins appear
+more compact in the existing capture comparison; it is not a validated accuracy
+winner. The week-18 model-chip notes remain visible in the editor.
+
+The lower editor offers Original, Fusion H4 and Fusion H6. Each capture is verified
+against its manifest SHA-256 and saves separate versioned annotations and notes:
+`week-18-lower`, `week-18-lower-fusion-h-4`, and `week-18-lower-fusion-h-6` under
+`.orthoplan-region-corrections/USER_ONE/`. Upper saves use `week-18-upper`.
+My Notes reopens the exact saved capture. Existing original-scan saves remain valid.
+These prepared surfaces start unpainted unless a matching local draft exists;
+no old face labels are copied onto a different mesh. Painting does not reconstruct
+missing model surfaces. Leave uncertain chip regions unreviewed.
+
+The observed week-18 history continues to display the original pair. Choosing H4
+for painting does not replace that observation or generate a week 1–18 motion fit.
+After both paintings are saved and reviewed, they can be incorporated separately.
+
+Week 18 painting uses a separate inspection camera because these model captures
+have different axes from the earlier intraoral scans. Default/Face-on and the
+relative Above/Side presets change only the camera, never vertex or label order.

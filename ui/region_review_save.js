@@ -2,8 +2,8 @@ import { autoGrowTextarea } from "./auto_textarea.js";
 import { saveBrowserPainting } from "./region_browser_saves.js";
 const el = id => document.getElementById(id);
 
-export async function fetchBaselineSave(arch, visit = "initial") {
-  const response = await fetch(`/api/region-corrections/${arch}?visit=${encodeURIComponent(visit)}`, { cache: "no-store" });
+export async function fetchBaselineSave(arch, visit = "initial", capture = "original") {
+  const response = await fetch(`/api/region-corrections/${arch}?visit=${encodeURIComponent(visit)}${capture === "original" ? "" : `&capture=${encodeURIComponent(capture)}`}`, { cache: "no-store" });
   const result = await response.json();
   if (!response.ok || !result.ok) throw new Error((result.errors || ["Could not read saved labels."]).join(" "));
   return result;
@@ -32,10 +32,11 @@ export function setupRegionSaving(getContext) {
   }
   async function refreshSummary() {
     const visit = el("reviewVisit").value;
+    const capture = el("reviewCapture").value;
     for (const arch of ["upper", "lower"]) {
       try {
-        const result = await fetchBaselineSave(arch, visit);
-        if (el("reviewVisit").value !== visit) return;
+        const result = await fetchBaselineSave(arch, visit, visit === "progress-02" && arch === "lower" ? capture : "original");
+        if (el("reviewVisit").value !== visit || el("reviewCapture").value !== capture) return;
         const badge = el(`reviewSaved${arch}`);
         badge.hidden = !result.saved;
         badge.textContent = `${arch} · ${result.review_status}`;
@@ -56,7 +57,7 @@ export function setupRegionSaving(getContext) {
       if (!scan.visit) result = await saveBrowserPainting(scan, corrections, notes, baseSavedAt);
       else {
         const response = await fetch("/api/region-corrections", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ arch: scan.arch, visit: scan.visit, corrections, notes, base_saved_at: baseSavedAt }) });
+          body: JSON.stringify({ arch: scan.arch, visit: scan.visit, capture: scan.capture || "original", corrections, notes, base_saved_at: baseSavedAt }) });
         result = await response.json();
         if (!response.ok || !result.ok) throw new Error((result.errors || ["Save failed."]).join(" "));
       }

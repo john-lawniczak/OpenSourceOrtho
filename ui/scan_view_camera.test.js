@@ -54,3 +54,16 @@ test("camera fit contains large offset scans in both wide and narrow viewports",
     }
   }
 });
+
+test("alternate painting axes keep front, above and side distinct", () => {
+  const box = new THREE.Box3(new THREE.Vector3(-20,-15,-10), new THREE.Vector3(20,15,10));
+  const front = {direction:[0,1,0], up:[0,0,-1]};
+  for (const arch of ["upper", "lower"]) {
+    assert.deepEqual(scanViewPose(box, "default", {arch, front}), front);
+    for (const command of ["above", "side"]) {
+      const pose = scanViewPose(box, command, {arch, front});
+      assert.equal(new THREE.Vector3(...pose.direction).dot(new THREE.Vector3(...pose.up)), 0);
+      assert.equal(new THREE.Vector3(...pose.direction).dot(new THREE.Vector3(...front.direction)), 0);
+    }
+  }
+});

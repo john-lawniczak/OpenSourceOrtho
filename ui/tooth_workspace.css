@@ -67,3 +67,9 @@
   #viewerBlock .trust-status-strip { grid-template-columns: 1fr; min-width: 0; }
   #viewerBlock .trust-status-item { min-width: 0; overflow-wrap: anywhere; }
 }
+
+#focusTeethForm label { display: grid; gap: 6px; margin-bottom: 10px; }
+#focusTeethForm input { max-width: 360px; }
+#focusTeethForm button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
+#focusTeethToggle[aria-checked="true"], .viewer-tooth-row button.is-plan-focus { background: #2563eb; color: white; }
+.viewer-tooth-row button.is-plan-focus[aria-pressed="true"] { border: 3px solid #e9ab36; }

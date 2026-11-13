@@ -317,3 +317,24 @@ changed. Navigating from lower down the page returns the shared view below the
 step rail. The viewer scrolls normally, so it does not cover notes or consume the
 whole screen on smaller devices. Review and Print / send keep their checks and
 handoff controls below the view without showing the tooth-editing panel.
+
+### Focus teeth and scan tools
+
+Settings labels the connector **AI Model Provider**; saved painting notes are in
+**My Notes**. The sample's **Explore individual teeth** mode selects painted
+regions in the main viewer; the painting buttons open **Edit Tooth Precision**.
+
+Step 3 has an explicit FDI **Focus teeth** list. Save numbers, then use the viewer's
+Focus teeth switch to highlight available painted crowns and their number buttons
+in blue. Preferences are stored by plan ID with isolated USER_ONE storage. The
+private sample brief supplies 12, 22 and 31; filtered public installations do not
+receive that private default. Missing regions are listed instead of approximated.
+Focus preferences do not change movement data, review status, or AI context.
+
+Recorded scan weeks have optional blue borders and a light fill, alongside their
+Observed labels. The switch hides that decoration without hiding provenance.
+**Compare two scans** opens the independent endpoint-fitting tool in a dialog;
+both Back controls return to the same section/week. Closing the dialog keeps its
+unfinished comparison in memory until the main page is reloaded. Use that tool's
+Save locally action for durable comparisons. Painting and comparison links are
+styled as buttons while preserving normal link behavior for modified clicks.
