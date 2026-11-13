@@ -47,3 +47,25 @@ test("FDI and Universal numbers distinguish molars from front teeth", () => {
   assert.equal(universalToothNumber("20"), null);
   assert.deepEqual(FDI_TEETH.map(universalToothNumber).sort((a, b) => a - b), Array.from({ length: 32 }, (_, i) => i + 1));
 });
+
+test("explicit FDI and US number selection round-trips all 32 positions", async () => {
+  const { toothFromNumber, universalToothNumber, FDI_TEETH } = await import("./tooth_selection.js");
+  for (const id of FDI_TEETH) {
+    assert.equal(toothFromNumber(id, "FDI"), id);
+    assert.equal(toothFromNumber(universalToothNumber(id), "US"), id);
+  }
+  for (const value of ["", "abc", "1.5", "0", "99"]) assert.equal(toothFromNumber(value, "FDI"), null);
+});
+
+test("plan note tags accept explicit FDI mentions with punctuation and deduplicate", async () => {
+  const { parseToothMentions } = await import("./tooth_selection.js");
+  assert.deepEqual(parseToothMentions("Focus on @12 and @22.\n- Repair #31; compare (@12), **#48**."), ["12", "22", "31", "48"]);
+  assert.deepEqual(parseToothMentions("@12/#22"), ["12"]); // The slash-prefixed token could be a URL fragment.
+  assert.deepEqual(parseToothMentions(FDI_TEETH.map(id => `@${id}`).join(" ")), FDI_TEETH);
+});
+
+test("plan note tags reject ordinary numbers and partial or invalid tokens", async () => {
+  const { parseToothMentions } = await import("./tooth_selection.js");
+  assert.deepEqual(parseToothMentions("12 22 31 @1 @123 #310 @19 #49 @012 #12abc @22_2 @12.5 name@12.com name#22 @12.com #123abc @@12 ##22 /#31"), []);
+  assert.deepEqual(parseToothMentions("(#11). @22! #31?"), ["11", "22", "31"]);
+});

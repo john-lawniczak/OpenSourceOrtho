@@ -2,6 +2,12 @@
 
 This document tracks how OpenSource Ortho should use OpenAI-compatible agentic model providers.
 
+Selected USER_ONE chat context includes saved label summaries for both arches at
+weeks 1 and 7, with visit-specific draft/review status and up to 4,000 characters
+of notes per annotation. It excludes raw face labels, scan bytes and unsaved
+browser edits. Notes remain untrusted data. External sharing still requires the
+existing explicit consent; loading newer labels does not regenerate motion fits.
+
 ## Role
 
 OpenAI-backed agents are advisory reviewers only. They may summarize plan data, identify configured-rule findings already present in the report, and suggest follow-up questions under declared data limitations.
@@ -325,7 +331,9 @@ until a real request succeeds. Chat recovery buttons use a spaced, wrapping row.
 Chat's **Context** selector separates the current planning workspace from
 **USER_ONE scans & saved labels**. Automatic mode follows the sample scan-history
 view; the simulated planning demo uses its workspace plan. Returning from a
-USER_ONE baseline painting page selects USER_ONE explicitly. The selection
+guided detail/review/preview step restores section 2's chosen view; automatic
+chat context follows the currently displayed view, not that remembered preference.
+Returning from a USER_ONE baseline painting page selects USER_ONE explicitly. The selection
 survives same-tab reloads with the conversation, and is visible before sending.
 
 A `case_source: user_one` request in `full_plan` scope builds bounded metadata
@@ -354,3 +362,27 @@ Selected USER_ONE context also supplies `dentition` from the specimen-checked
 with extraction dates unknown. This is reported history, not an independent
 anatomical finding. Published annotation drafts remain distinct from locally saved
 labels and the existing motion estimates.
+
+### Guided plan discussion notes
+
+The guided step labels now distinguish **Explore your teeth** (step 2), **Your plan**
+(step 3), and **Review** (step 4). Chat stage metadata uses those labels. The new
+plan brief is user-authored discussion text stored separately in browser storage;
+it is not appended to provider requests, tooth-goal requests, generation prompts,
+or movement-plan JSON. The private sample brief is likewise not automatically
+shared. Writing these notes never applies an IPR, spacing or movement instruction.
+
+The assistant header's **Model API Key** shortcut opens the existing Settings
+dialog and focuses the key field, or the provider selector when the current
+provider uses no key. It shares the same page-only password field as the main
+Settings gear; keys are not persisted and provider/sharing choices are unchanged.
+
+The connector label is **AI Model Provider**. Explicit My Highlighted Teeth preferences
+are display-only, stored separately by plan in the browser, and never added to
+provider prompts or converted into movements. Optional defaults come from the
+private sample brief; they are not embedded in public UI code.
+
+Explicit `@12` / `#12` shortcuts in user-authored plan notes add validated FDI
+numbers to the browser's My Highlighted Teeth preference. This is a deterministic display
+shortcut, not a model action or a movement instruction. It leaves provider
+requests, sharing consent and the highlight visibility switch unchanged.

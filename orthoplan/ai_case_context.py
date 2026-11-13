@@ -44,9 +44,9 @@ def _scan_visits() -> tuple[list, list]:
     return scans, notes
 
 
-def _annotation(arch: str) -> dict:
-    record = load_baseline_corrections(arch)
-    result = {"arch": arch, "week": 1, "saved": record.get("saved", False)}
+def _annotation(arch: str, visit: str = "initial") -> dict:
+    record = load_baseline_corrections(arch, visit=visit)
+    result = {"arch": arch, "week": 1 if visit == "initial" else 7, "saved": record.get("saved", False)}
     if not record["ok"]:
         return {**result, "status": "Saved labels could not be validated; omitted."}
     if not record.get("saved"):
@@ -77,6 +77,7 @@ def user_one_chat_context() -> dict:
     case = {"pseudonym": "USER_ONE", "specimen_id": SAMPLE_SPECIMEN_ID, "scans": scans,
             "dentition": (_read("treatment-context.json") or {}).get("dentition"),
             "source_notes": notes, "saved_baseline_labels": [_annotation(a) for a in ["upper", "lower"]],
+            "saved_progress_labels": [_annotation(a, "progress-01") for a in ["upper", "lower"]],
             "motion_estimates": [m for a in ["upper", "lower"] if (m := _motion(a))],
             "limitations": ["Scan metadata and saved label summaries, not visual inspection of crowns.",
                             "No enamel thickness, contact/space analysis or measured bite supplied here.",

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Create Retainer · Reference preparation</title>
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./scan_review_controls.css">
+<link rel="stylesheet" href="./retainer.css">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script></head>
+<body class="retainer-page">
+<main><a id="retainerBack" href="./">← Back to your workspace</a>
+<h1>Create Retainer</h1><h2>1 · Prepare a current-scan reference</h2>
+<p>Start with a current scan and review a reference model with <strong>zero proposed tooth movement</strong>. This preparation stays separate from your movement plan.</p>
+<p class="viewer-caveat">This first step produces an unchanged reference model, not a wearable retainer. Wearable output needs fit review and appropriate materials and processing—not just printable geometry. Those steps are future work.</p>
+<form id="retainerForm">
+<div class="controls"><label>Current scan (STL)<input id="retainerFile" type="file" accept=".stl" required></label>
+<label>Arch<select id="retainerArch" required><option value="">Choose arch</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label>
+<label>Scan units<select id="retainerUnits"><option value="unverified">Unverified</option><option value="mm">mm</option><option value="cm">cm</option><option value="inch">inch</option><option value="meter">meter</option></select></label>
+<label>Scan date (optional)<input id="retainerDate" type="date"></label></div>
+<label class="retainer-confirm"><input id="retainerCurrent" type="checkbox" required> This is the current scan I want to review.</label>
+<button type="submit" id="retainerPrepare">Prepare reference model</button></form>
+<p id="retainerStatus" role="status">Choose a current STL to begin. Your files stay in this browser tab.</p>
+<section id="retainerResult" hidden><h2>Reference model · review only</h2>
+<p id="retainerSummary"></p><div class="controls"><button type="button" id="retainerRotate" aria-pressed="true">Rotate</button><button type="button" id="retainerPan" aria-pressed="false">Pan</button></div>
+<div class="review-viewport"><div id="retainerCanvas" aria-label="Unchanged reference scan"></div></div>
+<div class="controls"><button id="retainerDownload" type="button">Download reference STL</button><button id="retainerRecord" type="button">Download preparation record</button></div>
+<p>The STL retains its original coordinates and scale. The preparation record identifies it by hash and records zero proposed movement. Download both to keep the reference and its review context. This draft remains in this tab until reload.</p>
+<h3>Next: fit, materials and processing review</h3><p>Not implemented in this first step. No shell design or wearable export is available.</p></section>
+</main><script type="module" src="./retainer.js"></script></body></html>

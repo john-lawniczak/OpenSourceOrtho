@@ -1,3 +1,7 @@
+import "./precision_workspace.js";
+import { registerUploadedScans } from "./upload_registration.js";
+import { newScanDates, matchScanDates } from "./scan_dates.js";
+import { restoreUploadDates } from "./storage.js";
 import { initializeChatPersistence } from "./chat_persistence.js";
 import { installToothWorkspace } from "./tooth_workspace.js";
 import { bindCbctRegistration } from "./cbct_registration_review.js";
@@ -78,10 +82,8 @@ function setUserMode(mode) {
   renderAll();
   maybeRecenterPreview();
 }
-// The 3D viewer may be sized while its host is hidden (1x1) or framed for a
-// previous scene. When it becomes visible - or moves between guided step hosts
-// (teeth, details, preview all now embed it) - request a one-shot re-frame that
-// runs after the next evaluation populates the scene at its real size.
+// Mode changes can resize the viewer. Ordinary guided step navigation keeps
+// the shared host and camera unchanged.
 const VIEWER_GUIDED_STEPS = new Set(["plan", "details", "preview"]);
 const GUIDED_STAGE_CONTEXT = {
   upload: {
@@ -89,12 +91,12 @@ const GUIDED_STAGE_CONTEXT = {
     purpose: "Collect scan files and confirm the educational-use acknowledgement.",
   },
   plan: {
-    label: "Guided step 2: Teeth and time",
-    purpose: "Generate a starter staged plan, choose which teeth move, and set tray wear interval.",
+    label: "Guided step 2: Explore your teeth",
+    purpose: "Check tooth identities and boundaries, explore a staged preview, and set timeline spacing.",
   },
   details: {
-    label: "Guided step 3: Details",
-    purpose: "Inspect stage-by-stage movement and make small reviewed target edits.",
+    label: "Guided step 3: Your plan",
+    purpose: "Describe discussion goals separately from movement data, inspect teeth, and explore changes.",
   },
   review: {
     label: "Guided step 4: Review",
@@ -334,25 +336,22 @@ document.body.addEventListener("click", (event) => {
     state.activeStep = "review";
     goGuided(guidedStepTarget.dataset.gstepNav);
     renderAll();
-    maybeRecenterPreview();
     return;
   }
   if (button?.id === "guidedBack") {
     guidedBack();
     renderAll();
-    maybeRecenterPreview();
   }
   if (button?.id === "guidedNext") {
     guidedNext();
     renderAll();
-    maybeRecenterPreview();
   }
   if (button?.id === "sampleLaunch") {
     discardGoalPreview();
     // The sidebar launcher toggles the sample so it can be exited from either
     // Guided or Technician view, wherever the user has navigated.
     if (sampleActive()) {
-      exitSample();
+      exitSample(); resumeUploadRegistration();
     } else {
       enterSample();
       requestViewerRefit();
@@ -363,7 +362,7 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "teethProfile") {
     discardGoalPreview();
-    if (sampleActive()) exitSample();
+    if (sampleActive()) { exitSample(); resumeUploadRegistration(); }
     state.activeStep = "upload";
     state.guided.step = "upload";
     renderAll();
@@ -371,7 +370,7 @@ document.body.addEventListener("click", (event) => {
   }
   if (button?.id === "sampleExit") {
     discardGoalPreview();
-    exitSample();
+    exitSample(); resumeUploadRegistration();
     renderAll();
   }
   if (button?.id === "guidedBuild") {
@@ -466,7 +465,7 @@ document.body.addEventListener("click", (event) => {
   }
   if (removeUploadTarget) {
     const nextFiles = state.files.filter((_, index) => index !== Number(removeUploadTarget.dataset.removeUpload));
-    setUploadedFiles(nextFiles);
+    setUploadedFiles(nextFiles, true);
   }
   if (clearUploadsTarget) {
     setUploadedFiles([]);
@@ -522,10 +521,10 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "stagePlayToggle") {
     toggleStagePlayback();
   }
-  if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
+  if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab" || button?.id === "topbarAskAI") {
     state.chat.collapsed = !state.chat.collapsed;
     renderChat();
-    el(state.chat.collapsed ? "chatReopenTab" : "chatCaseSource").focus();
+    el(state.chat.collapsed ? (button.id === "topbarAskAI" ? "topbarAskAI" : "chatReopenTab") : "chatInput").focus();
   }
   if (button?.id === "generatePlan") {
     generatePlan();
@@ -571,7 +570,7 @@ function uploadLabel(files, emptyLabel) {
 // Reference panels (Key Terms / Tooth Map, Imaging & Photos guide) are reachable
 // from the sidebar in BOTH guided and technician mode. They are not workflow
 // steps, so opening one remembers where to return to.
-const INFO_STEPS = ["toothmap", "glossary", "photos"];
+const INFO_STEPS = ["toothmap", "glossary", "photos", "notes"];
 
 function goToStep(step) {
   if (INFO_STEPS.includes(step) && !INFO_STEPS.includes(state.activeStep)) {
@@ -580,7 +579,7 @@ function goToStep(step) {
   state.activeStep = step;
 }
 
-async function setUploadedFiles(files) {
+async function setUploadedFiles(files, preserveDates = false) {
   if (state.sample.active) return;
   stopStagePlayback();
   discardGoalPreview();
@@ -590,7 +589,9 @@ async function setUploadedFiles(files) {
   state.demoInitialOffsets = {};
   el("scanUnits").value = "unverified";
   const scanFiles = files.filter((file) => isSupportedScanName(file?.name));
+  state.scanDates = preserveDates ? matchScanDates(scanFiles, state.scanDates) : newScanDates(scanFiles);
   state.files = scanFiles;
+  const current = () => state.files === scanFiles && !state.sample.active;
   state.file = scanFiles[0] || null;
   state.scanSources = [];
   state.useDemoMeshes = false;
@@ -607,16 +608,22 @@ async function setUploadedFiles(files) {
     : "";
   updateUploadLabels();
   if (scanFiles.length) {
+    let storageWarning = "";
     state.uploadStorageStatus = "Saving scan files locally in this browser...";
     try {
-      await saveUploadedFiles(scanFiles);
+      await saveUploadedFiles(scanFiles, state.scanDates);
+      if (!current()) return;
       state.uploadStorageStatus = "Saved locally in this browser. Registering scan bytes with the local engine...";
     } catch (error) {
-      state.uploadStorageStatus = `Loaded for this session only; browser storage failed: ${error.message}`;
+      if (!current()) return;
+      storageWarning = `Loaded for this session only; browser storage failed: ${error.message}`;
+      state.uploadStorageStatus = storageWarning;
     }
-    await registerUploadedScans(scanFiles);
+    await registerUploadedScans(state, scanFiles, uploadScanFile, storageWarning);
+    if (!current()) return;
   } else {
     await clearUploadedFiles().catch(() => {});
+    if (!current()) return;
     state.uploadStorageStatus = files.length ? `No supported scan files (${SCAN_FORMATS_LABEL}).` : "";
     el("stlFile").value = "";
     el("simpleStlFile").value = "";
@@ -791,38 +798,6 @@ function applyServerPlanParts(snapshot) {
   if (!snapshot) return;
   state.registrations = snapshot.registrations || [];
   state.derivedAnatomy = snapshot.derived_anatomy || null;
-}
-
-async function registerUploadedScans(files) {
-  const registered = [];
-  const errors = [];
-  for (const file of files) {
-    try {
-      const arch = state.scanArch || inferArchFromName(file.name) || "";
-      const result = await uploadScanFile(file, { arch });
-      if (result.ok === false) {
-        errors.push(`${file.name}: ${(result.errors || ["upload failed"]).join("; ")}`);
-        continue;
-      }
-      registered.push({
-        name: file.name,
-        url: result.url,
-        arch: arch || inferArchFromName(file.name) || null,
-        asset: result.asset,
-      });
-    } catch (error) {
-      errors.push(`${file.name}: ${error.message}`);
-    }
-  }
-  state.scanSources = registered;
-  if (registered.length) {
-    const detail = errors.length ? ` ${errors.length} upload(s) could not be registered.` : "";
-    state.uploadStorageStatus =
-      `Registered ${registered.length} scan file(s) with the local engine for segmentation and case metadata.${detail}`;
-  } else if (errors.length) {
-    state.uploadStorageStatus =
-      `Loaded in this browser, but the local engine could not register the scan bytes: ${errors.join("; ")}`;
-  }
 }
 
 function updateUploadLabels() {
@@ -1013,15 +988,17 @@ function restoreStoredSegmentation() {
 }
 
 async function restoreStoredUploads() {
+  const previousFiles = state.files;
   try {
-    const files = await restoreUploadedFiles();
-    if (!files.length) return;
-    state.files = files;
+    const [files, dates] = await Promise.all([restoreUploadedFiles(), restoreUploadDates()]);
+    if (!files.length || state.files !== previousFiles || state.sample.active) return;
+    state.files = files; state.scanDates = matchScanDates(files, dates);
     state.file = files[0];
     state.scanSources = [];
     state.useDemoMeshes = false;
     state.uploadStorageStatus = "Restored saved scan files from this browser. Registering with the local engine...";
-    await registerUploadedScans(files);
+    await registerUploadedScans(state, files, uploadScanFile);
+    if (state.files !== files || state.sample.active) return;
     updateUploadLabels();
     renderAll();
   } catch {
@@ -1250,3 +1227,9 @@ renderAll();
 restoreStoredUploads();
 restoreStoredSegmentation();
 loadVersions();
+
+function resumeUploadRegistration() {
+  if (state.files.length && !state.scanSources.length) {
+    void registerUploadedScans(state, state.files, uploadScanFile).then(renderAll);
+  }
+}

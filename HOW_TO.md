@@ -256,13 +256,13 @@ must be entered again after a reload or full-page navigation. Failed sends keep
 the prompt for retry; **Reuse prompt** copies an earlier failed question back to
 the composer. New requests use the current workspace, even when old chat remains.
 
-### Paint USER_ONE baseline tooth boundaries
+### Paint USER_ONE week 1 and week 7 tooth boundaries
 
 This belongs in **step 2: Teeth & time**, after scans are loaded and before
 movement stages are authored. Open **Paint tooth boundaries** in the sidebar,
 use the links in step 2, or choose an upper/lower painting link from Scan history.
 
-1. Choose **Upper** or **Lower**. Only the matching
+1. Choose **Scan visit → Week 1** or **Week 7**, then **Upper** or **Lower**. Only the matching
    FDI tooth numbers appear: upper 11–18 / 21–28; lower 31–38 / 41–48. An upper
    number such as 18 should never label the lower scan.
 2. Choose a tooth, then **Paint tooth**. Colors are on by default. **Label
@@ -274,12 +274,21 @@ use the links in step 2, or choose an upper/lower painting link from Scan histor
 3. Use **Save locally** for each arch. Leave the review checkbox off for drafts;
    check it only after inspecting all boundaries and numbers. Notes can record
    uncertain identities, missing teeth, and model chips. Loading a baseline again
-   resumes its latest save. **Download JSON** creates a portable copy.
+   resumes its latest save. Week 7 resumes its own save, or starts gray/unpainted.
+   **Download JSON** creates a portable copy.
 4. Once both arches are finished and saved, say **both baselines are saved**.
    The versioned files are in `.orthoplan-region-corrections/USER_ONE/` under
    `baseline-upper/` and `baseline-lower/`. They stay local until validated and
    deliberately incorporated into the private dataset. Saving does not
    automatically change the movement preview or train a model.
+
+Open week 7 directly: [Upper](http://127.0.0.1:8000/region-review.html?baseline=upper&visit=progress-01)
+or [Lower](http://127.0.0.1:8000/region-review.html?baseline=lower&visit=progress-01).
+These are the original `progress-01` STL surfaces. Paint crowns and save each arch;
+week 7 snapshots go into `week-7-upper/` and `week-7-lower/` under the same local
+USER_ONE directory. Reload restores labels, notes and review status. Week 1 labels
+are kept separately and cannot be imported onto a different scan. Once finished,
+say **both week 7 arches are saved** so we can inspect their source-bound annotations.
 
 ## 3. Render Local Per-Tooth Meshes
 

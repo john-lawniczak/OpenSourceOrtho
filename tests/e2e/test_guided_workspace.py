@@ -13,6 +13,7 @@ def test_settings_and_phase_navigation_stay_in_place(server_url):  # noqa: F811 
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             expect(page.locator('.sidebar [data-user-mode]')).to_have_count(0)
             expect(page.locator('.app-topbar #openChatSettings')).to_be_visible()
             for step in ['plan', 'details', 'review', 'preview', 'plan']:
@@ -25,8 +26,7 @@ def test_settings_and_phase_navigation_stay_in_place(server_url):  # noqa: F811 
             page.locator('#openChatSettings').click()
             page.locator('[data-user-mode="advanced"]').click()
             expect(page.locator('#chatSettingsDialog')).not_to_be_visible()
-            page.locator('#anatomyPanel > summary').click()
-            page.wait_for_selector('.anatomy-actions')
+            expect(page.locator("#sampleStatusChip")).to_contain_text("Sample ready", timeout=30000)
             assert page.locator('.sidebar').evaluate('el => el.scrollWidth <= el.clientWidth')
             for width in [1200, 390]:
                 page.set_viewport_size({"width": width, "height": 900})

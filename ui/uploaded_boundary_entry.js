@@ -1,6 +1,10 @@
+import { state } from "./state.js";
+import { openPrecisionWorkspace } from "./precision_workspace.js";
+import { sourceRotation } from "./scan_source_orientation.js";
 import { caseStore } from "./progress_case_store.js";
 import { parseStlGeometry } from "./stl.js";
 import { RegionEdits } from "./region_edits.js";
+import { browserPaintingKey, loadBrowserPainting } from "./region_browser_saves.js";
 import { isBrowserParsableScan, looksLikePointCloud } from "./scan_formats.js";
 
 let host, sources = [], signature;
@@ -34,6 +38,9 @@ async function openEditor() {
   const source = sources[Number(host.querySelector("#boundaryScan").value)];
   const arch = host.querySelector("#boundaryArch").value;
   if (!source || !arch) { status.textContent = "Choose Upper or Lower before opening this scan."; return; }
+  if (state.sample.active) {
+    openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${state.sample.visit || "progress-01"}`); return;
+  }
   button.disabled = true; status.textContent = "Preparing the original surface…";
   try {
     let bytes;
@@ -49,11 +56,15 @@ async function openEditor() {
     if (!count) throw new Error("This scan has no triangles to paint.");
     const digest = await crypto.subtle.digest("SHA-256", bytes);
     const sha256 = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
-    const name = `boundary-${crypto.randomUUID()}`;
-    await caseStore("put", { name, returnToCase: false,
-      scan: { bytes, arch, sha256, filename: source.name, rotation: [1, 1, 1], autoView: true },
+    const rotation = await sourceRotation(sha256, arch);
+    const scan = { bytes, arch, sha256, filename: source.name, rotation, autoView: true };
+    const saved = await loadBrowserPainting(scan);
+    // Unsaved transfers have separate IDs; opening one must never overwrite a
+    // durable draft which another editor may save while this request loads.
+    const name = saved ? browserPaintingKey(scan) : `boundary-transfer-${sha256}-${arch}`;
+    if (!saved) await caseStore("put", { name, returnToCase: false, scan,
       labels: new RegionEdits(new Uint8Array(count), arch).export(sha256) }, "edits");
-    location.assign(`./region-review.html?edit=${encodeURIComponent(name)}`);
+    openPrecisionWorkspace(`./region-review.html?edit=${encodeURIComponent(name)}`);
   } catch (error) { status.textContent = error.message; }
   finally { button.disabled = false; }
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Record the bundled sample's real UI for the captioned Upload walkthrough.
+"""Record the private painted sample walkthrough for Upload and Details.
 
 Run with the development virtualenv (Playwright Chromium and ffmpeg required).
-No external model, credentials, or user-uploaded files are used.
+The recording includes private contributor-painted regions and stays in private/media.
 """
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from orthoplan.server import Handler  # noqa: E402
+from orthoplan.datasets import SAMPLE_CASE_DIR  # noqa: E402
+
+OUTPUT = SAMPLE_CASE_DIR / "private/media"
 from playwright.sync_api import expect, sync_playwright  # noqa: E402
 
 
@@ -30,70 +33,68 @@ def stamp(seconds):
 def record(page):
     page.goto(page.base_url, wait_until="networkidle")
     page.locator("#sampleLaunch").click()
-    expect(page.locator('#guidedTeeth [data-select-tooth="11"]')).to_be_visible(timeout=90000)
+    page.locator('[data-sample-view="simulation"]').click()
+    expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
+    page.locator('[data-gstep-nav="details"]').click()
+    expect(page.locator('#guidedTeeth [data-select-tooth]')).to_have_count(28)
     page.locator('#guidedTeeth [data-select-tooth="11"]').click()
-    page.locator("#viewerBlock").evaluate("el => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 72)")
+    page.wait_for_load_state("networkidle")
+    page.locator('.scan-view-controls:visible [data-scan-view="face"]').click()
+    page.locator("#viewer3d").evaluate("el => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 220)")
     page.wait_for_timeout(1500)
-    start = time.monotonic()
-    cues = []
+    start, cues = time.monotonic(), []
+
+    def show_viewer():
+        page.locator("#viewer3d").evaluate("el => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 220)")
 
     def caption(text):
         cues.append((time.monotonic() - start, text))
 
-    caption("Bundled sample: reviewed tooth segments, with a projected stage timeline.")
-    page.screenshot(path=str(ROOT / "ui/workflow-poster.jpg"), type="jpeg", quality=80)
+    caption("USER_ONE week 7: 28 contributor-painted regions. Amber identifies the selected tooth; boundaries are drafts.")
+    page.screenshot(path=str(OUTPUT / "workflow-poster.jpg"), type="jpeg", quality=85)
+    page.wait_for_timeout(3500)
+    caption("Choose an FDI number to select its saved painted region on either arch.")
+    for tooth in [21, 31, 41]:
+        page.locator(f'#guidedTeeth [data-select-tooth="{tooth}"]').click()
+        show_viewer()
+        page.wait_for_timeout(1800)
+    caption("Use the number selector for FDI or US numbering. US 8 selects FDI 11.")
+    page.locator('#toothNumberSystem').select_option('US')
+    page.locator('#toothNumberInput').fill('8')
+    page.locator('#toothNumberForm button').click()
     page.wait_for_timeout(2500)
-    caption("Select a crown or its FDI number below the viewer. Amber marks the selected tooth.")
-    page.locator('#guidedTeeth [data-select-tooth="12"]').click()
-    page.wait_for_timeout(1200)
-    page.locator('#guidedTeeth [data-select-tooth="11"]').click()
-    page.wait_for_timeout(1200)
-    caption("Ask for an explicit geometric change. The local helper needs no API key.")
-    page.locator("#askSelectedTooth").click()
-    page.locator("#chatInput").fill("move 0.6 mm right")
-    page.wait_for_timeout(1800)
-    page.locator("#sendChat").click()
-    expect(page.locator("#applyGoalPreview")).to_be_enabled(timeout=60000)
-    page.wait_for_timeout(1800)
-    page.locator("#toggleChatPanel").click()
-    caption("Inspect the proposal, then Apply or Discard. It has not changed the saved working plan yet.")
-    page.locator("#goalPreviewPanel").scroll_into_view_if_needed()
-    page.wait_for_timeout(2200)
-    page.locator("#applyGoalPreview").click()
-    caption("Drag through each stage and its projected weeks. Current returns to the original scan.")
-    page.locator("#viewerBlock").evaluate("el => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 72)")
-    slider = page.locator("#stageSlider")
-    last = int(slider.get_attribute("max"))
-    for stage in range(last + 1):
-        slider.fill(str(stage))
-        page.wait_for_timeout(900)
-    page.locator('[data-view="current"]').click()
-    page.wait_for_timeout(1800)
-    page.locator('[data-view="planned"]').click()
-    page.wait_for_timeout(1800)
-    caption("Use Undo to restore the prior plan. This is a geometric preview, not a predicted treatment outcome.")
-    page.locator("#guidedEditUndo").click()
-    page.wait_for_timeout(2000)
+    page.locator("#viewer3d").evaluate("el => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 220)")
+    caption("Focus selected tooth brings that painted region closer. Fit scan returns to the full arches.")
+    page.locator('[data-viewer-focus]').click()
+    page.wait_for_timeout(2500)
+    page.locator('.scan-view-controls:visible [data-scan-view="fit"]').click()
+    page.wait_for_timeout(1500)
+    caption("Rotate turns the camera around the scan. Pan moves the view without changing teeth.")
+    box = page.locator('#viewer3d canvas').bounding_box()
+    x, y = box['x'] + box['width'] * .5, box['y'] + box['height'] * .5
+    for mode, dx, dy in [('rotate', 100, 20), ('pan', -70, -30)]:
+        page.locator(f'[data-viewer-drag="{mode}"]').click()
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x + dx, y + dy, steps=8)
+        page.mouse.up()
+        page.wait_for_timeout(1800)
+    caption("Face-on restores the front view. The arch spacing is for viewing, not a measured bite.")
+    page.locator('.scan-view-controls:visible [data-scan-view="face"]').click()
+    page.locator('[data-viewer-drag="rotate"]').click()
+    page.wait_for_timeout(2500)
+    caption("Overlay compares exploratory poses with the source. No preset movement is added; week 7 scale remains unverified.")
+    page.locator('[data-view="overlay"]').click()
+    show_viewer()
+    page.wait_for_timeout(3500)
     return start, time.monotonic(), cues
 
 
 def encode_video(ffmpeg, video, offset, duration, cues):
-    # Keep the request/result interactions while shortening idle computation.
-    cut_from, cut_to = cues[2][0] + 5, cues[3][0] - 2
-    options = []
-    if cut_to > cut_from + 2:
-        filters = (f"[0:v]trim=end={cut_from},setpts=PTS-STARTPTS[a];"
-                   f"[0:v]trim=start={cut_to}:end={duration},setpts=PTS-STARTPTS[b];"
-                   "[a][b]concat=n=2:v=1:a=0[v]")
-        options = ["-filter_complex", filters, "-map", "[v]"]
-        removed = cut_to - cut_from
-        duration -= removed
-        cues = [(stamp - removed if stamp >= cut_to else stamp, text) for stamp, text in cues]
-        cues[2] = (cues[2][0], cues[2][1] + " Processing time shortened in this video.")
     subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-ss", str(offset),
-                    "-i", str(video.path()), *options, "-t", str(duration), "-an",
+                    "-i", str(video.path()), "-t", str(duration), "-an",
                     "-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-cpu-used", "4",
-                    str(ROOT / "ui/workflow-demo.webm")], check=True)
+                    str(OUTPUT / "workflow-demo.webm")], check=True)
     return duration, cues
 
 
@@ -101,6 +102,7 @@ def main():
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise SystemExit("ffmpeg is required")
+    OUTPUT.mkdir(parents=True, exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
@@ -123,8 +125,8 @@ def main():
             for index, (offset, text) in enumerate(cues):
                 stop = cues[index + 1][0] if index + 1 < len(cues) else duration
                 lines.append(f"{stamp(offset)} --> {stamp(stop)}\n{text}\n")
-            (ROOT / "ui/workflow-demo.vtt").write_text("\n".join(lines))
-            print(f"Recorded {duration:.1f}s to ui/workflow-demo.webm")
+            (OUTPUT / "workflow-demo.vtt").write_text("\n".join(lines))
+            print(f"Recorded {duration:.1f}s to {OUTPUT / 'workflow-demo.webm'}")
     finally:
         server.shutdown()
         server.server_close()

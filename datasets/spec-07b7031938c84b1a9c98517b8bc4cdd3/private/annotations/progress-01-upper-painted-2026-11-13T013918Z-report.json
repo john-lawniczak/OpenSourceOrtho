@@ -1,0 +1,41 @@
+{
+  "schema": "ortho-scan-annotation-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "visit": "progress-01",
+  "filename": "progress-01-upper.stl",
+  "saved_at": "2026-11-13T01:39:18.696461+00:00",
+  "notes": "AUTOMATIC DRAFT: Week 1 saved crowns projected onto the observed week 7 mesh using rigid alignment, distance/normal/round-trip checks and connected-region cleanup. Review every tooth number and boundary; gray regions are context or uncertain. Audit: /Users/johnlaw/repos/JohnLaw/OpenSourceOrtho/.orthoplan-region-corrections/USER_ONE/week-7-seed-20261113T010617378511Z/upper-report.json",
+  "review_status": "draft",
+  "summary": {
+    "tooth_ids": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "labeled_faces": 184938,
+    "unlabeled_faces": 147289
+  },
+  "annotation_file": "progress-01-upper-painted-2026-11-13T013918Z.json",
+  "annotation_sha256": "29a532f2c5e984bc6ace3c3ddbefdd08cf7df54e7c87df78d408b164251fbbc5",
+  "local_snapshot_filename": "20261113T013918696461Z-fc1b3d5b18eb4835a4452b97c6e1822e.json",
+  "local_snapshot_sha256": "99999d8235dfee8caffca4dfa855ac82fab6725c632c198a83d1242cf4c2c881",
+  "status": "contributor-painted-draft",
+  "publication_scope": "private-development-only",
+  "limitations": [
+    "Contributor draft; boundaries and tooth identities are not independently verified.",
+    "Includes automatic seed regions and subsequent contributor edits.",
+    "No motion refit, source geometry modification or public publication."
+  ]
+}

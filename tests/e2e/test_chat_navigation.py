@@ -17,7 +17,7 @@ def chat_page(server_url):
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
         page.goto(server_url, wait_until="load")
-        page.locator("#chatReopenTab").click()
+        page.locator("#topbarAskAI").click()
         yield page
         browser.close()
 
@@ -40,7 +40,7 @@ def test_navigation_reload_and_new_chat_preserve_draft_and_history(chat_page, se
     page.locator("#chatInput").fill("Unsent question\nabout this scan")
     page.locator("#toggleChatPanel").click()
     page.locator('[data-step-target="glossary"]').click()
-    page.locator("#chatReopenTab").click()
+    page.locator("#topbarAskAI").click()
     expect(page.locator("#chatInput")).to_have_value("Unsent question\nabout this scan")
     expect(page.locator(".chat-message")).to_have_count(2)
     page.locator("#expandChat").click()

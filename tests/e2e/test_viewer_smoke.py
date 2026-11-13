@@ -29,6 +29,7 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:  # noqa: F811 - pyte
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             # Go to the Review step so the viewer container is visible and sized.
@@ -60,6 +61,7 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.wait_for_selector("#panel-upload.is-active", timeout=15000)
@@ -78,7 +80,8 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
             chip = page.locator("#sampleStatusChip").inner_text()
             assert "Sample ready" in chip
             assert page.locator("#planTitle").input_value() == "Sample test case · USER_ONE"
-            assert page.locator("#scanUnits").input_value() == "mm"
+            visit = page.locator("#samplePaintedVisit").input_value()
+            assert page.locator("#scanUnits").input_value() == ("unverified" if visit == "progress-01" else "mm")
 
             max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")
             assert max_stage > 0
@@ -113,6 +116,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click(".sample-launch")
@@ -121,6 +125,8 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
             page.click('[data-gstep-nav="plan"]')
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
             page.wait_for_selector('#guidedTeeth [data-select-tooth="11"]', timeout=90000)
+            page.locator('#samplePaintedVisit').select_option('initial')
+            expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
             page.click("#guidedBuild")
             page.wait_for_function(
                 """() => document.querySelector('#guidedBuildStatus')?.innerText.includes('CONSISTENT')"""
@@ -164,6 +170,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
@@ -173,19 +180,9 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
             acquisition = page.locator("#acquisitionList").inner_text()
             assert "Root data" in acquisition or "CBCT" in acquisition
 
-            page.click('button.dim[data-dim="2d"]')
-            non_background = page.locator("#archCanvas").evaluate(
-                """canvas => {
-                  const ctx = canvas.getContext('2d');
-                  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                  let changed = 0;
-                  for (let i = 0; i < data.length; i += 4) {
-                    if (!(data[i] === 251 && data[i + 1] === 253 && data[i + 2] === 254)) changed++;
-                  }
-                  return changed;
-                }"""
-            )
-            assert non_background > 1000
+            expect(page.locator('#viewer3d canvas')).to_be_visible()
+            expect(page.locator('#archCanvas')).to_be_hidden()
+            assert len(page.locator('#viewer3d canvas').screenshot()) > 1000
 
             page.click('button.step[data-step="stages"]')
             page.click("#addStage")
@@ -216,6 +213,7 @@ def test_acquisition_print_export_and_visual_screenshots(
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
 
@@ -243,10 +241,7 @@ def test_acquisition_print_export_and_visual_screenshots(
             page.locator("#viewer3d").screenshot(path=str(viewer_path))
             assert viewer_path.stat().st_size > 1000
 
-            page.click('button.dim[data-dim="2d"]')
-            canvas_path = tmp_path / "viewer2d.png"
-            page.locator("#archCanvas").screenshot(path=str(canvas_path))
-            assert canvas_path.stat().st_size > 1000
+            expect(page.locator('[data-dim="2d"]')).to_have_count(0)
         finally:
             browser.close()
 
@@ -266,6 +261,7 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             response = page.evaluate(

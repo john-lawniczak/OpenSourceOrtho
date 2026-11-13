@@ -575,10 +575,7 @@ body[data-theme="dark"] .sample-banner {
   margin: 8px 0 20px;
 }
 
-/* The single 3D viewer is relocated into these hosts for the guided "teeth" and
-   "details" steps. There it is a focused selection / movement-scale aid, so the
-   full technician toolbar, manual-target panel, and caveats are hidden - leaving
-   the canvas and its zoom controls. */
+/* Guided steps share one visual host above their text and controls. */
 .guided-viewer-host {
   margin: 8px 0 12px;
 }
@@ -593,12 +590,8 @@ body[data-theme="dark"] .sample-banner {
   display: none;
 }
 
-/* Step 5 is inspection-only: its Before/After/Overlay control owns the view
-   state, while target authoring remains in Step 3. */
-#guidedPreviewHost .viewer-toolbar > button.mode,
-#guidedPreviewHost .manual-edit {
-  display: none;
-}
+/* Tooth authoring stays in the shared guided controls, not the technician panel. */
+#guided .manual-edit { display: none; }
 
 /* Prominent "how the 3D view works" card near the top of the Teeth step, so the
    click-to-hold behaviour is explained before the user reaches the viewer. */

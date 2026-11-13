@@ -15,14 +15,15 @@ import { planJson } from "./plan.js";
 import { requestPrintPackage } from "./state.js";
 import { renderToothWorkspace } from "./tooth_workspace.js";
 import { guidedReviewDashboard } from "./guided_review.js";
+import { renderPlanBrief } from "./plan_brief.js";
 export { guidedReviewDashboard } from "./guided_review.js";
 
 // Step order. Each id maps to a <section class="gstep" data-gstep="..."> panel
 // and a progress-rail dot in index.html.
 export const GUIDED_STEPS = [
   { id: "upload", label: "Upload" },
-  { id: "plan", label: "Teeth & time" },
-  { id: "details", label: "Details" },
+  { id: "plan", label: "Explore your teeth" },
+  { id: "details", label: "Your plan" },
   { id: "review", label: "Review" },
   { id: "preview", label: "3D preview" },
   { id: "print", label: "Print / send" },
@@ -41,7 +42,7 @@ export function currentGuidedStep() {
 
 export function goGuided(stepId) {
   if (!GUIDED_STEPS.some((step) => step.id === stepId)) return;
-  state.guided.step = stepId;
+  state.guided.step = stepId; state.dim = "3d";
   pendingStepFocus = true;
   // The 3D preview is only meaningful in a view where staged movement renders;
   // "current" shows just the static baseline scan, so default to overlay.
@@ -58,6 +59,10 @@ function focusActiveGuidedStep() {
     if (!panel || !heading) return;
     heading.setAttribute("tabindex", "-1");
     heading.focus({ preventScroll: true });
+    const viewerHost = el("guidedViewerHost"), rail = el("guidedRail");
+    if (!viewerHost.hidden && viewerHost.getBoundingClientRect().top < rail.getBoundingClientRect().bottom) {
+      viewerHost.scrollIntoView({ block: "start", behavior: "instant" });
+    }
   });
 }
 
@@ -94,38 +99,33 @@ function relocate(blockId, hostId) {
   if (block && host && block.parentElement !== host) host.appendChild(block);
 }
 
-// The single 3D viewer follows the active guided step: the user picks teeth in
-// "plan", watches the movement-scale slider in "details", and scrubs stages in
-// "preview". Only one step is visible at a time, so relocating the one WebGL
-// instance into the active step's host is safe.
-const VIEWER_STEP_HOSTS = {
-  upload: "guidedUploadViewerHost",
-  plan: "guidedPlanViewerHost",
-  details: "guidedDetailsViewerHost",
-  preview: "guidedPreviewHost",
-};
-
+// Keep one viewer mounted above the step content. Step navigation preserves its
+// canvas, camera and selection; only the information underneath changes.
 // Relocate shared singletons into the host for the active mode/step. In guided
-// mode the viewer/upload live inside their wizard steps; in technician mode they
-// return to the review workspace.
+// mode the viewer stays above the wizard steps; in technician mode the shared
+// blocks return to the review workspace.
 export function placeSharedBlocks() {
   if (state.userMode === "simple") {
     relocate("simpleUpload", "guidedUploadHost");
     relocate("scanUnitControls", "guidedScanMetadataHost");
     relocate("segmentationBlock", "guidedSegmentationHost");
-    relocate("viewerBlock", VIEWER_STEP_HOSTS[currentGuidedStep()] || "guidedPreviewHost");
+    relocate("viewerBlock", "guidedViewerHost");
+    relocate("viewerDetails", "guidedViewerDetailsHost");
   } else {
     relocate("simpleUpload", "techUploadHost");
     relocate("scanUnitControls", "techScanMetadataHost");
     relocate("segmentationBlock", "techSegmentationHost");
+    relocate("viewerDetails", "viewerBlock");
     relocate("viewerBlock", "techViewerHost");
   }
   if (state.activeStep === "photos") relocate("viewerBlock", "imagingViewerHost");
 }
 
 export function renderGuided() {
+  renderPlanBrief();
   placeSharedBlocks();
   const active = currentGuidedStep();
+  el("guided").dataset.guidedStep = active;
 
   document.querySelectorAll("#guided .gstep").forEach((panel) => {
     panel.classList.toggle("is-active", panel.dataset.gstep === active);
@@ -153,7 +153,7 @@ export function renderGuided() {
   const heading = el("guidedHeading");
   if (heading) {
     heading.textContent = state.sample.active
-      ? (state.sample.view === "observed" ? "USER_ONE · observed scan history" : "Simulated planning example")
+      ? "USER_ONE · sample case"
       : "Explore your scans, step by step";
   }
 

@@ -22,7 +22,8 @@ function makeIndexedDbStub() {
                     queueMicrotask(() => {
                       getRequest.result = data.get(key);
                       getRequest.onsuccess?.();
-                      tx.oncomplete?.();
+                      // Real IndexedDB completes the transaction in a later task.
+                      setTimeout(() => tx.oncomplete?.(), 0);
                     });
                     return getRequest;
                   },
@@ -68,6 +69,16 @@ test("upload storage reports unavailable IndexedDB clearly", async () => {
     () => saveUploadedFiles([{ name: "upper.stl" }]),
     /IndexedDB is not available/,
   );
+});
+test("date saves cannot overwrite metadata after another tab replaces the uploads", async () => {
+  globalThis.window = { indexedDB: makeIndexedDbStub() };
+  const { saveUploadedFiles, saveUploadDates, restoreUploadDates } = await import("./storage.js");
+  const old = [{ name: "old.stl", size: 12 }], current = [{ name: "new.stl", size: 34 }];
+  await saveUploadedFiles(current, current);
+  await assert.rejects(saveUploadDates(old), /batch changed/);
+  assert.deepEqual(await restoreUploadDates(), current);
+  await saveUploadDates([{ ...current[0], captured_on: "2026-10-01" }]);
+  assert.equal((await restoreUploadDates())[0].captured_on, "2026-10-01");
 });
 
 function makeLocalStorageStub() {

@@ -1,5 +1,6 @@
 import { FDI_QUADRANTS, FDI_TEETH, highlightTextColor, parseToothSelection,
   toggleToothSelection, toothName } from "./tooth_selection.js";
+import { TOOTH_EXAMPLES, toothExampleOffsets } from "./tooth_examples.js";
 
 const root = document.getElementById("toothExplorer");
 const host = document.getElementById("toothExplorerViewer");
@@ -15,6 +16,15 @@ let loading = false;
 let unavailable = false;
 let rotating = false;
 const frames = [{ poses: FDI_TEETH.map((tooth) => ({ tooth })) }];
+let example = "neutral";
+for (const button of document.querySelectorAll("[data-tooth-example]")) {
+  button.addEventListener("click", () => {
+    example = button.dataset.toothExample;
+    document.getElementById("toothExampleDescription").textContent = TOOTH_EXAMPLES[example];
+    for (const choice of document.querySelectorAll("[data-tooth-example]")) choice.setAttribute("aria-pressed", String(choice === button));
+    draw();
+  });
+}
 
 for (const quadrant of FDI_QUADRANTS) {
   const group = document.createElement("fieldset");
@@ -52,7 +62,7 @@ function draw() {
   for (const swatch of root.querySelectorAll("[data-highlight-color]")) {
     swatch.setAttribute("aria-pressed", String(swatch.dataset.highlightColor === color.value));
   }
-  viewer?.update({ frames, stageIndex: 0, view: "planned", exaggeration: 1,
+  viewer?.update({ frames, initialOffsets: toothExampleOffsets(example), stageIndex: 0, view: "planned", exaggeration: 1,
     showToothLabels: false, labelTeeth: selected, highlightTeeth: selected, highlightColor: color.value, showRoots: false });
 }
 

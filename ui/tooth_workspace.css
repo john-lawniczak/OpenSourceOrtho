@@ -36,7 +36,7 @@
   #guided .viewer3d { height: 360px; }
 }
 .guided-viewer-host .viewer-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 0; }
-.guided-viewer-host .viewer-toolbar > .viewer-aux:not(#stagePlayToggle),
+.guided-viewer-host .viewer-toolbar > .viewer-aux:not(#stagePlayToggle):not(#toothLabelToggle):not(#focusTeethToggle),
 .guided-viewer-host .dim-toggle, .guided-viewer-host .exaggeration { display: none; }
 .guided-viewer-host .stage-slider { display: flex; flex: 1 0 100%; align-items: center; gap: 8px; flex-wrap: wrap; }
 .guided-viewer-host .stage-slider input { flex: 1; min-width: 140px; accent-color: var(--accent); }
@@ -47,4 +47,29 @@
 #guided .guided-build { margin-bottom: 6px; }
 #guided .guided-action-strip { font-size: 12px; padding: 8px 12px; }
 
-#guidedPreviewHost .viewer-toolbar > button.mode { display: inline-flex; }
+#guidedViewerHost .viewer-toolbar > button.mode { display: inline-flex; }
+
+.viewer-tooth-numbers { position: absolute; inset: 0 56px 0 12px; pointer-events: none; }
+.viewer-tooth-row { position: absolute; left: 0; right: 0; display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; max-width: 760px; margin: auto; }
+.viewer-tooth-row.upper { top: 12px; } .viewer-tooth-row.lower { bottom: 12px; }
+.viewer-tooth-row > span { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.viewer-tooth-row button { pointer-events: auto; min-height: 36px; padding: 4px 0; border: 1px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.viewer-tooth-row button[aria-pressed="true"] { background: var(--warn); color: #101820; border: 2px solid var(--ink); font-weight: bold; }
+.viewer-tooth-row button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+:is(#toothLabelToggle, #focusTeethToggle)::before { content: "○ "; } :is(#toothLabelToggle, #focusTeethToggle)[aria-checked="true"]::before { content: "● "; color: var(--accent); }
+@media (max-width: 700px) { .viewer-tooth-row { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 3px; } .viewer3d { min-height: 440px; } }
+
+#viewer3d { position: relative; }
+
+@media (max-width: 600px) {
+  .guided-viewer-host .stage-slider { min-width: 0; width: 100%; }
+  .guided-viewer-host .stage-slider input { flex-basis: 100%; width: 100%; min-width: 0; }
+  #viewerBlock .trust-status-strip { grid-template-columns: 1fr; min-width: 0; }
+  #viewerBlock .trust-status-item { min-width: 0; overflow-wrap: anywhere; }
+}
+
+#focusTeethForm label { display: grid; gap: 6px; margin-bottom: 10px; }
+#focusTeethForm input { max-width: 360px; }
+#focusTeethForm button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
+.viewer-tooth-row button.is-plan-focus { background: #2563eb; color: white; }
+.viewer-tooth-row button.is-plan-focus[aria-pressed="true"] { border: 3px solid #e9ab36; }

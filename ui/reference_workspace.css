@@ -1,5 +1,5 @@
 /* Persistent orientation and compact, approachable reference tools. */
-.topbar-settings { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; font-size: 22px; }
+.topbar-settings { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; font-size: 16px; }
 .topbar-settings span { display: inline !important; }
 .profile-launch { display: grid; gap: 6px; padding: 14px; background: #203d3b; color: #e5f7f3; border: 1px solid #44605e; text-align: left; cursor: pointer; }
 .profile-launch small { color: #b0cac5; font-size: 11px; font-weight: 400; }
@@ -59,3 +59,52 @@ body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-up
   .tooth-explorer-grid button { min-height: 36px; }
   .tooth-explorer-viewer { height: 300px; }
 }
+
+.profile-launch { border: 2px solid transparent; border-radius: 10px; }
+.profile-launch[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 4px 0 var(--accent); font-weight: 750; }
+.profile-launch:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.scan-date-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.scan-date-row strong { overflow-wrap: anywhere; }
+.scan-date-row small { color: var(--muted); }
+
+.precision-dialog { width: min(1360px, 96vw); height: 94dvh; max-width: 96vw; max-height: 96dvh; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); overflow: hidden; }
+.precision-dialog[open] { display: flex; flex-direction: column; }
+.precision-dialog::backdrop { background: #081214a8; }
+.precision-dialog > header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.precision-dialog button { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--panel-alt); color: var(--ink); cursor: pointer; }
+.precision-dialog iframe { flex: 1; min-height: 0; width: 100%; border: 0; background: var(--panel); }
+
+.brand-title { display: flex; align-items: center; gap: 8px; }
+.brand-title .topbar-settings { width: 32px; height: 32px; font-size: 14px; border-color: transparent; }
+.brand-title h1 { white-space: nowrap; }
+.painting-workspace-button { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 1px solid #0f766e; border-radius: 10px; background: #0f766e; color: #fff; font-weight: 700; text-decoration: none; box-shadow: 0 2px 5px #0002; }
+.painting-workspace-button:hover { background: #115e59; color: #fff; }
+.painting-workspace-button:focus-visible { outline: 3px solid #65e6d1; outline-offset: 3px; }
+@media (max-width: 480px) { .app-topbar { gap: 6px; } .app-topbar .brand-block { gap: 6px; } .brand-title { gap: 3px; } .app-topbar .brand-mark { display: none; } }
+
+/* The reference map and saved notes are separate from the planning wizard. */
+body:is([data-step="toothmap"], [data-step="notes"]) #guidedRail,
+body:is([data-step="toothmap"], [data-step="notes"]) .sidebar > :is(.review-tier-panel, .data-gap-panel),
+body[data-step="notes"] #guided { display: none !important; }
+body[data-mode="simple"][data-step="notes"] #panel-notes { display: block; }
+body:is([data-step="toothmap"], [data-step="notes"])[data-chat-collapsed="1"] .ai-rail { display: none; }
+@media (min-width: 1201px) { body:is([data-step="toothmap"], [data-step="notes"])[data-chat-collapsed="1"] .app-shell { grid-template-columns: 248px minmax(0, 1fr); } }
+@media (min-width: 921px) and (max-width: 1200px) { body:is([data-step="toothmap"], [data-step="notes"])[data-chat-collapsed="1"] .app-shell { grid-template-columns: 220px minmax(0, 1fr); } }
+.tooth-example-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px 10px; }
+.tooth-example-picker button, #refreshPaintingNotes { padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.tooth-example-picker button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 700; }
+.tooth-example-picker button:focus-visible, #refreshPaintingNotes:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.painting-notes-list { display: grid; gap: 16px; margin-block: 18px; }
+.painting-note { padding: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.painting-note pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.5; }
+.plan-brief textarea { display: block; box-sizing: border-box; width: 100%; min-height: 210px; padding: 14px; margin-block: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink); font: inherit; line-height: 1.65; resize: vertical; }
+.plan-brief-summary li { margin-block: 10px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.plan-brief button, .plan-brief-summary button { padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.plan-brief button:focus-visible, .plan-brief-summary button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* A stable visual anchor across steps; the page scrolls normally on all screens. */
+#guidedViewerHost { scroll-margin-top: 142px; margin-top: 0; }
+#guidedViewerHost[hidden], #guidedViewerDetailsHost[hidden] { display: none; }
+#guided[data-guided-step="review"] #guidedViewerDetailsHost,
+#guided[data-guided-step="print"] #guidedViewerDetailsHost { display: none; }

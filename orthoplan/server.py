@@ -24,7 +24,10 @@ from orthoplan.datasets import resolve_published_asset
 from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.region_corrections import load_baseline_corrections, save_baseline_corrections
+from orthoplan.painting_notes import painting_notes_payload
+from orthoplan.plan_brief import sample_plan_brief_payload
 from orthoplan.segmentation_api import segment_payload
+from orthoplan.sample_teeth import sample_teeth_payload, sample_walkthrough_path
 from orthoplan.server_uploads import handle_case_record_upload, handle_scan_upload
 from orthoplan.setup_compare import compare_setups_payload, live_restage_comparison_payload
 
@@ -48,7 +51,7 @@ _CONTENT_TYPES = {
 }
 
 JSON_POST_ENDPOINTS = {
-    "/api/region-corrections",
+    "/api/region-corrections", "/api/sample-teeth",
     "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
@@ -73,6 +76,9 @@ class Handler(BaseHTTPRequestHandler):
     def _resolve_static(self, url_path: str) -> Path | None:
         if urllib.parse.unquote(url_path).startswith("/datasets/"):
             return resolve_published_asset(url_path)
+        walkthrough = sample_walkthrough_path(url_path)
+        if walkthrough is not None:
+            return walkthrough
         relative = url_path.lstrip("/") or "index.html"
         candidate = (UI_DIR / relative).resolve()
         if not candidate.is_relative_to(UI_DIR) or not candidate.is_file():
@@ -100,8 +106,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
+            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload}
+            if path in notes:
+                self._send_json(200, notes[path]())
+                return
             if path.startswith("/api/region-corrections/"):
-                self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1]))
+                query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+                self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1], visit=query.get("visit", ["initial"])[0], capture=query.get("capture", ["original"])[0]))
                 return
             if path.startswith("/api/geometry-jobs/"):
                 result = jobs.get(path.rsplit("/", 1)[-1])
@@ -147,6 +158,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # A cancelled download closes the socket; do not send another response.
+            return
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 
@@ -198,6 +212,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/sample-teeth":
+        return sample_teeth_payload(payload, workspace=handler._mesh_workspace())
     if path == "/api/region-corrections":
         return save_baseline_corrections(payload)
     if path == "/api/geometry-jobs/cancel":

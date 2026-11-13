@@ -1,3 +1,4 @@
+import { sourceViewContext, visibleScanView } from "./scan_source_orientation.js";
 import { frameScanView } from "./scan_view_camera.js";
 import { mountScanViewToolbar } from "./scan_view_toolbar.js";
 import { orientedMeshMatrix } from "./mesh_affine.js";
@@ -14,7 +15,9 @@ import { OrbitControls } from "./vendor/OrbitControls.js";
 import { displacement, rotationApplications } from "./core.js";
 import { toothPositions } from "./state.js";
 import { buildScanObject, isSupportedScanName, parseScanGeometry } from "./scan_geometry.js";
-import { SCALE_BAR_MM, scaleBarLabel } from "./scale.js";
+import { createViewerScaleBar } from "./viewer_scale_bar.js";
+import { mountViewerNavigation } from "./viewer_navigation.js";
+import { arrangeScanArches, archDisplayMatrix } from "./viewer_arch_layout.js";
 import { makeTextSprite, makeToothNumberSprite } from "./viewer_labels.js";
 
 const GHOST = new THREE.MeshStandardMaterial({ color: 0xd9cbb6, transparent: true, opacity: 0.5, roughness: 0.72 });
@@ -49,8 +52,6 @@ const PROXIMITY_MAT = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
 // A true-scale ruler drawn beside a loaded scan (scan geometry is at true scale).
-const MEASURE_MAT = new THREE.LineBasicMaterial({ color: 0x475569 });
-const SCALE_TICK_H = 1.2; // height of the end ticks, in scan units
 const meshGeometryCache = new Map();
 const meshUrlCache = new Map();
 
@@ -149,7 +150,7 @@ function plannedQuaternion(pose, frame) {
 
 export function createViewer(container, { schematicOnly = false } = {}) {
   let needsRender = true;
-  const highlightMaterial = new THREE.MeshStandardMaterial({ roughness: 0.55 });
+  const highlightMaterial = new THREE.MeshStandardMaterial({ roughness: 0.55, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
   let rootsVisible = !schematicOnly;
   const toothGeometry = (tooth) => (!schematicOnly && meshGeometryCache.get(tooth)) || syntheticToothGeometry(tooth, rootsVisible);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -157,7 +158,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.18;
-  container.replaceChildren(renderer.domElement);
+  container.prepend(renderer.domElement);
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xfbfdfe);
@@ -168,6 +169,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   controls.addEventListener("change", () => { needsRender = true; });
   controls.enableDamping = true;
   controls.target.set(0, 0, 0);
+  const navigation = mountViewerNavigation(container, () => controls, () => focusSelectedTooth());
 
   // Manual tooth selection. Picking is enabled only when the host turns it on
   // (e.g. after scan units are confirmed). A pointer press that moves more than
@@ -190,7 +192,9 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     proxies.updateMatrixWorld(true);
     raycaster.setFromCamera(ndc, camera);
     const hits = raycaster.intersectObjects(proxies.children, false);
+    const shell = uploadedScans.visible ? raycaster.intersectObjects(visibleScanChildren(), false)[0] : null;
     for (const hit of hits) {
+      if (shell && hit.distance > shell.distance + 0.15) continue;
       const tooth = hit.object?.userData?.tooth;
       if (tooth) return tooth;
     }
@@ -203,7 +207,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   }
 
   function onPointerUp(event) {
-    if (!selectionEnabled || !onSelect) return;
+    if (event.button !== 0 || navigation.mode === "pan" || !selectionEnabled || !onSelect) return;
     if (Math.hypot(event.clientX - pressX, event.clientY - pressY) > 5) return; // orbit drag
     const tooth = pickToothAt(event);
     if (tooth) onSelect(tooth);
@@ -252,13 +256,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   scene.add(proximityOverlay);
   let proximityMesh = null;
   let proximityVisible = false;
-  // True-scale reference: a labelled ruler placed beside a loaded scan. Rebuilt by
-  // updateScaleBar from the scan's world bounding box on each render.
-  const scaleBar = new THREE.Group();
-  scaleBar.visible = false;
-  scene.add(scaleBar);
-  let scaleBarGeometry = null;
-  let scaleBarSprite = null;
+  const scaleBar = createViewerScaleBar(scene);
   // Per-tooth anchor points sampled from the uploaded scan surface, so the
   // moving proxies sit ON the scan's crowns instead of floating in the schematic
   // arch space below it. Recomputed whenever the scan changes; empty when no scan
@@ -288,8 +286,10 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   let fitted = false;
   let visibleArchFilter = "both";
   const scanViews = mountScanViewToolbar(container.parentElement, command => {
-    controls = frameScanView(camera, controls, renderer.domElement, visibleScanBox(), command, () => { needsRender = true; });
-  });
+    controls = frameScanView(camera, controls, renderer.domElement, visibleScanBox(), command, () => { needsRender = true; }, visibleScanView(visibleScanChildren()));
+    navigation.apply();
+  }, { defaultView: true });
+  scanViews.after(navigation.element);
   scanViews.hidden = true;
 
   function resize() {
@@ -333,7 +333,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     positionArchLabels();
     // Independent of the plan frame: the ruler only needs a loaded scan, so build
     // it before the early return below (a scan can be loaded with no plan yet).
-    updateScaleBar(showScale, unitsConfirmed);
+    scaleBar.update(visibleScanBox(), showScale, unitsConfirmed);
+    navigation.setFocusAvailable(fragmentCache.has(String(selectedTooth)));
     const frame = frames?.[stageIndex] || { poses: [] };
     const poses = [...frame.poses];
     const present = new Set(poses.map(pose => String(pose.tooth)));
@@ -369,10 +370,11 @@ export function createViewer(container, { schematicOnly = false } = {}) {
         const delta = showPlanned ? worldDeltaOriented(pose, exaggeration) : new THREE.Vector3();
         const matrix = new THREE.Matrix4().set(...orientedMeshMatrix(
           showPlanned ? frame.mesh_transforms?.[pose.tooth] : null, showPlanned ? pose : {}, exaggeration));
-        matrix.premultiply(new THREE.Matrix4().makeTranslation(...fragBase.toArray()));
+        const display = archDisplayMatrix(uploadedScans.children, archOf(pose.tooth));
+        matrix.premultiply(display).premultiply(new THREE.Matrix4().makeTranslation(...fragBase.toArray()));
         // Transform the visible centroid with the same matrix as its crown
         // so labels follow both rotation and translation.
-        const toothAt = fragmentCentroid(fragment).add(fragBase);
+        const toothAt = fragmentCentroid(fragment).applyMatrix4(display).add(fragBase);
         const toothMoved = fragmentCentroid(fragment).applyMatrix4(matrix);
         if (showLabel(pose.tooth)) {
           let label = toothLabelSprites.get(pose.tooth);
@@ -472,7 +474,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   function fitCameraToScene() {
     let box = visibleScanBox();
     if (box && !box.isEmpty()) {
-      controls = frameScanView(camera, controls, renderer.domElement, box, "auto", () => { needsRender = true; });
+      controls = frameScanView(camera, controls, renderer.domElement, box, "auto", () => { needsRender = true; }, visibleScanView(visibleScanChildren()));
+      navigation.apply();
       return;
     }
     // When a scan is visible, frame the scan geometry itself. Movement overlays
@@ -677,11 +680,14 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       for (const source of scanSources) {
         const bytes = await sourceBuffer(source);
         if (token !== scanRevision) { for (const mesh of prepared) mesh.geometry.dispose(); return { loaded: false, stale: true, count: 0 }; }
+        const arch = normalizeArch(source.arch) || normalizeArch(source.name);
+        const scanView = await sourceViewContext(bytes, arch);
+        if (token !== scanRevision) { for (const mesh of prepared) mesh.geometry.dispose(); return { loaded: false, stale: true, count: 0 }; }
         const geometry = parseScanGeometry(bytes);
         orientScanGeometry(geometry);
         const mesh = buildScanObject(geometry, SCAN);
         mesh.name = source.name;
-        mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
+        mesh.userData.arch = arch; mesh.userData.scanView = scanView; mesh.userData.displayArchStack = Boolean(source.displayArchStack);
         mesh.visible = archVisible(mesh.userData.arch);
         prepared.push(mesh);
       }
@@ -692,6 +698,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       throw error;
     }
     uploadedScans.position.set(0, 0, 0);
+    arrangeScanArches(prepared);
     for (const mesh of prepared) uploadedScans.add(mesh);
 
     const box = new THREE.Box3().setFromObject(uploadedScans);
@@ -799,67 +806,29 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     const z = offset?.z || 0;
     for (const mesh of uploadedScans.children) {
       if (mesh.userData.arch === "lower") {
-        mesh.position.set(x, y, z);
+        const base = mesh.userData.layoutPosition || new THREE.Vector3();
+        mesh.position.copy(base).add(new THREE.Vector3(x, y, z)); mesh.updateMatrix();
       }
     }
-  }
-
-  function clearScaleBar() {
-    if (scaleBarGeometry) {
-      scaleBarGeometry.dispose();
-      scaleBarGeometry = null;
-    }
-    if (scaleBarSprite) {
-      scaleBarSprite.material.map?.dispose();
-      scaleBarSprite.material.dispose();
-      scaleBarSprite = null;
-    }
-    scaleBar.clear();
-    scaleBar.visible = false;
-  }
-
-  function scanWorldBox() {
-    return visibleScanBox();
-  }
-
-  // Draw a labelled scale bar of SCALE_BAR_MM along the front-bottom edge of the
-  // loaded scan. Only when a scan is loaded AND its units are confirmed mm - the
-  // scan geometry is at true scale, so the bar is an honest millimetre reference.
-  function updateScaleBar(show, unitsConfirmed) {
-    clearScaleBar();
-    if (!show || !unitsConfirmed) return false;
-    const box = scanWorldBox();
-    if (!box) return false;
-    const y = box.min.y + 0.4;
-    const z = box.max.z + 3;
-    const x0 = box.min.x;
-    const xm = x0 + SCALE_BAR_MM / 2;
-    const x1 = x0 + SCALE_BAR_MM;
-    const points = [
-      [x0, y, z], [x1, y, z], // main bar
-      [x0, y, z], [x0, y + SCALE_TICK_H, z], // left tick
-      [xm, y, z], [xm, y + SCALE_TICK_H * 0.6, z], // mid tick
-      [x1, y, z], [x1, y + SCALE_TICK_H, z], // right tick
-    ].map((p) => new THREE.Vector3(p[0], p[1], p[2]));
-    scaleBarGeometry = new THREE.BufferGeometry().setFromPoints(points);
-    scaleBar.add(new THREE.LineSegments(scaleBarGeometry, MEASURE_MAT));
-    scaleBarSprite = makeTextSprite(scaleBarLabel());
-    scaleBarSprite.scale.set(5, 1.25, 1);
-    scaleBarSprite.position.set(xm, y + SCALE_TICK_H + 1.2, z);
-    scaleBar.add(scaleBarSprite);
-    scaleBar.visible = true;
-    return true;
   }
 
   // World-axis size of the loaded scan in scan units (mm when confirmed): x =
   // mediolateral width, y = vertical height, z = anteroposterior depth. The status
   // strip reads this; null when no scan is loaded.
   function scanExtentMm() {
-    const box = scanWorldBox();
+    const box = visibleScanBox();
     if (!box) return null;
     const size = new THREE.Vector3();
     box.getSize(size);
     return { x: size.x, y: size.y, z: size.z };
+  }
+
+  function focusSelectedTooth() {
+    const crown = proxies.children.find(node => node.isMesh && node.userData.tooth === selectedTooth);
+    if (!crown) return;
+    const box = new THREE.Box3().setFromObject(crown);
+    controls = frameScanView(camera, controls, renderer.domElement, box, "fit", () => { needsRender = true; });
+    navigation.apply();
   }
 
   function setSelectionHandler(fn) {
@@ -901,11 +870,11 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       if (child.geometry) child.geometry.dispose();
     });
     clearProximity();
-    clearScaleBar();
-    scanViews.remove();
+    scaleBar.dispose();
+    scanViews.remove(); navigation.dispose();
     window.removeEventListener("resize", resize);
     controls.dispose();
-    renderer.dispose();
+    renderer.dispose(); renderer.domElement.remove();
   }
 
   window.addEventListener("resize", resize);

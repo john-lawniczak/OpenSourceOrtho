@@ -19,30 +19,40 @@ export const comparisonTemplate = `
     <div class="comparison-visit" id="comparisonVisit" aria-live="polite">Week 1</div>
     <div id="comparisonMissing" class="comparison-missing" hidden>
       <strong id="comparisonMissingTitle"></strong>
-      <p>The endpoint-based estimate could not be loaded. Weeks 1 and 7 still show their recorded surfaces.</p>
+      <p>The endpoint-based estimate could not be loaded. Weeks 1, 7 and 18 have recorded scans. Weeks 8–17 need a new endpoint fit; no week 1–7 motion is extrapolated.</p>
     </div>
   </div>
   <nav class="comparison-timeline" aria-label="Reported scan weeks">
     <div class="comparison-week-navigation">
       <button id="comparisonPrevious" type="button" disabled>← Previous week</button>
-      <output id="comparisonWeekLabel" aria-live="polite">Week 1 of 7</output>
+      <output id="comparisonWeekLabel" aria-live="polite">Week 1 of 18</output>
       <button id="comparisonNext" type="button" disabled>Next week →</button>
     </div>
+    <div class="comparison-highlight-controls" role="group" aria-label="Week highlighting">
+      <span>Highlight weeks</span>
+      <label class="scan-highlight-toggle"><input id="highlightScanWeeks" type="checkbox" role="switch" checked> Recorded scans <span class="week-color recorded" aria-hidden="true"></span></label>
+      <label class="scan-highlight-toggle"><input id="highlightEstimatedWeeks" type="checkbox" role="switch" checked> Estimated weeks <span class="week-color estimated" aria-hidden="true"></span></label>
+    </div>
     <div class="comparison-weeks">
-      ${Array.from({ length: 7 }, (_, i) => `<button type="button" data-comparison-week="${i + 1}" disabled
-        aria-label="Week ${i + 1}, ${i === 0 || i === 6 ? "observed scan" : "simulated estimate"}">
-        Week ${i + 1}<small>${i === 0 || i === 6 ? "Observed" : "Estimated"}</small></button>`).join("")}
+      ${Array.from({ length: 18 }, (_, i) => `<button type="button" data-comparison-week="${i + 1}" data-scan-kind="${[0, 6, 17].includes(i) ? "observed" : i < 7 ? "estimated" : "unavailable"}" disabled
+        aria-label="Week ${i + 1}, ${[0, 6, 17].includes(i) ? "observed scan" : i < 7 ? "simulated estimate" : "not fitted"}">
+        Week ${i + 1}<small>${[0, 6, 17].includes(i) ? "Observed" : i < 7 ? "Estimated" : "Not fitted"}</small></button>`).join("")}
     </div>
   </nav>
   <div class="comparison-motion-tools">
-    <a href="./progress.html">Fit another scan pair</a>
+    <a href="./progress.html" id="openScanPair">Compare two scans</a>
       <a href="./region-review.html?baseline=upper" target="_blank" rel="noopener">Paint USER_ONE upper baseline</a>
       <a href="./region-review.html?baseline=lower" target="_blank" rel="noopener">Paint USER_ONE lower baseline</a>
+      <a href="./region-review.html?baseline=upper&amp;visit=progress-01" target="_blank" rel="noopener">Paint USER_ONE week 7 upper</a>
+      <a href="./region-review.html?baseline=lower&amp;visit=progress-01" target="_blank" rel="noopener">Paint USER_ONE week 7 lower</a>
+      <a href="./region-review.html?baseline=upper&amp;visit=progress-02&amp;capture=upper-clean" target="_blank" rel="noopener">Paint USER_ONE week 18 upper</a>
+      <a href="./region-review.html?baseline=lower&amp;visit=progress-02&amp;capture=fusion-h-4" target="_blank" rel="noopener">Paint USER_ONE week 18 lower</a>
     <label>Timing assumption <select id="comparisonTiming"><option value="uniform">Uniform motion</option><option value="smooth">Slow start and finish</option><option value="delayed">Delayed start</option></select></label>
     <label>Tooth <select id="comparisonTooth" disabled><option value="">All teeth</option></select></label>
     <button id="comparisonFocusTooth" type="button" disabled>Focus selected tooth</button>
     <button id="comparisonEndpointFit" type="button" aria-pressed="false" hidden>Inspect estimated endpoint</button>
   </div>
+  <p class="comparison-help">Compare two scans opens a separate tool for uploading two visits and estimating positions between them. Return here to continue this sample.</p>
   <details><summary>Proximity hints</summary><p id="comparisonProximity" class="comparison-help"></p></details>
   <p id="comparisonMatchDetail" class="comparison-help" aria-live="polite"></p>
   <button id="comparisonMotionRetry" type="button" hidden>Retry motion preview</button>

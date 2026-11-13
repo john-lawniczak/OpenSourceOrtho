@@ -20,6 +20,7 @@ export function comparisonGeometry(scan) {
     geometry.dispose();
     throw new Error("The scan contains no surface geometry.");
   }
+  geometry.userData.sourceCenter = geometry.boundingBox.getCenter(geometry.boundingBox.min.clone());
   geometry.center();
   geometry.computeVertexNormals();
   geometry.computeBoundingSphere();

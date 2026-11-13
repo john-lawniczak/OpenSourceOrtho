@@ -15,7 +15,7 @@ def test_user_one_context_survives_return_and_reload(server_url, tmp_path, monke
             page.goto(server_url + "/region-review.html?baseline=upper")
             expect(page.locator("#reviewSource")).to_contain_text("initial-upper.stl", timeout=30000)
             page.locator("#reviewWorkspaceLink").click()
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             expect(page.locator("#chatCaseSource")).to_have_value("user_one")
             expect(page.locator("#chatContextHint")).to_contain_text("USER_ONE")
             page.locator("#chatInput").fill("What records are available?")
@@ -44,8 +44,10 @@ def test_composer_expands_on_focus_and_keeps_collapsed_draft(server_url, tmp_pat
         page = browser.new_page(viewport={"width": 1440, "height": 1050})
         try:
             page.goto(server_url)
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             composer = page.locator("#chatComposer")
+            expect(page.locator("#chatInput")).to_be_focused()
+            page.locator("#collapseChatComposer").click()
             compact = composer.bounding_box()["height"]
             assert compact < 85
             page.locator("#chatInput").fill("Keep this unfinished question")

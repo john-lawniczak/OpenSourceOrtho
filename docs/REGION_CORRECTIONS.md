@@ -1,11 +1,11 @@
 # Correcting tooth regions
 
-Open **Paint tooth boundaries** in the app sidebar or in Guided **step 2: Teeth
+Open **Edit Tooth Precision** in the app sidebar or in Guided **step 2: Teeth
 & time**, after loading scans and before building movement stages. Scan history
-also links directly to each USER_ONE baseline. **Edit tooth boundaries** under
+also links directly to USER_ONE week 1, week 7 and week 18 upper/lower scans. **Edit tooth boundaries** under
 an uploaded scan brings that surface into the editor. The direct URL is
 `/region-review.html`. This is a scan-labeling task, not an aligner stage; for
-USER_ONE it uses the week 1 baseline, with separate upper and lower annotations.
+USER_ONE, choose week 1, week 7 or week 18 with separate upper and lower annotations.
 Load the sample baseline or your own STL, then optionally import its correction
 JSON. Choose **Move view** to navigate; **Paint tooth** paints the chosen tooth number;
 Split only paints faces belonging to the From tooth; Merge changes the complete
@@ -13,6 +13,20 @@ From region to the To tooth; Erase returns faces to context. Brush selection use
 surface position and normal agreement to avoid painting the opposite surface.
 Undo/redo keeps up to 50 edit operations; each continuous brush drag is one operation. Download corrections JSON exports face-order
 labels bound to the source SHA-256; applying to another scan is rejected.
+
+Personal scans can also **Save locally**: original bytes, painted labels and notes
+are saved in this browser, keyed by scan content hash and arch. Reopening the same
+scan resumes its draft. A stale editor cannot overwrite a newer save from another
+tab; reopen the scan to load that revision. Browser data can be cleared or evicted.
+The separate **Download JSON** exports labels only, so retain notes separately
+when moving work to another browser. Sample saves still use versioned local files.
+
+To read notes again, choose **Saved painting notes** in the main sidebar. It lists
+the latest saved notes for each personal scan and each USER_ONE visit/arch, with
+the save date and storage location. **Open painting & notes** reopens that exact
+scan; **Back to saved notes** returns to the refreshed list. Unsaved text appears
+there only after **Save locally** succeeds. **Refresh saved notes** picks up saves
+made in another tab or editor.
 
 Explicitly checking the review checkbox records the user's boundary review.
 It does not approve fitted motion or anatomy. The fitting engine can consume
@@ -167,9 +181,14 @@ boundary, so the editor never automatically splits or renumbers saved teeth.
 
 ### View and brush controls
 
-**Default view** restores the full arch's source-front view and resets pan,
-roll, focus and zoom. USER_ONE's upper crowns point down and lower crowns point
-up. Other view presets can remain focused on a selected region. These controls
+**Default view** restores the full arch's front view and resets pan,
+roll, focus and zoom. Initial loading, Default view, Face-on and Auto view share
+the arch convention: upper crowns point down and lower crowns point up.
+Known reimported STL files recover their documented source-axis convention by
+content hash, including the different week 1/week 7 upper conventions. Uploaded
+single-arch views use the same camera rule. Unknown full-arch files use the usual
+Z-height, crown-up scanner convention; arbitrary source orientations still need
+manual view adjustment. Nearly planar imports use broad-side framing. Other view presets can remain focused on a selected region. These controls
 change the camera only. The brush-radius input is compact; decimals and the
 existing `[` / `]` controls remain available.
 Use **⌘Z** on macOS or **Ctrl+Z** to undo painting; add **Shift** to redo.
@@ -193,3 +212,160 @@ Inspection does not change labels or create an edit. Painting, importing labels,
 undo and redo clear stale results; run Find patches again after editing. Tiny
 disconnected regions may be brush leftovers or source mesh gaps, so they are
 not automatically deleted. Zero patches alone does not verify anatomical accuracy.
+
+## Week 7 annotations
+
+Select **Scan visit → Week 7 · observed scan**, then **Upper** or **Lower**.
+The editor loads the original `progress-01` STL with its verified source hash and
+recorded display orientation. A matching local save resumes automatically;
+otherwise the surface starts gray/unpainted. Week 1 face labels are not reused
+on week 7 topology. Use the same painting, undo, notes, Download JSON and
+**Save locally** controls as week 1. Leave the review checkbox off for partial work.
+
+Snapshots live in `.orthoplan-region-corrections/USER_ONE/week-7-upper/` and
+`week-7-lower/`, with visit, filename, hash, face count, notes and review status.
+Switching visit or arch prompts before discarding unsaved edits. Each save is
+immutable, rejects a stale browser draft and validates labels against that visit's
+mesh. Existing `baseline-upper/` and `baseline-lower/` saves remain separate.
+Saving does not publish annotations or refit the motion preview. Once both week 7
+arches are saved, they can be inspected locally before deliberate incorporation.
+
+A collaborator can seed week 7 colors locally with
+`python tools/seed_week_seven_labels.py --save` (requires the motion-preview extras).
+It projects the latest saved week 1 crown labels onto the registered week 7 mesh,
+checks distance, normal agreement and round-trip correspondence, and leaves
+contact buffers and discarded disconnected fragments gray. It refuses to replace
+existing week 7 saves. Source hashes, baseline snapshot identity, registration
+checks and per-tooth counts are recorded in an ignored local audit folder.
+These are **automatic drafts**: inferred labels on observed geometry. The editor
+preserves that origin until painting or explicit boundary review; review every
+number and boundary, especially where teeth moved or a projected mask is incomplete.
+
+Week 18 notes and labels save to `.orthoplan-region-corrections/USER_ONE/week-18-upper/`
+and `week-18-lower/` by default (or the configured `ORTHOPLAN_REGION_CORRECTIONS`
+root). Each JSON snapshot contains both `notes` and `corrections`. Saving does not
+automatically fit motion; the week 1–18 endpoint comparison must be regenerated.
+
+## Repair surface: hole fills
+
+Open **Repair surface · hole fills** alongside the painting controls. **Find
+small holes** inspects exact-coordinate boundary loops in a background worker.
+Inspection and selection leave the camera unchanged, including when the first
+boundary belongs to a tiny detached fragment. Choose an opening from the list or
+use **Brush hole rim** on its existing edge. Empty space cannot be painted.
+Select **Preview simple patch**, and rotate to inspect the yellow
+proposal. **Cancel preview** leaves geometry unchanged; **Accept fill** creates
+an estimated repaired version. Purple marks added faces; **Estimated surfaces**
+toggles that coloring, while the source summary continues to identify the repair.
+
+The simple patch option supports small, nearly planar, convex openings. It keeps
+the largest boundary of each connected component open as an outer or ambiguous
+edge, excludes branching/non-manifold or inconsistently wound boundaries, and
+rejects oversized, highly curved, non-convex or overlapping proposals. The size
+input is in source scan units, not assumed millimetres, and is capped at 15% of
+the scan bounding-box diagonal. Scans over one million triangles or 50,000 open
+edges, or over 128 separate boundary loops, require separate inspection. These conservative checks can reject genuine
+holes; geometry alone cannot distinguish all intentional openings. They do not
+certify a whole mesh as intersection-free or watertight.
+
+### Estimate hole fill
+
+For an interior opening that needs a curved or concave fill, choose **Estimate
+hole fill**. The yellow surface is a preview. **Surface following** blends between
+interpolation of rim points (0%) and the surrounding-surface estimate (100%);
+changing it cancels the old preview until Estimate is selected again. **Accept
+fill**, then **Save edited copy**, retains the separate version. Cancel changes
+nothing. Accept or cancel a preview before painting labels; afterward the new
+triangles are part of the paintable mesh, so the brush hits the fill rather than
+geometry behind the gap.
+
+The estimator fits a regularized local quadratic height field to the exact rim
+and the third vertices of directly adjoining boundary triangles. It does not
+sample unrelated back-wall ray hits. Concave loops are triangulated in a local
+plane; internal edges are shared and refined, with all original rim edges kept
+exact. Boundary residuals constrain the interpolation, while size, fit residual,
+height excursion, projected self-overlap and STL-precision intersection checks
+reject ambiguous estimates. Each patch is capped at 4,096 faces and records its
+method, following strength and fit residual. These checks bound a local geometric
+estimate; they do not recover missing anatomy or guarantee whole-mesh validity.
+
+At a maximum opening span of 6 scan units, six interior loops in the cleaned
+week 18 upper produce estimates, including its curved and concave openings.
+Outer/ambiguous boundaries remain open. A closed dent has no boundary loop and
+still cannot be filled by this tool.
+
+Each accepted patch appends triangles without moving or reordering original
+faces. Existing painted labels stay on the same faces. New faces start unlabeled,
+the review checkbox resets, and new faces remain marked as estimated even after
+painting. **Undo surface edit** reverses the last accepted patch or trim while retaining
+current labels on surviving faces (up to five surface edits in the current editor
+session). Geometry changes reset the painting undo history. Scan replacement
+clears surface undo; saved files retain edit provenance rather than undo history.
+
+### Clean up model surface
+
+Open **Clean up model surface → Brush to remove**. Brush unwanted mold or scan
+material to mark it red; **Deselect removal** deselects faces and **Clear selection**
+cancels the preview. Use [ and ] to change brush size, and Rotate/Pan to inspect
+the selection. **Apply trim** creates a separate surface with those faces removed.
+It does not cap the resulting edges. Gray does not necessarily mean non-tooth:
+unpainted teeth can be gray too. Painted faces are protected unless **Allow
+removing painted tooth surfaces** is explicitly checked. Removing the entire scan
+is refused. There is no automatic deletion of all unlabeled material.
+
+The removal circle remains visible over empty background so it can sweep across
+small disconnected specks without first hitting a triangle. Selection uses a
+depth-tested screen pass to pick only visible face IDs inside the circle; hidden
+surfaces behind the model stay protected. It does not select through the arch.
+The screen circle has a six-pixel minimum for small-fragment selection. Deselect
+removal only clears red selection marks; it neither restores already removed
+faces nor fills holes. Use Undo surface edit to reverse an accepted trim.
+
+Trim copies retain source hash/visit/capture, a parent hash and removal count for
+each trim, the surviving labels, and remapped estimated patch ranges. Original
+STL face records are preserved in order for retained faces. Repair bundles with
+trims use `ortho-surface-repair-v2`; existing v1 patch bundles still import.
+Undo restores removed geometry and its prior labels while preserving later
+painting on retained faces. Each copy can be saved and reopened from My Notes
+or exported as a repair bundle, just like a patched surface.
+
+Editor rotation uses the current screen vertical at the start of each drag,
+so horizontal dragging turns the model without the roll caused by a previous
+angled orbit axis. Presets still supply the documented arch orientation; display
+navigation never changes source geometry. After a trim changes the bounding-box
+center, the camera and target shift together to keep retained surfaces in place.
+
+**Save locally** stores repaired versions in this browser's IndexedDB, including
+STL bytes, labels, notes, source hash, original face count and estimated face
+ranges. This also applies when starting from USER_ONE: the original server-side
+painting and observed-history scan stay separate. **My Notes** reopens the exact
+repaired version. Concurrent stale saves are rejected by the existing browser
+revision check. Browser data can be cleared or evicted.
+
+**Download repair bundle** backs up geometry, labels, notes and repair provenance
+in one JSON file. Restore through **Import scan or corrections → Repair bundle**;
+the importer checks the mesh hash, finite coordinates, face ranges and labels.
+It also retains declared scan units and reported absent teeth. Imports stop if
+painting or notes change while a file is loading, so a slow read cannot silently
+discard newer work. Save those edits before retrying the import.
+An STL or label-only file cannot carry all this provenance, so repaired versions
+export the complete bundle instead of labels alone. Import provenance is a record
+of estimated regions, not independent verification of anatomy. Repaired versions
+are not automatically returned to an endpoint-fitting case, published, or used to
+regenerate motion previews.
+
+A missing tooth shape from an incomplete mold cannot be recovered by closing a
+mesh opening. Raising the size limit does not bypass the geometry checks.
+Reconstruction from an earlier scan remains a separate future feature.
+
+The contributor's November 13 lower cleanup is archived privately at
+`private/surface-edits/week-18-lower-cleaned/` with a complete repair bundle and
+reproducible audit. It removes 66,640 faces, of which 28 carried the draft label 43
+(about 0.34% of its labeled surface area). It remains an unreviewed optional copy;
+the original suggested scan and observed history are unchanged.
+
+Week 18 painting offers only the **Cleaned upper** and **Fusion H4 lower** working
+surfaces. The initial color sweep is an unreviewed automatic draft transferred
+from the saved week 7 crowns. Review all tooth numbers and boundaries, fill gray
+crown areas where appropriate, and Save locally. Missing mold surfaces are not
+filled by this coloring step. Existing historical scans/notes remain separate.

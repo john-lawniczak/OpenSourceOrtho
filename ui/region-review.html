@@ -1,17 +1,20 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Paint tooth boundaries</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
+<title>Edit Tooth Precision</title><link rel="stylesheet" href="./progress_workspace.css"><link rel="stylesheet" href="./scan_review_controls.css"></head>
 <body><main class="region-review-page">
-<header class="review-header"><a id="reviewWorkspaceLink" href="./">← Workspace</a><span class="review-workflow">Step 2 · Identify teeth</span><h1>Paint tooth boundaries</h1></header>
-<section class="review-baseline-entry" aria-label="USER_ONE baseline painting">
-<strong>USER_ONE · Week 1</strong>
+<header class="review-header"><a id="reviewWorkspaceLink" href="./">← Back to teeth &amp; stages</a><span class="review-workflow">OpenSource Ortho · Tooth precision</span><h1>Edit Tooth Precision</h1></header>
+<section class="review-baseline-entry" aria-label="USER_ONE scan painting">
+<strong>USER_ONE</strong>
+<label>Scan visit <select id="reviewVisit"><option value="initial">Week 1 · baseline</option><option value="progress-01">Week 7 · observed scan</option><option value="progress-02">Week 18 · observed scan</option></select></label>
+<p id="reviewSuggestedSource" hidden>Week 18 painting: cleaned upper · Fusion H4 lower</p>
 <div class="controls"><button id="reviewLoadupper" disabled type="button">⌒ Upper</button><button id="reviewLoadlower" disabled type="button">⌣ Lower</button></div>
 <button id="reviewReload" type="button" title="Load the latest saved labels for this arch" disabled>↻ Reload saved</button>
 <span id="reviewSavedupper" class="review-save-badge" hidden></span><span id="reviewSavedlower" class="review-save-badge" hidden></span>
 </section>
+<p id="reviewCaptureNote" hidden>Week 18 scans are from chipped models. Paint visible tooth boundaries; leave missing or uncertain surfaces unreviewed. Cleaned upper removes excess model material; it does not fill gaps. Fusion H4 is suggested for its compact margins, not proven anatomical accuracy.</p>
 <details class="review-import"><summary>Import scan or corrections</summary>
-<div class="controls"><label>Arch <select id="reviewArch"><option value="" selected>Choose arch…</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample" disabled>Load USER_ONE baseline</button>
-<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div></details>
+<div class="controls"><label>Arch <select id="reviewArch"><option value="" selected>Choose arch…</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample" disabled>Load USER_ONE scan</button>
+<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label><label>Repair bundle <input id="repairImport" type="file" accept=".json"></label></div></details>
 <p id="reviewSource" class="review-summary">No scan loaded.</p>
 <section class="review-workbench">
 <div class="review-surface">
@@ -30,6 +33,34 @@
 <p id="reviewStatus" role="status">Load a scan to begin.</p>
 </div>
 <aside class="review-paint-controls">
+<details id="repairPanel"><summary>Repair surface · hole fills</summary>
+<p>Patch small openings with an estimated surface. This does not reconstruct dents or missing tooth shape.</p>
+<label>Maximum opening span <input id="repairMaxSize" type="number" min="0.01" step="0.1" value="3"></label>
+<small>Scan units, not verified millimetres. Outer or ambiguous edges stay open. Geometry alone cannot identify every intentionally open region.</small>
+<button id="repairFind" type="button" disabled>Find small holes</button>
+<button id="repairPick" type="button" data-review-mode="hole" aria-pressed="false" disabled>Brush hole rim</button>
+<p>Find openings, then brush the existing edge of a gap to select it. Preview the fill before accepting. Brushing empty space cannot reconstruct missing tooth shape. Use [ and ] to adjust the brush size.</p>
+<label>Opening <select id="repairHole" disabled></select></label>
+<div class="controls"><button id="repairPreview" type="button" disabled>Preview simple patch</button><button id="repairEstimate" type="button" disabled>Estimate hole fill</button></div>
+<label>Surface following <input id="repairFillShape" type="range" min="0" max="1" step="0.1" value="1"><output id="repairFillAmount">100%</output></label>
+<p>Estimated fills follow the rim and adjoining surface, not the model behind a hole. Lower Surface following for a flatter interpolation between rim points. This estimates a surface, not the original tooth shape.</p>
+<div class="controls"><button id="repairCancel" type="button" disabled>Cancel preview</button><button id="repairAccept" type="button" disabled>Accept fill</button></div>
+<label class="repair-toggle"><input id="repairEstimated" type="checkbox" checked disabled> Estimated surfaces · purple</label>
+<p id="repairStatus" role="status">Load a scan to inspect openings.</p>
+<p id="repairProvenance"></p>
+<button id="repairExport" type="button" disabled>Download repair bundle</button>
+</details>
+<details id="trimPanel"><summary>Clean up model surface</summary>
+<p>Brush unwanted scan or mold material to mark it red, then apply the trim. Gray areas can include unpainted teeth: inspect your selection before removing it. The original scan is preserved.</p>
+<div class="controls"><button type="button" data-review-mode="trim" aria-pressed="false">Brush to remove</button><button type="button" data-review-mode="untrim" aria-pressed="false">Deselect removal</button></div>
+<p>The circle works over empty space too: sweep across visible specks to select them. Surfaces hidden behind the model stay protected. Use [ and ] to adjust size. Deselect removal only clears red selections; it does not fill holes.</p>
+<label class="repair-toggle"><input id="trimAllowPainted" type="checkbox"> Allow removing painted tooth surfaces</label>
+<div class="controls"><button id="trimApply" type="button" disabled>Apply trim</button><button id="trimClear" type="button" disabled>Clear selection</button></div>
+<p id="trimStatus" role="status">Brush unwanted model material to select it.</p>
+</details>
+<button id="repairUndo" type="button" disabled>Undo surface edit</button>
+<button id="repairSaveCopy" type="button" disabled>Save edited copy</button>
+<p id="surfaceEditStatus" role="status"></p>
 <fieldset id="reviewEditing" disabled><legend>Select a region</legend>
 <p id="reviewArchNotice" class="review-arch-notice"></p>
 <div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
@@ -52,7 +83,7 @@
 <small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
 <div class="controls"><button id="reviewUndo" aria-keyshortcuts="Meta+Z Control+Z" title="Undo (⌘Z / Ctrl+Z)">Undo</button><button id="reviewRedo" aria-keyshortcuts="Meta+Shift+Z Control+Shift+Z" title="Redo (⌘Shift+Z / Ctrl+Shift+Z)">Redo</button></div>
 <details><summary>Split / merge labels</summary>
-<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
+<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option><option value="hole">Select hole rim</option><option value="trim">Select surface to remove</option><option value="untrim">Deselect surface to keep</option></select></label>
 <label>To FDI <input id="reviewTo" type="number" value="12"></label><label>From FDI <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
 </fieldset>
 <details><summary>Numbering &amp; help</summary>
@@ -66,7 +97,7 @@
 <section class="review-save-panel" aria-label="Save tooth labels">
 <div class="controls"><button id="reviewSaveLocal" type="button" disabled>Save locally</button><button id="reviewExport" disabled>Download JSON</button><button id="returnCorrections" hidden>Return corrections to case</button><label><input id="reviewChecked" type="checkbox">All boundaries and tooth numbers checked</label></div>
 <p id="reviewSaveStatus" role="status"></p>
-<details id="reviewSaveDetails"><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="3" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each arch separately. Loading a baseline resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
+<details id="reviewSaveDetails" open><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="6" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each visit and arch separately. Find them again in <strong>My Notes</strong> in the main sidebar, or reopen this scan. Loading the same scan resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
 </section>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module" src="./region_review.js"></script></main></body></html>

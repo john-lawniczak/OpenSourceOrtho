@@ -1,0 +1,71 @@
+{
+  "source_sha256": "fe3668a01e8e6f999e613d8a2ee334c7283263e6af7ad61effae37af6a75a4b6",
+  "edited_sha256": "6ed235820a8ebfe91ac686adfac297e30c1b363faadfcce3ce2c427962628b9e",
+  "source_faces": 581144,
+  "edited_faces": 514504,
+  "removed_faces": 66640,
+  "retained_face_records_exact": true,
+  "label_changes_on_retained_faces": 0,
+  "removed_by_prior_label": {
+    "0": 66612,
+    "31": 0,
+    "32": 0,
+    "33": 0,
+    "34": 0,
+    "35": 0,
+    "36": 0,
+    "37": 0,
+    "41": 0,
+    "42": 0,
+    "43": 28,
+    "44": 0,
+    "45": 0,
+    "46": 0,
+    "47": 0
+  },
+  "prior_tooth_surface_area_removed_fraction": {
+    "31": 0.0,
+    "32": 0.0,
+    "33": 0.0,
+    "34": 0.0,
+    "35": 0.0,
+    "36": 0.0,
+    "37": 0.0,
+    "41": 0.0,
+    "42": 0.0,
+    "43": 0.003371173981577158,
+    "44": 0.0,
+    "45": 0.0,
+    "46": 0.0,
+    "47": 0.0
+  },
+  "all_present_labels_retained": [
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47
+  ],
+  "removed_bounds": [
+    [
+      -33.68807601928711,
+      0.9528236389160156,
+      276.7039489746094
+    ],
+    [
+      24.713367462158203,
+      26.947248458862305,
+      308.47406005859375
+    ]
+  ],
+  "assessment": "Unreviewed cleanup copy. Labels are drafts; unlabeled removal does not prove tooth preservation."
+}

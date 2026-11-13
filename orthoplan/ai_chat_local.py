@@ -4,9 +4,10 @@ from typing import Any
 
 def local_answer(message: str, context: dict[str, Any]) -> str:
     if case := context.get("selected_case"):
-        saved = [a["arch"] for a in case["saved_baseline_labels"] if a.get("saved")]
+        saved = [f"week {a['week']} {a['arch']}"
+                 for a in [*case["saved_baseline_labels"], *case.get("saved_progress_labels", [])] if a.get("saved")]
         return (f"USER_ONE has {len(case['scans'])} scan records in this context. "
-                f"Saved baseline labels: {', '.join(saved) or 'none'}. "
+                f"Saved labels: {', '.join(saved) or 'none'}. "
                 "These are metadata and label summaries; I have not inspected the crown surfaces. "
                 "Select an external provider for an explanation of these records.")
     findings = context.get("findings") or []
