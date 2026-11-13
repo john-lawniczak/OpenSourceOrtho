@@ -35,3 +35,12 @@ test("case-specific removed teeth cannot be painted but old labels can be correc
   const generic = new RegionEdits([0], "upper"); generic.paint([0], 18);
   assert.equal(generic.labels[0], 18);
 });
+
+test("automatic seed origin survives export until editing or explicit review", () => {
+  const record = { ...new RegionEdits([11, 0], "upper").export("sha"), provenance: "automatic-draft" };
+  const edits = RegionEdits.restore(record, "sha", 2, "upper");
+  assert.equal(edits.export("sha").provenance, "automatic-draft");
+  assert.equal(edits.export("sha", true).provenance, "user-corrected");
+  edits.paint([1], 12);
+  assert.equal(edits.export("sha").provenance, "user-corrected");
+});

@@ -3,7 +3,7 @@ import { OrbitControls } from "./vendor/OrbitControls.js";
 
 import { scanViewPose, scanFitDistance } from "./scan_view_pose.js";
 
-export function frameScanView(camera, controls, element, box, command, onChange) {
+export function frameScanView(camera, controls, element, box, command, onChange, viewContext = {}) {
   if (!box || box.isEmpty()) return controls;
   const center = box.getCenter(new THREE.Vector3());
   const direction = camera.position.clone().sub(controls.target).normalize();
@@ -11,7 +11,7 @@ export function frameScanView(camera, controls, element, box, command, onChange)
   else if (command === "roll-left" || command === "roll-right") {
     camera.up.applyAxisAngle(direction, command === "roll-left" ? Math.PI / 2 : -Math.PI / 2);
   } else if (command !== "fit") {
-    const pose = scanViewPose(box, command);
+    const pose = scanViewPose(box, command, viewContext);
     direction.fromArray(pose.direction); camera.up.fromArray(pose.up);
   }
   const distance = scanFitDistance(camera, box);

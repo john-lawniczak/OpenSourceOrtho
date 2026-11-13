@@ -1,3 +1,4 @@
+import { sameScanFile } from "./scan_dates.js";
 const DB_NAME = "opensource-ortho";
 const DB_VERSION = 1;
 const STORE = "uploads";
@@ -27,6 +28,9 @@ async function withStore(mode, callback) {
       let result;
       try {
         result = callback(store);
+        // Observe request failures immediately; transaction completion can be a
+        // later task. The original result still propagates rejection to callers.
+        Promise.resolve(result).catch(() => {});
       } catch (error) {
         reject(error);
         return;
@@ -40,9 +44,10 @@ async function withStore(mode, callback) {
   }
 }
 
-export async function saveUploadedFiles(files) {
+export async function saveUploadedFiles(files, dates = []) {
   await withStore("readwrite", (store) => {
     store.put(Array.from(files), UPLOAD_KEY);
+    store.put(dates, "current-scan-dates");
   });
 }
 
@@ -57,6 +62,7 @@ export async function restoreUploadedFiles() {
 export async function clearUploadedFiles() {
   await withStore("readwrite", (store) => {
     store.delete(UPLOAD_KEY);
+    store.delete("current-scan-dates");
   });
 }
 
@@ -102,4 +108,25 @@ export function clearSegmentationReview(planId) {
   } catch {
     // Non-fatal.
   }
+}
+
+export async function saveUploadDates(dates) {
+  return withStore("readwrite", store => new Promise((resolve, reject) => {
+    const request = store.get(UPLOAD_KEY);
+    request.onsuccess = () => {
+      const files = request.result || [];
+      if (files.length !== dates.length || !files.every((file, i) => sameScanFile(file, dates[i]))) {
+        reject(new Error("The saved upload batch changed. Reload before saving dates.")); return;
+      }
+      store.put(dates, "current-scan-dates"); resolve();
+    };
+    request.onerror = () => reject(request.error);
+  }));
+}
+export async function restoreUploadDates() {
+  return withStore("readonly", store => new Promise((resolve, reject) => {
+    const request = store.get("current-scan-dates");
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  }));
 }

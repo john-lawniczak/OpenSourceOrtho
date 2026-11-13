@@ -95,3 +95,32 @@
 #reviewFragmentPanel { margin:10px 0; padding:8px; border:1px solid var(--line, #607c8b); border-radius:8px; }
 #reviewFragmentPanel select { width:100%; margin:8px 0; }
 #reviewFragmentPanel small { display:block; color:var(--muted, #a8bac2); }
+.viewer-navigation-modes { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin: .5rem 0; }
+.viewer-navigation-modes button[aria-pressed="true"] { background: var(--accent, #147b78); color: var(--accent-ink, white); }
+.viewer-navigation-modes small { opacity: .8; }
+.tooth-pick small { display: block; font-size: .65rem; font-weight: normal; }
+#toothNumberForm input { width: 5rem; }
+#selectedRegionReview { display: block; margin: .75rem 0; }
+.gstep[data-gstep="details"] video { display: block; width: 100%; max-width: 900px; }
+.viewer-navigation-modes button, #toothNumberForm button { font: inherit; padding: .55rem .8rem; border: 1px solid var(--line, #607c8b); border-radius: 7px; background: var(--panel-alt, #edf4f5); color: var(--ink, #172a30); cursor: pointer; }
+#toothNumberForm { display: flex; align-items: end; gap: .75rem; flex-wrap: wrap; }
+#toothNumberForm select { width: auto; min-width: 8rem; }
+
+#reviewSaveDetails > label { display: grid; width: 100%; }
+#reviewNotes { box-sizing: border-box; display: block; width: 100%; min-height: 160px; padding: 12px; font: inherit; line-height: 1.5; border: 1px solid #82989e; border-radius: 8px; resize: vertical; overflow-y: hidden; }
+
+.review-header > a { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid currentColor; border-radius: 8px; text-decoration: none; font-weight: 650; }
+.precision-embedded .review-header { display: none; }
+.precision-embedded main { padding-top: 12px; }
+#reviewSuggestedSource[hidden], #reviewCaptureNote[hidden] { display: none; }
+
+#repairPanel { margin: 0 0 12px; padding: 12px; border: 1px solid #b477d0; border-radius: 8px; }
+#repairPanel summary { font-weight: 650; cursor: pointer; }
+#repairPanel > label { display: grid; gap: 6px; margin: 10px 0; }
+#repairPanel input[type="number"] { width: 7rem; }
+#repairPanel select { width: 100%; min-width: 0; }
+#repairPanel > .repair-toggle { display: flex; align-items: center; }
+#repairPanel .repair-toggle input { width: 18px; height: 18px; flex: 0 0 18px; accent-color: #ca67f0; }
+#repairPanel small { display: block; margin-bottom: 10px; }
+#repairPanel button { padding: 8px 10px; margin: 4px 0; }
+#repairStatus { overflow-wrap: anywhere; }

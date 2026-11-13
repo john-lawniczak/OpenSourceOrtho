@@ -31,6 +31,13 @@ export function parseToothSelection(text) {
   };
 }
 
+// Explicit permanent-FDI mentions only: never infer teeth from ordinary numbers,
+// email addresses, longer IDs, decimal values or word-like hashtags.
+export function parseToothMentions(text) {
+  const tags = String(text).matchAll(/(?<![\p{L}\p{N}_@#./])[@#]([1-4][1-8])(?![\p{L}\p{N}_@#]|\.[\p{L}\p{N}])/gu);
+  return [...new Set(Array.from(tags, match => match[1]))];
+}
+
 export function toggleToothSelection(teeth, tooth) {
   const id = String(tooth);
   if (!FDI_TEETH.includes(id)) return [...teeth];
@@ -42,4 +49,12 @@ export function highlightTextColor(hex) {
   const linear = rgb.map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
   return luminance > 0.179 ? "#000000" : "#ffffff";
+}
+
+export function toothFromNumber(value, system = "FDI") {
+  const number = Number(value);
+  if (!Number.isInteger(number)) return null;
+  if (system === "FDI") return FDI_TEETH.includes(String(number)) ? String(number) : null;
+  if (system === "US") return FDI_TEETH.find(id => universalToothNumber(id) === number) || null;
+  return null;
 }

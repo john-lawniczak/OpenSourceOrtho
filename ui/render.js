@@ -1,4 +1,5 @@
 import { renderBoundaryEntry } from "./uploaded_boundary_entry.js";
+import { focusedTeeth, renderFocusTeeth } from "./plan_focus.js";
 import { renderChat } from "./chat_view.js";
 export { renderChat } from "./chat_view.js";
 import { buildViewerScanSources } from "./scan_formats.js";
@@ -88,21 +89,20 @@ function ensureViewer() {
     });
   } catch (error) {
     viewerFailed = true;
-    el("viewer3d").hidden = true;
+    el("viewer3d").textContent = "3D preview could not start. Try reloading in a browser with WebGL enabled.";
     el("viewerZoom").hidden = true;
-    el("archCanvas").hidden = false;
-    state.dim = "2d";
+    el("archCanvas").hidden = true;
+    state.dim = "3d";
   }
   return viewer;
 }
 
-// Called by the 3D/2D toggle. Falls back to 2D if WebGL is unavailable.
-export function setDimension(dim) {
-  state.dim = dim;
-  const use3d = dim === "3d" && !viewerFailed;
-  el("viewer3d").hidden = !use3d;
-  el("archCanvas").hidden = use3d;
-  el("viewerZoom").hidden = !use3d;
+// Keep the public workspace on the source-based 3D preview.
+export function setDimension() {
+  state.dim = "3d";
+  el("viewer3d").hidden = false;
+  el("archCanvas").hidden = true;
+  el("viewerZoom").hidden = viewerFailed;
   renderAll();
 }
 
@@ -205,6 +205,7 @@ function updateViewer(result) {
   v.setSelectionEnabled(scanLoaded ? segFragments.length > 0 : scaleConfirmed(state.scanUnits));
   v.setSelectedTooth(state.manualEdit.selectedTooth);
   v.update({
+    highlightTeeth: focusedTeeth(),
     frames: visibleResult.frames,
     toothFrames: visibleResult.tooth_frames,
     attachments: visibleResult.clinical_controls?.attachments || [],
@@ -212,7 +213,7 @@ function updateViewer(result) {
     stageIndex: Number(el("stageSlider").value || 0),
     view: state.view,
     exaggeration: state.userMode === "simple" ? 1 : (numberValue("exaggeration") || 1),
-    showToothLabels: state.userMode === "simple" ? false : state.showToothLabels,
+    showToothLabels: false, // Accessible number buttons surround the shared viewer.
     labelTeeth: state.userMode === "simple" ? [state.manualEdit.selectedTooth].filter(Boolean) : null,
     showScale: state.showScale,
     unitsConfirmed: scaleConfirmed(state.scanUnits),
@@ -253,7 +254,7 @@ export function renderAll() {
   el("themeToggle").setAttribute("aria-checked", state.theme === "dark" ? "true" : "false");
   const toothLabelBtn = el("toothLabelToggle");
   if (toothLabelBtn) {
-    toothLabelBtn.setAttribute("aria-pressed", state.showToothLabels ? "true" : "false");
+    toothLabelBtn.setAttribute("aria-checked", String(state.showToothLabels));
     toothLabelBtn.classList.toggle("is-active", state.showToothLabels);
   }
   state.scanUnits = el("scanUnits").value;
@@ -295,6 +296,7 @@ export function renderAll() {
   // before it resizes.
   renderGuided();
   renderSampleComparison(renderAll);
+  renderFocusTeeth(renderAll);
   renderReviewHeading();
   renderMetadata();
   renderUploadFileList();

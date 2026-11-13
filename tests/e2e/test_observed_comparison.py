@@ -8,8 +8,9 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 
 def canvas_snapshot(canvas, **kwargs):
     # Rounded CSS corners can differ by 1–2 RGB levels after browser scrolling.
-    # Remove that border mask for exact comparison of the rendered scan pixels.
-    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit { visibility: hidden !important; }", **kwargs)
+    # Exclude rounded controls, the border mask and rail from scan-pixel comparisons.
+    canvas.evaluate("el => el.scrollIntoView({block: 'center'})")
+    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit, .comparison-zoom, #guidedRail { visibility: hidden !important; }", **kwargs)
 
 
 def assert_observed_endpoints_preserve_camera(page, tmp_path):
@@ -29,7 +30,7 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     frames = []
     for week in range(2, 7):
         page.locator("#comparisonNext").click()
-        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 7")
+        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 18")
         expect(page.locator("#comparisonMissing")).not_to_be_visible()
         expect(canvas).to_be_visible()
         expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")
@@ -39,7 +40,7 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     page.locator("#sampleComparison").screenshot(path=str(tmp_path / "estimated-week6.png"))
     page.locator("#comparisonNext").click()
     expect(page.locator("#comparisonVisit")).to_contain_text("Reported week 7")
-    expect(page.locator("#comparisonNext")).to_be_disabled()
+    expect(page.locator("#comparisonNext")).to_be_enabled()
     recorded = canvas_snapshot(canvas)
     page.locator("#comparisonEndpointFit").click()
     expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")
@@ -55,6 +56,16 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     assert len([url for url in requests if url.endswith(".stl")]) == count_before
 
 
+def assert_recorded_week_borders(page, tmp_path):
+    expect(page.locator("#guidedHeading")).to_have_text("USER_ONE · sample case")
+    expect(page.locator('[data-scan-kind="observed"]')).to_have_count(3)
+    for theme, color in [("light", "rgb(37, 99, 235)"), ("dark", "rgb(96, 165, 250)")]:
+        for week in [1, 7, 18]:
+            expect(page.locator(f'[data-comparison-week="{week}"]')).to_have_css("border-top-color", color)
+        page.locator(".comparison-timeline").screenshot(path=str(tmp_path / f"recorded-weeks-{theme}.png"))
+        page.locator("#themeToggle").click()
+
+
 def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path):  # noqa: F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
@@ -66,12 +77,14 @@ def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path): 
             page.goto(server_url, wait_until="networkidle")
             expect(page.locator("#uploadIntroduction")).to_have_count(0)
             expect(page.locator("#segmentationBlock")).not_to_be_visible()
+            page.locator("#teethProfile").click()
             page.locator("#guidedNext").click()
             expect(page.locator("#segmentationBlock")).to_be_visible()
             page.locator("#sampleLaunch").click()
             page.locator('[data-comparison-arch="upper"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             expect(page.locator("#comparisonVisit")).to_contain_text("Week 1 / baseline")
+            assert_recorded_week_borders(page, tmp_path)
             expect(page.locator(".comparison-provenance")).to_have_count(0)
             expect(page.locator("#comparisonPrevious")).to_be_disabled()
             expect(page.locator("#stageSlider")).not_to_be_visible()

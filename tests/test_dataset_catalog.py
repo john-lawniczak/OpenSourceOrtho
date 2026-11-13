@@ -40,7 +40,7 @@ def test_catalog_outputs_are_current_and_identity_is_preserved():
     assert entry["pseudonym"] == "USER_ONE"
     assert entry["uuid"] == "07b70319-38c8-4b1a-9c98-517b8bc4cdd3"
     assert entry["scan_pair_count"] == 3
-    assert entry["scan_count"] == 8
+    assert entry["scan_count"] == 9  # Includes the cleaned upper derivative, not a new visit.
     assert "2026-" not in json.dumps(catalog)
 
 

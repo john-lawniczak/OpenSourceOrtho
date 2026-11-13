@@ -41,6 +41,16 @@ New users can start with [HOW_TO.md](HOW_TO.md).
 See the [acquisition photos and week 18 scan results](HOW_TO.md#user_one-photo-walkthrough)
 and [tooth-painting example](docs/REGION_CORRECTIONS.md#painting-example).
 
+[![USER_ONE upper baseline with colored crown labels and tooth selection controls](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/media/user-one-baseline-upper-painting.png)](docs/REGION_CORRECTIONS.md#painting-example)
+
+The tooth precision workspace supports draft tooth labels, estimated hole fills,
+and reversible model-surface cleanup. Colors identify draft regions; they do not
+verify anatomical boundaries.
+
+**Create Retainer** starts a separate [current-scan reference preparation](docs/RETAINER_PREPARATION.md)
+with zero proposed movement. This first step exports an unchanged reference model
+and preparation record for review; it does not generate a wearable retainer.
+
 Maintainer releases follow [private development → one public commit](docs/PRIVATE_DEVELOPMENT.md).
 Public contributors can submit PRs from public forks; private repository access is not required.
 

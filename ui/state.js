@@ -90,7 +90,7 @@ export const state = {
   // When true, the 3D viewer loads the bundled demo crown meshes per tooth class.
   useDemoMeshes: false,
   // When true, the 3D viewer draws FDI tooth-number labels over each tooth.
-  showToothLabels: false,
+  showToothLabels: true,
   // When true, the 3D viewer draws a true-scale mm reference bar beside a loaded
   // scan (only meaningful once scan units are confirmed mm). scaleStatus is the
   // status strip text, set by the viewer render.

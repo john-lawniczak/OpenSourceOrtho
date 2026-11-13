@@ -1,8 +1,9 @@
+import { sampleViewForStep } from "./sample_view.js";
 import { el, state } from "./state.js";
 
 export function selectedChatCase() {
   const source = state.chat.caseSource || "auto";
-  return source === "auto" ? (state.sample.active && state.sample.view !== "simulation" ? "user_one" : "workspace") : source;
+  return source === "auto" ? (state.sample.active && sampleViewForStep(state.sample,state.userMode,state.guided.step) !== "simulation" ? "user_one" : "workspace") : source;
 }
 
 export function renderChatContext() {

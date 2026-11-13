@@ -29,7 +29,7 @@
       "affected_tooth_number": null,
       "reference_damage_map_available": false,
       "timing_relative_to_scanning": "Not confirmed",
-      "scope_note": "Model defect reported by contributor; not evidence of a defect in the actual tooth. Relationship to the original November 10 pair is not confirmed."
+      "scope_note": "Model defect reported by contributor; not evidence of a defect in the actual tooth. On 2026-11-12 the contributor clarified that the November 10 pair and H4/H6 belong to the same reported week-18 model-making series. Exact physical-cast relationships across those attempts are not separately specified; H4/H6 themselves share one physical lower model."
     }
   },
   "units": {
@@ -96,5 +96,11 @@
     "public_redistribution_authorized": false,
     "public_assets": [],
     "manifest_consent_scope": "Private repository contribution only; case-root publication consent is unchanged."
+  },
+  "capture_relationship": {
+    "model_series_id": "user-one-reported-week-18-model-attempts",
+    "source_metadata": "../../source-metadata.json",
+    "recorded_on": "2026-11-12",
+    "provenance": "Contributor clarification; see visit-level capture_relationship for scope and unknowns."
   }
 }

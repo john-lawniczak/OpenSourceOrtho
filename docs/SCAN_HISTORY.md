@@ -130,3 +130,109 @@ The match-review dropdown starts with the actual independent candidate, includin
 an unmatched state, instead of assuming that independently assigned FDI labels
 must agree. The refreshed USER_ONE artifacts flag six upper-region assignments as
 ambiguous; fitted translations and rotations are unchanged by this diagnostic.
+
+## Painted USER_ONE workspace
+
+The test case's **Explore individual teeth** opens the saved week 7 upper and
+lower regions. Choose **Week 1** to inspect the baseline painting, or **Reload
+saved painting** after saving another draft. Section 3 accepts either FDI or US
+Universal numbers; the selected crown uses exactly that annotation's source
+triangles. Missing regions are reported rather than approximated by a strip.
+
+`POST /api/sample-teeth` resolves each arch independently: latest validated local
+save, then the hash-checked private annotation index. The baseline can also use
+its bundled draft. Week 7 does not silently substitute heuristic segmentation.
+Private archives incorporate the contributor's saved drafts for reproducible DEV
+use; they do not change source scans, publication consent, or review status.
+
+Selection and camera navigation work without reviewing the draft. Millimetre
+edits still require confirmed scan scale and explicit review of the selected
+region's identity and boundary. Week 7 units remain unverified. Stages begin with
+zero movement; these exploratory edits are separate from the existing scan-history
+motion estimates, which are not refitted by loading a painting.
+
+Both arches open face-on. Week 7's separately exported arches use a display-only
+layout (upper crowns down, lower crowns up), with the identical transform applied
+to their painted fragments. Their displayed separation is not bite registration.
+Rotate, Pan, Focus selected tooth, and the view presets move only the camera.
+
+`tools/record_workflow_demo.py` records the private painted workspace to the
+case's `private/media/` folder. The local server serves its video, captions, and
+poster through the three fixed `/workflow-*` routes; without those private assets,
+the bundled public walkthrough remains the fallback. Public release filtering
+excludes these private recordings and annotations.
+
+## Observed week 18
+
+The sample history now exposes reported weeks 1–18. The original week 18 upper
+and lower pair loads on demand from its published visit manifest and source
+metadata, with SHA-256 verification. Acquisition date remains unknown. Display
+centering and scanner-axis assumptions are not cross-visit or bite registration.
+
+Weeks 2–6 retain the existing week 1–7 fit. Weeks 8–17 explicitly show **Not fitted**;
+week 18 is an observation and does not inherit earlier tooth labels, motion or
+proximity values. Week 18 painting links open that exact arch and visit with
+separate saves. After painting, a new endpoint fit can attempt a best-effort
+week 1–18 research preview, retaining uncertainty for model chips and unmatched
+regions. Painting alone does not regenerate it.
+
+## Week 18 painting selection
+
+The scan-history painting buttons prepare the trimmed `progress-02-upper-clean.stl`
+version and the additional lower **Fusion H4** capture. The painting controls
+offer only this suggested pair; original observations remain in history. H4 is
+a tentative lower painting preference because its margins appear
+more compact in the existing capture comparison; it is not a validated accuracy
+winner. The week-18 model-chip notes remain visible in the editor.
+
+Earlier captures and their saved notes keep explicit source-bound links, but are
+not offered in the week 18 painting picker. Each capture is verified
+against its manifest SHA-256 and saves separate versioned annotations and notes:
+`week-18-lower`, `week-18-lower-fusion-h-4`, and `week-18-lower-fusion-h-6` under
+`.orthoplan-region-corrections/USER_ONE/`. Upper saves use `week-18-upper`.
+The cleaned upper saves separately as `week-18-upper-upper-clean`.
+My Notes reopens the exact saved capture. Existing original-scan saves remain valid.
+These prepared surfaces start unpainted unless a matching local draft exists;
+no old face labels are copied onto a different mesh. Painting does not reconstruct
+missing model surfaces. Leave uncertain chip regions unreviewed.
+
+The observed week-18 history continues to display the original pair. Choosing H4
+for painting does not replace that observation or generate a week 1–18 motion fit.
+After both paintings are saved and reviewed, they can be incorporated separately.
+
+Week 18 painting uses a separate inspection camera because these model captures
+have different axes from the earlier intraoral scans. Default/Face-on and the
+relative Above/Side presets change only the camera, never vertex or label order.
+
+### Cleaned upper painting version
+
+`visits/progress-02/captures/upper-clean/progress-02-upper-clean.stl` is the
+unchanged Desktop `Fusion_H_1_Upper_CLEAN.stl`, renamed on import. Its 491,548
+triangles are an exact subset of the original upper’s 828,960 triangles. Source
+metadata records the original hash and trimming relationship. No surfaces were
+filled, moved or reconstructed. This is a derivative of the same observation,
+not an additional observed visit.
+
+The week 18 upper painting action selects this version explicitly. Historical
+upper links remain valid and retain their separate hash-bound drafts. My Notes
+links back to the saved version. Painting
+this version does not replace the original observed-history scan or fit motion.
+
+### Week 18 first painting sweep
+
+The normal week 18 Upper/Lower actions now select cleaned upper / Fusion H4
+lower, including entry from the visit selector. There are no alternative-capture
+dropdowns. Reload and older saved-note links retain their exact source identity.
+
+`tools/seed_week_eighteen_labels.py` projects the latest saved week 7 crown labels
+onto these two surfaces using proper PCA rotation starts, trimmed rigid ICP,
+distance/normal/round-trip checks, contact buffers and largest-component cleanup.
+The lower model also needs translated starting positions to avoid fitting its
+base instead of crowns. Scan coordinates, face order and missing surfaces remain
+unchanged. This does not fit week 1–18 movement.
+
+Private, unreviewed draft artifacts and fit reports live under
+`private/painting-seeds/week-18/`. They are excluded from public releases and
+static dataset serving. `--save` installs fresh local drafts; `--install-prepared --save` installs those prepared records without refitting. Both reject any existing
+painting rather than replacing it. The initial sweep colors all 14 present teeth
+per arch; gray includes gum/model context and weak or fragmented matches.

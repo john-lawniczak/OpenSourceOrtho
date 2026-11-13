@@ -33,7 +33,8 @@ python3 -m orthoplan.server        # or: orthoplan serve
 
 Then open `http://127.0.0.1:8000`.
 
-The app opens in Guided mode by default. A light/dark switch is anchored at the
+The app opens Your Teeth Profile at the Upload step in Guided mode by default.
+Tooth Map is a separate sidebar reference page with a Back button. A light/dark switch is anchored at the
 top-right of the window in every mode. The sidebar **Sample Test Case** button
 opens the observed baseline/week 7 scan comparison, with an explicitly separate
 simulated planning walkthrough using the redacted CBCT/root-bone fixture.
@@ -45,17 +46,18 @@ either mode.
 
 ## Modes
 
-The sidebar **Guided / Technician** toggle (always visible on the left) exposes two
-workflows:
+Choose **Your Teeth Profile** to open the guided workflow. Settings offers a
+Technician mode for the full controls.
 
-- **Guided** (default) is a six-step wizard for non-technical users -
-  **Upload → Teeth & time → Details → Review → 3D preview → Print / send** - with
-  a progress rail and Back/Next, showing one step at a time. It lets a user upload
-  an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
-  default, with Faster/Gentle behind a disclosure), build the plan, review it as a
-	  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
-	  printable files. It acknowledges that the preview is not a diagnosis or treatment
-	  plan and that physical use is the user's own responsibility and risk.
+- **Guided** uses six steps: **Upload → Explore your teeth → Your plan → Review →
+  3D preview → Print / send**. Step 2 checks tooth numbers/painted boundaries and
+  timeline spacing (one week by default). Step 3 provides an editable overall
+  plan brief, one goal per line, above the tooth inspection controls. Step 4
+  repeats those goals beside geometric checks. Notes autosave in this browser,
+  keyed by plan ID and isolated from sample notes; download them as a text file
+  for a portable copy. They do not change movements, prescribe restorations or
+  IPR, get sent automatically to AI, or enter movement-plan exports. The optional
+  sample brief comes from a private dataset file excluded from public snapshots.
 - **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 
@@ -305,3 +307,44 @@ python tools/capture_screenshots.py    # writes docs/images/*.png
 The sample paths and `USER_ONE` label come from generated `sample-dataset.js`.
 Regenerate it with `python3 tools/build_dataset_catalog.py` from the repo root.
 Dataset assets require the Python server, which applies the publication allowlist.
+
+### Stable teeth view across guided steps
+
+The same 3D viewer stays above the content for Upload, Explore your teeth,
+Your plan, Review, 3D preview and Print / send once scans are loaded. Step titles,
+plan goals and supporting controls sit below it. Navigation keeps camera zoom,
+rotation and selection; it no longer refits the camera merely because the step
+changed. Navigating from lower down the page returns the shared view below the
+step rail. The viewer scrolls normally, so it does not cover notes or consume the
+whole screen on smaller devices. Review and Print / send keep their checks and
+handoff controls below the view without showing the tooth-editing panel.
+
+### My Highlighted Teeth and scan tools
+
+Settings labels the connector **AI Model Provider**; saved painting notes are in
+**My Notes**. The sample's **Explore individual teeth** mode selects painted
+regions in the main viewer; the painting buttons open **Edit Tooth Precision**.
+
+Step 3 has an explicit FDI **My Highlighted Teeth** list. Save numbers, then use the viewer's
+My Highlighted Teeth switch to highlight available painted crowns and their number buttons
+in blue. Preferences are stored by plan ID with isolated USER_ONE storage. The
+private sample brief supplies 12, 22 and 31; filtered public installations do not
+receive that private default. Missing regions are listed instead of approximated.
+Focus preferences do not change movement data, review status, or AI context.
+
+The compact Highlight weeks toolbar has independent switches for blue recorded
+weeks and soft-yellow estimated weeks. Unfitted/unavailable weeks stay neutral;
+turning colors off retains provenance labels and the selected-week indicator.
+**Compare two scans** opens the independent endpoint-fitting tool in a dialog;
+both Back controls return to the same section/week. Closing the dialog keeps its
+unfinished comparison in memory until the main page is reloaded. Use that tool's
+Save locally action for durable comparisons. Painting and comparison links are
+styled as buttons while preserving normal link behavior for modified clicks.
+
+Plan notes also accept explicit FDI shortcuts: `@12` and `#12` add tooth 12 to
+that plan's saved My Highlighted Teeth list. Tags are deduplicated and checked after a
+brief typing pause or when leaving the notes field. Plain numbers, malformed
+IDs and email-like tokens are ignored. The shortcut adds to existing choices
+without changing the highlight switch. To remove a saved tooth, remove its note
+tag and edit the My Highlighted Teeth list; deleting prose alone does not erase choices.
+Storage failures remain visible, and focus changes never author movements.

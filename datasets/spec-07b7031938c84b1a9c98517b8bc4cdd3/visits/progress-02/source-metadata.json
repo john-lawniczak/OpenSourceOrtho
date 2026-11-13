@@ -134,5 +134,27 @@
     "public_redistribution_authorized": false,
     "public_assets": [],
     "manifest_consent_scope": "Private repository contribution only; the case-root publication consent is unchanged."
+  },
+  "capture_relationship": {
+    "recorded_on": "2026-11-12",
+    "provenance": "Contributor clarification in the project conversation; not independently verified.",
+    "model_series_id": "user-one-reported-week-18-model-attempts",
+    "reported_week": 18,
+    "source_filenames": [
+      "2026-11-10-week-18-upper-test.stl",
+      "2026-11-10-week-18-bottom-test.stl",
+      "Fusion_H_4.stl",
+      "Fusion_H_6.stl"
+    ],
+    "relationship_reported": "The November 10 upper/bottom test files and the additional H4/H6 lower captures belong to the same USER_ONE week-18 model series, with different variants or attempts at the mold/model process. These are not separate longitudinal visits.",
+    "same_physical_lower_model_confirmed_for": [
+      "fusion-h-4",
+      "fusion-h-6"
+    ],
+    "cross_attempt_physical_cast_identity": null,
+    "cross_attempt_physical_cast_identity_note": "The clarification groups the attempts at the same reported week. Exact impression, pour, rescan, repair and physical-cast relationships between the November 10 pair and H4/H6 are not separately specified.",
+    "intact_donor_regions_verified": false,
+    "fusion_performed": false,
+    "evaluation_scope_note": "Existing per-file quality/damage assessments retain their scope; membership in one model series does not establish identical defects or recover missing surfaces."
   }
 }

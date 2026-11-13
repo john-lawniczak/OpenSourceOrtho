@@ -1,11 +1,10 @@
 .sample-observed > :not(#sampleComparison):not(#sampleViewModes) { display: none !important; }
-body[data-sample-view="observed"] #guidedRail,
-body[data-sample-view="observed"] .guided-nav,
-body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(#guidedPlanViewerHost),
+body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(.plan-brief-summary):not(h3),
 body[data-sample-view="observed"] #panel-review .panel-heading,
 body[data-sample-view="observed"] #panel-review .workflow-card,
+body[data-sample-view="observed"] #guidedViewerDetailsHost,
 body[data-sample-view="observed"] #sampleStatusChip { display: none !important; }
-body[data-sample-view="observed"] .ai-rail { display: none !important; }
+body[data-sample-view="observed"][data-chat-collapsed="1"] .ai-rail { display: none !important; }
 @media (min-width: 1201px) {
   body[data-sample-view="observed"] .app-shell { grid-template-columns: 248px minmax(0, 1fr) 0; }
 }
@@ -65,3 +64,21 @@ body[data-theme="dark"] .comparison-estimate-note { background: #40341e; color: 
 body[data-theme] #sampleComparison .comparison-weeks button[aria-current="step"] {
   background: #0f766e; color: #fff; border: 2px solid #65e6d1; box-shadow: 0 0 0 2px #0f766e;
 }
+/* Scan provenance remains visible even when a recorded week is selected. */
+body[data-theme] #sampleComparison:not(.scan-highlights-off) .comparison-weeks button[data-scan-kind="observed"] { border: 2px solid #2563eb; background: #e5efff; color: #183b70; }
+body[data-theme="dark"] #sampleComparison:not(.scan-highlights-off) .comparison-weeks button[data-scan-kind="observed"] { border-color: #60a5fa; background: #203d5c; color: #e6f0ff; }
+body[data-theme] #sampleComparison:not(.estimate-highlights-off) .comparison-weeks button[data-scan-kind="estimated"] { border: 2px solid #c58c19; background: #fff4d6; color: #61420c; }
+body[data-theme="dark"] #sampleComparison:not(.estimate-highlights-off) .comparison-weeks button[data-scan-kind="estimated"] { border-color: #d9b354; background: #40341e; color: #f6dea6; }
+.comparison-highlight-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; font-size: .85rem; }
+.comparison-highlight-controls > span { color: var(--muted); margin-right: 4px; }
+#sampleComparison .scan-highlight-toggle { display: inline-flex; width: auto; flex: 0 1 auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-weight: 500; cursor: pointer; }
+#sampleComparison .scan-highlight-toggle input { width: 18px; height: 18px; min-width: 18px; flex: 0 0 18px; margin: 0; padding: 0; accent-color: #2563eb; }
+#sampleComparison #highlightEstimatedWeeks { accent-color: #b7791f; }
+.week-color { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; }
+.week-color.recorded { background: #60a5fa; }
+.week-color.estimated { background: #e6c363; }
+.comparison-motion-tools a { display: inline-flex; align-items: center; min-height: 36px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-alt); color: var(--ink); font-size: .85rem; text-decoration: none; }
+.comparison-motion-tools a:hover { border-color: var(--accent); }
+.comparison-motion-tools a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* The header assistant shortcut also works while inspecting observed history. */
+body[data-sample-view="observed"]:not([data-chat-collapsed="1"]) .ai-rail { display: block; position: fixed; z-index: 40; inset: 60px 0 0 auto; width: min(580px, 100%); padding: 12px; background: var(--bg); }
