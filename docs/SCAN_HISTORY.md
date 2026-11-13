@@ -179,12 +179,14 @@ regions. Painting alone does not regenerate it.
 ## Week 18 painting selection
 
 The scan-history painting buttons prepare the trimmed `progress-02-upper-clean.stl`
-version and the additional lower **Fusion H4** capture. The original upper remains
-available in the editor’s Upper version selector. H4 is a tentative lower painting preference because its margins appear
+version and the additional lower **Fusion H4** capture. The painting controls
+offer only this suggested pair; original observations remain in history. H4 is
+a tentative lower painting preference because its margins appear
 more compact in the existing capture comparison; it is not a validated accuracy
 winner. The week-18 model-chip notes remain visible in the editor.
 
-The lower editor offers Original, Fusion H4 and Fusion H6. Each capture is verified
+Earlier captures and their saved notes keep explicit source-bound links, but are
+not offered in the week 18 painting picker. Each capture is verified
 against its manifest SHA-256 and saves separate versioned annotations and notes:
 `week-18-lower`, `week-18-lower-fusion-h-4`, and `week-18-lower-fusion-h-6` under
 `.orthoplan-region-corrections/USER_ONE/`. Upper saves use `week-18-upper`.
@@ -211,7 +213,26 @@ metadata records the original hash and trimming relationship. No surfaces were
 filled, moved or reconstructed. This is a derivative of the same observation,
 not an additional observed visit.
 
-The week 18 upper painting action selects this version explicitly. Original
-upper links remain valid, and switching the Upper version selector loads a
-separate hash-bound draft. My Notes links back to the saved version. Painting
+The week 18 upper painting action selects this version explicitly. Historical
+upper links remain valid and retain their separate hash-bound drafts. My Notes
+links back to the saved version. Painting
 this version does not replace the original observed-history scan or fit motion.
+
+### Week 18 first painting sweep
+
+The normal week 18 Upper/Lower actions now select cleaned upper / Fusion H4
+lower, including entry from the visit selector. There are no alternative-capture
+dropdowns. Reload and older saved-note links retain their exact source identity.
+
+`tools/seed_week_eighteen_labels.py` projects the latest saved week 7 crown labels
+onto these two surfaces using proper PCA rotation starts, trimmed rigid ICP,
+distance/normal/round-trip checks, contact buffers and largest-component cleanup.
+The lower model also needs translated starting positions to avoid fitting its
+base instead of crowns. Scan coordinates, face order and missing surfaces remain
+unchanged. This does not fit week 1–18 movement.
+
+Private, unreviewed draft artifacts and fit reports live under
+`private/painting-seeds/week-18/`. They are excluded from public releases and
+static dataset serving. `--save` installs fresh local drafts; `--install-prepared --save` installs those prepared records without refitting. Both reject any existing
+painting rather than replacing it. The initial sweep colors all 14 present teeth
+per arch; gray includes gum/model context and weak or fragmented matches.

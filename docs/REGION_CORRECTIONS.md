@@ -294,3 +294,9 @@ hole. This tool does not sculpt or reconstruct those defects. USER_ONE's cleaned
 week 18 upper has complex/curved openings that this first release keeps unpatched;
 raising the size limit does not bypass the geometry checks. Surface reconstruction
 from an earlier scan remains a separate future feature.
+
+Week 18 painting offers only the **Cleaned upper** and **Fusion H4 lower** working
+surfaces. The initial color sweep is an unreviewed automatic draft transferred
+from the saved week 7 crowns. Review all tooth numbers and boundaries, fill gray
+crown areas where appropriate, and Save locally. Missing mold surfaces are not
+filled by this coloring step. Existing historical scans/notes remain separate.

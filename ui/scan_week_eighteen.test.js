@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { weekEighteenMetadata, loadWeekEighteenScan } from "./scan_week_eighteen.js";
+import { weekEighteenMetadata, loadWeekEighteenScan, suggestedPaintingCapture } from "./scan_week_eighteen.js";
 const folder = new URL("../datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-02/", import.meta.url);
 const read = name => JSON.parse(fs.readFileSync(new URL(name, folder)));
 test("week 18 metadata binds the original pair, arch and reported visit without inventing dates", () => {
@@ -46,4 +46,12 @@ test("cleaned upper is a separate hash-bound derivative, not another arch or vis
   assert.equal(source.derivation.added_faces, 0);
   assert.throws(() => weekEighteenMetadata(manifest, source, "lower", "upper-clean"), /Invalid/);
   assert.throws(() => weekEighteenMetadata(manifest, source, "upper"), /identity/);
+});
+
+test("painting defaults use only the suggested week 18 pair without changing observed scan defaults", () => {
+  assert.equal(suggestedPaintingCapture("upper", "progress-02"), "upper-clean");
+  assert.equal(suggestedPaintingCapture("lower", "progress-02"), "fusion-h-4");
+  assert.equal(suggestedPaintingCapture("upper", "progress-01"), "original");
+  const observed = weekEighteenMetadata(read("manifest.json"), read("source-metadata.json"), "upper");
+  assert.equal(observed.filename, "visits/progress-02/progress-02-upper.stl");
 });

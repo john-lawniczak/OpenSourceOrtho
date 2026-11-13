@@ -1,5 +1,10 @@
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
+// Painting entry points use the selected working surfaces; observations keep originals.
+export function suggestedPaintingCapture(arch, visit) {
+  return visit === "progress-02" ? (arch === "upper" ? "upper-clean" : "fusion-h-4") : "original";
+}
+
 export function weekEighteenCapture(arch, capture = "original") {
   const alternatives = { upper: ["upper-clean"], lower: ["fusion-h-4", "fusion-h-6"] };
   if (!alternatives[arch] || (capture !== "original" && !alternatives[arch].includes(capture))) throw new Error("Invalid week 18 capture.");

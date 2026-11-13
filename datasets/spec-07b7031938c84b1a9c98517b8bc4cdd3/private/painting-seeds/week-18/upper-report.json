@@ -1,0 +1,179 @@
+{
+  "schema": "ortho-projected-label-draft-v1",
+  "arch": "upper",
+  "visit": "progress-02",
+  "capture": "upper-clean",
+  "status": "automatic-draft",
+  "source_visit": "progress-01",
+  "source_annotation_sha256": "99999d8235dfee8caffca4dfa855ac82fab6725c632c198a83d1242cf4c2c881",
+  "source_hashes": {
+    "progress-01-upper.stl": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+    "visits/progress-02/captures/upper-clean/progress-02-upper-clean.stl": "7a43b88cf733bae4430ec91a555edc6d0b8ed1b9c66adf2f30241fe5e4b69a24"
+  },
+  "source_to_target": [
+    [
+      -0.8586798641033774,
+      0.4323423225375592,
+      -0.27522537514958073,
+      -1.8630526624630697
+    ],
+    [
+      0.2223358110218919,
+      0.7980877115076837,
+      0.5600203495210343,
+      7.484276071218546
+    ],
+    [
+      0.46177448838219565,
+      0.4196857406241657,
+      -0.7814270285804732,
+      1.5093623431496224
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "registration_fit": {
+    "source_crown_p80_residual": 0.6437287077914287,
+    "residual_limit": 1.943362842030852,
+    "bidirectional_fit": {
+      "median_residual": 0.6852620608940195,
+      "p90_residual": 12.056226386901171,
+      "relative_p90": 0.15509489692493786,
+      "overlap": 0.8153333333333334
+    },
+    "candidate_scores": [
+      0.6437287077914287,
+      2.0283919796946748,
+      2.290610671608918,
+      2.584899480155856,
+      2.6286851408548335,
+      2.8050132047765732,
+      3.7550900990471616,
+      4.030263405364132,
+      4.12492433677621,
+      4.205719296025837,
+      4.264582660304469,
+      4.288923249514605,
+      4.38351620329023,
+      4.453682089062573,
+      4.475296824823728,
+      4.737324202293594,
+      4.891843967945418,
+      4.908623127418826,
+      4.998707205814923,
+      5.101881513777233,
+      5.144507094486945,
+      5.180320880938258,
+      5.188338044319486,
+      5.233171398343351
+    ],
+    "method": "Proper PCA rotation starts, optional translated starts, trimmed rigid ICP; no scale fitting"
+  },
+  "correspondence_checks": {
+    "max_distance": 1.8,
+    "min_absolute_normal_dot": 0.5,
+    "accepted_fraction": 0.7710925484388096,
+    "cycle_distance_limit": 1.8
+  },
+  "contact_buffer_faces": 639,
+  "teeth": [
+    {
+      "tooth": 11,
+      "faces": 14034,
+      "discarded_fragment_faces": 4531
+    },
+    {
+      "tooth": 12,
+      "faces": 8280,
+      "discarded_fragment_faces": 121
+    },
+    {
+      "tooth": 13,
+      "faces": 11517,
+      "discarded_fragment_faces": 79
+    },
+    {
+      "tooth": 14,
+      "faces": 15576,
+      "discarded_fragment_faces": 45
+    },
+    {
+      "tooth": 15,
+      "faces": 11172,
+      "discarded_fragment_faces": 332
+    },
+    {
+      "tooth": 16,
+      "faces": 22356,
+      "discarded_fragment_faces": 148
+    },
+    {
+      "tooth": 17,
+      "faces": 16141,
+      "discarded_fragment_faces": 218
+    },
+    {
+      "tooth": 21,
+      "faces": 12718,
+      "discarded_fragment_faces": 4171
+    },
+    {
+      "tooth": 22,
+      "faces": 9585,
+      "discarded_fragment_faces": 539
+    },
+    {
+      "tooth": 23,
+      "faces": 13877,
+      "discarded_fragment_faces": 79
+    },
+    {
+      "tooth": 24,
+      "faces": 12942,
+      "discarded_fragment_faces": 77
+    },
+    {
+      "tooth": 25,
+      "faces": 11199,
+      "discarded_fragment_faces": 24
+    },
+    {
+      "tooth": 26,
+      "faces": 22118,
+      "discarded_fragment_faces": 30
+    },
+    {
+      "tooth": 27,
+      "faces": 17908,
+      "discarded_fragment_faces": 14
+    }
+  ],
+  "tooth_ids": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+  ],
+  "labeled_faces": 199423,
+  "unlabeled_faces": 292125,
+  "limitations": [
+    "Projection of user-painted week 7 crowns; not verified tooth identity or anatomy.",
+    "Rigid whole-arch alignment does not compensate for all individual tooth movements.",
+    "Gray areas include context, model chips, weak matches and removed disconnected fragments.",
+    "Units are unverified. No source coordinates, face order or holes were changed."
+  ]
+}

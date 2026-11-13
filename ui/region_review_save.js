@@ -1,3 +1,4 @@
+import { suggestedPaintingCapture } from "./scan_week_eighteen.js";
 import { autoGrowTextarea } from "./auto_textarea.js";
 import { saveBrowserPainting } from "./region_browser_saves.js";
 const el = id => document.getElementById(id);
@@ -32,11 +33,15 @@ export function setupRegionSaving(getContext) {
   }
   async function refreshSummary() {
     const visit = el("reviewVisit").value;
-    const captures = { upper: el("reviewUpperCapture").value, lower: el("reviewCapture").value };
+    const captureFor = arch => {
+      const { scan } = getContext();
+      return scan?.visit === visit && scan.arch === arch ? scan.capture || "original" : suggestedPaintingCapture(arch, visit);
+    };
+    const captures = { upper: captureFor("upper"), lower: captureFor("lower") };
     for (const arch of ["upper", "lower"]) {
       try {
         const result = await fetchBaselineSave(arch, visit, visit === "progress-02" ? captures[arch] : "original");
-        if (el("reviewVisit").value !== visit || el(arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value !== captures[arch]) return;
+        if (el("reviewVisit").value !== visit || captureFor(arch) !== captures[arch]) return;
         const badge = el(`reviewSaved${arch}`);
         badge.hidden = !result.saved;
         badge.textContent = `${arch} · ${result.review_status}`;

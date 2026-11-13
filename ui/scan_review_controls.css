@@ -112,7 +112,7 @@
 .review-header > a { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid currentColor; border-radius: 8px; text-decoration: none; font-weight: 650; }
 .precision-embedded .review-header { display: none; }
 .precision-embedded main { padding-top: 12px; }
-#reviewCaptureField[hidden], #reviewCaptureNote[hidden] { display: none; }
+#reviewSuggestedSource[hidden], #reviewCaptureNote[hidden] { display: none; }
 
 #repairPanel { margin: 0 0 12px; padding: 12px; border: 1px solid #b477d0; border-radius: 8px; }
 #repairPanel summary { font-weight: 650; cursor: pointer; }

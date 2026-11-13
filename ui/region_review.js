@@ -8,7 +8,7 @@ import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
 import { setupReviewControls } from "./region_review_controls.js";
 import { setupFragmentReview } from "./region_fragment_review.js";
 import { inferArchFromName } from "./core.js";
-import { loadWeekEighteenScan } from "./scan_week_eighteen.js";
+import { loadWeekEighteenScan, suggestedPaintingCapture } from "./scan_week_eighteen.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
 import { loadMotionPreview } from "./scan_motion_data.js";
 import { RegionEdits } from "./region_edits.js";
@@ -39,10 +39,8 @@ function mount(repairTransition = false) {
   repair.validate(scan);
   el("reviewExport").textContent = scan.repair ? "Download repair bundle" : "Download JSON";
   viewer?.dispose();
-  el("reviewCaptureField").hidden = scan.visit !== "progress-02" || scan.arch !== "lower";
+  el("reviewSuggestedSource").hidden = scan.visit !== "progress-02";
   el("reviewCaptureNote").hidden = scan.visit !== "progress-02";
-  el("reviewUpperCaptureField").hidden = scan.visit !== "progress-02" || scan.arch !== "upper";
-  el(scan.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan.capture || "original";
   el("reviewWorkspaceLink").href = scan.visit ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
   el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.repair ? "Estimated repaired surface · " : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
@@ -60,10 +58,10 @@ function mount(repairTransition = false) {
   }); fragments.reset(); repair.reset(!repairTransition); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
 }
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }
-async function loadBaseline(arch, visit = el("reviewVisit").value) {
+async function loadBaseline(arch, visit = el("reviewVisit").value, requestedCapture = null) {
   if (!["upper", "lower"].includes(arch)) throw new Error("Choose Upper or Lower first.");
-  if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; el(scan?.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan?.capture || "original"; return; }
-  const capture = visit === "progress-02" ? el(arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value : "original";
+  if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; return; }
+  const capture = requestedCapture || suggestedPaintingCapture(arch, visit);
   const current = ++generation;
   el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : visit === "progress-01" ? 7 : 18} ${arch}…`;
   el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
@@ -84,16 +82,14 @@ async function loadBaseline(arch, visit = el("reviewVisit").value) {
     const url = new URL(location.href); url.searchParams.delete("edit"); url.searchParams.set("baseline", arch); url.searchParams.set("visit", visit); url.searchParams.set("capture", capture);
     history.replaceState(null, "", url);
   } finally {
-    if (current === generation) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; if (scan) el(scan.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan.capture || "original"; panel.update(Boolean(scan), selectedCount()); saving.update(); }
+    if (current === generation) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; panel.update(Boolean(scan), selectedCount()); saving.update(); }
   }
 }
 function parseStlFaceCount(bytes) {
   const geometry = parseStlGeometry(bytes), count = geometry.attributes.position.count / 3;
   geometry.dispose(); return count;
 }
-el("reviewReload").onclick = () => action(() => loadBaseline(scan?.arch, scan?.visit));
-el("reviewCapture").onchange = () => action(() => loadBaseline("lower", "progress-02"));
-el("reviewUpperCapture").onchange = () => action(() => loadBaseline("upper", "progress-02"));
+el("reviewReload").onclick = () => action(() => loadBaseline(scan?.arch, scan?.visit, scan?.capture));
 el("loadSample").onclick = () => action(() => loadBaseline(el("reviewArch").value));
 for (const arch of ["upper", "lower"]) el(`reviewLoad${arch}`).onclick = () => action(() => loadBaseline(arch));
 for (const id of ["reviewLoadupper", "reviewLoadlower", "loadSample"]) el(id).disabled = false;
@@ -170,10 +166,8 @@ el("reviewVisit").onchange = () => {
   else void saving.refreshSummary();
 };
 const requestedVisit = new URLSearchParams(location.search).get("visit") || "initial";
-const requestedCapture = new URLSearchParams(location.search).get("capture") || "original";
-if (["original", "upper-clean"].includes(requestedCapture)) el("reviewUpperCapture").value = requestedCapture;
-if (["original", "fusion-h-4", "fusion-h-6"].includes(requestedCapture)) el("reviewCapture").value = requestedCapture;
+const requestedCapture = new URLSearchParams(location.search).get("capture") || null;
 if (["initial", "progress-01", "progress-02"].includes(requestedVisit)) el("reviewVisit").value = requestedVisit;
 void saving.refreshSummary();
 const requestedBaseline = new URLSearchParams(location.search).get("baseline");
-if (!transferId && ["upper", "lower"].includes(requestedBaseline)) void action(() => loadBaseline(requestedBaseline));
+if (!transferId && ["upper", "lower"].includes(requestedBaseline)) void action(() => loadBaseline(requestedBaseline, requestedVisit, requestedCapture));
