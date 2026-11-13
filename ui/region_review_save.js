@@ -1,3 +1,4 @@
+import { autoGrowTextarea } from "./auto_textarea.js";
 const el = id => document.getElementById(id);
 
 export async function fetchBaselineSave(arch, visit = "initial") {
@@ -10,11 +11,12 @@ export async function fetchBaselineSave(arch, visit = "initial") {
 // Disk snapshots are explicit, immutable saves. Editing never silently marks a
 // whole scan reviewed or replaces the published motion-preview labels.
 export function setupRegionSaving(getContext) {
+  const resizeNotes = autoGrowTextarea(el("reviewNotes"));
   let dirty = false, revision = 0, baseSavedAt = null;
   function markDirty() { dirty = true; revision++; el("reviewSaveStatus").textContent = "Unsaved changes"; }
   function setSaved(record) {
     dirty = false; baseSavedAt = record?.saved_at || null;
-    el("reviewNotes").value = record?.notes || "";
+    el("reviewNotes").value = record?.notes || ""; resizeNotes();
     el("reviewChecked").checked = record?.corrections?.reviewed === true;
     el("reviewSaveStatus").textContent = record?.saved
       ? record.corrections?.provenance === "automatic-draft" ? "Restored automatic draft · review tooth colors and boundaries" : `Restored ${record.review_status}`

@@ -67,7 +67,7 @@
 <section class="review-save-panel" aria-label="Save tooth labels">
 <div class="controls"><button id="reviewSaveLocal" type="button" disabled>Save locally</button><button id="reviewExport" disabled>Download JSON</button><button id="returnCorrections" hidden>Return corrections to case</button><label><input id="reviewChecked" type="checkbox">All boundaries and tooth numbers checked</label></div>
 <p id="reviewSaveStatus" role="status"></p>
-<details id="reviewSaveDetails"><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="3" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each visit and arch separately. Loading the same scan resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
+<details id="reviewSaveDetails" open><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="6" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each visit and arch separately. Loading the same scan resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
 </section>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module" src="./region_review.js"></script></main></body></html>
