@@ -369,3 +369,8 @@ plan brief is user-authored discussion text stored separately in browser storage
 it is not appended to provider requests, tooth-goal requests, generation prompts,
 or movement-plan JSON. The private sample brief is likewise not automatically
 shared. Writing these notes never applies an IPR, spacing or movement instruction.
+
+The assistant header's **Model API Key** shortcut opens the existing Settings
+dialog and focuses the key field, or the provider selector when the current
+provider uses no key. It shares the same page-only password field as the main
+Settings gear; keys are not persisted and provider/sharing choices are unchanged.

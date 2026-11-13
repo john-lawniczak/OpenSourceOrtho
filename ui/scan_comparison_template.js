@@ -29,10 +29,11 @@ export const comparisonTemplate = `
       <button id="comparisonNext" type="button" disabled>Next week →</button>
     </div>
     <div class="comparison-weeks">
-      ${Array.from({ length: 18 }, (_, i) => `<button type="button" data-comparison-week="${i + 1}" disabled
+      ${Array.from({ length: 18 }, (_, i) => `<button type="button" data-comparison-week="${i + 1}" data-scan-kind="${[0, 6, 17].includes(i) ? "observed" : i < 7 ? "estimated" : "unavailable"}" disabled
         aria-label="Week ${i + 1}, ${[0, 6, 17].includes(i) ? "observed scan" : i < 7 ? "simulated estimate" : "not fitted"}">
         Week ${i + 1}<small>${[0, 6, 17].includes(i) ? "Observed" : i < 7 ? "Estimated" : "Not fitted"}</small></button>`).join("")}
     </div>
+    <p class="comparison-scan-key">Blue border · Recorded scan weeks</p>
   </nav>
   <div class="comparison-motion-tools">
     <a href="./progress.html">Fit another scan pair</a>

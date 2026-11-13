@@ -8,9 +8,9 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 
 def canvas_snapshot(canvas, **kwargs):
     # Rounded CSS corners can differ by 1–2 RGB levels after browser scrolling.
-    # Exclude the border mask and sticky workflow rail from scan-pixel comparisons.
+    # Exclude rounded controls, the border mask and rail from scan-pixel comparisons.
     canvas.evaluate("el => el.scrollIntoView({block: 'center'})")
-    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit, #guidedRail { visibility: hidden !important; }", **kwargs)
+    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit, .comparison-zoom, #guidedRail { visibility: hidden !important; }", **kwargs)
 
 
 def assert_observed_endpoints_preserve_camera(page, tmp_path):
@@ -56,6 +56,16 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     assert len([url for url in requests if url.endswith(".stl")]) == count_before
 
 
+def assert_recorded_week_borders(page, tmp_path):
+    expect(page.locator("#guidedHeading")).to_have_text("USER_ONE · sample case")
+    expect(page.locator('[data-scan-kind="observed"]')).to_have_count(3)
+    for theme, color in [("light", "rgb(37, 99, 235)"), ("dark", "rgb(96, 165, 250)")]:
+        for week in [1, 7, 18]:
+            expect(page.locator(f'[data-comparison-week="{week}"]')).to_have_css("border-top-color", color)
+        page.locator(".comparison-timeline").screenshot(path=str(tmp_path / f"recorded-weeks-{theme}.png"))
+        page.locator("#themeToggle").click()
+
+
 def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path):  # noqa: F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
@@ -74,6 +84,7 @@ def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path): 
             page.locator('[data-comparison-arch="upper"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             expect(page.locator("#comparisonVisit")).to_contain_text("Week 1 / baseline")
+            assert_recorded_week_borders(page, tmp_path)
             expect(page.locator(".comparison-provenance")).to_have_count(0)
             expect(page.locator("#comparisonPrevious")).to_be_disabled()
             expect(page.locator("#stageSlider")).not_to_be_visible()

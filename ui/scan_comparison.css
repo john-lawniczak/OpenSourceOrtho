@@ -64,5 +64,11 @@ body[data-theme="dark"] .comparison-estimate-note { background: #40341e; color: 
 body[data-theme] #sampleComparison .comparison-weeks button[aria-current="step"] {
   background: #0f766e; color: #fff; border: 2px solid #65e6d1; box-shadow: 0 0 0 2px #0f766e;
 }
+/* Scan provenance remains visible even when a recorded week is selected. */
+body[data-theme] #sampleComparison .comparison-weeks button[data-scan-kind="observed"] { border: 2px solid #2563eb; }
+body[data-theme="dark"] #sampleComparison .comparison-weeks button[data-scan-kind="observed"] { border-color: #60a5fa; }
+.comparison-scan-key { font-size: .8rem; color: var(--muted); }
+.comparison-scan-key::before { content: ""; display: inline-block; width: .7em; height: .7em; margin-right: 6px; border: 2px solid #2563eb; border-radius: 3px; }
+body[data-theme="dark"] .comparison-scan-key::before { border-color: #60a5fa; }
 /* The header assistant shortcut also works while inspecting observed history. */
 body[data-sample-view="observed"]:not([data-chat-collapsed="1"]) .ai-rail { display: block; position: fixed; z-index: 40; inset: 60px 0 0 auto; width: min(580px, 100%); padding: 12px; background: var(--bg); }

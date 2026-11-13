@@ -1,5 +1,6 @@
 /* Assistant UI is isolated from the planning workspace styles. */
-.chat-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.chat-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+#chatModelSettings span { font-size: 12px; }
 .chat-actions button { min-height: 34px; padding: 6px 10px; border-radius: 8px; }
 .chat-settings-dialog { width: min(480px, calc(100vw - 32px)); max-height: 90dvh; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--ink); box-shadow: 0 24px 100px #0004; }
 .chat-settings-dialog::backdrop { background: #0b182c80; backdrop-filter: blur(4px); }
