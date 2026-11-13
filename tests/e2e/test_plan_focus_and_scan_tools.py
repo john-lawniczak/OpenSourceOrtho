@@ -5,6 +5,18 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
+def test_standalone_compare_back_returns_to_app(server_url):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        try:
+            page = browser.new_page()
+            page.goto(server_url + "/progress.html")
+            page.locator("#progressBack").click()
+            expect(page).to_have_url(server_url + "/")
+        finally:
+            browser.close()
+
+
 @pytest.mark.parametrize("supplied_focus", [[], ["12", "22", "31"]])
 def test_focus_teeth_toggle_persistence_and_profile_isolation(server_url, tmp_path, supplied_focus):  # noqa: F811
     with sync_playwright() as pw:
@@ -52,10 +64,14 @@ def test_focus_teeth_toggle_persistence_and_profile_isolation(server_url, tmp_pa
             browser.close()
 
 
-def test_scan_highlight_toggle_and_compare_return_preserve_history(server_url, tmp_path):  # noqa: F811
+@pytest.mark.parametrize("delay_navigation", [False, True])
+def test_scan_highlight_toggle_and_compare_return_preserve_history(server_url, tmp_path, delay_navigation):  # noqa: F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        pending_navigation = []
+        if delay_navigation:
+            page.route("**/progress_embedded.js", lambda route: pending_navigation.append(route))
         try:
             page.goto(server_url)
             page.locator("#sampleLaunch").click()
@@ -78,6 +94,10 @@ def test_scan_highlight_toggle_and_compare_return_preserve_history(server_url, t
             page.locator("#openScanPair").click()
             tool = page.frame_locator('iframe[title="Compare two scans"]')
             tool.locator("#caseName").fill("Keep this unfinished comparison")
+            if delay_navigation:
+                expect(tool.locator("#progressBack")).to_be_disabled()
+                assert len(pending_navigation) == 1
+                pending_navigation[0].continue_()
             tool.locator("#progressBack").click()
             expect(page.locator('dialog[aria-label="Compare two scans"]')).to_be_hidden()
             expect(page.locator("#comparisonWeekLabel")).to_have_text("Week 7 of 18")
