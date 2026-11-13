@@ -1,5 +1,4 @@
 .sample-observed > :not(#sampleComparison):not(#sampleViewModes) { display: none !important; }
-body[data-sample-view="observed"] .guided-nav,
 body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(#guidedPlanViewerHost),
 body[data-sample-view="observed"] #panel-review .panel-heading,
 body[data-sample-view="observed"] #panel-review .workflow-card,
