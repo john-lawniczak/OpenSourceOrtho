@@ -30,7 +30,7 @@ def test_settings_hide_secrets_and_reset_on_provider_change(server_url):
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
         try:
             page.goto(server_url)
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             expect(page.locator("#chatProvider")).not_to_be_visible()
             page.locator("#openChatSettings").click()
             expect(page.get_by_role("dialog")).to_be_visible()
@@ -61,7 +61,7 @@ def test_conversation_keeps_prompts_responses_and_mobile_layout(server_url, tmp_
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         try:
             page.goto(server_url)
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             expect(page.locator(".chat-welcome")).to_be_visible()
             page.locator("#chatInput").fill("What records are missing?")
             page.locator("#sendChat").click()
@@ -80,7 +80,7 @@ def test_conversation_keeps_prompts_responses_and_mobile_layout(server_url, tmp_
             assert page.locator("#aiChatBlock").bounding_box()["width"] > 800
             page.locator("#toggleChatPanel").click()
             expect(page.locator("#aiChatBlock")).not_to_be_visible()
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             expect(page.locator(".chat-message")).to_have_count(4)
             page.locator("#themeToggle").click()
             page.set_viewport_size({"width": 390, "height": 844})
@@ -118,7 +118,7 @@ def test_stream_updates_existing_turn_and_preserves_safe_text(server_url):
         try:
             page.route("**/api/chat/stream", stream)
             page.goto(server_url)
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             page.locator("#openChatSettings").click()
             page.locator("#chatProvider").select_option("openai")
             page.locator("#chatApiKey").fill("test-key")
@@ -166,7 +166,7 @@ def test_authentication_failure_keeps_prompt_and_opens_connection_settings(serve
             page.locator("#chatApiKey").fill("  synthetic-key-not-real  ")
             page.locator("#agentAccessEnabled").check()
             page.get_by_role("button", name="Done", exact=True).click()
-            page.locator("#chatReopenTab").click()
+            page.locator("#topbarAskAI").click()
             page.locator("#chatInput").fill("Explain this sample")
             page.locator("#sendChat").click()
             expect(page.locator(".chat-message.assistant")).to_contain_text("rejected authentication")

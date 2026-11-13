@@ -19,6 +19,8 @@ initializeChatComposer();
 
 export function renderChat() {
   renderChatContext();
+  // A return from the editor can expose the header before app handlers attach.
+  if (el("topbarAskAI")) el("topbarAskAI").disabled = false;
   el("topbarAskAI")?.setAttribute("aria-expanded", String(!state.chat.collapsed));
   document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
   el("aiChatBlock").inert = state.chat.collapsed;
@@ -33,7 +35,7 @@ export function renderChat() {
     toggle.setAttribute("aria-expanded", state.chat.collapsed ? "false" : "true");
     toggle.setAttribute("aria-label", state.chat.collapsed ? "Expand AI chat" : "Collapse AI chat");
   }
-  // The reopen tab is the only visible handle once the panel slides off-screen.
+  // The header sparkle remains available when the home page hides this tab.
   const reopenTab = el("chatReopenTab");
   if (reopenTab) reopenTab.hidden = !state.chat.collapsed;
   const contextEl = el("chatStageContext");

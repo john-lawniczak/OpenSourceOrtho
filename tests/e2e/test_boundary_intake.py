@@ -69,6 +69,15 @@ def continue_in_standalone_editor(page, source):
     expect(page).to_have_url(re.compile(r"region-review.html\?edit="))
 
 
+def verify_unpainted_lower_editor(page):
+    expect(page.locator("#reviewArch")).to_have_value("lower")
+    expect(page.locator("#reviewTo")).to_have_value("32")
+    expect(page.locator("#returnCorrections")).to_be_hidden()
+    expect(page.locator("#reviewSelectionHelp")).to_contain_text("No surface is labeled 32 yet")
+    expect(page.locator("#reviewSelectionMarker")).to_be_hidden()
+    expect(page.locator("#reviewFocus")).to_be_disabled()
+
+
 def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa: F811
     source = surface(tmp_path)
     with sync_playwright() as pw:
@@ -78,6 +87,7 @@ def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa:
         page.on("pageerror", lambda error: errors.append(str(error)))
         try:
             page.goto(intake_server)
+            page.locator("#teethProfile").click()
             page.locator("#simpleStlFile").set_input_files(source)
             expect(page.locator("#boundaryArch")).to_have_value("lower")
             expect(page.locator(".scan-view-controls")).to_be_visible()
@@ -86,12 +96,7 @@ def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa:
             page.locator("#openBoundaryEditor").click()
             continue_in_standalone_editor(page, source)
             expect(page.locator("#reviewSource")).to_contain_text(source.name)
-            expect(page.locator("#reviewArch")).to_have_value("lower")
-            expect(page.locator("#reviewTo")).to_have_value("32")
-            expect(page.locator("#returnCorrections")).to_be_hidden()
-            expect(page.locator("#reviewSelectionHelp")).to_contain_text("No surface is labeled 32 yet")
-            expect(page.locator("#reviewSelectionMarker")).to_be_hidden()
-            expect(page.locator("#reviewFocus")).to_be_disabled()
+            verify_unpainted_lower_editor(page)
             original = export(page, tmp_path, "blank.json")
             assert original["source_sha256"] == hashlib.sha256(source.read_bytes()).hexdigest()
             assert not any(base64.b64decode(original["labels_base64"]))

@@ -67,6 +67,7 @@ def test_observed_history_camera_arch_and_personal_state(server_url, tmp_path): 
             page.goto(server_url, wait_until="networkidle")
             expect(page.locator("#uploadIntroduction")).to_have_count(0)
             expect(page.locator("#segmentationBlock")).not_to_be_visible()
+            page.locator("#teethProfile").click()
             page.locator("#guidedNext").click()
             expect(page.locator("#segmentationBlock")).to_be_visible()
             page.locator("#sampleLaunch").click()

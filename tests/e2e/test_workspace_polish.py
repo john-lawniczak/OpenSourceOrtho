@@ -13,6 +13,8 @@ def test_header_profile_and_sample_number_controls(server_url, tmp_path):  # noq
         page.on('pageerror', lambda error: errors.append(str(error)))
         try:
             page.goto(server_url, wait_until='networkidle')
+            expect(page.locator('#teethProfile')).to_have_attribute('aria-pressed', 'false')
+            page.locator('#teethProfile').click()
             expect(page.locator('#teethProfile')).to_have_attribute('aria-pressed', 'true')
             expect(page.locator('#teethProfileStatus')).not_to_contain_text('Start with')
             page.locator('#topbarAskAI').click()
@@ -93,6 +95,7 @@ def test_uploaded_scan_dates_survive_reload_without_inferred_capture_date(server
         page = browser.new_page(viewport={'width': 1280, 'height': 1000})
         try:
             page.goto(server_url, wait_until='networkidle')
+            page.locator('#teethProfile').click()
             page.locator('#simpleStlFile').set_input_files(surface(tmp_path))
             date = page.locator('#scanDates input[type="date"]')
             expect(date).to_have_value('')
@@ -100,6 +103,7 @@ def test_uploaded_scan_dates_survive_reload_without_inferred_capture_date(server
             date.fill('2026-10-21')
             expect(page.locator('#scanDates [role="status"]')).to_contain_text('saved')
             page.reload(wait_until='networkidle')
+            page.locator('#teethProfile').click()
             expect(date).to_have_value('2026-10-21')
             page.locator('#sampleLaunch').click()
             page.locator('#teethProfile').click()

@@ -13,6 +13,7 @@ def test_settings_and_phase_navigation_stay_in_place(server_url):  # noqa: F811 
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             expect(page.locator('.sidebar [data-user-mode]')).to_have_count(0)
             expect(page.locator('.app-topbar #openChatSettings')).to_be_visible()
             for step in ['plan', 'details', 'review', 'preview', 'plan']:

@@ -115,6 +115,7 @@ def test_landmark_report_import_requires_fresh_explicit_acceptance(server_url, t
         page = browser.new_page()
         try:
             page.goto(server_url)
+            page.locator("#teethProfile").click()
             page.on("dialog", lambda dialog: dialog.accept())
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')

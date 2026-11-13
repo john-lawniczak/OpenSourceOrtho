@@ -20,7 +20,7 @@
       { "imports": { "three": "./vendor/three.module.js" } }
     </script>
   </head>
-  <body>
+  <body data-mode="simple" data-step="toothmap" data-chat-collapsed="1">
     <header class="app-topbar">
       <div class="brand-block">
         <span class="brand-mark" aria-hidden="true">
@@ -33,7 +33,7 @@
           <p>Clear-aligner research toolkit</p>
         </div>
       </div>
-      <div class="topbar-actions"><button id="topbarAskAI" class="topbar-settings" type="button" aria-label="Ask AI" aria-controls="aiChatBlock" aria-expanded="false" title="Ask AI"><span aria-hidden="true">✦</span></button>
+      <div class="topbar-actions"><button id="topbarAskAI" class="topbar-settings" type="button" aria-label="Ask AI" aria-controls="aiChatBlock" aria-expanded="false" title="Ask AI" disabled><span aria-hidden="true">✦</span></button>
       <button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle light / dark mode">
         <span class="theme-toggle-track" aria-hidden="true">
           <span class="theme-toggle-glyph sun">☀</span>
@@ -57,7 +57,8 @@
         </nav>
 
         <a class="glossary-link" href="./region-review.html"><span aria-hidden="true">🖌</span> Edit Tooth Precision <small>Paint tooth edges and numbers</small></a>
-        <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Tooth Map</button>
+        <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Home · Tooth Map</button>
+        <button class="glossary-link" data-step-target="notes" type="button">Saved painting notes</button>
         <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open the glossary of key terms">Glossary</button>
         <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging guide</button>
 
@@ -713,6 +714,13 @@
           </div>
         </section>
 
+        <section class="panel" id="panel-notes">
+          <div class="panel-heading"><h2>Saved painting notes</h2><p>Read your latest saved notes, or reopen the matching painting to edit them.</p></div>
+          <button id="refreshPaintingNotes" type="button">Refresh saved notes</button>
+          <p id="paintingNotesStatus" role="status"></p>
+          <div id="paintingNotesList" class="painting-notes-list"></div>
+          <p>Notes appear here after you click Save locally in the painting workspace. Personal scans are saved in this browser; USER_ONE saves are on this computer.</p>
+        </section>
         <section class="panel" id="panel-toothmap">
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
@@ -722,6 +730,14 @@
           <section id="toothExplorer" class="workflow-card tooth-explorer" aria-labelledby="toothExplorerTitle">
             <h2 id="toothExplorerTitle">Learn tooth numbers</h2>
             <p>Tap a number or a tooth. This reference map is separate from your scan.</p>
+            <div class="tooth-example-picker" role="group" aria-label="Illustrative tooth arrangements">
+              <button type="button" data-tooth-example="neutral" aria-pressed="true">Reference map</button>
+              <button type="button" data-tooth-example="crowding" aria-pressed="false">Crowding</button>
+              <button type="button" data-tooth-example="spacing" aria-pressed="false">Spacing</button>
+              <button type="button" data-tooth-example="open-bite" aria-pressed="false">Front open bite</button>
+            </div>
+            <p id="toothExampleDescription" role="status">Reference map · simplified tooth shapes and numbering.</p>
+            <p class="viewer-caveat">Illustrative arrangements, separate from your scans. These examples do not assess your teeth.</p>
             <div class="tooth-reference-layout"><aside class="tooth-reference-controls">
             <form id="toothExplorerForm" class="tooth-explorer-form">
               <label for="toothExplorerInput">FDI tooth numbers
@@ -966,5 +982,6 @@
     <script type="module" src="./disclosure.js"></script>
     <script type="module" src="./app.js"></script>
     <script type="module" src="./tooth_explorer.js"></script>
+    <script type="module" src="./painting_notes.js"></script>
   </body>
 </html>

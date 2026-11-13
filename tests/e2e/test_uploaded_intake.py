@@ -38,6 +38,7 @@ def test_uploaded_scan_readiness_and_resolution_link(intake_server, tmp_path):
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(intake_server)
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.locator('[data-user-mode="advanced"]').click()
             page.locator('#stlFile').set_input_files(scan)

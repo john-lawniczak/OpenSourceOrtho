@@ -65,6 +65,7 @@ def test_personal_painting_and_notes_resume_and_conflicts_do_not_overwrite(serve
         page.on('pageerror', lambda error: errors.append(str(error)))
         try:
             page.goto(server_url)
+            page.locator('#teethProfile').click()
             page.locator('#simpleStlFile').set_input_files(source)
             page.locator('#openBoundaryEditor').click()
             editor = page.frame_locator('.precision-dialog iframe')
@@ -75,7 +76,11 @@ def test_personal_painting_and_notes_resume_and_conflicts_do_not_overwrite(serve
             editor.locator('#reviewSaveLocal').click()
             expect(editor.locator('#reviewSaveStatus')).to_contain_text('Saved lower draft locally')
             page.locator('#precisionBack').click()
-            page.locator('#openBoundaryEditor').click()
+            page.locator('[data-step-target="notes"]').click()
+            card = page.locator('.painting-note').filter(has_text='Saved personal note')
+            expect(card).to_be_visible()
+            card.get_by_role('link', name='Open painting & notes').click()
+            expect(page.locator('#precisionBack')).to_have_text('← Back to saved notes')
             expect(editor.locator('#reviewNotes')).to_have_value('Saved personal note')
             expect(editor.locator('#reviewChecked')).not_to_be_checked()
             with page.expect_download() as download:
@@ -94,7 +99,12 @@ def test_personal_painting_and_notes_resume_and_conflicts_do_not_overwrite(serve
             expect(second.locator('#reviewSaveStatus')).to_contain_text('newer painting was saved')
             second.close()
             page.locator('#precisionBack').click()
-            page.locator('#openBoundaryEditor').click()
+            card = page.locator('.painting-note').filter(has_text='Newer saved note')
+            expect(card).to_be_visible()
+            page.reload(wait_until='networkidle')
+            page.locator('[data-step-target="notes"]').click()
+            expect(card).to_be_visible()
+            card.get_by_role('link', name='Open painting & notes').click()
             expect(editor.locator('#reviewNotes')).to_have_value('Newer saved note')
             assert not errors
         finally:

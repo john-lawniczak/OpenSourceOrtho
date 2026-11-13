@@ -29,6 +29,7 @@ def test_viewer_renders_3d_canvas(server_url: str) -> None:  # noqa: F811 - pyte
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             # Go to the Review step so the viewer container is visible and sized.
@@ -60,6 +61,7 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.wait_for_selector("#panel-upload.is-active", timeout=15000)
@@ -114,6 +116,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click(".sample-launch")
@@ -167,6 +170,7 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             page.click('button.step[data-step="review"]')
@@ -209,6 +213,7 @@ def test_acquisition_print_export_and_visual_screenshots(
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
 
@@ -256,6 +261,7 @@ def test_api_rejection_state_is_machine_readable_and_visible(server_url: str) ->
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.click('[data-user-mode="advanced"]')
             response = page.evaluate(

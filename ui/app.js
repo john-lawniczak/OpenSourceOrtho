@@ -575,7 +575,7 @@ function uploadLabel(files, emptyLabel) {
 // Reference panels (Key Terms / Tooth Map, Imaging & Photos guide) are reachable
 // from the sidebar in BOTH guided and technician mode. They are not workflow
 // steps, so opening one remembers where to return to.
-const INFO_STEPS = ["toothmap", "glossary", "photos"];
+const INFO_STEPS = ["toothmap", "glossary", "photos", "notes"];
 
 function goToStep(step) {
   if (INFO_STEPS.includes(step) && !INFO_STEPS.includes(state.activeStep)) {

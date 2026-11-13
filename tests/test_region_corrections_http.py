@@ -36,4 +36,5 @@ def test_week_seven_http_roundtrip_is_separate_from_week_one(server, monkeypatch
     status, body = _get(server, "/api/region-corrections/upper?visit=progress-01")
     assert status == 200 and json.loads(body)["corrections"] == saved["corrections"]
     assert json.loads(_get(server, "/api/region-corrections/upper")[1]) == {"ok": True, "saved": False}
-    assert not json.loads(_get(server, "/api/region-corrections/upper?visit=progress-02")[1])["ok"]
+    assert json.loads(_get(server, "/api/region-corrections/upper?visit=progress-02")[1]) == {"ok": True, "saved": False}
+    assert not json.loads(_get(server, "/api/region-corrections/upper?visit=progress-03")[1])["ok"]

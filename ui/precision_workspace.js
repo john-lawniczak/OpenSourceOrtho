@@ -24,7 +24,7 @@ export function openPrecisionWorkspace(path = "./region-review.html") {
   }
   returnFocus = document.activeElement;
   const names = { upload: "Upload", plan: "Teeth & time", details: "Details", preview: "3D preview" };
-  dialog.querySelector("button").textContent = `← Back to ${names[state.guided.step] || "stages"}`;
+  dialog.querySelector("button").textContent = `← Back to ${state.activeStep === "notes" ? "saved notes" : names[state.guided.step] || "stages"}`;
   url.searchParams.set("embedded", "1");
   if (state.sample.active) url.searchParams.set("sample", "1");
   frame.src = url.href; dialog.showModal(); dialog.querySelector("button").focus();
@@ -34,6 +34,7 @@ function closePrecisionWorkspace() {
   if (canLeave && !canLeave()) return;
   dialog.close(); frame.src = "about:blank";
   returnFocus?.focus({ preventScroll: true });
+  document.dispatchEvent(new Event("precision-workspace-closed"));
 }
 
 // Preserve the current plan, camera and scroll instead of navigating away.
@@ -41,8 +42,9 @@ document.addEventListener("click", event => {
   const link = event.target.closest?.('a[href*="region-review.html"]');
   if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.button) return;
   event.preventDefault();
+  const params = new URL(link.href).searchParams;
+  if (params.has("baseline") || params.has("edit")) { openPrecisionWorkspace(link.href); return; }
   if (state.sample.active) {
-    if (new URL(link.href).searchParams.has("baseline")) { openPrecisionWorkspace(link.href); return; }
     const arch = document.getElementById("boundaryArch")?.value || "upper";
     const visit = state.sample.view === "observed" && document.getElementById("sampleComparison")?.dataset.week === "18" ? "progress-02" : state.sample.visit || "progress-01";
     openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${visit}`);

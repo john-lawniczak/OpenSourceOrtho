@@ -5,6 +5,17 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
+def reopen_week_eighteen_notes(page, editor):
+    page.locator("#teethProfile").click()
+    page.locator('[data-step-target="notes"]').click()
+    card = page.locator('.painting-note').filter(has_text='USER_ONE · Week 18 · Lower')
+    expect(card).to_contain_text('Inspect week 18 model chip tomorrow')
+    card.get_by_role('link', name='Open painting & notes').click()
+    expect(editor.locator("#reviewSource")).to_contain_text("week 18", timeout=60000)
+    expect(editor.locator("#reviewArch")).to_have_value("lower")
+    expect(editor.locator("#reviewNotes")).to_have_value("Inspect week 18 model chip tomorrow", timeout=60000)
+
+
 def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monkeypatch):  # noqa: F811
     monkeypatch.setenv("ORTHOPLAN_REGION_CORRECTIONS", str(tmp_path / "notes"))
     with sync_playwright() as pw:
@@ -24,6 +35,7 @@ def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monke
             sparkle.click()
             expect(sparkle).to_have_attribute("aria-expanded", "false")
             expect(page.locator("#aiChatBlock")).not_to_be_visible()
+            page.locator("#teethProfile").click()
             page.locator("#guidedNext").click()
             expect(page.locator(".painting-workspace-button")).to_be_visible()
             page.locator("#sampleLaunch").click()
@@ -51,8 +63,7 @@ def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monke
             expect(editor.locator("#reviewSaveStatus")).to_contain_text("Saved lower draft locally")
             expect(editor.locator("#reviewSavePath")).to_contain_text("week-18-lower")
             page.locator("#precisionBack").click()
-            page.get_by_role("link", name="Paint USER_ONE week 18 lower", exact=True).click()
-            expect(editor.locator("#reviewNotes")).to_have_value("Inspect week 18 model chip tomorrow", timeout=60000)
+            reopen_week_eighteen_notes(page, editor)
             page.locator("#precisionBack").click()
             page.set_viewport_size({"width": 390, "height": 844})
             page.screenshot(path=str(tmp_path / "week-18-mobile.png"))

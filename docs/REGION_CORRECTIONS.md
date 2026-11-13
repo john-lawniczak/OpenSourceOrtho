@@ -21,6 +21,13 @@ tab; reopen the scan to load that revision. Browser data can be cleared or evict
 The separate **Download JSON** exports labels only, so retain notes separately
 when moving work to another browser. Sample saves still use versioned local files.
 
+To read notes again, choose **Saved painting notes** in the main sidebar. It lists
+the latest saved notes for each personal scan and each USER_ONE visit/arch, with
+the save date and storage location. **Open painting & notes** reopens that exact
+scan; **Back to saved notes** returns to the refreshed list. Unsaved text appears
+there only after **Save locally** succeeds. **Refresh saved notes** picks up saves
+made in another tab or editor.
+
 Explicitly checking the review checkbox records the user's boundary review.
 It does not approve fitted motion or anatomy. The fitting engine can consume
 corrections for either endpoint and preserves their supplied crown masks rather

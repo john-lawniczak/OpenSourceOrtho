@@ -17,6 +17,7 @@ def test_optional_workflows_start_collapsed_and_links_reveal_controls(server_url
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(server_url, wait_until="networkidle")
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.get_by_role("button", name="Technician", exact=True).click()
             expect(page.get_by_text("Additional records · optional", exact=True)).to_be_visible()
