@@ -1,17 +1,18 @@
 import { el, state } from "./state.js";
 import { saveUploadDates } from "./storage.js";
-import { validCaptureDate } from "./scan_dates.js";
+import { validCaptureDate, matchScanDates } from "./scan_dates.js";
 
-let signature = "";
+let signature = "", renderedFiles;
 export function renderScanDates() {
   const host = el("scanDates");
   if (!host) return;
   host.hidden = state.sample.active || !state.files.length;
   if (host.hidden) return;
-  const entries = state.scanDates || [];
+  const files = state.files;
+  const entries = matchScanDates(files, state.scanDates);
   const key = JSON.stringify(entries);
-  if (key === signature) return;
-  signature = key; host.replaceChildren();
+  if (key === signature && files === renderedFiles) return;
+  signature = key; renderedFiles = files; host.replaceChildren();
   const help = document.createElement("p");
   help.textContent = "Scan dates are optional. Upload time is recorded separately; a file's modified date is not its scan date. Saved in this browser with your uploads.";
   host.append(help);
@@ -26,11 +27,11 @@ export function renderScanDates() {
     input.setAttribute("aria-label", `Scan taken on for ${file.name}`);
     input.addEventListener("input", async event => {
       event.stopPropagation();
-      if (!validCaptureDate(input.value)) return;
-      state.scanDates ||= [];
+      if (!validCaptureDate(input.value) || state.files !== files || state.sample.active) return;
+      state.scanDates = matchScanDates(files, state.scanDates);
       state.scanDates[index] = { name: file.name, size: file.size, lastModified: file.lastModified,
         uploaded_at: null, ...state.scanDates[index], captured_on: input.value || null };
-      signature = JSON.stringify(state.scanDates);
+      signature = JSON.stringify(matchScanDates(files, state.scanDates));
       try { await saveUploadDates(state.scanDates); status.textContent = "Date saved in this browser."; }
       catch { status.textContent = "Date kept for this session; browser storage is unavailable."; }
     });

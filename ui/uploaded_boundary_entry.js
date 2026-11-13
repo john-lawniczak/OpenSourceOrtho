@@ -4,6 +4,7 @@ import { sourceRotation } from "./scan_source_orientation.js";
 import { caseStore } from "./progress_case_store.js";
 import { parseStlGeometry } from "./stl.js";
 import { RegionEdits } from "./region_edits.js";
+import { browserPaintingKey, loadBrowserPainting } from "./region_browser_saves.js";
 import { isBrowserParsableScan, looksLikePointCloud } from "./scan_formats.js";
 
 let host, sources = [], signature;
@@ -56,9 +57,12 @@ async function openEditor() {
     const digest = await crypto.subtle.digest("SHA-256", bytes);
     const sha256 = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
     const rotation = await sourceRotation(sha256, arch);
-    const name = `boundary-${crypto.randomUUID()}`;
-    await caseStore("put", { name, returnToCase: false,
-      scan: { bytes, arch, sha256, filename: source.name, rotation, autoView: true },
+    const scan = { bytes, arch, sha256, filename: source.name, rotation, autoView: true };
+    const saved = await loadBrowserPainting(scan);
+    // Unsaved transfers have separate IDs; opening one must never overwrite a
+    // durable draft which another editor may save while this request loads.
+    const name = saved ? browserPaintingKey(scan) : `boundary-transfer-${sha256}-${arch}`;
+    if (!saved) await caseStore("put", { name, returnToCase: false, scan,
       labels: new RegionEdits(new Uint8Array(count), arch).export(sha256) }, "edits");
     openPrecisionWorkspace(`./region-review.html?edit=${encodeURIComponent(name)}`);
   } catch (error) { status.textContent = error.message; }

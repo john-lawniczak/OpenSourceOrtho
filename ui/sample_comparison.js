@@ -10,7 +10,7 @@ import { historyFrame } from "./scan_history.js";
 
 let motion = null, motionError = "", selectedTooth = "", endpointEstimate = false;
 let pair = [], week = 1, arch = "both", ready = false, timing = "uniform";
-let mounted = false, viewer = null, request = null, session = null, startedPlanning = false;
+let mounted = false, viewer = null, request = null, session = null;
 
 export function observedSampleActive() {
   return state.sample.active && state.sample.view === "observed";
@@ -129,20 +129,17 @@ function mount(renderAll) {
     state.sample.view = button.dataset.sampleView;
     if (state.sample.view === "observed" && state.guided.step === "details") state.guided.step = "plan";
     renderAll();
-    if (state.sample.view === "simulation" && !startedPlanning) {
-      startedPlanning = true;
-      await prepareSampleSegmentation();
-      renderAll();
+    if (state.sample.view === "simulation" && !state.segmentation.applied && !state.segmentation.busy) {
+      const pending = prepareSampleSegmentation({ allowFallback: true });
+      renderAll(); await pending; renderAll();
     }
   });
   async function reloadPainting() {
     if ((state.manualEdit.undoStack?.length || state.goalPreview) && !window.confirm("Reloading painted scans clears exploratory edits. Continue?")) {
       el("samplePaintedVisit").value = state.sample.visit; return;
     }
-    state.goalPreview = null;
-    state.sample.visit = el("samplePaintedVisit").value;
-    state.segmentation = { busy: true, status: "Loading saved painting…", proposal: null, applied: null, edits: {} };
-    const pending = prepareSampleSegmentation(); renderAll(); await pending; renderAll();
+    const pending = prepareSampleSegmentation({ visit: el("samplePaintedVisit").value });
+    renderAll(); await pending; renderAll();
   }
   el("samplePaintedVisit").addEventListener("input", reloadPainting);
   el("sampleReloadPainting").addEventListener("click", reloadPainting);
@@ -178,7 +175,7 @@ export function renderSampleComparison(renderAll) {
   // Details is the tooth workspace; Scan history returns to Teeth & time.
   if (state.sample.active && state.guided.step === "details" && observedSampleActive()) {
     state.sample.view = "simulation";
-    if (!state.segmentation.applied && !state.segmentation.busy) prepareSampleSegmentation().then(renderAll);
+    if (!state.segmentation.applied && !state.segmentation.busy) prepareSampleSegmentation({ allowFallback: true }).then(renderAll);
   }
   const observed = observedSampleActive();
   document.body.dataset.sampleView = state.sample.active ? state.sample.view : "";
@@ -196,7 +193,6 @@ export function renderSampleComparison(renderAll) {
   });
   if (session !== state.segmentation || !state.sample.active) {
     session = state.segmentation;
-    startedPlanning = false;
     if (!state.sample.active) { week = 1; arch = "both"; endpointEstimate = false; timing = "uniform"; }
   }
   if (observed && !viewer && !request) loadArch();

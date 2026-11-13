@@ -1,6 +1,6 @@
 # Correcting tooth regions
 
-Open **Paint tooth boundaries** in the app sidebar or in Guided **step 2: Teeth
+Open **Edit Tooth Precision** in the app sidebar or in Guided **step 2: Teeth
 & time**, after loading scans and before building movement stages. Scan history
 also links directly to USER_ONE week 1 and week 7 upper/lower scans. **Edit tooth boundaries** under
 an uploaded scan brings that surface into the editor. The direct URL is
@@ -13,6 +13,13 @@ From region to the To tooth; Erase returns faces to context. Brush selection use
 surface position and normal agreement to avoid painting the opposite surface.
 Undo/redo keeps up to 50 edit operations; each continuous brush drag is one operation. Download corrections JSON exports face-order
 labels bound to the source SHA-256; applying to another scan is rejected.
+
+Personal scans can also **Save locally**: original bytes, painted labels and notes
+are saved in this browser, keyed by scan content hash and arch. Reopening the same
+scan resumes its draft. A stale editor cannot overwrite a newer save from another
+tab; reopen the scan to load that revision. Browser data can be cleared or evicted.
+The separate **Download JSON** exports labels only, so retain notes separately
+when moving work to another browser. Sample saves still use versioned local files.
 
 Explicitly checking the review checkbox records the user's boundary review.
 It does not approve fitted motion or anatomy. The fitting engine can consume

@@ -123,6 +123,32 @@ test("prepareSampleSegmentation is a no-op outside the sample", async () => {
   assert.equal(await prepareSampleSegmentation(), false);
   assert.equal(fetched, false);
 });
+test("failed visit reload preserves the last painted workspace and exploratory edits", async () => {
+  enterFakeSample(); stubFetch(proposalPayload());
+  await prepareSampleSegmentation();
+  state.rows[0].x = 0.2;
+  const applied = state.segmentation.applied, sources = state.scanSources;
+  state.goalPreview = { status: "preview" };
+  stubFetch({ ok: false, errors: ["unavailable"] });
+  assert.equal(await prepareSampleSegmentation({ visit: "initial" }), false);
+  assert.equal(state.sample.visit, "progress-01");
+  assert.equal(state.segmentation.applied, applied);
+  assert.equal(state.scanSources, sources);
+  assert.equal(state.rows[0].x, 0.2);
+  assert.equal(state.goalPreview.status, "preview");
+});
+test("duplicate loads cannot reset a workspace twice and fallback reports its actual visit", async () => {
+  enterFakeSample(); let resolve, calls = 0;
+  globalThis.fetch = () => { calls++; return new Promise(done => { resolve = done; }); };
+  const pending = prepareSampleSegmentation({ allowFallback: true });
+  assert.equal(await prepareSampleSegmentation(), false);
+  resolve({ ok: true, json: async () => ({ ...proposalPayload(), visit: "initial", notice: "Using baseline" }) });
+  assert.equal(await pending, true);
+  assert.equal(calls, 1);
+  assert.equal(state.sample.visit, "initial");
+  assert.match(state.sampleStatus, /Using baseline/);
+  assert.equal(state.segmentation.busy, false);
+});
 
 test("an old fixture response cannot populate a restarted sample", async (t) => {
   enterFakeSample();

@@ -9,6 +9,7 @@ from orthoplan.sample_teeth import sample_annotation, sample_teeth_payload
 from orthoplan.region_corrections import baseline_source
 
 
+@pytest.mark.skipif(not (SAMPLE_CASE_DIR / 'private/annotations/index.json').exists(), reason='Private painting fixture is intentionally excluded from public releases')
 def test_saved_week_seven_regions_export_exact_painted_triangles(tmp_path):
     workspace = tmp_path / 'meshes'
     result = sample_teeth_payload({'visit': 'progress-01'}, workspace=workspace, root=tmp_path/'labels')
@@ -48,3 +49,36 @@ def test_walkthrough_override_is_explicit_and_private(tmp_path, monkeypatch):
     assert module.sample_walkthrough_path('/workflow-demo.webm') == video
     for path in ['/private/media/workflow-demo.webm', '/../../workflow-demo.webm', '/secret.json']:
         assert module.sample_walkthrough_path(path) is None
+
+
+def test_public_installation_uses_explicit_baseline_fallback(tmp_path, monkeypatch):
+    import orthoplan.sample_teeth as module
+    original = module.sample_annotation
+
+    def public_annotation(arch, visit, **kwargs):
+        if visit == 'progress-01':
+            raise module.MissingPaintedSample('No private painting here')
+        return original(arch, visit, **kwargs)
+
+    monkeypatch.setattr(module, 'sample_annotation', public_annotation)
+    options = {'workspace': tmp_path/'meshes', 'root': tmp_path/'labels'}
+    assert not module.sample_teeth_payload({'visit': 'progress-01'}, **options)['ok']
+    result = module.sample_teeth_payload({'visit': 'progress-01', 'allow_baseline_fallback': True}, **options)
+    assert result['ok'] and result['visit'] == 'initial'
+    assert 'week 1' in result['notice']
+    assert all(not t['reviewed'] for t in result['plan_fragment']['tooth_meshes'])
+
+
+@pytest.mark.parametrize('error', [ValueError('Invalid labels'), None])
+def test_invalid_or_missing_second_arch_never_exports_partial_meshes(tmp_path, monkeypatch, error):
+    import orthoplan.sample_teeth as module
+
+    def annotation(arch, visit, **kwargs):
+        if arch == 'lower':
+            raise error or module.MissingPaintedSample('Missing lower painting')
+        return {}, 'test'
+
+    monkeypatch.setattr(module, 'sample_annotation', annotation)
+    monkeypatch.setattr(module, 'export_proposal_rows', lambda *a, **kw: pytest.fail('Partial export'))
+    result = module.sample_teeth_payload({'visit': 'progress-01', 'allow_baseline_fallback': bool(error)}, root=tmp_path)
+    assert not result['ok']

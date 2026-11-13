@@ -78,7 +78,8 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
             chip = page.locator("#sampleStatusChip").inner_text()
             assert "Sample ready" in chip
             assert page.locator("#planTitle").input_value() == "Sample test case · USER_ONE"
-            assert page.locator("#scanUnits").input_value() == "unverified"
+            visit = page.locator("#samplePaintedVisit").input_value()
+            assert page.locator("#scanUnits").input_value() == ("unverified" if visit == "progress-01" else "mm")
 
             max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")
             assert max_stage > 0

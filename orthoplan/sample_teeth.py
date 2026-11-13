@@ -13,6 +13,10 @@ from orthoplan.segmentation.heuristic import ToothSegment
 from orthoplan.segmentation.mesh_export import export_proposal_rows
 
 
+class MissingPaintedSample(ValueError):
+    """No labels exist for the requested visit; invalid labels are a separate error."""
+
+
 def sample_annotation(arch: str, visit: str, *, root: Path | None = None) -> tuple[dict, str]:
     source = baseline_source(arch, visit)
     saved = load_baseline_corrections(arch, visit=visit, root=root)
@@ -37,7 +41,7 @@ def sample_annotation(arch: str, visit: str, *, root: Path | None = None) -> tup
         record = json.loads((SAMPLE_CASE_DIR / context['baseline_annotations'][arch]).read_text())
         origin = 'bundled-draft'
     else:
-        raise ValueError('No saved week 7 labels are available for this arch. Paint and save them first.')
+        raise MissingPaintedSample('No saved week 7 labels are available for this arch. Paint and save them first.')
     validate_corrections(record, arch, source)
     return record, origin
 
@@ -62,10 +66,19 @@ def painted_segments(vertices, record):
 def sample_teeth_payload(payload: dict, *, workspace=None, root: Path | None = None) -> dict:
     try:
         visit = payload.get('visit', 'progress-01')
+        try:
+            records = {arch: sample_annotation(arch, visit, root=root) for arch in ['upper', 'lower']}
+        except MissingPaintedSample:
+            if visit != 'progress-01' or payload.get('allow_baseline_fallback') is not True:
+                raise
+            result = sample_teeth_payload({'visit': 'initial'}, workspace=workspace, root=root)
+            if result['ok']:
+                result['notice'] = 'Week 7 painting is unavailable here; showing the week 1 baseline draft.'
+            return result
         sources, teeth, assets, links, annotations = [], [], [], [], []
         for arch, anatomical in [('upper', 'maxillary'), ('lower', 'mandibular')]:
             source = baseline_source(arch, visit)
-            record, origin = sample_annotation(arch, visit, root=root)
+            record, origin = records[arch]
             asset, vertices = read_mesh_geometry(SAMPLE_CASE_DIR / source['filename'])
             parts = painted_segments(vertices, record)
             proposed, meshes, tooth_links = export_proposal_rows(parts, arch=anatomical, workspace=workspace)
@@ -85,7 +98,7 @@ def sample_teeth_payload(payload: dict, *, workspace=None, root: Path | None = N
                                 'tooth_ids': [p.tooth_value for p in parts], 'reviewed': record['reviewed']})
         return {'ok': True, 'visit': visit, 'scan_sources': sources, 'teeth': teeth, 'annotations': annotations,
                 'requires_review': True, 'plan_fragment': {'mesh_assets': assets, 'tooth_meshes': links}}
-    except (ValueError, OSError, KeyError, TypeError) as exc:
+    except (ValueError, OSError, KeyError, TypeError, AttributeError) as exc:
         return {'ok': False, 'errors': [str(exc)]}
 
 

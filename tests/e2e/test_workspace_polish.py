@@ -62,11 +62,12 @@ def test_precision_workspace_preserves_stages_and_grows_notes(server_url, tmp_pa
             expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
             page.locator('[data-gstep-nav="plan"]').click()
             before = page.locator('#planJson').input_value()
+            visit = page.locator('#samplePaintedVisit').input_value()
             page.get_by_role('link', name='Edit Tooth Precision').click()
             dialog = page.get_by_role('dialog', name='Edit Tooth Precision')
             expect(dialog).to_be_visible()
             editor = page.frame_locator('.precision-dialog iframe')
-            expect(editor.locator('#reviewSource')).to_contain_text('week 7', timeout=60000)
+            expect(editor.locator('#reviewSource')).to_contain_text('week 7' if visit == 'progress-01' else 'week 1', timeout=60000)
             notes = editor.locator('#reviewNotes')
             page.screenshot(path=str(tmp_path/'painting-overlay.png'))
             original_height = notes.bounding_box()['height']

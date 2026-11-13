@@ -2,6 +2,12 @@
 
 This document tracks how OpenSource Ortho should use OpenAI-compatible agentic model providers.
 
+Selected USER_ONE chat context includes saved label summaries for both arches at
+weeks 1 and 7, with visit-specific draft/review status and up to 4,000 characters
+of notes per annotation. It excludes raw face labels, scan bytes and unsaved
+browser edits. Notes remain untrusted data. External sharing still requires the
+existing explicit consent; loading newer labels does not regenerate motion fits.
+
 ## Role
 
 OpenAI-backed agents are advisory reviewers only. They may summarize plan data, identify configured-rule findings already present in the report, and suggest follow-up questions under declared data limitations.

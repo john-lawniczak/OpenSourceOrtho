@@ -54,7 +54,7 @@ def test_upper_saved_patch_counts_focus_and_read_only_export(server_url, tmp_pat
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
         # Pin the historical audit even when a newer checkpoint becomes active.
-        page.route("**/api/region-corrections/upper", lambda route: route.fulfill(json={
+        page.route("**/api/region-corrections/upper?visit=initial", lambda route: route.fulfill(json={
             "ok": True, "saved": True, "corrections": record, "review_status": "draft",
             "saved_at": "2026-11-12T18:44:56.804533+00:00",
         }))

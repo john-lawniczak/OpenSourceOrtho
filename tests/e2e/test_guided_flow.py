@@ -71,17 +71,16 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
                 "() => document.querySelector('#trustStatusStrip')?.textContent.includes('Applied draft')", timeout=90000
             )
             assert page.locator("#anatomyReviewList [data-anatomy-review]").count() == 0
-            page.wait_for_function("() => document.querySelector('#anatomyReviewList').textContent.includes('Technician mode')", timeout=90000)
+            expect(page.locator("#anatomyPanel")).to_be_hidden()
 
             advance(page, "details")
             advance(page, "review")
-            # Applying scan segmentation starts an asynchronous evaluation.
-            expect(page.locator("#guidedReviewDashboard")).to_contain_text(
-                "Crown contact / spacing", timeout=60000
-            )
+            # Painted drafts do not imply trusted roots, confirmed scale or a
+            # reviewed plan. Wait for evaluation and retain its unavailable gates.
+            page.wait_for_function("async () => Boolean((await import('/state.js')).state.lastEval)")
             dashboard = page.locator("#guidedReviewDashboard").inner_text()
-            assert "Cannot assess fully" not in dashboard
-            assert "Crown contact / spacing" in dashboard
+            assert "Root / bone" in dashboard
+            assert "Cannot assess" in dashboard
 
             advance(page, "preview")
             assert not page.locator("#guidedPreviewHost .manual-edit").is_visible()

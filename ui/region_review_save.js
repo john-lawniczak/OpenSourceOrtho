@@ -1,4 +1,5 @@
 import { autoGrowTextarea } from "./auto_textarea.js";
+import { saveBrowserPainting } from "./region_browser_saves.js";
 const el = id => document.getElementById(id);
 
 export async function fetchBaselineSave(arch, visit = "initial") {
@@ -8,8 +9,8 @@ export async function fetchBaselineSave(arch, visit = "initial") {
   return result;
 }
 
-// Disk snapshots are explicit, immutable saves. Editing never silently marks a
-// whole scan reviewed or replaces the published motion-preview labels.
+// Dataset snapshots are immutable files; personal drafts live in browser storage.
+// Editing never silently marks a scan reviewed or replaces motion-preview labels.
 export function setupRegionSaving(getContext) {
   const resizeNotes = autoGrowTextarea(el("reviewNotes"));
   let dirty = false, revision = 0, baseSavedAt = null;
@@ -25,9 +26,9 @@ export function setupRegionSaving(getContext) {
   }
   function update() {
     const { scan } = getContext();
-    el("reviewSaveLocal").disabled = !scan?.visit;
+    el("reviewSaveLocal").disabled = !scan;
     el("reviewReload").disabled = !scan?.visit;
-    el("reviewSaveLocal").title = scan?.visit ? "Save a versioned file on this computer" : "Local dataset saves are for USER_ONE weeks 1 and 7. Use Download corrections JSON for other scans.";
+    el("reviewSaveLocal").title = scan?.visit ? "Save a versioned file on this computer" : "Save painting and notes in this browser";
   }
   async function refreshSummary() {
     const visit = el("reviewVisit").value;
@@ -44,25 +45,29 @@ export function setupRegionSaving(getContext) {
   }
   el("reviewSaveLocal").onclick = async () => {
     const { scan, edits } = getContext();
-    if (!scan?.visit) return;
+    if (!scan) return;
     const version = revision;
     const corrections = edits.export(scan.sha256, el("reviewChecked").checked);
     const notes = el("reviewNotes").value;
     el("reviewSaveLocal").disabled = true;
     el("reviewSaveStatus").textContent = "Saving a local snapshot…";
     try {
-      const response = await fetch("/api/region-corrections", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ arch: scan.arch, visit: scan.visit, corrections, notes, base_saved_at: baseSavedAt }) });
-      const result = await response.json();
-      if (!response.ok || !result.ok) throw new Error((result.errors || ["Save failed."]).join(" "));
+      let result;
+      if (!scan.visit) result = await saveBrowserPainting(scan, corrections, notes, baseSavedAt);
+      else {
+        const response = await fetch("/api/region-corrections", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ arch: scan.arch, visit: scan.visit, corrections, notes, base_saved_at: baseSavedAt }) });
+        result = await response.json();
+        if (!response.ok || !result.ok) throw new Error((result.errors || ["Save failed."]).join(" "));
+      }
       if (getContext().scan === scan) {
         baseSavedAt = result.saved_at;
         if (version === revision) dirty = false;
         el("reviewSavePath").textContent = result.path;
         el("reviewSaveStatus").textContent = `Saved ${scan.arch} ${result.review_status} locally${version !== revision ? " · newer edits unsaved" : ""}`;
       }
-      await refreshSummary();
-    } catch (error) { el("reviewSaveStatus").textContent = `Not saved: ${error.message}`; }
+      if (scan.visit) await refreshSummary();
+    } catch (error) { if (getContext().scan === scan) el("reviewSaveStatus").textContent = `Not saved: ${error.message}`; }
     finally { update(); }
   };
   el("reviewNotes").addEventListener("input", markDirty);

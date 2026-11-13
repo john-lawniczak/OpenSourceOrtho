@@ -46,6 +46,8 @@ def test_composer_expands_on_focus_and_keeps_collapsed_draft(server_url, tmp_pat
             page.goto(server_url)
             page.locator("#chatReopenTab").click()
             composer = page.locator("#chatComposer")
+            expect(page.locator("#chatInput")).to_be_focused()
+            page.locator("#collapseChatComposer").click()
             compact = composer.bounding_box()["height"]
             assert compact < 85
             page.locator("#chatInput").fill("Keep this unfinished question")

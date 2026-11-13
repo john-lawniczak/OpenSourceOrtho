@@ -1,4 +1,5 @@
 import { setupEmbeddedPrecision } from "./precision_embedded.js";
+import { loadBrowserPainting, browserSaveSummary } from "./region_browser_saves.js";
 import { sourceRotation } from "./scan_source_orientation.js";
 import { setupReviewShortcuts } from "./region_review_shortcuts.js";
 import { loadBaselineCaseData } from "./region_case_data.js";
@@ -90,11 +91,16 @@ el("reviewScan").onchange = () => action(async () => {
   const nextScan = { bytes, filename: file.name, arch, autoView: true, rotation, sha256 };
   const geometry = parseStlGeometry(bytes); const count = geometry.attributes.position.count / 3; geometry.dispose();
   if (!count) throw new Error("This scan has no triangles to paint.");
-  scan = nextScan; edits = new RegionEdits(new Uint8Array(count), scan.arch); mount(); saving.setSaved(null);
+  const saved = await loadBrowserPainting(nextScan).catch(() => null);
+  if (current !== generation) return;
+  const nextEdits = saved ? RegionEdits.restore(saved.labels, sha256, count, arch) : new RegionEdits(new Uint8Array(count), arch);
+  scan = nextScan; edits = nextEdits; mount(); saving.setSaved(browserSaveSummary(saved));
 });
 el("reviewLabels").onchange = () => action(async () => {
   if (!scan) throw new Error("Load the matching scan first.");
+  const target = scan;
   const record = JSON.parse(await el("reviewLabels").files[0].text());
+  if (scan !== target) return;
   const restored = RegionEdits.restore(record, scan.sha256, edits.labels.length, scan.arch); edits = restored; refresh(true); el("reviewChecked").checked = record.reviewed;
 });
 for (const [id, fn] of [["reviewUndo", () => edits.undo()], ["reviewRedo", () => edits.redo()], ["reviewMerge", () => edits.merge(Number(el("reviewFrom").value),Number(el("reviewTo").value))]]) {
@@ -114,10 +120,12 @@ el("reviewExport").onclick = () => action(() => {
 
 const transferId = new URLSearchParams(location.search).get("edit");
 if (transferId) void action(async () => {
+  const current = ++generation;
   const record = await caseStore("get",transferId,"edits");
+  if (current !== generation) return;
   if (!record) throw new Error("Correction session expired. Reopen from the case.");
-  scan=record.scan; edits=RegionEdits.restore(record.labels,scan.sha256,record.labels.face_count,scan.arch);
-  mount(); saving.setSaved(null); el("reviewChecked").checked = record.labels.reviewed; el("returnCorrections").hidden = record.returnToCase === false;
+  scan=record.scan; edits=RegionEdits.restore(record.labels,scan.sha256,parseStlFaceCount(scan.bytes),scan.arch);
+  mount(); saving.setSaved(browserSaveSummary(record)); el("reviewChecked").checked = record.labels.reviewed; el("returnCorrections").hidden = record.returnToCase === false;
 });
 el("reviewArch").onchange = () => {
   if (scan?.visit) void action(() => loadBaseline(el("reviewArch").value));

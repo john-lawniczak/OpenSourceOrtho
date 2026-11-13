@@ -129,17 +129,19 @@ export async function applySampleRootBoneFixture() {
 }
 
 // Painted regions are selectable drafts. Loading them never records user review.
-export async function prepareSampleSegmentation() {
+export async function prepareSampleSegmentation({ visit = state.sample.visit || "progress-01", allowFallback = false } = {}) {
   if (!state.sample.active) return false;
-  const seg = state.segmentation, visit = state.sample.visit || "progress-01";
+  const seg = state.segmentation;
+  if (seg.busy) return false;
   seg.busy = true;
   seg.status = "Loading saved USER_ONE tooth regions…";
   try {
     const response = await fetch("/api/sample-teeth", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visit }) });
+      body: JSON.stringify({ visit, allow_baseline_fallback: allowFallback }) });
     const result = await response.json();
-    if (!state.sample.active || state.segmentation !== seg || (state.sample.visit || "progress-01") !== visit) return false;
+    if (!state.sample.active || state.segmentation !== seg) return false;
     if (!response.ok || !result.ok) throw new Error((result.errors || ["Painted regions unavailable"]).join(" "));
+    state.sample.visit = result.visit || visit; state.goalPreview = null;
     state.scanSources = result.scan_sources;
     state.scanUnits = result.scan_sources.every(source => source.asset.units === "mm") ? "mm" : "unverified";
     el("scanUnits").value = state.scanUnits;
@@ -156,8 +158,8 @@ export async function prepareSampleSegmentation() {
     state.availability = { ...state.availability, cbct: false, roots: false };
     state.view = "current"; state.activeStep = "review";
     el("stageSlider").value = "0";
-    seg.status = `USER_ONE week ${visit === "initial" ? 1 : 7}: saved painted regions loaded as drafts. Review a selected region before proposing movement.`;
-    state.sampleStatus = "Sample ready. Choose any painted tooth by FDI or US number. Rotate or pan to inspect it. The stage slider starts with zero movement.";
+    seg.status = `USER_ONE week ${state.sample.visit === "initial" ? 1 : 7}: saved painted regions loaded as drafts. Review a selected region before proposing movement.`;
+    state.sampleStatus = (result.notice ? `${result.notice} ` : "") + "Sample ready. Choose any painted tooth by FDI or US number. Rotate or pan to inspect it. The stage slider starts with zero movement.";
     return true;
   } catch (error) {
     if (state.sample.active && state.segmentation === seg) { seg.status = error.message; state.sampleStatus = error.message; }
