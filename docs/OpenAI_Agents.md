@@ -375,12 +375,12 @@ dialog and focuses the key field, or the provider selector when the current
 provider uses no key. It shares the same page-only password field as the main
 Settings gear; keys are not persisted and provider/sharing choices are unchanged.
 
-The connector label is **AI Model Provider**. Explicit Focus teeth preferences
+The connector label is **AI Model Provider**. Explicit My Highlighted Teeth preferences
 are display-only, stored separately by plan in the browser, and never added to
 provider prompts or converted into movements. Optional defaults come from the
 private sample brief; they are not embedded in public UI code.
 
 Explicit `@12` / `#12` shortcuts in user-authored plan notes add validated FDI
-numbers to the browser's Focus teeth preference. This is a deterministic display
+numbers to the browser's My Highlighted Teeth preference. This is a deterministic display
 shortcut, not a model action or a movement instruction. It leaves provider
 requests, sharing consent and the highlight visibility switch unchanged.

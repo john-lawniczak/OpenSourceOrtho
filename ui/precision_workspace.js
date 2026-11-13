@@ -10,7 +10,7 @@ export function openPrecisionWorkspace(path = "./region-review.html") {
     const header = document.createElement("header");
     const back = document.createElement("button"); back.type = "button"; back.id = "precisionBack";
     back.onclick = closePrecisionWorkspace;
-    const title = document.createElement("strong"); title.textContent = "🖌 Edit Tooth Precision";
+    const title = document.createElement("strong"); title.textContent = "Edit Tooth Precision";
     header.append(back, title);
     frame = document.createElement("iframe"); frame.title = "Tooth precision painting workspace";
     frame.onload = () => {

@@ -64,8 +64,9 @@ export function renderFocusTeeth(renderAll) {
   const key = context(), value = entry();
   if (shownContext !== key) { el("focusTeethInput").value = value.teeth.join(", "); shownContext = key; }
   el("focusTeethToggle").setAttribute("aria-checked", String(value.enabled));
+  el("focusTeethToggle").classList.toggle("is-active", value.enabled);
   el("focusTeethToggle").disabled = !value.teeth.length;
-  el("focusTeethToggle").title = value.teeth.length ? `Focus teeth: ${value.teeth.join(", ")}` : "Add FDI tooth numbers in Your plan first";
+  el("focusTeethToggle").title = value.teeth.length ? `My Highlighted Teeth: ${value.teeth.join(", ")}` : "Add FDI tooth numbers in Your plan first";
   const available = new Set((state.segmentation.applied?.tooth_meshes || []).map(link => String(link.tooth.value)));
   const missing = value.teeth.filter(id => !available.has(id));
   el("focusTeethStatus").textContent = [value.notice, missing.length ? `No painted region yet for ${missing.join(", ")}.` : ""].filter(Boolean).join(" ");

@@ -23,18 +23,21 @@ export const comparisonTemplate = `
     </div>
   </div>
   <nav class="comparison-timeline" aria-label="Reported scan weeks">
-    <label class="scan-highlight-toggle"><input id="highlightScanWeeks" type="checkbox" role="switch" checked> Highlight recorded scan weeks</label>
     <div class="comparison-week-navigation">
       <button id="comparisonPrevious" type="button" disabled>← Previous week</button>
       <output id="comparisonWeekLabel" aria-live="polite">Week 1 of 18</output>
       <button id="comparisonNext" type="button" disabled>Next week →</button>
+    </div>
+    <div class="comparison-highlight-controls" role="group" aria-label="Week highlighting">
+      <span>Highlight weeks</span>
+      <label class="scan-highlight-toggle"><input id="highlightScanWeeks" type="checkbox" role="switch" checked> Recorded scans <span class="week-color recorded" aria-hidden="true"></span></label>
+      <label class="scan-highlight-toggle"><input id="highlightEstimatedWeeks" type="checkbox" role="switch" checked> Estimated weeks <span class="week-color estimated" aria-hidden="true"></span></label>
     </div>
     <div class="comparison-weeks">
       ${Array.from({ length: 18 }, (_, i) => `<button type="button" data-comparison-week="${i + 1}" data-scan-kind="${[0, 6, 17].includes(i) ? "observed" : i < 7 ? "estimated" : "unavailable"}" disabled
         aria-label="Week ${i + 1}, ${[0, 6, 17].includes(i) ? "observed scan" : i < 7 ? "simulated estimate" : "not fitted"}">
         Week ${i + 1}<small>${[0, 6, 17].includes(i) ? "Observed" : i < 7 ? "Estimated" : "Not fitted"}</small></button>`).join("")}
     </div>
-    <p class="comparison-scan-key">Blue border · Recorded scan weeks</p>
   </nav>
   <div class="comparison-motion-tools">
     <a href="./progress.html" id="openScanPair">Compare two scans</a>

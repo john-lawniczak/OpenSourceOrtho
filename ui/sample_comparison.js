@@ -41,6 +41,7 @@ function setWeek(value) {
   el("sampleComparison").querySelectorAll("[data-comparison-week]").forEach(button => {
     const value = Number(button.dataset.comparisonWeek);
     if (value === 1 || value === 7 || value === 18) return;
+    button.dataset.scanKind = value < 7 && motion ? "estimated" : "unavailable";
     button.querySelector("small").textContent = value > 7 ? "Not fitted" : motion ? "Estimated" : "Unavailable";
     button.setAttribute("aria-label", `Week ${value}, ${motion && value < 7 ? "simulated estimate" : "estimate unavailable"}`);
   });
@@ -152,6 +153,9 @@ function mount(renderAll) {
   el("viewerBlock").prepend(modes, panel);
   el("highlightScanWeeks").addEventListener("change", event => {
     panel.classList.toggle("scan-highlights-off", !event.target.checked);
+  });
+  el("highlightEstimatedWeeks").addEventListener("change", event => {
+    panel.classList.toggle("estimate-highlights-off", !event.target.checked);
   });
   modes.addEventListener("click", async event => {
     const button = event.target.closest("[data-sample-view]");

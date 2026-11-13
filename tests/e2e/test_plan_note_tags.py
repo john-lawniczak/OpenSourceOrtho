@@ -19,7 +19,7 @@ def test_note_tags_add_to_saved_focus_and_stay_scoped(server_url):  # noqa: F811
             open_personal_plan(page)
             focus = page.locator("#focusTeethInput")
             focus.fill("11")
-            page.get_by_role("button", name="Save focus teeth").click()
+            page.get_by_role("button", name="Save highlighted teeth").click()
             before = page.locator("#planJson").input_value()
             notes = page.locator("#planBriefText")
             notes.fill("Focus on @12 and @22. Repair #31. Repeat @12; ignore @123 and ordinary 41.")

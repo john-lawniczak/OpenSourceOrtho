@@ -20,7 +20,7 @@
       { "imports": { "three": "./vendor/three.module.js" } }
     </script>
   </head>
-  <body data-mode="simple" data-step="toothmap" data-chat-collapsed="1">
+  <body data-mode="simple" data-step="upload" data-chat-collapsed="1">
     <header class="app-topbar">
       <div class="brand-block">
         <span class="brand-mark" aria-hidden="true">
@@ -56,8 +56,8 @@
           <button class="step" data-step="review" type="button">Review</button>
         </nav>
 
-        <a class="glossary-link" href="./region-review.html"><span aria-hidden="true">🖌</span> Edit Tooth Precision <small>Paint tooth edges and numbers</small></a>
-        <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Home · Tooth Map</button>
+        <a class="glossary-link" href="./region-review.html">Edit Tooth Precision <small>Paint tooth edges and numbers</small></a>
+        <button class="glossary-link" data-step-target="toothmap" type="button" aria-label="Open the tooth map and numbering">Tooth Map</button>
         <button class="glossary-link" data-step-target="notes" type="button">My Notes</button>
         <button class="glossary-link" data-step-target="glossary" type="button" aria-label="Open the glossary of key terms">Glossary</button>
         <button class="glossary-link" data-step-target="photos" type="button" aria-label="Open the imaging and photos guide">Imaging guide</button>
@@ -176,7 +176,7 @@
             <section class="boundary-entry" aria-label="Edit tooth precision">
               <strong>Edit your tooth precision in the painting workspace</strong>
               <p>Paint each tooth's edges and check its number so selecting a tooth highlights the right surface.</p>
-              <a class="painting-workspace-button" href="./region-review.html"><span aria-hidden="true">🖌</span> Open painting workspace</a>
+              <a class="painting-workspace-button" href="./region-review.html">Open painting workspace</a>
               <p>Save your painting, then review the regions before exploring tooth movements.</p>
             </section>
             <div class="guided-action-strip">
@@ -219,7 +219,7 @@
             <section class="workflow-card plan-brief" aria-label="Overall plan and goals">
               <h4>Describe your overall plan</h4>
               <p>Write one goal per line. Include tooth numbers, what you want to change, relevant history, and options you want to discuss.</p>
-              <ul id="planNoteShortcuts"><li>Shortcut: type <strong>@12</strong> or <strong>#12</strong> to automatically save that FDI tooth number to <strong>Focus teeth</strong>. For example: “Focus on tooth @12 and @22.” Use the Focus teeth toggle above to show them in blue.</li><li>Tags add to your existing focus list. To remove a saved tooth, remove its tag from your notes and edit the Focus teeth list below.</li></ul>
+              <ul id="planNoteShortcuts"><li>Shortcut: type <strong>@12</strong> or <strong>#12</strong> to automatically save that FDI tooth number to <strong>My Highlighted Teeth</strong>. For example: “Focus on tooth @12 and @22.” Use the My Highlighted Teeth toggle above to show them in blue.</li><li>Tags add to your existing focus list. To remove a saved tooth, remove its tag from your notes and edit the My Highlighted Teeth list below.</li></ul>
               <label for="planBriefText">Plan notes · one bullet per goal</label>
               <textarea id="planBriefText" rows="8" maxlength="8000" aria-describedby="planNoteShortcuts planBriefScope planBriefStatus" placeholder="- Focus on @12 and @22: what I would like to change&#10;- Tooth #31: relevant history and options to discuss&#10;- Questions for my dentist or orthodontist"></textarea>
               <p id="planBriefStatus" role="status"></p>
@@ -229,9 +229,9 @@
               <p id="samplePlanBriefCaveat" class="viewer-caveat" hidden>The sample preview has not been generated from these restoration goals. Reported size differences and tooth history still need professional assessment.</p>
             </section>
             <form id="focusTeethForm" class="workflow-card">
-              <h4>Focus teeth</h4><p>Choose the teeth discussed in your plan. Use the Focus teeth toggle above to show their painted regions in blue.</p>
+              <h4>My Highlighted Teeth</h4><p>Choose the teeth discussed in your plan. Use the My Highlighted Teeth toggle above to show their painted regions in blue.</p>
               <label>FDI tooth numbers <input id="focusTeethInput" placeholder="12, 22, 31" maxlength="120" aria-describedby="focusTeethStatus" /></label>
-              <button type="submit">Save focus teeth</button><p id="focusTeethStatus" role="status"></p>
+              <button type="submit">Save highlighted teeth</button><p id="focusTeethStatus" role="status"></p>
               <p class="viewer-caveat">A visual reminder only. This does not create movements or infer tooth boundaries from your notes.</p>
             </form>
             <details class="guided-help"><summary>Watch tooth selection and navigation</summary>
@@ -543,7 +543,7 @@
                     <button class="mode" data-view="planned" type="button">Planned</button>
                     <button class="mode" data-view="overlay" type="button">Overlay</button>
                     <button class="viewer-aux" id="toothLabelToggle" type="button" role="switch" aria-checked="true" title="Show or hide selectable tooth numbers around the scan">Tooth numbers</button>
-                    <button id="focusTeethToggle" type="button" role="switch" aria-checked="false">Focus teeth</button>
+                    <button class="viewer-aux" id="focusTeethToggle" type="button" role="switch" aria-checked="false">My Highlighted Teeth</button>
                     <button class="viewer-aux" id="proximityToggle" type="button" aria-pressed="false" title="Show where the upper and lower arches meet (geometric proximity of the registered surfaces, not bite force)">Bite proximity</button>
                     <button class="viewer-aux" id="scaleToggle" type="button" aria-pressed="false" title="Show a true-scale millimetre reference bar beside the loaded scan (needs confirmed mm units)">Scale</button>
                     <button class="viewer-aux" id="registeredBiteToggle" type="button" aria-pressed="false" title="Move the lower arch into the registered occlusion. Only changes separate-frame scans; arches scanned in occlusion already show the true bite.">Registered bite</button>
@@ -751,7 +751,7 @@
         <section class="panel" id="panel-toothmap">
           <div class="panel-heading">
             <button class="info-back" data-info-back="true" type="button">&larr; Back</button>
-            <h2>Tooth Map &amp; Numbering</h2>
+            <h2>Tooth Map</h2>
             <p>Explore tooth shapes and numbering.</p>
           </div>
           <section id="toothExplorer" class="workflow-card tooth-explorer" aria-labelledby="toothExplorerTitle">

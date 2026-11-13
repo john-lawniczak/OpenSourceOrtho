@@ -8,7 +8,7 @@ export const state = {
   // first-time users. The dense technician workspace ("advanced") is opt-in via
   // the Technician view toggle.
   userMode: "simple",
-  activeStep: "toothmap",
+  activeStep: "upload",
   // Where the "Back" button in a reference panel (Key Terms, Imaging guide)
   // returns to, so those panels are reachable from either mode without trapping
   // the user. Set when an info step is opened (see goToStep in app.js).

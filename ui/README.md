@@ -33,7 +33,8 @@ python3 -m orthoplan.server        # or: orthoplan serve
 
 Then open `http://127.0.0.1:8000`.
 
-The app opens in Guided mode by default. A light/dark switch is anchored at the
+The app opens Your Teeth Profile at the Upload step in Guided mode by default.
+Tooth Map is a separate sidebar reference page with a Back button. A light/dark switch is anchored at the
 top-right of the window in every mode. The sidebar **Sample Test Case** button
 opens the observed baseline/week 7 scan comparison, with an explicitly separate
 simulated planning walkthrough using the redacted CBCT/root-bone fixture.
@@ -318,21 +319,22 @@ step rail. The viewer scrolls normally, so it does not cover notes or consume th
 whole screen on smaller devices. Review and Print / send keep their checks and
 handoff controls below the view without showing the tooth-editing panel.
 
-### Focus teeth and scan tools
+### My Highlighted Teeth and scan tools
 
 Settings labels the connector **AI Model Provider**; saved painting notes are in
 **My Notes**. The sample's **Explore individual teeth** mode selects painted
 regions in the main viewer; the painting buttons open **Edit Tooth Precision**.
 
-Step 3 has an explicit FDI **Focus teeth** list. Save numbers, then use the viewer's
-Focus teeth switch to highlight available painted crowns and their number buttons
+Step 3 has an explicit FDI **My Highlighted Teeth** list. Save numbers, then use the viewer's
+My Highlighted Teeth switch to highlight available painted crowns and their number buttons
 in blue. Preferences are stored by plan ID with isolated USER_ONE storage. The
 private sample brief supplies 12, 22 and 31; filtered public installations do not
 receive that private default. Missing regions are listed instead of approximated.
 Focus preferences do not change movement data, review status, or AI context.
 
-Recorded scan weeks have optional blue borders and a light fill, alongside their
-Observed labels. The switch hides that decoration without hiding provenance.
+The compact Highlight weeks toolbar has independent switches for blue recorded
+weeks and soft-yellow estimated weeks. Unfitted/unavailable weeks stay neutral;
+turning colors off retains provenance labels and the selected-week indicator.
 **Compare two scans** opens the independent endpoint-fitting tool in a dialog;
 both Back controls return to the same section/week. Closing the dialog keeps its
 unfinished comparison in memory until the main page is reloaded. Use that tool's
@@ -340,9 +342,9 @@ Save locally action for durable comparisons. Painting and comparison links are
 styled as buttons while preserving normal link behavior for modified clicks.
 
 Plan notes also accept explicit FDI shortcuts: `@12` and `#12` add tooth 12 to
-that plan's saved Focus teeth list. Tags are deduplicated and checked after a
+that plan's saved My Highlighted Teeth list. Tags are deduplicated and checked after a
 brief typing pause or when leaving the notes field. Plain numbers, malformed
 IDs and email-like tokens are ignored. The shortcut adds to existing choices
 without changing the highlight switch. To remove a saved tooth, remove its note
-tag and edit the Focus teeth list; deleting prose alone does not erase choices.
+tag and edit the My Highlighted Teeth list; deleting prose alone does not erase choices.
 Storage failures remain visible, and focus changes never author movements.

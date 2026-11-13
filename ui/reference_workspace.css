@@ -83,10 +83,9 @@ body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-up
 .painting-workspace-button:focus-visible { outline: 3px solid #65e6d1; outline-offset: 3px; }
 @media (max-width: 480px) { .app-topbar { gap: 6px; } .app-topbar .brand-block { gap: 6px; } .brand-title { gap: 3px; } .app-topbar .brand-mark { display: none; } }
 
-/* The home reference map and saved notes are separate from the planning wizard. */
+/* The reference map and saved notes are separate from the planning wizard. */
 body:is([data-step="toothmap"], [data-step="notes"]) #guidedRail,
 body:is([data-step="toothmap"], [data-step="notes"]) .sidebar > :is(.review-tier-panel, .data-gap-panel),
-body[data-step="toothmap"] #panel-toothmap .info-back,
 body[data-step="notes"] #guided { display: none !important; }
 body[data-mode="simple"][data-step="notes"] #panel-notes { display: block; }
 body:is([data-step="toothmap"], [data-step="notes"])[data-chat-collapsed="1"] .ai-rail { display: none; }

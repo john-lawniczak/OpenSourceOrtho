@@ -14,6 +14,12 @@ def test_home_examples_preserve_plan_and_workflow_access(server_url, tmp_path): 
         page.on("pageerror", lambda error: errors.append(str(error)))
         try:
             page.goto(server_url, wait_until="networkidle")
+            expect(page.locator('.gstep[data-gstep="upload"]')).to_be_visible()
+            expect(page.locator("#guidedRail")).to_be_visible()
+            expect(page.locator("#teethProfile")).to_have_attribute("aria-pressed", "true")
+            expect(page.locator("#toothExplorer")).to_be_hidden()
+            expect(page.locator('[data-step-target="toothmap"]')).to_have_text("Tooth Map")
+            page.locator('[data-step-target="toothmap"]').click()
             expect(page.locator("#toothExplorer")).to_be_visible()
             for selector in ["#guided", "#guidedRail", ".sidebar > .review-tier-panel", "#chatReopenTab"]:
                 for item in page.locator(selector).all():
@@ -33,7 +39,7 @@ def test_home_examples_preserve_plan_and_workflow_access(server_url, tmp_path): 
                 assert page.locator("#planJson").input_value() == before
             assert len(set(images)) == 4
             page.screenshot(path=str(tmp_path / "home.png"), full_page=True)
-            page.locator("#teethProfile").click()
+            page.locator('#panel-toothmap [data-info-back]').click()
             expect(page.locator("#guidedRail")).to_be_visible()
             expect(page.locator('.gstep[data-gstep="upload"]')).to_be_visible()
             page.locator('[data-step-target="toothmap"]').click()
