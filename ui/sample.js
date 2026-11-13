@@ -99,7 +99,7 @@ export function enterSample() {
   el("planTitle").value = `Sample test case · ${sampleDataset.pseudonym}`;
   el("planId").value = "sample-test-case";
   el("simpleGoal").value = "crowding";
-  el("wearInterval").value = "10";
+  el("wearInterval").value = "7";
   el("exaggeration").value = "1";
   el("scanUnits").value = "mm";
   el("simpleAcknowledged").checked = true;
