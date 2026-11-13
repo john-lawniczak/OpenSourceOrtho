@@ -37,3 +37,13 @@ test("alternative lower painting captures retain their own identities", () => {
     assert.throws(() => weekEighteenMetadata(manifest, source, "lower", capture), /provenance/);
   }
 });
+
+test("cleaned upper is a separate hash-bound derivative, not another arch or visit", () => {
+  const manifest = read("captures/upper-clean/manifest.json"), source = read("captures/upper-clean/source-metadata.json");
+  const scan = weekEighteenMetadata(manifest, source, "upper", "upper-clean");
+  assert.equal(scan.filename, "visits/progress-02/captures/upper-clean/progress-02-upper-clean.stl");
+  assert.notEqual(scan.sha256, read("manifest.json").scans.find(s => s.arch === "maxillary").sha256);
+  assert.equal(source.derivation.added_faces, 0);
+  assert.throws(() => weekEighteenMetadata(manifest, source, "lower", "upper-clean"), /Invalid/);
+  assert.throws(() => weekEighteenMetadata(manifest, source, "upper"), /identity/);
+});

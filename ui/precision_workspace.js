@@ -47,7 +47,7 @@ document.addEventListener("click", event => {
   if (state.sample.active) {
     const arch = document.getElementById("boundaryArch")?.value || "upper";
     const visit = state.sample.view === "observed" && document.getElementById("sampleComparison")?.dataset.week === "18" ? "progress-02" : state.sample.visit || "progress-01";
-    openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${visit}${visit === "progress-02" && arch === "lower" ? "&capture=fusion-h-4" : ""}`);
+    openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${visit}${visit === "progress-02" ? `&capture=${arch === "upper" ? "upper-clean" : "fusion-h-4"}` : ""}`);
   } else {
     const openScan = document.getElementById("openBoundaryEditor");
     if (state.scanSources.length && document.getElementById("boundaryArch")?.value && !openScan?.disabled) openScan.click();

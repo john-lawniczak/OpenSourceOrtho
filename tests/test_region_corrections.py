@@ -142,3 +142,20 @@ def test_week_eighteen_capture_saves_are_source_bound_and_isolated(tmp_path):
     assert len(list(tmp_path.rglob("*.json"))) == 3
     for arch, visit, capture in [("upper", "progress-02", "fusion-h-4"), ("lower", "initial", "fusion-h-4"), ("lower", "progress-02", "../other")]:
         assert not load_baseline_corrections(arch, visit=visit, capture=capture, root=tmp_path)["ok"]
+
+
+def test_clean_upper_cannot_overwrite_original_painting(tmp_path):
+    saved = {}
+    for capture in ["original", "upper-clean"]:
+        payload = {"arch": "upper", "visit": "progress-02", "capture": capture,
+                   "corrections": record("upper", visit="progress-02", capture=capture),
+                   "notes": capture}
+        saved[capture] = save_baseline_corrections(payload, root=tmp_path)
+        assert saved[capture]["ok"]
+        assert load_baseline_corrections("upper", visit="progress-02", capture=capture, root=tmp_path)["notes"] == capture
+    assert saved["original"]["path"] != saved["upper-clean"]["path"]
+    assert not save_baseline_corrections({"arch": "upper", "visit": "progress-02", "capture": "upper-clean",
+        "corrections": saved["original"]["corrections"]}, root=tmp_path)["ok"]
+    for arch, visit in [("lower", "progress-02"), ("upper", "initial"), ("upper", "progress-01")]:
+        assert not load_baseline_corrections(arch, visit=visit, capture="upper-clean", root=tmp_path)["ok"]
+    assert len(list(tmp_path.rglob("*.json"))) == 2

@@ -30,9 +30,11 @@ function mount() {
   viewer?.dispose();
   el("reviewCaptureField").hidden = scan.visit !== "progress-02" || scan.arch !== "lower";
   el("reviewCaptureNote").hidden = scan.visit !== "progress-02";
+  el("reviewUpperCaptureField").hidden = scan.visit !== "progress-02" || scan.arch !== "upper";
+  el(scan.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan.capture || "original";
   el("reviewWorkspaceLink").href = scan.visit ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
-  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
+  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
     brushSettings: () => ({ mode: el("reviewEditing").disabled ? "orbit" : el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
@@ -49,8 +51,8 @@ function mount() {
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }
 async function loadBaseline(arch, visit = el("reviewVisit").value) {
   if (!["upper", "lower"].includes(arch)) throw new Error("Choose Upper or Lower first.");
-  if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; el("reviewCapture").value = scan?.capture || "original"; return; }
-  const capture = visit === "progress-02" && arch === "lower" ? el("reviewCapture").value : "original";
+  if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; el(scan?.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan?.capture || "original"; return; }
+  const capture = visit === "progress-02" ? el(arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value : "original";
   const current = ++generation;
   el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : visit === "progress-01" ? 7 : 18} ${arch}…`;
   el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
@@ -66,12 +68,12 @@ async function loadBaseline(arch, visit = el("reviewVisit").value) {
       : new RegionEdits(motion ? motion.faceLabels.map(id => caseData.absentTeeth.includes(mapping[id]) ? 0 : mapping[id] || 0) : new Uint8Array(count), arch);
     scan = nextScan; edits = nextEdits; mount(); saving.setSaved(saved);
     el("reviewVisit").value = visit; void saving.refreshSummary();
-    if (!saved.saved && visit !== "initial") el("reviewSaveStatus").textContent = `Week ${visit === "progress-01" ? 7 : 18} · unpainted original surface · choose a tooth to begin`;
+    if (!saved.saved && visit !== "initial") el("reviewSaveStatus").textContent = `Week ${visit === "progress-01" ? 7 : 18} · ${capture === "upper-clean" ? "unpainted cleaned surface" : "unpainted original surface"} · choose a tooth to begin`;
     if (!saved.saved && corrections) el("reviewSaveStatus").textContent = "Published draft · boundaries need review";
     const url = new URL(location.href); url.searchParams.delete("edit"); url.searchParams.set("baseline", arch); url.searchParams.set("visit", visit); url.searchParams.set("capture", capture);
     history.replaceState(null, "", url);
   } finally {
-    if (current === generation) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; if (scan?.arch === "lower") el("reviewCapture").value = scan.capture || "original"; panel.update(Boolean(scan), selectedCount()); saving.update(); }
+    if (current === generation) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; if (scan) el(scan.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan.capture || "original"; panel.update(Boolean(scan), selectedCount()); saving.update(); }
   }
 }
 function parseStlFaceCount(bytes) {
@@ -80,6 +82,7 @@ function parseStlFaceCount(bytes) {
 }
 el("reviewReload").onclick = () => action(() => loadBaseline(scan?.arch, scan?.visit));
 el("reviewCapture").onchange = () => action(() => loadBaseline("lower", "progress-02"));
+el("reviewUpperCapture").onchange = () => action(() => loadBaseline("upper", "progress-02"));
 el("loadSample").onclick = () => action(() => loadBaseline(el("reviewArch").value));
 for (const arch of ["upper", "lower"]) el(`reviewLoad${arch}`).onclick = () => action(() => loadBaseline(arch));
 for (const id of ["reviewLoadupper", "reviewLoadlower", "loadSample"]) el(id).disabled = false;
@@ -156,6 +159,7 @@ el("reviewVisit").onchange = () => {
 };
 const requestedVisit = new URLSearchParams(location.search).get("visit") || "initial";
 const requestedCapture = new URLSearchParams(location.search).get("capture") || "original";
+if (["original", "upper-clean"].includes(requestedCapture)) el("reviewUpperCapture").value = requestedCapture;
 if (["original", "fusion-h-4", "fusion-h-6"].includes(requestedCapture)) el("reviewCapture").value = requestedCapture;
 if (["initial", "progress-01", "progress-02"].includes(requestedVisit)) el("reviewVisit").value = requestedVisit;
 void saving.refreshSummary();

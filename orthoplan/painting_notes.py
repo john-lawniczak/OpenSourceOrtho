@@ -9,9 +9,10 @@ def painting_notes_payload() -> dict:
                for visit, week in [("initial", 1), ("progress-01", 7), ("progress-02", 18)]
                for arch in ("upper", "lower")]
     sources += [("progress-02", 18, "lower", capture) for capture in ("fusion-h-4", "fusion-h-6")]
+    sources += [("progress-02", 18, "upper", "upper-clean")]
     for visit, week, arch, capture in sources:
         title = f"USER_ONE · Week {week} · {arch.title()}"
-        suffix = "" if capture == "original" else f" · {capture.upper()}"
+        suffix = "" if capture == "original" else " · Cleaned version" if capture == "upper-clean" else f" · {capture.upper()}"
         title += suffix
         record = load_baseline_corrections(arch, visit=visit, capture=capture)
         if not record.get("ok"):

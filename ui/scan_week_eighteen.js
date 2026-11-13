@@ -1,8 +1,9 @@
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
 export function weekEighteenCapture(arch, capture = "original") {
-  if (!["upper", "lower"].includes(arch) || !["original", "fusion-h-4", "fusion-h-6"].includes(capture)
-      || (capture !== "original" && arch !== "lower")) throw new Error("Invalid week 18 capture.");
+  const alternatives = { upper: ["upper-clean"], lower: ["fusion-h-4", "fusion-h-6"] };
+  if (!alternatives[arch] || (capture !== "original" && !alternatives[arch].includes(capture))) throw new Error("Invalid week 18 capture.");
+  if (capture === "upper-clean") return { folder: "visits/progress-02/captures/upper-clean", filename: "progress-02-upper-clean.stl" };
   return capture === "original" ? { folder: "visits/progress-02", filename: `progress-02-${arch}.stl` }
     : { folder: `visits/progress-02/captures/${capture}`, filename: `2026-11-12_USER_ONE_lower_week-18_${capture}.stl` };
 }

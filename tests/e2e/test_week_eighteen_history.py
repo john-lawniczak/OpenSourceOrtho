@@ -97,3 +97,50 @@ def test_failed_week_eighteen_preserves_earlier_fit_and_retries(server_url):  # 
             expect(page.locator("#comparisonCanvas")).to_be_visible()
         finally:
             browser.close()
+
+
+def test_clean_upper_painting_save_switch_and_reopen(server_url, tmp_path, monkeypatch):  # noqa: F811
+    monkeypatch.setenv("ORTHOPLAN_REGION_CORRECTIONS", str(tmp_path / "notes"))
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        try:
+            page.goto(server_url)
+            page.locator("#sampleLaunch").click()
+            expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=60000)
+            page.get_by_role("link", name="Paint USER_ONE week 18 upper", exact=True).click()
+            editor = page.frame_locator(".precision-dialog iframe")
+            expect(editor.locator("#reviewSource")).to_contain_text("progress-02-upper-clean.stl", timeout=60000)
+            expect(editor.locator("#reviewUpperCapture")).to_have_value("upper-clean")
+            expect(editor.locator("#reviewCaptureField")).to_be_hidden()
+            editor.locator("#regionCanvas").screenshot(path=str(tmp_path / "clean-upper-painting.png"))
+            editor.locator("#reviewNotes").fill("Clean version: inspect missing model surfaces")
+            editor.locator("#reviewSaveLocal").click()
+            expect(editor.locator("#reviewSavePath")).to_contain_text("week-18-upper-upper-clean")
+            editor.locator("#reviewUpperCapture").select_option("original")
+            expect(editor.locator("#reviewSource")).to_contain_text("progress-02-upper.stl", timeout=60000)
+            expect(editor.locator("#reviewNotes")).to_have_value("")
+            editor.locator("#reviewNotes").fill("Original version notes")
+            editor.locator("#reviewSaveLocal").click()
+            expect(editor.locator("#reviewSaveStatus")).to_contain_text("Saved upper draft locally")
+            editor.locator("#reviewUpperCapture").select_option("upper-clean")
+            expect(editor.locator("#reviewNotes")).to_have_value("Clean version: inspect missing model surfaces", timeout=60000)
+            editor.locator("#reviewNotes").fill("Unsaved change")
+            page.once("dialog", lambda dialog: dialog.dismiss())
+            editor.locator("#reviewUpperCapture").select_option("original")
+            expect(editor.locator("#reviewUpperCapture")).to_have_value("upper-clean")
+            expect(editor.locator("#reviewNotes")).to_have_value("Unsaved change")
+            editor.locator("#reviewSaveLocal").click()
+            expect(editor.locator("#reviewSaveStatus")).to_contain_text("Saved upper draft locally")
+            page.locator("#precisionBack").click()
+            page.locator("#teethProfile").click()
+            page.locator('[data-step-target="notes"]').click()
+            card = page.locator('.painting-note').filter(has_text='USER_ONE · Week 18 · Upper · Cleaned version')
+            card.get_by_role('link', name='Open painting & notes').click()
+            expect(editor.locator("#reviewSource")).to_contain_text("progress-02-upper-clean.stl", timeout=60000)
+            expect(editor.locator("#reviewNotes")).to_have_value("Unsaved change", timeout=60000)
+            assert not errors
+        finally:
+            browser.close()

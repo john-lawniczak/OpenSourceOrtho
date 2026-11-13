@@ -28,13 +28,14 @@ def baseline_source(arch: str, visit: str = "initial", capture: str = "original"
         raise ValueError("Choose week 1, week 7 or week 18.")
     if arch not in {"upper", "lower"}:
         raise ValueError("Choose upper or lower arch.")
-    if capture not in {"original", "fusion-h-4", "fusion-h-6"} or (capture != "original" and (visit != "progress-02" or arch != "lower")):
+    alternatives = {"upper": {"upper-clean"}, "lower": {"fusion-h-4", "fusion-h-6"}}
+    if capture != "original" and (visit != "progress-02" or capture not in alternatives[arch]):
         raise ValueError("Choose a valid capture for this visit and arch.")
     filename = f"{visit}-{arch}.stl"
     folder = SAMPLE_CASE_DIR / "visits/progress-02" if visit == "progress-02" else SAMPLE_CASE_DIR
     if capture != "original":
         folder = folder / "captures" / capture
-        filename = f"2026-11-12_USER_ONE_lower_week-18_{capture}.stl"
+        filename = "progress-02-upper-clean.stl" if capture == "upper-clean" else f"2026-11-12_USER_ONE_lower_week-18_{capture}.stl"
     manifest = json.loads((folder / "manifest.json").read_text())
     source = next(item for item in manifest["scans"] if item["filename"] == filename)
     if hashlib.sha256((folder / filename).read_bytes()).hexdigest() != source["sha256"]:

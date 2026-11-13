@@ -178,9 +178,9 @@ regions. Painting alone does not regenerate it.
 
 ## Week 18 painting selection
 
-The scan-history painting buttons prepare the original `progress-02-upper.stl`
-and the additional lower **Fusion H4** capture. There is only one supplied upper
-capture. H4 is a tentative lower painting preference because its margins appear
+The scan-history painting buttons prepare the trimmed `progress-02-upper-clean.stl`
+version and the additional lower **Fusion H4** capture. The original upper remains
+available in the editor’s Upper version selector. H4 is a tentative lower painting preference because its margins appear
 more compact in the existing capture comparison; it is not a validated accuracy
 winner. The week-18 model-chip notes remain visible in the editor.
 
@@ -188,6 +188,7 @@ The lower editor offers Original, Fusion H4 and Fusion H6. Each capture is verif
 against its manifest SHA-256 and saves separate versioned annotations and notes:
 `week-18-lower`, `week-18-lower-fusion-h-4`, and `week-18-lower-fusion-h-6` under
 `.orthoplan-region-corrections/USER_ONE/`. Upper saves use `week-18-upper`.
+The cleaned upper saves separately as `week-18-upper-upper-clean`.
 My Notes reopens the exact saved capture. Existing original-scan saves remain valid.
 These prepared surfaces start unpainted unless a matching local draft exists;
 no old face labels are copied onto a different mesh. Painting does not reconstruct
@@ -200,3 +201,17 @@ After both paintings are saved and reviewed, they can be incorporated separately
 Week 18 painting uses a separate inspection camera because these model captures
 have different axes from the earlier intraoral scans. Default/Face-on and the
 relative Above/Side presets change only the camera, never vertex or label order.
+
+### Cleaned upper painting version
+
+`visits/progress-02/captures/upper-clean/progress-02-upper-clean.stl` is the
+unchanged Desktop `Fusion_H_1_Upper_CLEAN.stl`, renamed on import. Its 491,548
+triangles are an exact subset of the original upper’s 828,960 triangles. Source
+metadata records the original hash and trimming relationship. No surfaces were
+filled, moved or reconstructed. This is a derivative of the same observation,
+not an additional observed visit.
+
+The week 18 upper painting action selects this version explicitly. Original
+upper links remain valid, and switching the Upper version selector loads a
+separate hash-bound draft. My Notes links back to the saved version. Painting
+this version does not replace the original observed-history scan or fit motion.

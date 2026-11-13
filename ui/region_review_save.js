@@ -32,11 +32,11 @@ export function setupRegionSaving(getContext) {
   }
   async function refreshSummary() {
     const visit = el("reviewVisit").value;
-    const capture = el("reviewCapture").value;
+    const captures = { upper: el("reviewUpperCapture").value, lower: el("reviewCapture").value };
     for (const arch of ["upper", "lower"]) {
       try {
-        const result = await fetchBaselineSave(arch, visit, visit === "progress-02" && arch === "lower" ? capture : "original");
-        if (el("reviewVisit").value !== visit || el("reviewCapture").value !== capture) return;
+        const result = await fetchBaselineSave(arch, visit, visit === "progress-02" ? captures[arch] : "original");
+        if (el("reviewVisit").value !== visit || el(arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value !== captures[arch]) return;
         const badge = el(`reviewSaved${arch}`);
         badge.hidden = !result.saved;
         badge.textContent = `${arch} · ${result.review_status}`;

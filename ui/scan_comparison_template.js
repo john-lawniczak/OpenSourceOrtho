@@ -45,7 +45,7 @@ export const comparisonTemplate = `
       <a href="./region-review.html?baseline=lower" target="_blank" rel="noopener">Paint USER_ONE lower baseline</a>
       <a href="./region-review.html?baseline=upper&amp;visit=progress-01" target="_blank" rel="noopener">Paint USER_ONE week 7 upper</a>
       <a href="./region-review.html?baseline=lower&amp;visit=progress-01" target="_blank" rel="noopener">Paint USER_ONE week 7 lower</a>
-      <a href="./region-review.html?baseline=upper&amp;visit=progress-02" target="_blank" rel="noopener">Paint USER_ONE week 18 upper</a>
+      <a href="./region-review.html?baseline=upper&amp;visit=progress-02&amp;capture=upper-clean" target="_blank" rel="noopener">Paint USER_ONE week 18 upper</a>
       <a href="./region-review.html?baseline=lower&amp;visit=progress-02&amp;capture=fusion-h-4" target="_blank" rel="noopener">Paint USER_ONE week 18 lower</a>
     <label>Timing assumption <select id="comparisonTiming"><option value="uniform">Uniform motion</option><option value="smooth">Slow start and finish</option><option value="delayed">Delayed start</option></select></label>
     <label>Tooth <select id="comparisonTooth" disabled><option value="">All teeth</option></select></label>
