@@ -29,7 +29,7 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
 	  which teeth move (excluded teeth become fixed) and the tray-wear duration,
 	  animates the plan in 3D, and exports printable files. The heavy singletons (3D
 	  viewer, AI box, upload control) are single instances relocated into the active
-	  step, so there is never a second WebGL context. It must never imply printable
+	  step. Painting opens a temporary editor over that workspace. It must never imply printable
   output is safe, validated, or ready for treatment.
   Step changes return focus and scroll to the new heading; advanced anatomy is
   summarized with a Technician-mode handoff; AI connector controls start
@@ -50,7 +50,7 @@ inside the Sample Test Case). A light/dark switch is anchored in the top bar:
   state lives in the browser, not the `TreatmentPlan` model.
 - **Sample test case**: a fully isolated walkthrough that reuses the guided wizard
   (same chips/panels), pre-loaded with the two bundled test-case STL scans and a
-  Balanced 10-day pace, starting at step 1. Entering it snapshots the user's
+  one-week preview spacing. Observed history opens in Teeth & time; the six-step rail and Back/Next remain available. Entering it snapshots the user's
   working state (including any segmentation) and restores it on exit. The
   Guided/Technician toggle stays visible inside it, and the sidebar Sample button
   doubles as "Exit Sample Test Case", so the demo can never leak into or be left
@@ -139,3 +139,24 @@ Use a proven 3D stack for mesh display. Good candidates:
 - Heavyweight research host: 3D Slicer extension
 
 The data contract should live in Python first so every UI consumes the same stage-frame representation.
+
+## Shared scan interactions
+
+- A sparkle beside Settings opens Ask AI and focuses the existing conversation.
+- Your Teeth Profile has an active accent edge; the sample remains a separate workspace.
+- Uploads retain an automatic upload timestamp and an optional user-entered
+  `Scan taken on` date in browser storage. File modification time is not treated
+  as acquisition evidence. Older uploads keep unknown upload dates.
+- Teeth & time defaults to one week per exploratory stage. Tooth identification
+  follows the 3D scan. Product copy describes tooth precision without requiring
+  knowledge of the developer's sample case.
+- Upper/lower FDI buttons surround the shared 3D rendering in Upload, Teeth &
+  time, Details, and Preview. Available regions are selectable; missing regions
+  are disabled. Tooltips and accessible labels include US Universal numbers.
+  The Tooth numbers switch hides the rows without clearing selection.
+- Edit Tooth Precision opens a modal with a contextual Back button. It preserves
+  the parent plan, camera, scroll, and focus, and checks for unsaved edits before
+  leaving. Personal uploads do not show sample-specific intake choices.
+- Painting notes start expanded and full-width, and grow with typed/restored text.
+- The application offers the 3D preview only. WebGL startup failure is explained
+  rather than replaced with a misleading schematic 2D representation.

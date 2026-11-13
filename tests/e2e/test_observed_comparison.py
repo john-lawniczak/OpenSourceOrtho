@@ -8,8 +8,8 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 
 def canvas_snapshot(canvas, **kwargs):
     # Rounded CSS corners can differ by 1–2 RGB levels after browser scrolling.
-    # Remove that border mask for exact comparison of the rendered scan pixels.
-    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit { visibility: hidden !important; }", **kwargs)
+    # Exclude the border mask and sticky workflow rail from scan-pixel comparisons.
+    return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit, #guidedRail { visibility: hidden !important; }", **kwargs)
 
 
 def assert_observed_endpoints_preserve_camera(page, tmp_path):
