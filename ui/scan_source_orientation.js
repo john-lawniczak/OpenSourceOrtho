@@ -31,5 +31,7 @@ export async function sourceViewContext(bytes, arch) {
 }
 
 export function visibleScanView(meshes) {
-  return meshes.length === 1 ? meshes[0].userData.scanView || {} : {};
+  if (meshes.length === 1) return meshes[0].userData.scanView || {};
+  // Multiple arches must open from the front, never the bounding box's thin axis.
+  return meshes.length > 1 ? { front: { direction: [0,0,1], up: [0,1,0] } } : {};
 }

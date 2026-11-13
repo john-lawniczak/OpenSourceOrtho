@@ -1,0 +1,25 @@
+{
+  "schema": "ortho-private-annotation-index-v1",
+  "visits": {
+    "initial": {
+      "upper": {
+        "path": "initial-upper-painted-2026-11-12T190542Z.json",
+        "sha256": "e6c7a0440b5d8bb521af59d4840f97f1b581698557e7f27d07056cf9cb793397"
+      },
+      "lower": {
+        "path": "initial-lower-painted-2026-11-12T195642Z.json",
+        "sha256": "8c2d36afe20d80b958bffee3332af28603891fad2699c0cb8b2e946804bb6c67"
+      }
+    },
+    "progress-01": {
+      "upper": {
+        "path": "progress-01-upper-painted-2026-11-13T013918Z.json",
+        "sha256": "29a532f2c5e984bc6ace3c3ddbefdd08cf7df54e7c87df78d408b164251fbbc5"
+      },
+      "lower": {
+        "path": "progress-01-lower-painted-2026-11-13T021152Z.json",
+        "sha256": "295c2bf0dd31c9391ddb3e881bc27413afbb578e82f2e1e9f42638e3ba05ddd2"
+      }
+    }
+  }
+}

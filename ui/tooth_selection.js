@@ -43,3 +43,11 @@ export function highlightTextColor(hex) {
   const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
   return luminance > 0.179 ? "#000000" : "#ffffff";
 }
+
+export function toothFromNumber(value, system = "FDI") {
+  const number = Number(value);
+  if (!Number.isInteger(number)) return null;
+  if (system === "FDI") return FDI_TEETH.includes(String(number)) ? String(number) : null;
+  if (system === "US") return FDI_TEETH.find(id => universalToothNumber(id) === number) || null;
+  return null;
+}

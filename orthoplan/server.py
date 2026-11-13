@@ -25,6 +25,7 @@ from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.region_corrections import load_baseline_corrections, save_baseline_corrections
 from orthoplan.segmentation_api import segment_payload
+from orthoplan.sample_teeth import sample_teeth_payload, sample_walkthrough_path
 from orthoplan.server_uploads import handle_case_record_upload, handle_scan_upload
 from orthoplan.setup_compare import compare_setups_payload, live_restage_comparison_payload
 
@@ -48,7 +49,7 @@ _CONTENT_TYPES = {
 }
 
 JSON_POST_ENDPOINTS = {
-    "/api/region-corrections",
+    "/api/region-corrections", "/api/sample-teeth",
     "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
@@ -73,6 +74,9 @@ class Handler(BaseHTTPRequestHandler):
     def _resolve_static(self, url_path: str) -> Path | None:
         if urllib.parse.unquote(url_path).startswith("/datasets/"):
             return resolve_published_asset(url_path)
+        walkthrough = sample_walkthrough_path(url_path)
+        if walkthrough is not None:
+            return walkthrough
         relative = url_path.lstrip("/") or "index.html"
         candidate = (UI_DIR / relative).resolve()
         if not candidate.is_relative_to(UI_DIR) or not candidate.is_file():
@@ -199,6 +203,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/sample-teeth":
+        return sample_teeth_payload(payload, workspace=handler._mesh_workspace())
     if path == "/api/region-corrections":
         return save_baseline_corrections(payload)
     if path == "/api/geometry-jobs/cancel":

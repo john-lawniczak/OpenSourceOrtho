@@ -4,12 +4,12 @@ import assert from "node:assert/strict";
 import { applySampleRootBoneFixture, prepareSampleSegmentation } from "./sample.js";
 import { state } from "./state.js";
 
-// A minimal /api/segment proposal: two anterior teeth with included edits, the
-// shape proposeSegmentation/applySegmentation consume.
+// Painted regions remain drafts when loaded into the sample workspace.
 function proposalPayload() {
   return {
     ok: true,
-    overall_confidence: 0.7,
+    scan_sources: [{ name: "progress-01-upper.stl", asset: { units: "unverified" } }],
+    annotations: [{ arch: "upper", origin: "private-archive" }],
     teeth: [
       { mesh_asset_id: "a1", tooth: "11", confidence: 0.7 },
       { mesh_asset_id: "a2", tooth: "21", confidence: 0.7 },
@@ -17,15 +17,16 @@ function proposalPayload() {
     plan_fragment: {
       mesh_assets: [{ id: "a1" }, { id: "a2" }],
       tooth_meshes: [
-        { tooth: { system: "FDI", value: "11" }, mesh_asset_id: "a1" },
-        { tooth: { system: "FDI", value: "21" }, mesh_asset_id: "a2" },
+        { tooth: { system: "FDI", value: "11" }, mesh_asset_id: "a1", reviewed: false },
+        { tooth: { system: "FDI", value: "21" }, mesh_asset_id: "a2", reviewed: false },
       ],
     },
   };
 }
 
 function enterFakeSample() {
-  state.sample.active = true;
+  globalThis.document = { getElementById: () => ({ value: "" }) };
+  state.sample.active = true; state.sample.visit = "progress-01";
   state.scanSources = [
     { name: "upper.stl", url: "./example-scans/upper.stl", arch: "maxillary" },
   ];
@@ -41,11 +42,10 @@ function enterFakeSample() {
 }
 
 function stubFetch(payload) {
-  globalThis.fetch = async url => ({ ok: true, json: async () =>
-    url === '/api/geometry-jobs' ? {ok:true,job_id:'sample'} : {ok:true,status:'complete',result:payload} });
+  globalThis.fetch = async () => ({ ok: true, json: async () => payload });
 }
 
-test("prepareSampleSegmentation applies the draft so per-tooth movement renders", async () => {
+test("prepareSampleSegmentation loads painted regions without inventing review or movement", async () => {
   enterFakeSample();
   stubFetch(proposalPayload());
 
@@ -53,9 +53,12 @@ test("prepareSampleSegmentation applies the draft so per-tooth movement renders"
 
   assert.equal(ready, true);
   assert.equal(state.segmentation.applied.tooth_meshes.length, 2);
-  assert.equal(state.availability.segmented_teeth, true);
+  assert.equal(state.availability.segmented_teeth, false);
+  assert.equal(state.scanUnits, "unverified");
+  assert.ok(state.segmentation.applied.tooth_meshes.every(link => !link.reviewed));
+  assert.ok(state.rows.every(row => row.x === 0 && row.rotation === 0));
   assert.match(state.sampleStatus, /stage slider/);
-  assert.match(state.segmentation.status, /applied for you/);
+  assert.match(state.segmentation.status, /loaded as drafts/);
 });
 
 test("applySampleRootBoneFixture loads CBCT registration and anatomy into isolated sample state", async () => {
@@ -105,7 +108,7 @@ test("prepareSampleSegmentation keeps scans visible when segmentation fails", as
 
   assert.equal(ready, false);
   assert.equal(state.segmentation.applied, null);
-  assert.match(state.sampleStatus, /tooth regions are unavailable/);
+  assert.match(state.sampleStatus, /segmentation failed/);
 });
 
 test("prepareSampleSegmentation is a no-op outside the sample", async () => {

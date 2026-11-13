@@ -78,7 +78,7 @@ def test_sample_test_case_loads_review_and_stage_slider(server_url: str) -> None
             chip = page.locator("#sampleStatusChip").inner_text()
             assert "Sample ready" in chip
             assert page.locator("#planTitle").input_value() == "Sample test case · USER_ONE"
-            assert page.locator("#scanUnits").input_value() == "mm"
+            assert page.locator("#scanUnits").input_value() == "unverified"
 
             max_stage = int(page.locator("#stageSlider").get_attribute("max") or "0")
             assert max_stage > 0
@@ -121,6 +121,8 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
             page.click('[data-gstep-nav="plan"]')
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
             page.wait_for_selector('#guidedTeeth [data-select-tooth="11"]', timeout=90000)
+            page.locator('#samplePaintedVisit').select_option('initial')
+            expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
             page.click("#guidedBuild")
             page.wait_for_function(
                 """() => document.querySelector('#guidedBuildStatus')?.innerText.includes('CONSISTENT')"""

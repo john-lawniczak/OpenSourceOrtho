@@ -1,0 +1,35 @@
+{
+  "schema": "ortho-baseline-annotation-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "visit": "initial",
+  "filename": "initial-upper.stl",
+  "saved_at": "2026-11-12T19:05:42.473861+00:00",
+  "notes": "Contributor approved clearing all remaining disconnected upper label patches. Cleared the remaining 144 left-side face labels to context after the prior 116 right-side cleanup. All 14 upper labels now have exactly one connected component. Source scan geometry unchanged; previous labels and exact cleared indices retained. Contributor-confirmed painting; anatomical boundary accuracy and independent benchmark review remain unverified.",
+  "review_status": "draft",
+  "summary": {
+    "tooth_ids": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "labeled_faces": 177397,
+    "unlabeled_faces": 152912
+  },
+  "annotation_file": "initial-upper-painted-2026-11-12T190542Z.json",
+  "annotation_sha256": "e6c7a0440b5d8bb521af59d4840f97f1b581698557e7f27d07056cf9cb793397",
+  "local_snapshot_filename": "20261112T190542473861Z-3e97068c433d4f10abc78294af4f80e0.json",
+  "status": "contributor-painted-draft",
+  "publication_scope": "private-development-only"
+}

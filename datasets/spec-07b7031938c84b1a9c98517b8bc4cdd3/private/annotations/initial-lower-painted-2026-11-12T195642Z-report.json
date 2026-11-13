@@ -1,0 +1,35 @@
+{
+  "schema": "ortho-baseline-annotation-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "visit": "initial",
+  "filename": "initial-lower.stl",
+  "saved_at": "2026-11-12T19:56:42.711582+00:00",
+  "notes": "Contributor approved clearing all 38 disconnected lower face labels to context (11 right, 27 left). Original scan triangles and main connected crown regions preserved. All 14 lower labels now have one connected region. Previous painting and cleared face indices are retained for recovery. Independent anatomical review and benchmark acceptance remain pending.",
+  "review_status": "draft",
+  "summary": {
+    "tooth_ids": [
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ],
+    "labeled_faces": 160611,
+    "unlabeled_faces": 126190
+  },
+  "annotation_file": "initial-lower-painted-2026-11-12T195642Z.json",
+  "annotation_sha256": "8c2d36afe20d80b958bffee3332af28603891fad2699c0cb8b2e946804bb6c67",
+  "local_snapshot_filename": "20261112T195642711582Z-af8d6694925346c4a30f9eff6f40e3db.json",
+  "status": "contributor-painted-draft",
+  "publication_scope": "private-development-only"
+}

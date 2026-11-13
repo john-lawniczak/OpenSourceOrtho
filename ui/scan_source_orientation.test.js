@@ -24,6 +24,6 @@ test("known raw scan camera conventions are content-bound and arch-specific", as
     assert.deepEqual(await sourceViewContext(new Uint8Array(), "unknown"), {});
     const context = { arch: "upper" };
     assert.equal(visibleScanView([{ userData: { scanView: context } }]), context);
-    assert.deepEqual(visibleScanView([{ userData: { scanView: context } }, { userData: {} }]), {});
+    assert.deepEqual(visibleScanView([{ userData: { scanView: context } }, { userData: {} }]).front, { direction: [0,0,1], up: [0,1,0] });
   } finally { globalThis.fetch = original; }
 });

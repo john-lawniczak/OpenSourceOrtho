@@ -1,5 +1,5 @@
 import { el, state } from "./state.js";
-import { applySampleRootBoneFixture, prepareSampleSegmentation } from "./sample.js";
+import { prepareSampleSegmentation } from "./sample.js";
 import { comparisonTemplate } from "./scan_comparison_template.js";
 import { createHistoryViewer } from "./scan_history_viewer.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
@@ -115,8 +115,10 @@ function mount(renderAll) {
   modes.setAttribute("role", "group");
   modes.setAttribute("aria-label", "Sample example mode");
   modes.innerHTML = `<button type="button" data-sample-view="observed">Scan history</button>
-    <button type="button" data-sample-view="simulation">Simulated planning demo</button>
-    <p id="sampleSimulationNote" hidden>Simulation only — these stages are not USER_ONE’s observed tooth movements.</p>`;
+    <button type="button" data-sample-view="simulation">Painted tooth workspace</button>
+    <p id="sampleSimulationNote" hidden>Exploratory workspace — painted regions are contributor drafts. Proposed stages are separate from observed history. Week 7 arches are arranged for viewing; their displayed gap is not a measured bite.</p>
+    <label id="sampleVisitControl" hidden>Painted scan <select id="samplePaintedVisit"><option value="progress-01">Week 7 · latest saved painting</option><option value="initial">Week 1 · baseline painting</option></select></label>
+    <button id="sampleReloadPainting" type="button" hidden>Reload saved painting</button>`;
   const panel = document.createElement("section");
   panel.id = "sampleComparison";
   panel.innerHTML = comparisonTemplate;
@@ -125,15 +127,25 @@ function mount(renderAll) {
     const button = event.target.closest("[data-sample-view]");
     if (!button) return;
     state.sample.view = button.dataset.sampleView;
+    if (state.sample.view === "observed" && state.guided.step === "details") state.guided.step = "plan";
     renderAll();
     if (state.sample.view === "simulation" && !startedPlanning) {
       startedPlanning = true;
-      const current = state.segmentation;
-      await applySampleRootBoneFixture();
-      if (state.sample.active && state.segmentation === current) await prepareSampleSegmentation();
+      await prepareSampleSegmentation();
       renderAll();
     }
   });
+  async function reloadPainting() {
+    if ((state.manualEdit.undoStack?.length || state.goalPreview) && !window.confirm("Reloading painted scans clears exploratory edits. Continue?")) {
+      el("samplePaintedVisit").value = state.sample.visit; return;
+    }
+    state.goalPreview = null;
+    state.sample.visit = el("samplePaintedVisit").value;
+    state.segmentation = { busy: true, status: "Loading saved painting…", proposal: null, applied: null, edits: {} };
+    const pending = prepareSampleSegmentation(); renderAll(); await pending; renderAll();
+  }
+  el("samplePaintedVisit").addEventListener("input", reloadPainting);
+  el("sampleReloadPainting").addEventListener("click", reloadPainting);
   panel.querySelectorAll("[data-comparison-arch]").forEach(button => {
     button.addEventListener("click", () => {
       if (arch === button.dataset.comparisonArch) return;
@@ -163,12 +175,22 @@ function mount(renderAll) {
 
 export function renderSampleComparison(renderAll) {
   if (!mounted) mount(renderAll);
+  // Details is the tooth workspace; Scan history returns to Teeth & time.
+  if (state.sample.active && state.guided.step === "details" && observedSampleActive()) {
+    state.sample.view = "simulation";
+    if (!state.segmentation.applied && !state.segmentation.busy) prepareSampleSegmentation().then(renderAll);
+  }
   const observed = observedSampleActive();
   document.body.dataset.sampleView = state.sample.active ? state.sample.view : "";
   el("sampleViewModes").hidden = !state.sample.active;
   el("sampleComparison").hidden = !observed;
   el("viewerBlock").classList.toggle("sample-observed", observed);
   el("sampleSimulationNote").hidden = !state.sample.active || observed;
+  el("sampleVisitControl").hidden = !state.sample.active || observed;
+  el("sampleReloadPainting").hidden = !state.sample.active || observed;
+  el("samplePaintedVisit").value = state.sample.visit || "progress-01";
+  el("samplePaintedVisit").disabled = state.segmentation.busy;
+  el("sampleReloadPainting").disabled = state.segmentation.busy;
   el("sampleViewModes").querySelectorAll("[data-sample-view]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.sampleView === state.sample.view));
   });

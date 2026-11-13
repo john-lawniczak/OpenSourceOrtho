@@ -209,12 +209,18 @@
           </section>
 
           <section class="gstep" data-gstep="details">
-            <h3>3 · Small edits</h3>
+            <h3>3 · Inspect teeth &amp; explore changes</h3>
+            <details class="guided-help"><summary>Watch tooth selection and navigation</summary>
+              <video controls preload="none" poster="./workflow-poster.jpg" aria-label="USER_ONE painted tooth selection and camera controls">
+                <source src="./workflow-demo.webm" type="video/webm" />
+                <track kind="captions" src="./workflow-demo.vtt" srclang="en" label="English" default />
+              </video>
+            </details>
             <div class="guided-edit-layout single-viewer">
               <div>
                 <div class="guided-action-strip">
-                  <span>Click a tooth to select it.</span>
-                  <span>Nudge in 0.2 mm steps.</span>
+                  <span>Select a painted tooth by FDI or US number, or click its crown.</span>
+                  <span>Rotate and Pan move the view. Tooth nudges propose a separate geometric change.</span>
                 </div>
                 <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
 
@@ -547,6 +553,7 @@
                   <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
                   <section id="toothWorkspace" class="tooth-workspace">
                     <div class="tooth-selection-heading"><h4>Select a tooth</h4><span id="toothSelectionStatus" role="status"></span></div>
+                    <form id="toothNumberForm" class="controls"><label>Numbering <select id="toothNumberSystem"><option value="FDI">FDI</option><option value="US">US Universal</option></select></label><label>Tooth number <input id="toothNumberInput" type="number" min="1" max="48" step="1" inputmode="numeric" /></label><button type="submit">Select tooth</button><span id="toothNumberStatus" role="status"></span></form>
                     <p class="guided-hint">Click a crown or its number. Selected = amber · held = blue-grey.</p>
                     <div id="guidedTeeth" class="guided-teeth" aria-label="Select a scan tooth"></div>
               <aside class="guided-edit-card" aria-label="Guided tooth edit controls">
@@ -568,6 +575,7 @@
                   <button id="guidedClearSelection" type="button" disabled>Deselect</button>
                 </div>
                 <div id="guidedEditReadout" class="guided-edit-readout"></div>
+                <label id="selectedRegionReview"><input type="checkbox" id="reviewSelectedRegion" /> I checked this region’s tooth number and boundary for exploratory edits</label>
                 <button class="primary-action" id="guidedRebuild" type="button">Rebuild plan</button>
                 <details class="guided-help">
                   <summary>What these edits do</summary>

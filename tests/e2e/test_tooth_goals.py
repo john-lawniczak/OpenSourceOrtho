@@ -37,6 +37,11 @@ def amber_crown_point(page, unselected, tmp_path):
 def open_supplied_sample(page):
     page.locator('#sampleLaunch').click()
     page.locator('[data-sample-view="simulation"]').click()
+    expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
+    page.locator('#samplePaintedVisit').select_option('initial')
+    expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
+    expect(page.locator('#samplePaintedVisit')).to_have_value('initial')
+    expect(page.locator('#scanUnits')).to_have_value('mm')
     expect(page.locator('#simpleStlFile')).to_be_disabled()
     expect(page.locator('#sampleBanner')).to_contain_text('STL')
     # Keep the lower scan from occluding the upper crown during pixel picking.
@@ -74,6 +79,7 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             tooth = page.locator('#guidedTeeth [data-select-tooth="11"]')
             tooth.click()
             expect(tooth).to_have_attribute('aria-pressed', 'true')
+            page.locator('#reviewSelectedRegion').check()
             before = json.loads(page.locator('#planJson').input_value())
             (tmp_path / "before.json").write_text(json.dumps(before))
             assert not before['fixed_teeth']

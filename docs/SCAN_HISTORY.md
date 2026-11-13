@@ -130,3 +130,34 @@ The match-review dropdown starts with the actual independent candidate, includin
 an unmatched state, instead of assuming that independently assigned FDI labels
 must agree. The refreshed USER_ONE artifacts flag six upper-region assignments as
 ambiguous; fitted translations and rotations are unchanged by this diagnostic.
+
+## Painted USER_ONE workspace
+
+The test case's **Painted tooth workspace** opens the saved week 7 upper and
+lower regions. Choose **Week 1** to inspect the baseline painting, or **Reload
+saved painting** after saving another draft. Section 3 accepts either FDI or US
+Universal numbers; the selected crown uses exactly that annotation's source
+triangles. Missing regions are reported rather than approximated by a strip.
+
+`POST /api/sample-teeth` resolves each arch independently: latest validated local
+save, then the hash-checked private annotation index. The baseline can also use
+its bundled draft. Week 7 does not silently substitute heuristic segmentation.
+Private archives incorporate the contributor's saved drafts for reproducible DEV
+use; they do not change source scans, publication consent, or review status.
+
+Selection and camera navigation work without reviewing the draft. Millimetre
+edits still require confirmed scan scale and explicit review of the selected
+region's identity and boundary. Week 7 units remain unverified. Stages begin with
+zero movement; these exploratory edits are separate from the existing scan-history
+motion estimates, which are not refitted by loading a painting.
+
+Both arches open face-on. Week 7's separately exported arches use a display-only
+layout (upper crowns down, lower crowns up), with the identical transform applied
+to their painted fragments. Their displayed separation is not bite registration.
+Rotate, Pan, Focus selected tooth, and the view presets move only the camera.
+
+`tools/record_workflow_demo.py` records the private painted workspace to the
+case's `private/media/` folder. The local server serves its video, captions, and
+poster through the three fixed `/workflow-*` routes; without those private assets,
+the bundled public walkthrough remains the fallback. Public release filtering
+excludes these private recordings and annotations.

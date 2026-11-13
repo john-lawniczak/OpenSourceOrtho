@@ -47,3 +47,12 @@ test("FDI and Universal numbers distinguish molars from front teeth", () => {
   assert.equal(universalToothNumber("20"), null);
   assert.deepEqual(FDI_TEETH.map(universalToothNumber).sort((a, b) => a - b), Array.from({ length: 32 }, (_, i) => i + 1));
 });
+
+test("explicit FDI and US number selection round-trips all 32 positions", async () => {
+  const { toothFromNumber, universalToothNumber, FDI_TEETH } = await import("./tooth_selection.js");
+  for (const id of FDI_TEETH) {
+    assert.equal(toothFromNumber(id, "FDI"), id);
+    assert.equal(toothFromNumber(universalToothNumber(id), "US"), id);
+  }
+  for (const value of ["", "abc", "1.5", "0", "99"]) assert.equal(toothFromNumber(value, "FDI"), null);
+});
