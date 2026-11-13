@@ -167,9 +167,14 @@ boundary, so the editor never automatically splits or renumbers saved teeth.
 
 ### View and brush controls
 
-**Default view** restores the full arch's source-front view and resets pan,
-roll, focus and zoom. USER_ONE's upper crowns point down and lower crowns point
-up. Other view presets can remain focused on a selected region. These controls
+**Default view** restores the full arch's front view and resets pan,
+roll, focus and zoom. Initial loading, Default view, Face-on and Auto view share
+the arch convention: upper crowns point down and lower crowns point up.
+Known reimported STL files recover their documented source-axis convention by
+content hash, including the different week 1/week 7 upper conventions. Uploaded
+single-arch views use the same camera rule. Unknown full-arch files use the usual
+Z-height, crown-up scanner convention; arbitrary source orientations still need
+manual view adjustment. Nearly planar imports use broad-side framing. Other view presets can remain focused on a selected region. These controls
 change the camera only. The brush-radius input is compact; decimals and the
 existing `[` / `]` controls remain available.
 Use **⌘Z** on macOS or **Ctrl+Z** to undo painting; add **Shift** to redo.

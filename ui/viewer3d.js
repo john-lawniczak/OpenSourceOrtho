@@ -1,3 +1,4 @@
+import { sourceViewContext, visibleScanView } from "./scan_source_orientation.js";
 import { frameScanView } from "./scan_view_camera.js";
 import { mountScanViewToolbar } from "./scan_view_toolbar.js";
 import { orientedMeshMatrix } from "./mesh_affine.js";
@@ -288,8 +289,8 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   let fitted = false;
   let visibleArchFilter = "both";
   const scanViews = mountScanViewToolbar(container.parentElement, command => {
-    controls = frameScanView(camera, controls, renderer.domElement, visibleScanBox(), command, () => { needsRender = true; });
-  });
+    controls = frameScanView(camera, controls, renderer.domElement, visibleScanBox(), command, () => { needsRender = true; }, visibleScanView(visibleScanChildren()));
+  }, { defaultView: true });
   scanViews.hidden = true;
 
   function resize() {
@@ -472,7 +473,7 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   function fitCameraToScene() {
     let box = visibleScanBox();
     if (box && !box.isEmpty()) {
-      controls = frameScanView(camera, controls, renderer.domElement, box, "auto", () => { needsRender = true; });
+      controls = frameScanView(camera, controls, renderer.domElement, box, "auto", () => { needsRender = true; }, visibleScanView(visibleScanChildren()));
       return;
     }
     // When a scan is visible, frame the scan geometry itself. Movement overlays
@@ -677,11 +678,14 @@ export function createViewer(container, { schematicOnly = false } = {}) {
       for (const source of scanSources) {
         const bytes = await sourceBuffer(source);
         if (token !== scanRevision) { for (const mesh of prepared) mesh.geometry.dispose(); return { loaded: false, stale: true, count: 0 }; }
+        const arch = normalizeArch(source.arch) || normalizeArch(source.name);
+        const scanView = await sourceViewContext(bytes, arch);
+        if (token !== scanRevision) { for (const mesh of prepared) mesh.geometry.dispose(); return { loaded: false, stale: true, count: 0 }; }
         const geometry = parseScanGeometry(bytes);
         orientScanGeometry(geometry);
         const mesh = buildScanObject(geometry, SCAN);
         mesh.name = source.name;
-        mesh.userData.arch = normalizeArch(source.arch) || normalizeArch(source.name);
+        mesh.userData.arch = arch; mesh.userData.scanView = scanView;
         mesh.visible = archVisible(mesh.userData.arch);
         prepared.push(mesh);
       }

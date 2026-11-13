@@ -1,3 +1,4 @@
+import { sourceRotation } from "./scan_source_orientation.js";
 import { caseStore } from "./progress_case_store.js";
 import { parseStlGeometry } from "./stl.js";
 import { RegionEdits } from "./region_edits.js";
@@ -49,9 +50,10 @@ async function openEditor() {
     if (!count) throw new Error("This scan has no triangles to paint.");
     const digest = await crypto.subtle.digest("SHA-256", bytes);
     const sha256 = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+    const rotation = await sourceRotation(sha256, arch);
     const name = `boundary-${crypto.randomUUID()}`;
     await caseStore("put", { name, returnToCase: false,
-      scan: { bytes, arch, sha256, filename: source.name, rotation: [1, 1, 1], autoView: true },
+      scan: { bytes, arch, sha256, filename: source.name, rotation, autoView: true },
       labels: new RegionEdits(new Uint8Array(count), arch).export(sha256) }, "edits");
     location.assign(`./region-review.html?edit=${encodeURIComponent(name)}`);
   } catch (error) { status.textContent = error.message; }

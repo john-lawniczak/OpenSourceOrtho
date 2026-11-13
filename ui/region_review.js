@@ -1,3 +1,4 @@
+import { sourceRotation } from "./scan_source_orientation.js";
 import { setupReviewShortcuts } from "./region_review_shortcuts.js";
 import { loadBaselineCaseData } from "./region_case_data.js";
 import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
@@ -81,7 +82,10 @@ el("reviewScan").onchange = () => action(async () => {
   const inferred = inferArchFromName(file.name);
   const arch = inferred ? (inferred === "mandibular" ? "lower" : "upper") : el("reviewArch").value;
   if (!["upper", "lower"].includes(arch)) throw new Error("Choose the scan arch before importing this file.");
-  const nextScan = { bytes, filename: file.name, arch, autoView: true, rotation: [1,1,1], sha256: Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2,"0")).join("") };
+  const sha256 = Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2,"0")).join("");
+  const rotation = await sourceRotation(sha256, arch);
+  if (current !== generation) return;
+  const nextScan = { bytes, filename: file.name, arch, autoView: true, rotation, sha256 };
   const geometry = parseStlGeometry(bytes); const count = geometry.attributes.position.count / 3; geometry.dispose();
   if (!count) throw new Error("This scan has no triangles to paint.");
   scan = nextScan; edits = new RegionEdits(new Uint8Array(count), scan.arch); mount(); saving.setSaved(null);
