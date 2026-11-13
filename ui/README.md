@@ -338,3 +338,11 @@ both Back controls return to the same section/week. Closing the dialog keeps its
 unfinished comparison in memory until the main page is reloaded. Use that tool's
 Save locally action for durable comparisons. Painting and comparison links are
 styled as buttons while preserving normal link behavior for modified clicks.
+
+Plan notes also accept explicit FDI shortcuts: `@12` and `#12` add tooth 12 to
+that plan's saved Focus teeth list. Tags are deduplicated and checked after a
+brief typing pause or when leaving the notes field. Plain numbers, malformed
+IDs and email-like tokens are ignored. The shortcut adds to existing choices
+without changing the highlight switch. To remove a saved tooth, remove its note
+tag and edit the Focus teeth list; deleting prose alone does not erase choices.
+Storage failures remain visible, and focus changes never author movements.

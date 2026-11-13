@@ -1,5 +1,5 @@
 import { el, state } from "./state.js";
-import { parseToothSelection } from "./tooth_selection.js";
+import { parseToothMentions, parseToothSelection } from "./tooth_selection.js";
 
 const drafts = new Map();
 let mounted = false, shownContext = "", redraw = () => {};
@@ -16,10 +16,25 @@ function entry(key = context()) {
   }
   return drafts.get(key);
 }
-function save(value) {
+function save(value, key = context()) {
   value.edited = true;
-  try { localStorage.setItem(storageKey(context()), JSON.stringify({ teeth: value.teeth, enabled: value.enabled })); value.notice = "Saved in this browser for this plan."; }
+  try { localStorage.setItem(storageKey(key), JSON.stringify({ teeth: value.teeth, enabled: value.enabled })); value.notice = "Saved in this browser for this plan."; }
   catch { value.notice = "Focus preferences could not be saved. They will last for this page only."; }
+}
+export function addNoteFocusTeeth(text, key) {
+  const value = entry(key);
+  const added = parseToothMentions(text).filter(id => !value.teeth.includes(id));
+  if (!added.length) return;
+  value.teeth.push(...added); save(value, key);
+  if (context() === key) {
+    // Preserve any unfinished manual list edit while showing the new saved tags.
+    if (shownContext === key) {
+      const input = el("focusTeethInput"), existing = parseToothSelection(input.value).teeth;
+      const newIds = added.filter(id => !existing.includes(id));
+      if (newIds.length) input.value = [input.value.trim(), ...newIds].filter(Boolean).join(", ");
+    }
+    redraw();
+  }
 }
 export function seedSampleFocus(teeth) {
   const value = entry("sample:USER_ONE");

@@ -1,10 +1,18 @@
 import { el, state } from "./state.js";
-import { seedSampleFocus } from "./plan_focus.js";
+import { addNoteFocusTeeth, seedSampleFocus } from "./plan_focus.js";
 
 const drafts = new Map();
 let mounted = false;
+let focusTimer, pendingFocus;
 const key = () => state.sample.active ? "sample:USER_ONE" : `personal:${el("planId").value || "draft-001"}`;
 const storageKey = context => `orthoplan-plan-brief-v1:${context}`;
+
+function flushFocusTags() {
+  clearTimeout(focusTimer);
+  if (!pendingFocus) return;
+  const { context, text } = pendingFocus; pendingFocus = null;
+  addNoteFocusTeeth(text, context);
+}
 
 function draft(context) {
   if (!drafts.has(context)) {
@@ -70,7 +78,12 @@ function mount() {
       entry.hasSaved = true; entry.status = "Saved in this browser for this plan.";
     } catch { entry.status = "Could not save in this browser. Download notes to keep a copy."; }
     renderPlanBrief();
+    // Wait for a typing pause so @123 is not saved midway through as tooth 12.
+    clearTimeout(focusTimer); pendingFocus = { context, text: entry.text };
+    focusTimer = setTimeout(flushFocusTags, 400);
   });
+  input.addEventListener("blur", flushFocusTags);
+  window.addEventListener("pagehide", flushFocusTags);
   el("retryPlanBrief").addEventListener("click", () => {
     const context = key();
     void loadSampleGoals(context, draft(context)); renderPlanBrief();

@@ -219,8 +219,9 @@
             <section class="workflow-card plan-brief" aria-label="Overall plan and goals">
               <h4>Describe your overall plan</h4>
               <p>Write one goal per line. Include tooth numbers, what you want to change, relevant history, and options you want to discuss.</p>
+              <ul id="planNoteShortcuts"><li>Shortcut: type <strong>@12</strong> or <strong>#12</strong> to automatically save that FDI tooth number to <strong>Focus teeth</strong>. For example: “Focus on tooth @12 and @22.” Use the Focus teeth toggle above to show them in blue.</li><li>Tags add to your existing focus list. To remove a saved tooth, remove its tag from your notes and edit the Focus teeth list below.</li></ul>
               <label for="planBriefText">Plan notes · one bullet per goal</label>
-              <textarea id="planBriefText" rows="8" maxlength="8000" aria-describedby="planBriefScope planBriefStatus" placeholder="- Teeth [numbers]: what I would like to change&#10;- Tooth [number]: relevant history and options to discuss&#10;- Questions for my dentist or orthodontist"></textarea>
+              <textarea id="planBriefText" rows="8" maxlength="8000" aria-describedby="planNoteShortcuts planBriefScope planBriefStatus" placeholder="- Focus on @12 and @22: what I would like to change&#10;- Tooth #31: relevant history and options to discuss&#10;- Questions for my dentist or orthodontist"></textarea>
               <p id="planBriefStatus" role="status"></p>
               <button id="downloadPlanBrief" type="button">Download plan notes</button>
               <button id="retryPlanBrief" type="button" hidden>Retry loading sample goals</button>

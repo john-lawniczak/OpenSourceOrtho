@@ -31,6 +31,13 @@ export function parseToothSelection(text) {
   };
 }
 
+// Explicit permanent-FDI mentions only: never infer teeth from ordinary numbers,
+// email addresses, longer IDs, decimal values or word-like hashtags.
+export function parseToothMentions(text) {
+  const tags = String(text).matchAll(/(?<![\p{L}\p{N}_@#./])[@#]([1-4][1-8])(?![\p{L}\p{N}_@#]|\.[\p{L}\p{N}])/gu);
+  return [...new Set(Array.from(tags, match => match[1]))];
+}
+
 export function toggleToothSelection(teeth, tooth) {
   const id = String(tooth);
   if (!FDI_TEETH.includes(id)) return [...teeth];
