@@ -22,7 +22,7 @@ export function findSurfaceHoles(positions, maxDiameter = 3) {
       parents[root(b)] = root(a);
       if (new Set(ids).size < 3) { ids.forEach(id => bad.add(id)); continue; }
       const key = Math.min(a,b) * stride + Math.max(a,b), entry = edges.get(key);
-      if (!entry) edges.set(key, { a, b, count: 1 });
+      if (!entry) edges.set(key, { a, b, third: ids[(i+2)%3], count: 1 });
       else { entry.count++; if (entry.count > 2 || entry.a === a) { bad.add(a); bad.add(b); } }
     }
   }
@@ -49,7 +49,7 @@ export function findSurfaceHoles(positions, maxDiameter = 3) {
     if (e !== start || ids.length !== component.length) { rejected++; continue; }
     const loop = ids.map(id => points[id]);
     const perimeter = loop.reduce((n,p,i) => n + Math.hypot(...p.map((v,j) => v-loop[(i+1)%loop.length][j])), 0);
-    loops.push({ points: loop, perimeter, component: root(ids[0]) });
+    loops.push({ points: loop, support: component.map(e=>points[e.third]), perimeter, component: root(ids[0]) });
   }
   if (loops.length > 128) throw new Error("Too many separate openings for a bounded small-hole inspection; use a smaller surface.");
   const largest = new Map();
@@ -60,7 +60,7 @@ export function findSurfaceHoles(positions, maxDiameter = 3) {
   const holes = loops.map((loop, index) => {
     const patch = largest.get(loop.component) === loop ? { reason: "Outer or ambiguous boundary — kept open" } : proposePatch(loop.points, limit);
     if (patch.triangles && patchIntersectsSurface(patch.triangles, positions, patch.diameter)) { patch.reason = "Patch would overlap an existing surface"; delete patch.triangles; }
-    return { id: index+1, points: loop.points, ...patch };
+    return { id: index+1, points: loop.points, support:loop.support, outer:largest.get(loop.component)===loop, ...patch };
   });
   return { holes, rejected, boundaryEdges: boundary.length, limit };
 }

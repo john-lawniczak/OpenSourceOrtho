@@ -91,7 +91,7 @@ export function setupReviewControls({ selectTooth, changeMode }) {
         erase: "Erase to context · [ smaller · ] larger",
         hole: "Brush an opening's existing rim to select it · Preview patch to see the proposed fill · [ smaller · ] larger",
         trim: "Brush unwanted model surface to mark it red · Apply trim removes the selection · [ smaller · ] larger",
-        untrim: "Brush red areas to keep them · [ smaller · ] larger",
+        untrim: "Deselect red removal marks · This does not fill holes · [ smaller · ] larger",
         split: source === id ? "Choose the destination tooth, then paint the spillover." : `Paint only misplaced ${source} surfaces → ${id} · Undo restores the stroke`,
       };
       el("reviewModeHelp").textContent = loaded ? messages[mode] : "Choose Upper or Lower to begin.";

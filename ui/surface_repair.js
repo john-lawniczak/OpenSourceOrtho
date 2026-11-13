@@ -6,7 +6,7 @@ import { nearestOpening } from "./surface_hole_pick.js";
 
 export function setupSurfaceRepair(getState, replaceSurface, saving) {
   const el=id=>document.getElementById(id);
-  let worker=null, epoch=0, holes=[], preview=null, busy=false, undo=[];
+  let worker=null, epoch=0, holes=[], preview=null, busy=false, undo=[], inspectionLimit=0;
   const trim=setupSurfaceTrim(getState,applyEdit,()=>busy);
   const status=text=>{ el("repairStatus").textContent=text; };
   function controls() {
@@ -15,6 +15,9 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
     el("repairHole").disabled=!holes.length||busy;
     el("repairPick").disabled=!holes.length||busy;
     el("repairPreview").disabled=!hole||Boolean(hole.reason)||busy;
+    el("repairEstimate").disabled=!hole||hole.outer||busy;
+    el("repairFillShape").disabled=busy;
+    el("repairSaveCopy").disabled=!scan?.repair||busy||Boolean(preview);
     el("repairAccept").disabled=!preview||busy;
     el("repairCancel").disabled=!preview||busy;
     el("repairUndo").disabled=!undo.length||busy;
@@ -51,6 +54,7 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
         worker.terminate(); worker=null; busy=false;
         if(data.error) { status(data.error); controls(); return; }
         holes=data.result.holes;
+        inspectionLimit=data.result.limit;
         el("repairHole").replaceChildren(...holes.map(h=>new Option(`Opening ${h.id} · ${h.reason||`${h.diameter.toFixed(2)} units · patch available`}`,String(h.id))));
         const first=holes.findIndex(h=>!h.reason); if(first>=0) el("repairHole").selectedIndex=first;
         select();
@@ -61,6 +65,29 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
     } catch(error) { worker?.terminate(); worker=null; busy=false; status(error.message); controls(); }
   };
   el("repairHole").onchange=select;
+  el("repairFillShape").oninput=()=>{
+    el("repairFillAmount").textContent=`${Math.round(Number(el("repairFillShape").value)*100)}%`;
+    if(preview?.method==="adjacent-quadratic-rim-fill") { select(); status("Surface following changed. Select Estimate hole fill again to preview this setting."); }
+  };
+  el("repairEstimate").onclick=()=>{
+    const hole=holes[el("repairHole").selectedIndex]; if(!hole||hole.outer||busy) return;
+    const source=getState().scan,ticket=epoch;
+    preview=null; getState().viewer.showRepair(hole,false); busy=true; controls();
+    status("Estimating a fill from the rim and adjoining surface…");
+    try {
+      const positions=sourcePositions(source.bytes);
+      worker=new Worker(new URL("./surface_repair_worker.js",import.meta.url),{type:"module"});
+      worker.onmessage=({data})=>{
+        if(ticket!==epoch||getState().scan!==source) return;
+        worker.terminate(); worker=null; busy=false;
+        if(data.error) status(data.error);
+        else { preview=data.result; getState().viewer.showRepair(preview,true); status("Yellow previews an estimated fill. Rotate to inspect both sides. Adjust Surface following and estimate again, or Accept fill, then Save edited copy. New faces can be painted after acceptance."); }
+        controls();
+      };
+      worker.onerror=()=>{ if(ticket!==epoch) return; worker?.terminate();worker=null;busy=false;status("Fill estimation failed; no surface changed.");controls(); };
+      worker.postMessage({action:"estimate",hole,positions,maxDiameter:inspectionLimit,strength:Number(el("repairFillShape").value)},[positions.buffer]);
+    } catch(error) { worker?.terminate();worker=null;busy=false;status(error.message);controls(); }
+  };
   el("repairMaxSize").onchange=()=>reset(false);
   el("repairPreview").onclick=()=>{
     const hole=holes[el("repairHole").selectedIndex]; if(!hole||hole.reason) return;
@@ -100,6 +127,7 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
     el("surfaceEditStatus").textContent="Last surface edit undone. Save this version when ready.";
   };
   el("repairEstimated").onchange=()=>getState().viewer?.setEstimatedVisible(el("repairEstimated").checked);
+  el("repairSaveCopy").onclick=()=>el("reviewSaveLocal").click();
   el("repairExport").onclick=()=>{
     try { const {scan,edits}=getState(); downloadJson(repairBundle(scan,edits,el("reviewNotes").value),scan.filename.replace(/\.stl$/i,"-repair.json")); }
     catch(error) { status(error.message); }
@@ -119,7 +147,10 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
   el("repairPanel").ontoggle=()=>{
     if(el("repairPanel").open) { el("reviewTool").value="orbit"; getState().viewer?.updateBrush(); }
   };
-  return {reset,paint:trim.paint,
+  return {reset,paint(faces,mode) {
+      if(preview && !["trim","untrim"].includes(mode)) { status("Accept or cancel the fill preview before painting tooth labels. Preview geometry is not yet part of the scan."); return true; }
+      return trim.paint(faces,mode);
+    },
     pick(point,settings) {
       if(busy||!holes.length) return;
       const r=getState().scan.rotation;

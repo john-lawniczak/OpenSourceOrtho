@@ -38,7 +38,8 @@ export async function appendSurfacePatch(scan, labels, hole) {
   const repair={ ...scan.repair, schema:scan.repair?.schema||"ortho-surface-repair-v1", sourceSha256:scan.repair?.sourceSha256||scan.sha256,
     sourceFilename:scan.repair?.sourceFilename||scan.filename, originalFaceCount:scan.repair?.originalFaceCount??labels.length,
     sourceVisit:scan.repair?.sourceVisit||scan.visit||null, sourceCapture:scan.repair?.sourceCapture||scan.capture||null,
-    patches:[...(scan.repair?.patches||[]),{ firstFace:labels.length, faceCount:added.length/9, method:"convex-planar-boundary-fan", diameter:hole.diameter, createdAt:new Date().toISOString(), estimated:true }] };
+    patches:[...(scan.repair?.patches||[]),{ firstFace:labels.length, faceCount:added.length/9, method:hole.method||"convex-planar-boundary-fan", diameter:hole.diameter,
+      ...(hole.method==="adjacent-quadratic-rim-fill"?{strength:hole.strength,fitRms:hole.fitRms}:{}),createdAt:new Date().toISOString(), estimated:true }] };
   const { visit, baseline, capture, ...rest }=scan;
   const filename=`${(repair.sourceFilename||"scan").split('/').at(-1).replace(/\.stl$/i,"")}-repaired-${repair.patches.length}${repair.trims?.length ? `-trimmed-${repair.trims.length}` : ""}.stl`;
   return { scan:{...rest, bytes, sha256:await meshHash(bytes), filename, repair}, labels:nextLabels };
@@ -51,7 +52,9 @@ export function validateRepair(scan, count) {
   if(trimmed && (!Array.isArray(r.trims) || !r.trims.length || r.trims.length>100 || r.trims.some(t=> !/^[a-f0-9]{64}$/.test(t.parentSha256) || !Number.isInteger(t.parentFaceCount) || !Number.isInteger(t.removedFaceCount) || t.removedFaceCount<1 || t.removedFaceCount>=t.parentFaceCount || typeof t.allowedPainted!=="boolean"))) throw new Error("Invalid trim record.");
   let end=r.originalFaceCount;
   for(const p of r.patches) {
-    if(p.firstFace!==end || !Number.isInteger(p.faceCount) || p.faceCount<(trimmed?1:3) || p.faceCount>256 || p.estimated!==true || p.method!=="convex-planar-boundary-fan") throw new Error("Invalid patch face ranges.");
+    const curved=p.method==="adjacent-quadratic-rim-fill";
+    if(p.firstFace!==end || !Number.isInteger(p.faceCount) || p.faceCount<(trimmed?1:3) || p.faceCount>(curved?4096:256) || p.estimated!==true || !["convex-planar-boundary-fan","adjacent-quadratic-rim-fill"].includes(p.method)) throw new Error("Invalid patch face ranges.");
+    if(curved && (!Number.isFinite(p.strength)||p.strength<0||p.strength>1||!Number.isFinite(p.fitRms)||p.fitRms<0)) throw new Error("Invalid estimated fill parameters.");
     end+=p.faceCount;
   }
   if(end!==count || scan.visit) throw new Error("Repair must be a separate surface version.");

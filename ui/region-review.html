@@ -33,7 +33,7 @@
 <p id="reviewStatus" role="status">Load a scan to begin.</p>
 </div>
 <aside class="review-paint-controls">
-<details id="repairPanel"><summary>Repair surface · small holes</summary>
+<details id="repairPanel"><summary>Repair surface · hole fills</summary>
 <p>Patch small openings with an estimated surface. This does not reconstruct dents or missing tooth shape.</p>
 <label>Maximum opening span <input id="repairMaxSize" type="number" min="0.01" step="0.1" value="3"></label>
 <small>Scan units, not verified millimetres. Outer or ambiguous edges stay open. Geometry alone cannot identify every intentionally open region.</small>
@@ -41,7 +41,10 @@
 <button id="repairPick" type="button" data-review-mode="hole" aria-pressed="false" disabled>Brush hole rim</button>
 <p>Find openings, then brush the existing edge of a gap to select it. Preview the fill before accepting. Brushing empty space cannot reconstruct missing tooth shape. Use [ and ] to adjust the brush size.</p>
 <label>Opening <select id="repairHole" disabled></select></label>
-<div class="controls"><button id="repairPreview" type="button" disabled>Preview patch</button><button id="repairCancel" type="button" disabled>Cancel preview</button><button id="repairAccept" type="button" disabled>Accept patch</button></div>
+<div class="controls"><button id="repairPreview" type="button" disabled>Preview simple patch</button><button id="repairEstimate" type="button" disabled>Estimate hole fill</button></div>
+<label>Surface following <input id="repairFillShape" type="range" min="0" max="1" step="0.1" value="1"><output id="repairFillAmount">100%</output></label>
+<p>Estimated fills follow the rim and adjoining surface, not the model behind a hole. Lower Surface following for a flatter interpolation between rim points. This estimates a surface, not the original tooth shape.</p>
+<div class="controls"><button id="repairCancel" type="button" disabled>Cancel preview</button><button id="repairAccept" type="button" disabled>Accept fill</button></div>
 <label class="repair-toggle"><input id="repairEstimated" type="checkbox" checked disabled> Estimated surfaces · purple</label>
 <p id="repairStatus" role="status">Load a scan to inspect openings.</p>
 <p id="repairProvenance"></p>
@@ -49,13 +52,14 @@
 </details>
 <details id="trimPanel"><summary>Clean up model surface</summary>
 <p>Brush unwanted scan or mold material to mark it red, then apply the trim. Gray areas can include unpainted teeth: inspect your selection before removing it. The original scan is preserved.</p>
-<div class="controls"><button type="button" data-review-mode="trim" aria-pressed="false">Brush to remove</button><button type="button" data-review-mode="untrim" aria-pressed="false">Brush to keep</button></div>
-<p>Use [ and ] to adjust the brush size. Rotate or pan to inspect the red selection from other angles.</p>
+<div class="controls"><button type="button" data-review-mode="trim" aria-pressed="false">Brush to remove</button><button type="button" data-review-mode="untrim" aria-pressed="false">Deselect removal</button></div>
+<p>The circle works over empty space too: sweep across visible specks to select them. Surfaces hidden behind the model stay protected. Use [ and ] to adjust size. Deselect removal only clears red selections; it does not fill holes.</p>
 <label class="repair-toggle"><input id="trimAllowPainted" type="checkbox"> Allow removing painted tooth surfaces</label>
 <div class="controls"><button id="trimApply" type="button" disabled>Apply trim</button><button id="trimClear" type="button" disabled>Clear selection</button></div>
 <p id="trimStatus" role="status">Brush unwanted model material to select it.</p>
 </details>
 <button id="repairUndo" type="button" disabled>Undo surface edit</button>
+<button id="repairSaveCopy" type="button" disabled>Save edited copy</button>
 <p id="surfaceEditStatus" role="status"></p>
 <fieldset id="reviewEditing" disabled><legend>Select a region</legend>
 <p id="reviewArchNotice" class="review-arch-notice"></p>

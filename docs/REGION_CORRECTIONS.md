@@ -246,19 +246,19 @@ and `week-18-lower/` by default (or the configured `ORTHOPLAN_REGION_CORRECTIONS
 root). Each JSON snapshot contains both `notes` and `corrections`. Saving does not
 automatically fit motion; the week 1–18 endpoint comparison must be regenerated.
 
-## Repair surface: small holes
+## Repair surface: hole fills
 
-Open **Repair surface · small holes** alongside the painting controls. **Find
+Open **Repair surface · hole fills** alongside the painting controls. **Find
 small holes** inspects exact-coordinate boundary loops in a background worker.
 Inspection and selection leave the camera unchanged, including when the first
 boundary belongs to a tiny detached fragment. Choose an opening from the list or
 use **Brush hole rim** on its existing edge. Empty space cannot be painted.
-Select **Preview patch**, and rotate to inspect the yellow
-proposal. **Cancel preview** leaves geometry unchanged; **Accept patch** creates
+Select **Preview simple patch**, and rotate to inspect the yellow
+proposal. **Cancel preview** leaves geometry unchanged; **Accept fill** creates
 an estimated repaired version. Purple marks added faces; **Estimated surfaces**
 toggles that coloring, while the source summary continues to identify the repair.
 
-The first release supports only small, nearly planar, convex openings. It keeps
+The simple patch option supports small, nearly planar, convex openings. It keeps
 the largest boundary of each connected component open as an outer or ambiguous
 edge, excludes branching/non-manifold or inconsistently wound boundaries, and
 rejects oversized, highly curved, non-convex or overlapping proposals. The size
@@ -267,6 +267,32 @@ the scan bounding-box diagonal. Scans over one million triangles or 50,000 open
 edges, or over 128 separate boundary loops, require separate inspection. These conservative checks can reject genuine
 holes; geometry alone cannot distinguish all intentional openings. They do not
 certify a whole mesh as intersection-free or watertight.
+
+### Estimate hole fill
+
+For an interior opening that needs a curved or concave fill, choose **Estimate
+hole fill**. The yellow surface is a preview. **Surface following** blends between
+interpolation of rim points (0%) and the surrounding-surface estimate (100%);
+changing it cancels the old preview until Estimate is selected again. **Accept
+fill**, then **Save edited copy**, retains the separate version. Cancel changes
+nothing. Accept or cancel a preview before painting labels; afterward the new
+triangles are part of the paintable mesh, so the brush hits the fill rather than
+geometry behind the gap.
+
+The estimator fits a regularized local quadratic height field to the exact rim
+and the third vertices of directly adjoining boundary triangles. It does not
+sample unrelated back-wall ray hits. Concave loops are triangulated in a local
+plane; internal edges are shared and refined, with all original rim edges kept
+exact. Boundary residuals constrain the interpolation, while size, fit residual,
+height excursion, projected self-overlap and STL-precision intersection checks
+reject ambiguous estimates. Each patch is capped at 4,096 faces and records its
+method, following strength and fit residual. These checks bound a local geometric
+estimate; they do not recover missing anatomy or guarantee whole-mesh validity.
+
+At a maximum opening span of 6 scan units, six interior loops in the cleaned
+week 18 upper produce estimates, including its curved and concave openings.
+Outer/ambiguous boundaries remain open. A closed dent has no boundary loop and
+still cannot be filled by this tool.
 
 Each accepted patch appends triangles without moving or reordering original
 faces. Existing painted labels stay on the same faces. New faces start unlabeled,
@@ -279,13 +305,21 @@ clears surface undo; saved files retain edit provenance rather than undo history
 ### Clean up model surface
 
 Open **Clean up model surface → Brush to remove**. Brush unwanted mold or scan
-material to mark it red; **Brush to keep** deselects faces and **Clear selection**
+material to mark it red; **Deselect removal** deselects faces and **Clear selection**
 cancels the preview. Use [ and ] to change brush size, and Rotate/Pan to inspect
 the selection. **Apply trim** creates a separate surface with those faces removed.
 It does not cap the resulting edges. Gray does not necessarily mean non-tooth:
 unpainted teeth can be gray too. Painted faces are protected unless **Allow
 removing painted tooth surfaces** is explicitly checked. Removing the entire scan
 is refused. There is no automatic deletion of all unlabeled material.
+
+The removal circle remains visible over empty background so it can sweep across
+small disconnected specks without first hitting a triangle. Selection uses a
+depth-tested screen pass to pick only visible face IDs inside the circle; hidden
+surfaces behind the model stay protected. It does not select through the arch.
+The screen circle has a six-pixel minimum for small-fragment selection. Deselect
+removal only clears red selection marks; it neither restores already removed
+faces nor fills holes. Use Undo surface edit to reverse an accepted trim.
 
 Trim copies retain source hash/visit/capture, a parent hash and removal count for
 each trim, the surviving labels, and remapped estimated patch ranges. Original
@@ -317,11 +351,15 @@ of estimated regions, not independent verification of anatomy. Repaired versions
 are not automatically returned to an endpoint-fitting case, published, or used to
 regenerate motion previews.
 
-A closed dent or missing tooth shape from an incomplete mold is not a small mesh
-hole. This tool does not sculpt or reconstruct those defects. USER_ONE's cleaned
-week 18 upper has complex/curved openings that this first release keeps unpatched;
-raising the size limit does not bypass the geometry checks. Surface reconstruction
-from an earlier scan remains a separate future feature.
+A missing tooth shape from an incomplete mold cannot be recovered by closing a
+mesh opening. Raising the size limit does not bypass the geometry checks.
+Reconstruction from an earlier scan remains a separate future feature.
+
+The contributor's November 13 lower cleanup is archived privately at
+`private/surface-edits/week-18-lower-cleaned/` with a complete repair bundle and
+reproducible audit. It removes 66,640 faces, of which 28 carried the draft label 43
+(about 0.34% of its labeled surface area). It remains an unreviewed optional copy;
+the original suggested scan and observed history are unchanged.
 
 Week 18 painting offers only the **Cleaned upper** and **Fusion H4 lower** working
 surfaces. The initial color sweep is an unreviewed automatic draft transferred

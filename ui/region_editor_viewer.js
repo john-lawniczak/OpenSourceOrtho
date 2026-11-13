@@ -1,5 +1,6 @@
 import { createRepairView } from "./surface_repair_view.js";
 import { rebuildRegionOrbit } from "./region_navigation.js";
+import { createScreenTrimBrush } from "./screen_trim_brush.js";
 import { createRegionSelection } from "./region_selection_view.js";
 import { createBoundaryView } from "./region_boundary_view.js";
 import { createFragmentView } from "./region_fragment_view.js";
@@ -26,6 +27,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onSurfa
   let estimatedVisible = true, lastColors = [[], 0, true], trimFaces = new Set();
   let activeLabels = [], pointerStart = null, lastHit = null, focused = false, pointBounds = null, selectedLabel = 0;
   let controls = new OrbitControls(camera, renderer.domElement); controls.addEventListener("change", render);
+  const screenBrush = createScreenTrimBrush(renderer, host, camera, geometry, () => controls.target);
   const box = geometry.boundingBox.clone();
   const viewControls = mountScanViewToolbar(host.closest(".review-viewport") || host, command => {
     if (command === "default") {
@@ -61,7 +63,13 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onSurfa
     controls.screenSpacePanning = true;
   }
   function paint(event, apply = true) {
-    const settings = brushSettings(); if (navigating()) { cursor.visible = false; render(); return; }
+    const settings = brushSettings(); screenBrush.show(settings,event);
+    if (navigating()) { cursor.visible = false; render(); return; }
+    if (["trim","untrim"].includes(settings.mode)) {
+      cursor.visible=false; lastHit=null;
+      if(apply) onPaint(screenBrush.select(),settings);
+      render(); return;
+    }
     const hit = hitAt(event); lastHit = hit || null; cursor.visible = Boolean(hit);
     if (!hit) { render(); return; }
     updateBrush(); if (!apply) return;
@@ -75,6 +83,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onSurfa
   }
   function updateBrush() {
     const settings = brushSettings();
+    screenBrush.show(settings);
     configureNavigation();
     cursor.visible = Boolean(lastHit && !navigating());
     if (cursor.visible) {
@@ -125,7 +134,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onSurfa
     pointerStart = null; finishStroke();
   });
   renderer.domElement.addEventListener("pointercancel", finishStroke);
-  renderer.domElement.addEventListener("pointerleave", () => { cursor.visible = false; render(); });
+  renderer.domElement.addEventListener("pointerleave", () => { screenBrush.hide(); cursor.visible = false; render(); });
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   controls = frameScanView(camera, controls, renderer.domElement, box, scan.autoView ? "auto" : "default", render, viewContext);
   return {
@@ -190,6 +199,6 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onSurfa
       camera.position.copy(controls.target).add(offset); controls.update(); render();
     },
     focusSelected, updateBrush,
-    dispose() { repairView.dispose(); fragments.dispose(); boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
+    dispose() { screenBrush.dispose(); repairView.dispose(); fragments.dispose(); boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
   };
 }
