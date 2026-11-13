@@ -38,13 +38,25 @@
 <label>Maximum opening span <input id="repairMaxSize" type="number" min="0.01" step="0.1" value="3"></label>
 <small>Scan units, not verified millimetres. Outer or ambiguous edges stay open. Geometry alone cannot identify every intentionally open region.</small>
 <button id="repairFind" type="button" disabled>Find small holes</button>
+<button id="repairPick" type="button" data-review-mode="hole" aria-pressed="false" disabled>Brush hole rim</button>
+<p>Find openings, then brush the existing edge of a gap to select it. Preview the fill before accepting. Brushing empty space cannot reconstruct missing tooth shape. Use [ and ] to adjust the brush size.</p>
 <label>Opening <select id="repairHole" disabled></select></label>
-<div class="controls"><button id="repairPreview" type="button" disabled>Preview patch</button><button id="repairCancel" type="button" disabled>Cancel preview</button><button id="repairAccept" type="button" disabled>Accept patch</button><button id="repairUndo" type="button" disabled>Undo last patch</button></div>
+<div class="controls"><button id="repairPreview" type="button" disabled>Preview patch</button><button id="repairCancel" type="button" disabled>Cancel preview</button><button id="repairAccept" type="button" disabled>Accept patch</button></div>
 <label class="repair-toggle"><input id="repairEstimated" type="checkbox" checked disabled> Estimated surfaces · purple</label>
 <p id="repairStatus" role="status">Load a scan to inspect openings.</p>
 <p id="repairProvenance"></p>
 <button id="repairExport" type="button" disabled>Download repair bundle</button>
 </details>
+<details id="trimPanel"><summary>Clean up model surface</summary>
+<p>Brush unwanted scan or mold material to mark it red, then apply the trim. Gray areas can include unpainted teeth: inspect your selection before removing it. The original scan is preserved.</p>
+<div class="controls"><button type="button" data-review-mode="trim" aria-pressed="false">Brush to remove</button><button type="button" data-review-mode="untrim" aria-pressed="false">Brush to keep</button></div>
+<p>Use [ and ] to adjust the brush size. Rotate or pan to inspect the red selection from other angles.</p>
+<label class="repair-toggle"><input id="trimAllowPainted" type="checkbox"> Allow removing painted tooth surfaces</label>
+<div class="controls"><button id="trimApply" type="button" disabled>Apply trim</button><button id="trimClear" type="button" disabled>Clear selection</button></div>
+<p id="trimStatus" role="status">Brush unwanted model material to select it.</p>
+</details>
+<button id="repairUndo" type="button" disabled>Undo surface edit</button>
+<p id="surfaceEditStatus" role="status"></p>
 <fieldset id="reviewEditing" disabled><legend>Select a region</legend>
 <p id="reviewArchNotice" class="review-arch-notice"></p>
 <div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
@@ -67,7 +79,7 @@
 <small>Scan units · [ / ] shortcuts</small><span id="reviewBrushStatus" class="review-sr-only" role="status"></span>
 <div class="controls"><button id="reviewUndo" aria-keyshortcuts="Meta+Z Control+Z" title="Undo (⌘Z / Ctrl+Z)">Undo</button><button id="reviewRedo" aria-keyshortcuts="Meta+Shift+Z Control+Shift+Z" title="Redo (⌘Shift+Z / Ctrl+Shift+Z)">Redo</button></div>
 <details><summary>Split / merge labels</summary>
-<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option></select></label>
+<div class="controls"><label>Tool <select id="reviewTool"><option value="orbit">Rotate / zoom</option><option value="pan">Pan / zoom</option><option value="brush">Brush labels</option><option value="split">Split selected source</option><option value="erase">Erase to context</option><option value="hole">Select hole rim</option><option value="trim">Select surface to remove</option><option value="untrim">Deselect surface to keep</option></select></label>
 <label>To FDI <input id="reviewTo" type="number" value="12"></label><label>From FDI <input id="reviewFrom" type="number" value="11"></label><button id="reviewMerge">Merge from → to</button></div></details>
 </fieldset>
 <details><summary>Numbering &amp; help</summary>

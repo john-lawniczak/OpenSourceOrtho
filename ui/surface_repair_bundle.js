@@ -5,7 +5,7 @@ export function downloadJson(value,filename) {
   const a=document.createElement("a"); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 export function repairBundle(scan, edits, notes) {
-  if(!scan.repair) throw new Error("Accept a patch before exporting a repair bundle.");
+  if(!scan.repair) throw new Error("Accept a patch or trim before exporting a repair bundle.");
   let binary=""; const bytes=new Uint8Array(scan.bytes);
   for(let i=0;i<bytes.length;i+=8192) binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
   const { bytes:ignored,...metadata }=scan;

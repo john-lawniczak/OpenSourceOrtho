@@ -250,7 +250,10 @@ automatically fit motion; the week 1–18 endpoint comparison must be regenerate
 
 Open **Repair surface · small holes** alongside the painting controls. **Find
 small holes** inspects exact-coordinate boundary loops in a background worker.
-Choose an opening, select **Preview patch**, and rotate to inspect the yellow
+Inspection and selection leave the camera unchanged, including when the first
+boundary belongs to a tiny detached fragment. Choose an opening from the list or
+use **Brush hole rim** on its existing edge. Empty space cannot be painted.
+Select **Preview patch**, and rotate to inspect the yellow
 proposal. **Cancel preview** leaves geometry unchanged; **Accept patch** creates
 an estimated repaired version. Purple marks added faces; **Estimated surfaces**
 toggles that coloring, while the source summary continues to identify the repair.
@@ -268,10 +271,35 @@ certify a whole mesh as intersection-free or watertight.
 Each accepted patch appends triangles without moving or reordering original
 faces. Existing painted labels stay on the same faces. New faces start unlabeled,
 the review checkbox resets, and new faces remain marked as estimated even after
-painting. **Undo last patch** removes the last accepted patch while retaining
-current labels on surviving faces (up to five patches in the current editor
+painting. **Undo surface edit** reverses the last accepted patch or trim while retaining
+current labels on surviving faces (up to five surface edits in the current editor
 session). Geometry changes reset the painting undo history. Scan replacement
-clears patch undo; saved files retain patch provenance rather than undo history.
+clears surface undo; saved files retain edit provenance rather than undo history.
+
+### Clean up model surface
+
+Open **Clean up model surface → Brush to remove**. Brush unwanted mold or scan
+material to mark it red; **Brush to keep** deselects faces and **Clear selection**
+cancels the preview. Use [ and ] to change brush size, and Rotate/Pan to inspect
+the selection. **Apply trim** creates a separate surface with those faces removed.
+It does not cap the resulting edges. Gray does not necessarily mean non-tooth:
+unpainted teeth can be gray too. Painted faces are protected unless **Allow
+removing painted tooth surfaces** is explicitly checked. Removing the entire scan
+is refused. There is no automatic deletion of all unlabeled material.
+
+Trim copies retain source hash/visit/capture, a parent hash and removal count for
+each trim, the surviving labels, and remapped estimated patch ranges. Original
+STL face records are preserved in order for retained faces. Repair bundles with
+trims use `ortho-surface-repair-v2`; existing v1 patch bundles still import.
+Undo restores removed geometry and its prior labels while preserving later
+painting on retained faces. Each copy can be saved and reopened from My Notes
+or exported as a repair bundle, just like a patched surface.
+
+Editor rotation uses the current screen vertical at the start of each drag,
+so horizontal dragging turns the model without the roll caused by a previous
+angled orbit axis. Presets still supply the documented arch orientation; display
+navigation never changes source geometry. After a trim changes the bounding-box
+center, the camera and target shift together to keep retained surfaces in place.
 
 **Save locally** stores repaired versions in this browser's IndexedDB, including
 STL bytes, labels, notes, source hash, original face count and estimated face

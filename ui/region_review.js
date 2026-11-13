@@ -34,7 +34,7 @@ const repair = setupSurfaceRepair(() => ({ scan, edits, viewer }), (nextScan, la
 }, saving);
 function selectedCount() { return edits ? edits.labels.reduce((count, id) => count + (id === Number(el("reviewTo").value)), 0) : 0; }
 function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value), el("reviewOtherColors").checked); panel.update(Boolean(scan), selectedCount()); }
-function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; fragments.invalidate(); } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · ${scan?.repair ? "estimated repaired version" : "original scan unchanged"}`; }
+function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; fragments.invalidate(); } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · ${scan?.repair ? "edited surface copy · original scan preserved" : "original scan unchanged"}`; }
 function mount(repairTransition = false) {
   repair.validate(scan);
   el("reviewExport").textContent = scan.repair ? "Download repair bundle" : "Download JSON";
@@ -43,7 +43,7 @@ function mount(repairTransition = false) {
   el("reviewCaptureNote").hidden = scan.visit !== "progress-02";
   el("reviewWorkspaceLink").href = scan.visit ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
-  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.repair ? "Estimated repaired surface · " : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
+  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.repair ? scan.repair.patches.length ? "Estimated repaired surface · " : "Trimmed surface copy · " : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
     brushSettings: () => ({ mode: el("reviewEditing").disabled ? "orbit" : el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
@@ -54,7 +54,8 @@ function mount(repairTransition = false) {
     },
     onStrokeStart: () => edits.beginStroke(),
     onStrokeEnd: () => { edits.endStroke(); refresh(); },
-    onPaint: (faces, settings) => action(() => { const changed = edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(changed > 0); }),
+    onSurfaceHit: (point, settings) => repair.pick(point, settings),
+    onPaint: (faces, settings) => action(() => { if (repair.paint(faces, settings.mode)) return; const changed = edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(changed > 0); }),
   }); fragments.reset(); repair.reset(!repairTransition); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
 }
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }

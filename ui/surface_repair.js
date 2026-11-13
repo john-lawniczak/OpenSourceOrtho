@@ -1,26 +1,32 @@
 import { appendSurfacePatch, sourcePositions, validateRepair } from "./surface_repair_mesh.js";
 import { repairBundle, readRepairBundle, downloadJson } from "./surface_repair_bundle.js";
+import { setupSurfaceTrim } from "./surface_trim_controls.js";
+import { restoreSurfaceLabels } from "./surface_trim.js";
+import { nearestOpening } from "./surface_hole_pick.js";
 
 export function setupSurfaceRepair(getState, replaceSurface, saving) {
   const el=id=>document.getElementById(id);
   let worker=null, epoch=0, holes=[], preview=null, busy=false, undo=[];
+  const trim=setupSurfaceTrim(getState,applyEdit,()=>busy);
   const status=text=>{ el("repairStatus").textContent=text; };
   function controls() {
     const scan=getState().scan, hole=holes[el("repairHole").selectedIndex];
     el("repairFind").disabled=!scan||busy;
     el("repairHole").disabled=!holes.length||busy;
+    el("repairPick").disabled=!holes.length||busy;
     el("repairPreview").disabled=!hole||Boolean(hole.reason)||busy;
     el("repairAccept").disabled=!preview||busy;
     el("repairCancel").disabled=!preview||busy;
     el("repairUndo").disabled=!undo.length||busy;
     el("repairExport").disabled=!scan?.repair||busy;
-    el("repairEstimated").disabled=!scan?.repair;
-    el("repairProvenance").textContent=scan?.repair ? `${scan.repair.patches.length} estimated patch(es) · ${scan.repair.originalFaceCount.toLocaleString()} original faces retained. Save locally stores this separate version in this browser; reopen it from My Notes. Download a repair bundle for backup.` : "Patches are estimates, not recovered tooth anatomy. Each repair becomes a separate version; new faces start unlabeled.";
+    el("repairEstimated").disabled=!scan?.repair?.patches.length;
+    el("repairProvenance").textContent=scan?.repair ? `${scan.repair.patches.length} estimated patch(es) · ${scan.repair.trims?.length||0} trim(s) · ${scan.repair.originalFaceCount.toLocaleString()} original faces retained. Save locally stores this separate version in this browser; reopen it from My Notes. Download a repair bundle for backup.` : "Patches are estimates, not recovered tooth anatomy. Each edit becomes a separate version; new faces start unlabeled.";
+    trim.update();
   }
   function select() {
     preview=null;
     const hole=holes[el("repairHole").selectedIndex];
-    getState().viewer?.showRepair(hole,false,true);
+    getState().viewer?.showRepair(hole,false);
     status(hole ? hole.reason || `Opening ${hole.id} · span ${hole.diameter.toFixed(2)} scan units. Preview and inspect both sides before accepting.` : "No closed boundary candidates.");
     controls();
   }
@@ -29,6 +35,8 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
     if(clearUndo) undo=[];
     el("repairHole").replaceChildren(); el("repairEstimated").checked=true;
     getState().viewer?.showRepair(null);
+    el("surfaceEditStatus").textContent="";
+    trim.reset();
     controls(); status("Find small holes to inspect. Large outer and ambiguous boundaries stay open.");
   }
   el("repairFind").onclick=()=>{
@@ -56,31 +64,40 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
   el("repairMaxSize").onchange=()=>reset(false);
   el("repairPreview").onclick=()=>{
     const hole=holes[el("repairHole").selectedIndex]; if(!hole||hole.reason) return;
-    preview=hole; getState().viewer.showRepair(hole,true,true);
+    preview=hole; getState().viewer.showRepair(hole,true);
     status("Yellow is a proposed patch. Rotate to check it; Accept creates a separate estimated surface."); controls();
   };
   el("repairCancel").onclick=select;
-  el("repairAccept").onclick=async()=>{
-    if(!preview||busy) return;
-    const {scan,edits}=getState(), ticket=epoch, hole=preview, token=saving.savedAt();
+  async function applyEdit(operation, message, validateLabels=()=>{}) {
+    if(busy||!getState().scan) return;
+    const {scan,edits}=getState(), ticket=epoch, token=saving.savedAt();
     busy=true; controls();
+    el("surfaceEditStatus").textContent="Creating a separate surface copy…";
     try {
       edits.endStroke();
-      const next=await appendSurfacePatch(scan,edits.labels,hole);
+      const next=await operation(scan,edits.labels);
       if(ticket!==epoch||getState().scan!==scan) return;
       // Painting can continue while hashing; preserve the latest labels on unchanged faces.
-      next.labels.set(getState().edits.labels);
-      undo.push({scan,token}); if(undo.length>5) undo.shift();
+      const latest=getState().edits.labels; validateLabels(latest);
+      if(next.parentFaces) next.labels=Uint8Array.from(next.parentFaces,f=>latest[f]);
+      else next.labels.set(latest);
+      undo.push({scan,token,labels:latest.slice(),parentFaces:next.parentFaces}); if(undo.length>5) undo.shift();
       replaceSurface(next.scan,next.labels,null);
-      status("Patch accepted as an estimated surface. Existing labels retained; new faces need painting. Save locally to keep this version.");
-    } catch(error) { status(error.message); }
+      status(message); el("surfaceEditStatus").textContent=message;
+    } catch(error) { status(error.message); el("surfaceEditStatus").textContent=error.message; }
     finally { if(ticket===epoch) { busy=false; controls(); } }
+  }
+  el("repairAccept").onclick=()=>{
+    if(!preview||busy) return;
+    const hole=preview;
+    applyEdit((scan,labels)=>appendSurfacePatch(scan,labels,hole),"Patch accepted as an estimated surface. Existing labels retained; new faces need painting. Save locally to keep this version.");
   };
   el("repairUndo").onclick=()=>{
+    if(busy) return;
     const previous=undo.pop(); if(!previous) return;
-    const count=sourcePositions(previous.scan.bytes).length/9;
-    replaceSurface(previous.scan,getState().edits.labels.slice(0,count),previous.token);
-    status("Last patch removed. Painting on retained faces is preserved. Save this version when ready.");
+    replaceSurface(previous.scan,restoreSurfaceLabels(previous,getState().edits.labels),previous.token);
+    status("Last surface edit undone. Painting on retained faces is preserved. Save this version when ready.");
+    el("surfaceEditStatus").textContent="Last surface edit undone. Save this version when ready.";
   };
   el("repairEstimated").onchange=()=>getState().viewer?.setEstimatedVisible(el("repairEstimated").checked);
   el("repairExport").onclick=()=>{
@@ -102,5 +119,14 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
   el("repairPanel").ontoggle=()=>{
     if(el("repairPanel").open) { el("reviewTool").value="orbit"; getState().viewer?.updateBrush(); }
   };
-  return {reset,validate(scan) { if(scan.repair) validateRepair(scan,sourcePositions(scan.bytes).length/9); }};
+  return {reset,paint:trim.paint,
+    pick(point,settings) {
+      if(busy||!holes.length) return;
+      const r=getState().scan.rotation;
+      const raw=[point.x/r[0],-point.z/r[1],point.y/r[2]];
+      const index=nearestOpening(holes,raw,settings.radius);
+      if(index<0) { status("Brush closer to an opening's edge. Empty space cannot be painted; no surface is changed."); return; }
+      el("repairHole").selectedIndex=index; select();
+    },
+    validate(scan) { if(scan.repair) validateRepair(scan,sourcePositions(scan.bytes).length/9); }};
 }

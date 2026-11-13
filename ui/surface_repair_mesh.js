@@ -35,20 +35,23 @@ export async function appendSurfacePatch(scan, labels, hole) {
     if (Math.hypot(a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]) === 0) throw new Error("Patch collapses at STL precision; source left unchanged.");
   }
   const nextLabels=new Uint8Array(labels.length+added.length/9); nextLabels.set(labels);
-  const repair={ schema:"ortho-surface-repair-v1", sourceSha256:scan.repair?.sourceSha256||scan.sha256,
+  const repair={ ...scan.repair, schema:scan.repair?.schema||"ortho-surface-repair-v1", sourceSha256:scan.repair?.sourceSha256||scan.sha256,
     sourceFilename:scan.repair?.sourceFilename||scan.filename, originalFaceCount:scan.repair?.originalFaceCount??labels.length,
     sourceVisit:scan.repair?.sourceVisit||scan.visit||null, sourceCapture:scan.repair?.sourceCapture||scan.capture||null,
     patches:[...(scan.repair?.patches||[]),{ firstFace:labels.length, faceCount:added.length/9, method:"convex-planar-boundary-fan", diameter:hole.diameter, createdAt:new Date().toISOString(), estimated:true }] };
   const { visit, baseline, capture, ...rest }=scan;
-  const filename=`${(repair.sourceFilename||"scan").split('/').at(-1).replace(/\.stl$/i,"")}-repaired-${repair.patches.length}.stl`;
+  const filename=`${(repair.sourceFilename||"scan").split('/').at(-1).replace(/\.stl$/i,"")}-repaired-${repair.patches.length}${repair.trims?.length ? `-trimmed-${repair.trims.length}` : ""}.stl`;
   return { scan:{...rest, bytes, sha256:await meshHash(bytes), filename, repair}, labels:nextLabels };
 }
 export function validateRepair(scan, count) {
+  if(!Number.isInteger(count)||count<1) throw new Error("Invalid edited surface face count.");
   const r=scan.repair;
-  if(!r || r.schema!=="ortho-surface-repair-v1" || !/^[a-f0-9]{64}$/.test(r.sourceSha256) || !Number.isInteger(r.originalFaceCount) || r.originalFaceCount<1 || r.originalFaceCount>=count || !Array.isArray(r.patches) || !r.patches.length || r.patches.length>100) throw new Error("Invalid estimated-surface record.");
+  const trimmed=r?.schema==="ortho-surface-repair-v2";
+  if(!r || !["ortho-surface-repair-v1","ortho-surface-repair-v2"].includes(r.schema) || !/^[a-f0-9]{64}$/.test(r.sourceSha256) || typeof r.sourceFilename!=="string" || !Number.isInteger(r.originalFaceCount) || r.originalFaceCount<(trimmed?0:1) || r.originalFaceCount>count || !Array.isArray(r.patches) || (!trimmed&&!r.patches.length) || r.patches.length>100) throw new Error("Invalid estimated-surface record.");
+  if(trimmed && (!Array.isArray(r.trims) || !r.trims.length || r.trims.length>100 || r.trims.some(t=> !/^[a-f0-9]{64}$/.test(t.parentSha256) || !Number.isInteger(t.parentFaceCount) || !Number.isInteger(t.removedFaceCount) || t.removedFaceCount<1 || t.removedFaceCount>=t.parentFaceCount || typeof t.allowedPainted!=="boolean"))) throw new Error("Invalid trim record.");
   let end=r.originalFaceCount;
   for(const p of r.patches) {
-    if(p.firstFace!==end || !Number.isInteger(p.faceCount) || p.faceCount<3 || p.faceCount>256 || p.estimated!==true || p.method!=="convex-planar-boundary-fan") throw new Error("Invalid patch face ranges.");
+    if(p.firstFace!==end || !Number.isInteger(p.faceCount) || p.faceCount<(trimmed?1:3) || p.faceCount>256 || p.estimated!==true || p.method!=="convex-planar-boundary-fan") throw new Error("Invalid patch face ranges.");
     end+=p.faceCount;
   }
   if(end!==count || scan.visit) throw new Error("Repair must be a separate surface version.");
