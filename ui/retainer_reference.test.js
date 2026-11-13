@@ -16,6 +16,7 @@ test("retainer reference requires a current finite scan and valid metadata",asyn
   await assert.rejects(prepareRetainerReference(new TextEncoder().encode("not a scan").buffer,options),/triangles/);
   const invalid=source();new DataView(invalid).setFloat32(96,NaN,true);
   await assert.rejects(prepareRetainerReference(invalid,options),/finite/);
+  await assert.rejects(prepareRetainerReference(source(),{...options,captureDate:"2026-13-01"}),/valid scan date/);
 });
 test("guided detail views do not overwrite the section 2 sample preference",()=>{
   const sample={active:true,view:"observed"};

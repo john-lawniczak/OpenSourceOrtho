@@ -106,11 +106,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
-            if path == "/api/sample-plan-brief":
-                self._send_json(200, sample_plan_brief_payload())
-                return
-            if path == "/api/painting-notes":
-                self._send_json(200, painting_notes_payload())
+            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload}
+            if path in notes:
+                self._send_json(200, notes[path]())
                 return
             if path.startswith("/api/region-corrections/"):
                 query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
@@ -160,6 +158,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # A cancelled download closes the socket; do not send another response.
+            return
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 

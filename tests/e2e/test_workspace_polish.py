@@ -13,7 +13,7 @@ def test_header_profile_and_sample_number_controls(server_url, tmp_path):  # noq
         page.on('pageerror', lambda error: errors.append(str(error)))
         try:
             page.goto(server_url, wait_until='networkidle')
-            expect(page.locator('#teethProfile')).to_have_attribute('aria-pressed', 'false')
+            expect(page.locator('#teethProfile')).to_have_attribute('aria-pressed', 'true')
             page.locator('#teethProfile').click()
             expect(page.locator('#teethProfile')).to_have_attribute('aria-pressed', 'true')
             expect(page.locator('#teethProfileStatus')).not_to_contain_text('Start with')
@@ -32,6 +32,8 @@ def test_header_profile_and_sample_number_controls(server_url, tmp_path):  # noq
             page.locator('#guidedNext').click()
             page.locator('[data-gstep-nav="details"]').click()
             expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
+            # Section 2 preserves its overview choice; explicitly choose tooth controls.
+            page.locator('button[data-sample-view="simulation"]').click()
             for step in ['plan', 'details', 'preview']:
                 page.locator(f'[data-gstep-nav="{step}"]').click()
                 numbers = page.locator('.viewer-tooth-numbers')

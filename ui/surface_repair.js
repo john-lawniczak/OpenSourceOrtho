@@ -6,7 +6,7 @@ import { nearestOpening } from "./surface_hole_pick.js";
 
 export function setupSurfaceRepair(getState, replaceSurface, saving) {
   const el=id=>document.getElementById(id);
-  let worker=null, epoch=0, holes=[], preview=null, busy=false, undo=[], inspectionLimit=0;
+  let worker=null, epoch=0, holes=[], preview=null, busy=false, undo=[], inspectionLimit=0, importRequest=0;
   const trim=setupSurfaceTrim(getState,applyEdit,()=>busy);
   const status=text=>{ el("repairStatus").textContent=text; };
   function controls() {
@@ -134,15 +134,16 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
   };
   el("repairImport").onchange=async()=>{
     const file=el("repairImport").files[0]; if(!file||!saving.canReplace()) return;
-    const source=getState().scan,ticket=epoch;
+    const source=getState().scan,ticket=epoch,request=++importRequest,version=saving.revision();
     try {
       if(file.size>72_000_000) throw new Error("Repair bundle exceeds 72 MB.");
       const result=await readRepairBundle(JSON.parse(await file.text()));
-      if(ticket!==epoch||getState().scan!==source) return;
+      if(ticket!==epoch||getState().scan!==source||request!==importRequest) return;
+      saving.requireUnchanged(version);
       undo=[]; replaceSurface(result.scan,result.edits.labels,null,result.notes);
       status("Repair bundle imported. Estimated surfaces remain marked; save locally to keep a browser copy.");
-    } catch(error) { status(error.message); }
-    finally { el("repairImport").value=""; }
+    } catch(error) { if(ticket===epoch&&request===importRequest) status(error.message); }
+    finally { if(request===importRequest) el("repairImport").value=""; }
   };
   el("repairPanel").ontoggle=()=>{
     if(el("repairPanel").open) { el("reviewTool").value="orbit"; getState().viewer?.updateBrush(); }

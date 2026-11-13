@@ -17,7 +17,7 @@ test("finds a small inner opening, preserves outer edges, and closes only the ch
   const hole=result.holes.find(h=>!h.reason);
   assert.equal(hole.triangles.length,36);
   const bytes=binaryStl(positions),sha256=await meshHash(bytes),labels=Uint8Array.from({length:8},()=>12);
-  const scan={bytes,sha256,filename:"upper.stl",rotation:[1,1,1],arch:"upper",visit:"progress-02",capture:"upper-clean"};
+  const scan={bytes,sha256,filename:"upper.stl",rotation:[1,1,1],arch:"upper",visit:"progress-02",capture:"upper-clean",absentTeeth:[18,28,38,48],units:"unverified"};
   const next=await appendSurfacePatch(scan,labels,hole);
   assert.deepEqual(new Uint8Array(next.scan.bytes,84,bytes.byteLength-84),new Uint8Array(bytes,84));
   assert.deepEqual(next.labels,Uint8Array.from([...labels,0,0,0,0]));
@@ -33,6 +33,11 @@ test("finds a small inner opening, preserves outer edges, and closes only the ch
   assert.equal(imported.scan.sha256,next.scan.sha256);
   assert.deepEqual(imported.edits.labels,next.labels);
   assert.equal(imported.notes,"Model gap, estimated patch");
+  assert.deepEqual(imported.scan.absentTeeth,scan.absentTeeth);
+  assert.equal(imported.scan.units,"unverified");
+  assert.throws(()=>imported.edits.paint([0],18),/reported removed/);
+  await assert.rejects(readRepairBundle({...bundle,scan:{...bundle.scan,absentTeeth:[99]}}),/absent-tooth/);
+  await assert.rejects(readRepairBundle({...bundle,scan:{...bundle.scan,units:"verified"}}),/units/);
   await assert.rejects(readRepairBundle({...bundle,scan:{...bundle.scan,sha256:"0".repeat(64)}}),/hash/);
   await assert.rejects(readRepairBundle({...bundle,scan:{...bundle.scan,repair:{...bundle.scan.repair,originalFaceCount:7}}}),/ranges/);
 });

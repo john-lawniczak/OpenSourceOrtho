@@ -333,8 +333,7 @@ Chat's **Context** selector separates the current planning workspace from
 view; the simulated planning demo uses its workspace plan. Returning from a
 guided detail/review/preview step restores section 2's chosen view; automatic
 chat context follows the currently displayed view, not that remembered preference.
-Returning from a
-USER_ONE baseline painting page selects USER_ONE explicitly. The selection
+Returning from a USER_ONE baseline painting page selects USER_ONE explicitly. The selection
 survives same-tab reloads with the conversation, and is visible before sending.
 
 A `case_source: user_one` request in `full_plan` scope builds bounded metadata

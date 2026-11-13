@@ -27,7 +27,11 @@ def test_both_arches_default_zoom_and_dark_week_selection(server_url, tmp_path):
             expect(page.locator('[data-comparison-week="4"]')).to_have_attribute("aria-current", "step")
             page.locator("#themeToggle").click()
             selected = page.locator('[data-comparison-week="4"]')
+            assert selected.evaluate("e => getComputedStyle(e).backgroundColor") == "rgb(64, 52, 30)"
+            assert selected.evaluate("e => getComputedStyle(e).boxShadow") != "none"
+            page.locator("#highlightEstimatedWeeks").uncheck()
             assert selected.evaluate("e => getComputedStyle(e).backgroundColor") == "rgb(15, 118, 110)"
+            page.locator("#highlightEstimatedWeeks").check()
             before = canvas_snapshot(page)
             page.locator("#comparisonZoomIn").click()
             assert canvas_snapshot(page) != before

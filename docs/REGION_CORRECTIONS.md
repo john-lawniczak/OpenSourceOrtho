@@ -345,6 +345,9 @@ revision check. Browser data can be cleared or evicted.
 **Download repair bundle** backs up geometry, labels, notes and repair provenance
 in one JSON file. Restore through **Import scan or corrections → Repair bundle**;
 the importer checks the mesh hash, finite coordinates, face ranges and labels.
+It also retains declared scan units and reported absent teeth. Imports stop if
+painting or notes change while a file is loading, so a slow read cannot silently
+discard newer work. Save those edits before retrying the import.
 An STL or label-only file cannot carry all this provenance, so repaired versions
 export the complete bundle instead of labels alone. Import provenance is a record
 of estimated regions, not independent verification of anatomy. Repaired versions

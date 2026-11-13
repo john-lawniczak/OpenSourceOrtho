@@ -6,7 +6,8 @@ export async function prepareRetainerReference(bytes, options) {
   if (!["upper","lower"].includes(options.arch)) throw new Error("Choose the scan's arch.");
   if (!["unverified","mm","cm","inch","meter"].includes(options.units)) throw new Error("Choose the scan units or Unverified.");
   const date=options.captureDate||null;
-  if(date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || new Date(`${date}T00:00:00Z`).toISOString().slice(0,10)!==date)) throw new Error("Enter a valid scan date.");
+  const parsedDate=date?new Date(`${date}T00:00:00Z`):null;
+  if(date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0,10)!==date)) throw new Error("Enter a valid scan date.");
   const positions=sourcePositions(bytes),count=positions.length/9;
   if(!Number.isInteger(count)||count<1||count>1_000_000||positions.some(v=>!Number.isFinite(v))) throw new Error("The STL needs 1–1,000,000 finite triangles.");
   const sha256=await meshHash(bytes);

@@ -6,14 +6,20 @@ export function createScreenTrimBrush(renderer, host, camera, geometry, targetPo
   const circle=document.createElement("div"); circle.className="screen-trim-brush";
   circle.style.cssText="position:absolute;pointer-events:none;border:2px solid #ffbf47;border-radius:50%;box-sizing:border-box;z-index:6;display:none";
   host.append(circle);
-  const pickGeometry=new THREE.BufferGeometry(); pickGeometry.setAttribute("position",geometry.attributes.position);
-  const ids=Float32Array.from({length:geometry.attributes.position.count},(_,i)=>Math.floor(i/3)+1);
-  pickGeometry.setAttribute("faceId",new THREE.BufferAttribute(ids,1));
-  const material=new THREE.ShaderMaterial({side:THREE.DoubleSide,
-    vertexShader:"attribute float faceId; varying float id; void main(){ id=faceId; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
-    fragmentShader:"precision highp float; varying float id; void main(){ float n=floor(id+0.5); gl_FragColor=vec4(floor(n/65536.0),mod(floor(n/256.0),256.0),mod(n,256.0),255.0)/255.0; }"});
-  const scene=new THREE.Scene(); scene.add(new THREE.Mesh(pickGeometry,material));
-  const target=new THREE.WebGLRenderTarget(1,1,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter});
+  // Orbit/paint-only viewers never need the face-ID buffer or render target.
+  let pickGeometry,material,scene,target;
+  function initialize() {
+    if(target) return;
+    pickGeometry=new THREE.BufferGeometry(); pickGeometry.setAttribute("position",geometry.attributes.position);
+    const ids=new Float32Array(geometry.attributes.position.count);
+    for(let i=0;i<ids.length;i++) ids[i]=Math.floor(i/3)+1;
+    pickGeometry.setAttribute("faceId",new THREE.BufferAttribute(ids,1));
+    material=new THREE.ShaderMaterial({side:THREE.DoubleSide,
+      vertexShader:"attribute float faceId; varying float id; void main(){ id=faceId; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
+      fragmentShader:"precision highp float; varying float id; void main(){ float n=floor(id+0.5); gl_FragColor=vec4(floor(n/65536.0),mod(floor(n/256.0),256.0),mod(n,256.0),255.0)/255.0; }"});
+    scene=new THREE.Scene(); scene.add(new THREE.Mesh(pickGeometry,material));
+    target=new THREE.WebGLRenderTarget(1,1,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter});
+  }
   let pointer=null,radius=0;
   function show(settings,event) {
     if(event) { const rect=renderer.domElement.getBoundingClientRect(); pointer={x:event.clientX-rect.left,y:event.clientY-rect.top}; }
@@ -24,6 +30,7 @@ export function createScreenTrimBrush(renderer, host, camera, geometry, targetPo
   }
   function select() {
     if(!pointer) return [];
+    initialize();
     const size=renderer.getDrawingBufferSize(new THREE.Vector2()),scale=size.x/host.clientWidth;
     if(target.width!==size.x||target.height!==size.y) target.setSize(size.x,size.y);
     const cx=pointer.x*scale,cy=size.y-pointer.y*scale,r=radius*scale;
@@ -43,5 +50,5 @@ export function createScreenTrimBrush(renderer, host, camera, geometry, targetPo
     }
     return [...faces];
   }
-  return {show,select,hide(){pointer=null;circle.style.display="none";},dispose(){circle.remove();target.dispose();pickGeometry.dispose();material.dispose();}};
+  return {show,select,hide(){pointer=null;circle.style.display="none";},dispose(){circle.remove();target?.dispose();pickGeometry?.dispose();material?.dispose();}};
 }

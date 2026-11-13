@@ -13,6 +13,14 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 from test_boundary_intake import surface  # noqa: E402
 
 
+def assert_camera_unchanged(before, canvas, tmp_path):
+    # Exclude the HTML zoom overlay, whose focus moves to step buttons.
+    old = np.array(Image.open(io.BytesIO(before)))
+    new = np.array(Image.open(io.BytesIO(canvas.screenshot(path=str(tmp_path / "history-after.png")))))
+    assert old.shape == new.shape
+    assert np.any(old[:, :-80] != new[:, :-80], axis=2).mean() < .001
+
+
 def test_history_survives_guided_steps_and_retainer_preparation(server_url, tmp_path):  # noqa: F811
     stl = surface(tmp_path)
     with sync_playwright() as pw:
@@ -37,12 +45,12 @@ def test_history_survives_guided_steps_and_retainer_preparation(server_url, tmp_
                 expect(page.locator("#sampleComparison")).to_have_attribute("data-week", "7")
                 expect(page.locator("#highlightEstimatedWeeks")).not_to_be_checked()
                 assert original_canvas.evaluate("el => el === document.querySelector('#comparisonCanvas canvas')")
-            # Exclude the HTML zoom overlay, whose focus moves to step buttons.
-            # The rendered tooth positions and camera framing must agree.
-            old = np.array(Image.open(io.BytesIO(before)))
-            new = np.array(Image.open(io.BytesIO(original_canvas.screenshot(path=str(tmp_path / "history-after.png")))))
-            assert old.shape == new.shape
-            assert np.any(old[:, :-80] != new[:, :-80], axis=2).mean() < .001
+            assert_camera_unchanged(before, original_canvas, tmp_path)
+            for step in ["review", "preview", "print"]:
+                page.locator(f'[data-gstep-nav="{step}"] button').click()
+                page.locator('button[data-sample-view="observed"]').click()
+                expect(page.locator("#sampleComparison")).to_be_visible()
+                expect(page.locator("#sampleComparison")).to_have_attribute("data-week", "7")
             page.locator("#createRetainer").click()
             flow = page.frame_locator('iframe[title="Retainer reference preparation"]')
             flow.locator("#retainerFile").set_input_files(stl)

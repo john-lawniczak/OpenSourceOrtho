@@ -162,7 +162,7 @@ function mount(renderAll) {
     const button = event.target.closest("[data-sample-view]");
     if (!button) return;
     state.sample.view = button.dataset.sampleView;
-    if (state.sample.view === "observed" && state.guided.step === "details") state.guided.step = "plan";
+    if (state.sample.view === "observed" && state.userMode === "simple" && sampleViewForStep(state.sample,state.userMode,state.guided.step) !== "observed") state.guided.step = "plan";
     renderAll();
     if (state.sample.view === "simulation" && !state.segmentation.applied && !state.segmentation.busy) {
       const pending = prepareSampleSegmentation({ allowFallback: true });

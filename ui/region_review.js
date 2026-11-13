@@ -63,7 +63,7 @@ async function loadBaseline(arch, visit = el("reviewVisit").value, requestedCapt
   if (!["upper", "lower"].includes(arch)) throw new Error("Choose Upper or Lower first.");
   if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; return; }
   const capture = requestedCapture || suggestedPaintingCapture(arch, visit);
-  const current = ++generation;
+  const current = ++generation, version = saving.revision();
   el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : visit === "progress-01" ? 7 : 18} ${arch}…`;
   el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
   try {
@@ -71,6 +71,7 @@ async function loadBaseline(arch, visit = el("reviewVisit").value, requestedCapt
     const corrections = saved.saved ? saved.corrections : caseData.corrections;
     const motion = corrections || visit !== "initial" ? null : await loadMotionPreview(pair);
     if (current !== generation) return;
+    saving.requireUnchanged(version);
     const nextScan = { ...pair[visit === "progress-01" ? 1 : 0], baseline: visit === "initial", visit, absentTeeth: caseData.absentTeeth };
     const mapping = motion && Object.fromEntries(motion.teeth.map(t => [t.face_label, Number(t.tooth)]));
     const count = parseStlFaceCount(nextScan.bytes);
@@ -95,7 +96,7 @@ el("loadSample").onclick = () => action(() => loadBaseline(el("reviewArch").valu
 for (const arch of ["upper", "lower"]) el(`reviewLoad${arch}`).onclick = () => action(() => loadBaseline(arch));
 for (const id of ["reviewLoadupper", "reviewLoadlower", "loadSample"]) el(id).disabled = false;
 el("reviewScan").onchange = () => action(async () => {
-  const file = el("reviewScan").files[0]; if (!file || !saving.canReplace()) return; const current = ++generation;
+  const file = el("reviewScan").files[0]; if (!file || !saving.canReplace()) return; const current = ++generation, version = saving.revision();
   const bytes = await file.arrayBuffer(), hash = await crypto.subtle.digest("SHA-256", bytes);
   if (current !== generation) return;
   const inferred = inferArchFromName(file.name);
@@ -109,15 +110,18 @@ el("reviewScan").onchange = () => action(async () => {
   if (!count) throw new Error("This scan has no triangles to paint.");
   const saved = await loadBrowserPainting(nextScan).catch(() => null);
   if (current !== generation) return;
+  saving.requireUnchanged(version);
   const nextEdits = saved ? RegionEdits.restore(saved.labels, sha256, count, arch) : new RegionEdits(new Uint8Array(count), arch);
-  scan = saved?.scan?.repair ? { ...nextScan, repair: saved.scan.repair, rotation: saved.scan.rotation, paintingFront: saved.scan.paintingFront } : nextScan; edits = nextEdits; mount(); saving.setSaved(browserSaveSummary(saved));
+  scan = saved?.scan?.repair ? { ...nextScan, repair: saved.scan.repair, rotation: saved.scan.rotation, paintingFront: saved.scan.paintingFront, absentTeeth: saved.scan.absentTeeth, units: saved.scan.units } : nextScan; edits = nextEdits; mount(); saving.setSaved(browserSaveSummary(saved));
 });
 el("reviewLabels").onchange = () => action(async () => {
   if (!scan) throw new Error("Load the matching scan first.");
-  const target = scan;
-  const record = JSON.parse(await el("reviewLabels").files[0].text());
-  if (scan !== target) return;
-  const restored = RegionEdits.restore(record, scan.sha256, edits.labels.length, scan.arch); edits = restored; refresh(true); el("reviewChecked").checked = record.reviewed;
+  const file = el("reviewLabels").files[0]; if (!file || !saving.canReplace()) return;
+  const target = scan, version = saving.revision(), current = ++generation;
+  const record = JSON.parse(await file.text());
+  if (scan !== target || current !== generation) return;
+  saving.requireUnchanged(version);
+  const restored = RegionEdits.restore(record, scan.sha256, edits.labels.length, scan.arch); restored.absentTeeth = scan.absentTeeth || []; edits = restored; refresh(true); el("reviewChecked").checked = record.reviewed;
 });
 for (const [id, fn] of [["reviewUndo", () => edits.undo()], ["reviewRedo", () => edits.redo()], ["reviewMerge", () => edits.merge(Number(el("reviewFrom").value),Number(el("reviewTo").value))]]) {
   el(id).onclick = () => action(() => {
@@ -137,9 +141,10 @@ el("reviewExport").onclick = () => action(() => {
 
 const transferId = new URLSearchParams(location.search).get("edit");
 if (transferId) void action(async () => {
-  const current = ++generation;
+  const current = ++generation, version = saving.revision();
   const record = await caseStore("get",transferId,"edits");
   if (current !== generation) return;
+  saving.requireUnchanged(version);
   if (!record) throw new Error("Correction session expired. Reopen from the case.");
   scan=record.scan; edits=RegionEdits.restore(record.labels,scan.sha256,parseStlFaceCount(scan.bytes),scan.arch);
   mount(); saving.setSaved(browserSaveSummary(record)); el("reviewChecked").checked = record.labels.reviewed; el("returnCorrections").hidden = record.returnToCase === false;
