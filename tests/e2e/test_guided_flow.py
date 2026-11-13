@@ -83,8 +83,8 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
             assert "Cannot assess" in dashboard
 
             advance(page, "preview")
-            assert not page.locator("#guidedPreviewHost .manual-edit").is_visible()
-            hidden_modes = page.locator("#guidedPreviewHost .viewer-toolbar > button.mode")
+            assert not page.locator("#guidedViewerDetailsHost .manual-edit").is_visible()
+            hidden_modes = page.locator("#guidedViewerHost .viewer-toolbar > button.mode")
             assert hidden_modes.count() == 3
             assert all(item.is_visible() for item in hidden_modes.all())
 

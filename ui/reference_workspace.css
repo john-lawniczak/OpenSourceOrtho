@@ -103,3 +103,9 @@ body:is([data-step="toothmap"], [data-step="notes"])[data-chat-collapsed="1"] .a
 .plan-brief-summary li { margin-block: 10px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .plan-brief button, .plan-brief-summary button { padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
 .plan-brief button:focus-visible, .plan-brief-summary button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* A stable visual anchor across steps; the page scrolls normally on all screens. */
+#guidedViewerHost { scroll-margin-top: 142px; margin-top: 0; }
+#guidedViewerHost[hidden], #guidedViewerDetailsHost[hidden] { display: none; }
+#guided[data-guided-step="review"] #guidedViewerDetailsHost,
+#guided[data-guided-step="print"] #guidedViewerDetailsHost { display: none; }

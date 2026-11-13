@@ -92,7 +92,7 @@
       <section class="workspace">
           <ol class="guided-rail" id="guidedRail">
             <li data-gstep-nav="upload"><button type="button"><span>1</span> Upload</button></li>
-            <li data-gstep-nav="plan"><button type="button"><span>2</span> Identify teeth</button></li>
+            <li data-gstep-nav="plan"><button type="button"><span>2</span> Explore your teeth</button></li>
             <li data-gstep-nav="details"><button type="button"><span>3</span> Your plan</button></li>
             <li data-gstep-nav="review"><button type="button"><span>4</span> Review</button></li>
             <li data-gstep-nav="preview"><button type="button"><span>5</span> 3D preview</button></li>
@@ -136,6 +136,8 @@
 
 
 
+          <div id="guidedViewerHost" class="guided-viewer-host" aria-label="Your teeth visualization" hidden></div>
+
           <section class="gstep" data-gstep="upload">
             <h3 id="uploadHeading">1 · Upload your scan files</h3>
             <div id="guidedUploadHost">
@@ -150,7 +152,6 @@
               </div>
             </div>
             <div id="guidedScanMetadataHost"></div>
-            <div id="guidedUploadViewerHost" class="guided-viewer-host"></div>
             <details class="guided-help"><summary>See the upload-to-preview workflow</summary>
               <video controls preload="none" poster="./workflow-poster.jpg" aria-label="Sample workflow: select, edit, and preview stages">
                 <source src="./workflow-demo.webm" type="video/webm" />
@@ -165,7 +166,7 @@
           </section>
 
           <section class="gstep" data-gstep="plan">
-            <h3>2 · Identify teeth &amp; set the timeline</h3>
+            <h3>2 · Explore your teeth</h3>
             <p>Check tooth numbers and refine painted boundaries here. Describe your overall goals in step 3.</p>
             <section class="plan-brief-summary workflow-card">
               <h4>Your plan at a glance</h4>
@@ -179,7 +180,7 @@
               <p>Save your painting, then review the regions before exploring tooth movements.</p>
             </section>
             <div class="guided-action-strip">
-              <span>Select a tooth below, then nudge it or describe a change in chat.</span>
+              <span>Select a tooth in the view above, then explore its details or describe a change in chat.</span>
 
             </div>
             <div class="guided-build">
@@ -196,7 +197,6 @@
             </div>
             <p id="guidedBuildStatus" class="guided-status" hidden></p>
 
-            <div id="guidedPlanViewerHost" class="guided-viewer-host"></div>
             <div id="guidedSegmentationHost"></div>
             <h4>Timeline spacing</h4>
             <div id="guidedDuration" class="guided-duration">
@@ -233,16 +233,9 @@
                 <track kind="captions" src="./workflow-demo.vtt" srclang="en" label="English" default />
               </video>
             </details>
-            <div class="guided-edit-layout single-viewer">
-              <div>
-                <div class="guided-action-strip">
-                  <span>Select a painted tooth by FDI or US number, or click its crown.</span>
-                  <span>Rotate and Pan move the view. Tooth nudges propose a separate geometric change.</span>
-                </div>
-                <div id="guidedDetailsViewerHost" class="guided-viewer-host"></div>
-
-              </div>
-
+            <div class="guided-action-strip">
+              <span>Select a painted tooth by FDI or US number, or click its crown above.</span>
+              <span>Rotate and Pan move the view. Tooth nudges propose a separate geometric change.</span>
             </div>
           </section>
 
@@ -262,7 +255,6 @@
           <section class="gstep" data-gstep="preview">
             <h3>5 · See the full 3D plan</h3>
 
-            <div id="guidedPreviewHost" class="guided-viewer-host"></div>
             <details class="guided-help">
               <summary>Stage slider</summary>
               <p>Stage 0 is the starting position. Later stages show each tray in sequence.</p>
@@ -281,6 +273,8 @@
             </div>
             <p class="viewer-caveat">The email draft opens in your mail app with the package attached. Printing, fit, materials, post-processing, and any physical use are your own responsibility and risk.</p>
           </section>
+
+          <div id="guidedViewerDetailsHost"></div>
 
           <div class="guided-nav">
             <button id="guidedBack" type="button">Back</button>
@@ -570,6 +564,7 @@
                     </div>
                   </div>
                   <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
+                  <div id="viewerDetails">
                   <section id="toothWorkspace" class="tooth-workspace">
                     <div class="tooth-selection-heading"><h4>Select a tooth</h4><span id="toothSelectionStatus" role="status"></span></div>
                     <form id="toothNumberForm" class="controls"><label>Numbering <select id="toothNumberSystem"><option value="FDI">FDI</option><option value="US">US Universal</option></select></label><label>Tooth number <input id="toothNumberInput" type="number" min="1" max="48" step="1" inputmode="numeric" /></label><button type="submit">Select tooth</button><span id="toothNumberStatus" role="status"></span></form>
@@ -635,6 +630,7 @@
                     <p id="manualEditReadout" class="manual-edit-readout"></p>
                     <p class="viewer-caveat">Authors crown translation only (no rotation, no vertical movement) in scan-local axes. This is a geometric target, not a treatment goal or approval. Generate Plan splits it into cap-respecting stages.</p>
                   </section>
+                  </div>
                 </div>
               </div>
             </section>

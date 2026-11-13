@@ -31,7 +31,8 @@ export function renderToothWorkspace() {
   const blocker = toothEditBlocker();
   const scanned = Boolean(state.files.length || state.scanSources.length);
   el("simpleUpload").classList.toggle("has-scans", scanned);
-  el("guidedUploadViewerHost").hidden = !scanned;
+  el("guidedViewerHost").hidden = !scanned;
+  el("guidedViewerDetailsHost").hidden = !scanned;
   el("toothWorkspace").hidden = !scanned;
   const reviewed = (state.segmentation.applied?.tooth_meshes || []).filter(link => link.reviewed).length;
   el("toothSelectionStatus").textContent = teeth.length ? `${teeth.length} painted regions · ${reviewed} checked for edits` : "Identify and review teeth in step 2 to enable editing";

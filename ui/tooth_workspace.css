@@ -47,7 +47,7 @@
 #guided .guided-build { margin-bottom: 6px; }
 #guided .guided-action-strip { font-size: 12px; padding: 8px 12px; }
 
-#guidedPreviewHost .viewer-toolbar > button.mode { display: inline-flex; }
+#guidedViewerHost .viewer-toolbar > button.mode { display: inline-flex; }
 
 .viewer-tooth-numbers { position: absolute; inset: 0 56px 0 12px; pointer-events: none; }
 .viewer-tooth-row { position: absolute; left: 0; right: 0; display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; max-width: 760px; margin: auto; }

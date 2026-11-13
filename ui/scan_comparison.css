@@ -1,7 +1,8 @@
 .sample-observed > :not(#sampleComparison):not(#sampleViewModes) { display: none !important; }
-body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(#guidedPlanViewerHost):not(.plan-brief-summary):not(h3),
+body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(.plan-brief-summary):not(h3),
 body[data-sample-view="observed"] #panel-review .panel-heading,
 body[data-sample-view="observed"] #panel-review .workflow-card,
+body[data-sample-view="observed"] #guidedViewerDetailsHost,
 body[data-sample-view="observed"] #sampleStatusChip { display: none !important; }
 body[data-sample-view="observed"][data-chat-collapsed="1"] .ai-rail { display: none !important; }
 @media (min-width: 1201px) {

@@ -82,10 +82,8 @@ function setUserMode(mode) {
   renderAll();
   maybeRecenterPreview();
 }
-// The 3D viewer may be sized while its host is hidden (1x1) or framed for a
-// previous scene. When it becomes visible - or moves between guided step hosts
-// (teeth, details, preview all now embed it) - request a one-shot re-frame that
-// runs after the next evaluation populates the scene at its real size.
+// Mode changes can resize the viewer. Ordinary guided step navigation keeps
+// the shared host and camera unchanged.
 const VIEWER_GUIDED_STEPS = new Set(["plan", "details", "preview"]);
 const GUIDED_STAGE_CONTEXT = {
   upload: {
@@ -93,7 +91,7 @@ const GUIDED_STAGE_CONTEXT = {
     purpose: "Collect scan files and confirm the educational-use acknowledgement.",
   },
   plan: {
-    label: "Guided step 2: Identify teeth",
+    label: "Guided step 2: Explore your teeth",
     purpose: "Check tooth identities and boundaries, explore a staged preview, and set timeline spacing.",
   },
   details: {
@@ -338,18 +336,15 @@ document.body.addEventListener("click", (event) => {
     state.activeStep = "review";
     goGuided(guidedStepTarget.dataset.gstepNav);
     renderAll();
-    maybeRecenterPreview();
     return;
   }
   if (button?.id === "guidedBack") {
     guidedBack();
     renderAll();
-    maybeRecenterPreview();
   }
   if (button?.id === "guidedNext") {
     guidedNext();
     renderAll();
-    maybeRecenterPreview();
   }
   if (button?.id === "sampleLaunch") {
     discardGoalPreview();

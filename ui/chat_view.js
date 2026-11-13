@@ -111,7 +111,7 @@ function chatStageLabel() {
   if (state.userMode === "simple") {
     const labels = {
       upload: "Guided step 1: Upload",
-      plan: "Guided step 2: Identify teeth",
+      plan: "Guided step 2: Explore your teeth",
       details: "Guided step 3: Your plan",
       review: "Guided step 4: Review",
       preview: "Guided step 5: 3D preview",

@@ -23,7 +23,7 @@ export function openPrecisionWorkspace(path = "./region-review.html") {
     });
   }
   returnFocus = document.activeElement;
-  const names = { upload: "Upload", plan: "Identify teeth", details: "Your plan", preview: "3D preview" };
+  const names = { upload: "Upload", plan: "Explore your teeth", details: "Your plan", preview: "3D preview" };
   dialog.querySelector("button").textContent = `← Back to ${state.activeStep === "notes" ? "saved notes" : names[state.guided.step] || "stages"}`;
   url.searchParams.set("embedded", "1");
   if (state.sample.active) url.searchParams.set("sample", "1");

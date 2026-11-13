@@ -48,7 +48,7 @@ either mode.
 Choose **Your Teeth Profile** to open the guided workflow. Settings offers a
 Technician mode for the full controls.
 
-- **Guided** uses six steps: **Upload → Identify teeth → Your plan → Review →
+- **Guided** uses six steps: **Upload → Explore your teeth → Your plan → Review →
   3D preview → Print / send**. Step 2 checks tooth numbers/painted boundaries and
   timeline spacing (one week by default). Step 3 provides an editable overall
   plan brief, one goal per line, above the tooth inspection controls. Step 4
@@ -306,3 +306,14 @@ python tools/capture_screenshots.py    # writes docs/images/*.png
 The sample paths and `USER_ONE` label come from generated `sample-dataset.js`.
 Regenerate it with `python3 tools/build_dataset_catalog.py` from the repo root.
 Dataset assets require the Python server, which applies the publication allowlist.
+
+### Stable teeth view across guided steps
+
+The same 3D viewer stays above the content for Upload, Explore your teeth,
+Your plan, Review, 3D preview and Print / send once scans are loaded. Step titles,
+plan goals and supporting controls sit below it. Navigation keeps camera zoom,
+rotation and selection; it no longer refits the camera merely because the step
+changed. Navigating from lower down the page returns the shared view below the
+step rail. The viewer scrolls normally, so it does not cover notes or consume the
+whole screen on smaller devices. Review and Print / send keep their checks and
+handoff controls below the view without showing the tooth-editing panel.

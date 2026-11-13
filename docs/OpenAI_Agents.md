@@ -363,7 +363,7 @@ labels and the existing motion estimates.
 
 ### Guided plan discussion notes
 
-The guided step labels now distinguish **Identify teeth** (step 2), **Your plan**
+The guided step labels now distinguish **Explore your teeth** (step 2), **Your plan**
 (step 3), and **Review** (step 4). Chat stage metadata uses those labels. The new
 plan brief is user-authored discussion text stored separately in browser storage;
 it is not appended to provider requests, tooth-goal requests, generation prompts,
