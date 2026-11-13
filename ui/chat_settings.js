@@ -4,6 +4,11 @@ import { el, state } from "./state.js";
 // Native dialog supplies focus trapping, Escape dismissal, and focus restoration.
 const dialog = document.getElementById("chatSettingsDialog");
 document.getElementById("openChatSettings").addEventListener("click", () => dialog.showModal());
+el("chatModelSettings").addEventListener("click", () => {
+  dialog.showModal();
+  const field = el(el("aiKeyField").hidden ? "chatProvider" : "chatApiKey");
+  if (!field.disabled) field.focus();
+});
 
 export function confirmWorkspaceMode(mode, apply) {
   if (mode === state.userMode) return;

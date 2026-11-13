@@ -5,6 +5,8 @@ import argparse
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 
 from public_release_policy import git, release_paths
@@ -61,4 +63,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except subprocess.CalledProcessError as error:
+        print(f"Release preparation stopped: git exited with status {error.returncode}.", file=sys.stderr)
+        if error.output:
+            print(error.output.decode(errors="replace").rstrip(), file=sys.stderr)
+        raise SystemExit(1) from None
+    except ValueError as error:
+        print(f"Release preparation stopped: {error}", file=sys.stderr)
+        raise SystemExit(1) from None

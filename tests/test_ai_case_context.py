@@ -65,3 +65,25 @@ def test_case_context_still_requires_egress_consent(monkeypatch, tmp_path):
                                   "provider": "openai", "api_key": "synthetic", "share_acknowledged": False})
     assert not result["ok"]
     assert "acknowledge" in str(result["errors"])
+
+
+def test_progress_labels_and_notes_are_current_bounded_and_visit_specific(monkeypatch, tmp_path):
+    from orthoplan.ai_chat_local import local_answer
+    monkeypatch.setenv("ORTHOPLAN_REGION_CORRECTIONS", str(tmp_path))
+    before = user_one_chat_context()
+    source = baseline_source("lower", "progress-01")
+    labels = bytes([31]) + bytes(source["face_count"] - 1)
+    corrections = {"schema": "ortho-region-corrections-v1", "source_sha256": source["sha256"],
+                   "arch": "lower", "face_count": source["face_count"], "reviewed": False,
+                   "provenance": "user-corrected", "labels_base64": base64.b64encode(labels).decode()}
+    assert save_baseline_corrections({"arch": "lower", "visit": "progress-01", "corrections": corrections,
+                                     "notes": ("Week seven note. " * 300)[:4000]})["ok"]
+    context = user_one_chat_context()
+    assert context["plan_hash"] != before["plan_hash"]
+    case = context["selected_case"]
+    progress = case["saved_progress_labels"][1]
+    assert progress["week"] == 7 and progress["labeled_faces_by_fdi"] == {"31": 1}
+    assert len(progress["notes"]) == 4000
+    assert not case["saved_baseline_labels"][1]["saved"]
+    assert "week 7 lower" in local_answer("Saved labels?", context)
+    assert "labels_base64" not in json.dumps(context)

@@ -22,8 +22,12 @@ def review_page(server_url, monkeypatch, tmp_path):  # noqa: F811
 def test_discovery_arch_switch_and_visual_controls(review_page, server_url, tmp_path):  # noqa: F811
     page = review_page
     page.goto(server_url)
-    page.get_by_role("link", name="Paint tooth boundaries Step 2 · Identify teeth").click()
-    expect(page.locator(".review-workflow")).to_contain_text("Step 2")
+    page.get_by_role("link", name="Edit Tooth Precision").click()
+    expect(page.get_by_role("dialog", name="Edit Tooth Precision")).to_be_visible()
+    editor_url = page.locator(".precision-dialog iframe").get_attribute("src")
+    page.locator("#precisionBack").click()
+    page.goto(editor_url)
+    expect(page.locator(".review-workflow")).to_contain_text("Tooth precision")
     expect(page.locator("#reviewArch")).to_have_value("")
     expect(page.locator("#reviewOtherColors")).to_be_checked()
     expect(page.locator("#reviewShowLabel")).not_to_be_checked()

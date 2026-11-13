@@ -98,13 +98,19 @@ def test_missing_approved_asset_fails_before_creating_release(history, tmp_path)
     assert not destination.exists()
 
 
-def test_whitespace_failure_leaves_no_release_branch_or_worktree(history, tmp_path):
+@pytest.mark.parametrize("contents,diagnostic", [
+    ("trailing spaces  \n", "app.txt:1: trailing whitespace"),
+    ("valid line\n\n", "app.txt:2: new blank line at EOF"),
+])
+def test_whitespace_failure_leaves_no_release_branch_or_worktree(history, tmp_path, contents, diagnostic):
     repo, base, _ = history
-    write(repo, "app.txt", "trailing spaces  \n")
+    write(repo, "app.txt", contents)
     source = commit(repo, "Formatting error")
     destination = tmp_path / "release"
     result = prepare(repo, source, base, destination, "release/formatting")
     assert result.returncode != 0
+    assert diagnostic in result.stderr
+    assert "Traceback" not in result.stderr
     assert not destination.exists()
     assert git(repo, "branch", "--list", "release/formatting") == ""
 

@@ -3,7 +3,7 @@
   "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
   "consent_acknowledged": true,
   "phi_removed": true,
-  "authorization_basis": "Existing manifest acknowledgement and contributor instructions to publish the baseline and progress data, then reorganize the same case under its UUID and USER_ONE pseudonym. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly requested including USER_ONE week 18 STL scans and chipped-model metadata in the public OSS repository. Includes the original upper/lower pair, Fusion H4/H6 lower captures, and accompanying evaluations. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly authorized all USER_ONE contributed case data for public use as the main test case, including wisdom-tooth removal history and baseline annotations. Individual files remain inventoried below; this does not confer third-party media rights or publish application credentials. On 2026-11-12 the contributor requested adding their Desktop PROCESS photographs to the how-to guide after renaming and metadata removal. On 2026-11-12 the contributor also requested publication of their Sample-Painting screenshot and associated the process photographs with the reported week 18 scans.",
+  "authorization_basis": "Existing manifest acknowledgement and contributor instructions to publish the baseline and progress data, then reorganize the same case under its UUID and USER_ONE pseudonym. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly requested including USER_ONE week 18 STL scans and chipped-model metadata in the public OSS repository. Includes the original upper/lower pair, Fusion H4/H6 lower captures, and accompanying evaluations. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly authorized all USER_ONE contributed case data for public use as the main test case, including wisdom-tooth removal history and baseline annotations. Individual files remain inventoried below; this does not confer third-party media rights or publish application credentials. On 2026-11-12 the contributor requested adding their Desktop PROCESS photographs to the how-to guide after renaming and metadata removal. On 2026-11-12 the contributor also requested publication of their Sample-Painting screenshot and associated the process photographs with the reported week 18 scans. On 2026-11-13 the contributor requested adding the cleaned upper painting version. Its geometry is a verified triangle subset of the previously authorized week 18 upper scan, retained as a separate derivative with provenance; this does not extend authorization to unrelated contributions.",
   "publication_scope": [
     "original scan geometry",
     "redacted case metadata",
@@ -105,7 +105,10 @@
     "media/process/10-user-one-stacked-casts-on-turntable.jpg",
     "media/process/11-user-one-casts-front-view.jpg",
     "media/process/README.md",
-    "media/user-one-baseline-upper-painting.png"
+    "media/user-one-baseline-upper-painting.png",
+    "visits/progress-02/captures/upper-clean/manifest.json",
+    "visits/progress-02/captures/upper-clean/progress-02-upper-clean.stl",
+    "visits/progress-02/captures/upper-clean/source-metadata.json"
   ],
   "third_party_reference_rights": "unverified",
   "rights_note": "The third-party reference simulation is omitted from this public snapshot because redistribution rights remain unverified. Its descriptive metadata is retained for provenance only; references to the video do not make the file available. Raw CBCT, private records, and original identifying paperwork are excluded. Earlier public Git history is unchanged."

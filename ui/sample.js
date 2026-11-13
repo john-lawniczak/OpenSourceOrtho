@@ -11,14 +11,13 @@ import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
 import { isolateSampleSettings } from "./sample_settings.js";
 import { el, state } from "./state.js";
-import { applySegmentation, proposeSegmentation } from "./segment.js";
 import { canonicalScanSources, demoInitialOffsets, syntheticCrowdingRows } from "./demo.js";
 
 // State keys the sample overwrites and therefore must save/restore.
 const SNAPSHOT_STATE_KEYS = [
-  "rows", "files", "file", "scanSources", "caseRecords", "fixtureMeshAssets", "registrations", "derivedAnatomy",
+  "rows", "files", "file", "scanDates", "scanSources", "caseRecords", "fixtureMeshAssets", "registrations", "derivedAnatomy",
   "recordUploadStatus", "useDemoMeshes", "demoInitialOffsets",
-  "view", "activeStep", "userMode", "scanArchFilter", "simpleGoal",
+  "scanUnits", "view", "activeStep", "userMode", "scanArchFilter", "simpleGoal",
   "simpleAcknowledged", "dim", "sampleStatus", "scanRenderStatus", "availability",
 ];
 
@@ -91,15 +90,16 @@ export function enterSample() {
   state.userMode = "simple";
   state.sample.active = true;
   state.sample.view = "observed";
+  state.sample.visit = "progress-01";
   // Open directly on the shared scan selection and stage viewer.
   state.guided.step = "plan";
   state.activeStep = "review";
   state.simpleAcknowledged = true;
-  state.sampleStatus = "Week 1–7 scan history. The planning simulation is a separate example.";
+  state.sampleStatus = "Week 1–18 scan history. The planning simulation is a separate example.";
   el("planTitle").value = `Sample test case · ${sampleDataset.pseudonym}`;
   el("planId").value = "sample-test-case";
   el("simpleGoal").value = "crowding";
-  el("wearInterval").value = "10";
+  el("wearInterval").value = "7";
   el("exaggeration").value = "1";
   el("scanUnits").value = "mm";
   el("simpleAcknowledged").checked = true;
@@ -128,37 +128,43 @@ export async function applySampleRootBoneFixture() {
   }
 }
 
-// Prepare the sample's moving teeth: run the on-device auto-segmenter on the two
-// bundled scans and apply the resulting per-tooth draft, so the 3D preview moves
-// the scan's own crowns stage by stage instead of marker arrows. Pre-applying a
-// model-generated draft is sample-only behaviour: the sample is an isolated,
-// clearly-labelled simulation (a user's own plan still requires explicit review
-// and apply in the segmentation panel), and exit restores the user's state.
-// Returns true when per-tooth movement is ready, false on fallback.
-export async function prepareSampleSegmentation() {
+// Painted regions are selectable drafts. Loading them never records user review.
+export async function prepareSampleSegmentation({ visit = state.sample.visit || "progress-01", allowFallback = false } = {}) {
   if (!state.sample.active) return false;
   const seg = state.segmentation;
-  await proposeSegmentation();
-  // The user may exit (or restart) the sample while the segmenter runs; apply
-  // only when THIS sample run's segmentation is still the active one.
-  if (!state.sample.active || state.segmentation !== seg) return false;
-  if (!seg.proposal) {
-    state.sampleStatus =
-      "Sample STL scans loaded. Individual tooth regions are unavailable; retry the sample to enable selection.";
+  if (seg.busy) return false;
+  seg.busy = true;
+  seg.status = "Loading saved USER_ONE tooth regions…";
+  try {
+    const response = await fetch("/api/sample-teeth", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visit, allow_baseline_fallback: allowFallback }) });
+    const result = await response.json();
+    if (!state.sample.active || state.segmentation !== seg) return false;
+    if (!response.ok || !result.ok) throw new Error((result.errors || ["Painted regions unavailable"]).join(" "));
+    state.sample.visit = result.visit || visit; state.goalPreview = null;
+    state.scanSources = result.scan_sources;
+    state.scanUnits = result.scan_sources.every(source => source.asset.units === "mm") ? "mm" : "unverified";
+    el("scanUnits").value = state.scanUnits;
+    seg.applied = result.plan_fragment;
+    seg.annotations = result.annotations;
+    seg.proposal = null;
+    // Start from the observation, with no invented default movement.
+    const teeth = result.plan_fragment.tooth_meshes.map(link => link.tooth.value);
+    state.rows = Array.from({ length: 4 }, (_, stage) => teeth.map(tooth =>
+      ({ stage, tooth, x: 0, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 }))).flat();
+    state.demoInitialOffsets = {}; state.manualEdit = { selectedTooth: teeth[0] || null, status: "", undoStack: [] };
+    state.availability = { ...state.availability, segmented_teeth: false };
+    state.caseRecords = []; state.fixtureMeshAssets = []; state.registrations = []; state.derivedAnatomy = null;
+    state.availability = { ...state.availability, cbct: false, roots: false };
+    state.view = "current"; state.activeStep = "review";
+    el("stageSlider").value = "0";
+    seg.status = `USER_ONE week ${state.sample.visit === "initial" ? 1 : 7}: saved painted regions loaded as drafts. Review a selected region before proposing movement.`;
+    state.sampleStatus = (result.notice ? `${result.notice} ` : "") + "Sample ready. Choose any painted tooth by FDI or US number. Rotate or pan to inspect it. The stage slider starts with zero movement.";
+    return true;
+  } catch (error) {
+    if (state.sample.active && state.segmentation === seg) { seg.status = error.message; state.sampleStatus = error.message; }
     return false;
-  }
-  applySegmentation();
-  if (!seg.applied) return false;
-  // The sample plan now carries per-tooth meshes; reflect that in its data
-  // manifest (replace, never mutate - the user's object is snapshotted).
-  state.availability = { ...state.availability, segmented_teeth: true };
-  seg.status =
-    "Sample: an auto-segmentation draft was applied for you so the 3D preview can move each tooth. "
-    + "In your own plan you review and apply segmentation yourself.";
-  state.manualEdit.selectedTooth = seg.applied.tooth_meshes.some(link => link.tooth.value === "11") ? "11" : seg.applied.tooth_meshes[0].tooth.value;
-  state.sampleStatus = "Sample ready. Click a crown or its number, preview a nudge or a chat goal, then drag the stage slider.";
-
-  return true;
+  } finally { seg.busy = false; }
 }
 
 export function exitSample() {

@@ -1,7 +1,25 @@
 """Local browser request boundaries and walkthrough media delivery."""
 import urllib.request
+from unittest.mock import Mock
 import pytest
 from test_server import server, _post  # noqa: F401
+from orthoplan.server import Handler
+
+
+@pytest.mark.parametrize("error", [BrokenPipeError, ConnectionResetError])
+def test_cancelled_scan_response_does_not_attempt_second_response(error):
+    handler = object.__new__(Handler)
+    handler.path = "/"
+    handler.send_response = Mock()
+    handler.send_header = Mock()
+    handler.end_headers = Mock()
+    handler.wfile = Mock()
+    handler.wfile.write.side_effect = error("client cancelled download")
+    handler._send_json = Mock()
+    handler.do_GET()
+    handler.send_response.assert_called_once_with(200)
+    handler.wfile.write.assert_called_once()
+    handler._send_json.assert_not_called()
 
 
 @pytest.mark.parametrize("origin", ["https://untrusted.example", "null"])

@@ -70,7 +70,14 @@ def test_default_view_restores_full_upper_after_focus_roll_and_zoom(server_url, 
             page.locator("#reviewZoomIn").click()
             assert canvas.screenshot() != before_view
             default.click()
-            assert canvas.screenshot() == before_view
+            after_view = canvas.screenshot(path=str(tmp_path / "upper-reset-view.png"))
+            # The CSS border can rasterize at a different subpixel after scrolling.
+            # Require the entire interior render to match exactly.
+            before_image = Image.open(io.BytesIO(before_view))
+            after_image = Image.open(io.BytesIO(after_view))
+            assert before_image.size == after_image.size
+            interior = (2, 2, before_image.width - 2, before_image.height - 2)
+            assert before_image.crop(interior).tobytes() == after_image.crop(interior).tobytes()
             assert export(page, tmp_path, "after-default.json") == before_labels
             expect(page.locator("#reviewStatus")).to_contain_text("0 correction operations")
         finally:

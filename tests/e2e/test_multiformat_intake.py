@@ -61,6 +61,7 @@ def test_a_ply_upload_registers_and_renders(intake_server, tmp_path):
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(intake_server)
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.locator('[data-user-mode="advanced"]').click()
             page.locator("#stlFile").set_input_files(scan)
@@ -106,6 +107,7 @@ def test_a_point_cloud_upload_is_accepted_and_labelled(intake_server, tmp_path):
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(intake_server)
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.locator('[data-user-mode="advanced"]').click()
             page.locator("#stlFile").set_input_files(cloud)
@@ -128,6 +130,7 @@ def test_an_unsupported_file_is_rejected_without_a_page_error(intake_server, tmp
         try:
             page.on("dialog", lambda dialog: dialog.accept())
             page.goto(intake_server)
+            page.locator("#teethProfile").click()
             page.locator("#openChatSettings").click()
             page.locator('[data-user-mode="advanced"]').click()
             page.locator("#stlFile").set_input_files(notes)

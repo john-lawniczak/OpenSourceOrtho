@@ -6,6 +6,23 @@ maps to the established `USER_ONE` pseudonym; no new case identity was created.
 
 ## Original November 10 pair
 
+**Relationship clarified November 12:** the contributor identifies
+`2026-11-10-week-18-upper-test.stl`,
+`2026-11-10-week-18-bottom-test.stl`, and the H4/H6 lower captures as variants
+or attempts within the same reported week-18 mold/model series. They are grouped
+as one visit, not successive observations of tooth movement. H4/H6 are confirmed
+to share one physical lower model; the exact impression/pour/cast relationships
+between the November 10 pair and those captures are not separately specified.
+See `capture_relationship` in [source-metadata.json](source-metadata.json).
+
+No intact donor surfaces have been verified and no scans have been combined.
+Any later composite must preserve its source files and record which observed
+surface supplied each replacement, alignment/scale evidence, and unresolved
+defects. Repeated scans of a chipped cast cannot supply the missing original
+surface. A new impression at a later week belongs to that later observation;
+it must not be relabeled as week 18. Earlier quality reports retain their
+per-file scope.
+
 The contributor supplied an upper/lower STL pair on November 10, 2026 and
 described personal scans and builds made using a stone and Play-Doh style
 process: early attempts with limited quality. This description is contributor
