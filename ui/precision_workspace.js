@@ -1,4 +1,5 @@
 import { state } from "./state.js";
+import { sampleViewForStep } from "./sample_view.js";
 
 let dialog, frame, returnFocus;
 export function openPrecisionWorkspace(path = "./region-review.html") {
@@ -46,7 +47,7 @@ document.addEventListener("click", event => {
   if (params.has("baseline") || params.has("edit")) { openPrecisionWorkspace(link.href); return; }
   if (state.sample.active) {
     const arch = document.getElementById("boundaryArch")?.value || "upper";
-    const visit = state.sample.view === "observed" && document.getElementById("sampleComparison")?.dataset.week === "18" ? "progress-02" : state.sample.visit || "progress-01";
+    const visit = sampleViewForStep(state.sample,state.userMode,state.guided.step) === "observed" && document.getElementById("sampleComparison")?.dataset.week === "18" ? "progress-02" : state.sample.visit || "progress-01";
     openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${visit}${visit === "progress-02" ? `&capture=${arch === "upper" ? "upper-clean" : "fusion-h-4"}` : ""}`);
   } else {
     const openScan = document.getElementById("openBoundaryEditor");

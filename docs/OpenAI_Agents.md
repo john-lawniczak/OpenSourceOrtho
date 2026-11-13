@@ -331,6 +331,9 @@ until a real request succeeds. Chat recovery buttons use a spaced, wrapping row.
 Chat's **Context** selector separates the current planning workspace from
 **USER_ONE scans & saved labels**. Automatic mode follows the sample scan-history
 view; the simulated planning demo uses its workspace plan. Returning from a
+guided detail/review/preview step restores section 2's chosen view; automatic
+chat context follows the currently displayed view, not that remembered preference.
+Returning from a
 USER_ONE baseline painting page selects USER_ONE explicitly. The selection
 survives same-tab reloads with the conversation, and is visible before sending.
 

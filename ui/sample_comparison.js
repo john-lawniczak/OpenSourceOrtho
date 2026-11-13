@@ -8,14 +8,15 @@ import { loadMotionPreview } from "./scan_motion_data.js";
 import { renderMotionControls } from "./scan_motion_controls.js";
 import { proximitySummary } from "./proximity_summary.js";
 import { historyFrame } from "./scan_history.js";
+import { sampleViewForStep } from "./sample_view.js";
 
 let motion = null, motionError = "", selectedTooth = "", endpointEstimate = false;
 let pair = [], week = 1, arch = "both", ready = false, timing = "uniform";
 let visitRequest = null, visitError = "";
-let mounted = false, viewer = null, request = null, session = null;
+let mounted = false, viewer = null, request = null, session = null, preparedSession = null;
 
 export function observedSampleActive() {
-  return state.sample.active && state.sample.view === "observed";
+  return state.sample.active && sampleViewForStep(state.sample,state.userMode,state.guided.step) === "observed";
 }
 
 function setWeek(value) {
@@ -65,7 +66,7 @@ async function loadWeekEighteen() {
   try {
     const scans = await Promise.all((arch === "both" ? ["upper", "lower"] : [arch])
       .map(name => loadWeekEighteenScan(name, { signal: pending.signal })));
-    if (pending.signal.aborted || viewer !== currentViewer || !observedSampleActive()) return;
+    if (pending.signal.aborted || viewer !== currentViewer || !state.sample.active) return;
     viewer.setObservedVisit(scans); pair[2] = scans[0];
     if (week === 18) setWeek(week);
   } catch (error) {
@@ -116,7 +117,7 @@ async function loadArch() {
       catch (error) { if (!pending.signal.aborted) motionError = `${name} motion preview unavailable: ${error.message}`; }
       return { pair: scans, motion: preview };
     }));
-    if (pending.signal.aborted || !observedSampleActive()) return;
+    if (pending.signal.aborted || !state.sample.active) return;
     pair = bundles[0].pair;
     const available = bundles.filter(item => item.motion);
     motion = available.length ? { teeth: available.flatMap(item => item.motion.teeth),
@@ -133,7 +134,7 @@ async function loadArch() {
     setWeek(week);
     el("comparisonStatus").textContent = `Comparison unavailable: ${error.message}`;
     el("comparisonRetry").hidden = false;
-  }
+  } finally { if(request===pending) request=null; }
 }
 
 function mount(renderAll) {
@@ -206,13 +207,14 @@ function mount(renderAll) {
 
 export function renderSampleComparison(renderAll) {
   if (!mounted) mount(renderAll);
-  // Your plan includes the tooth workspace; Scan history returns to Explore your teeth.
-  if (state.sample.active && state.guided.step === "details" && observedSampleActive()) {
-    state.sample.view = "simulation";
-    if (!state.segmentation.applied && !state.segmentation.busy) prepareSampleSegmentation({ allowFallback: true }).then(renderAll);
+  const view=sampleViewForStep(state.sample,state.userMode,state.guided.step);
+  if (state.sample.active && view === "simulation") {
+    if (!state.segmentation.applied && !state.segmentation.busy && preparedSession !== state.segmentation) {
+      preparedSession=state.segmentation; prepareSampleSegmentation({ allowFallback: true }).then(renderAll);
+    }
   }
   const observed = observedSampleActive();
-  document.body.dataset.sampleView = state.sample.active ? state.sample.view : "";
+  document.body.dataset.sampleView = state.sample.active ? view : "";
   el("sampleViewModes").hidden = !state.sample.active;
   el("sampleComparison").hidden = !observed;
   el("viewerBlock").classList.toggle("sample-observed", observed);
@@ -223,7 +225,7 @@ export function renderSampleComparison(renderAll) {
   el("samplePaintedVisit").disabled = state.segmentation.busy;
   el("sampleReloadPainting").disabled = state.segmentation.busy;
   el("sampleViewModes").querySelectorAll("[data-sample-view]").forEach(button => {
-    button.setAttribute("aria-pressed", String(button.dataset.sampleView === state.sample.view));
+    button.setAttribute("aria-pressed", String(button.dataset.sampleView === view));
   });
   if (session !== state.segmentation || !state.sample.active) {
     session = state.segmentation;
@@ -231,7 +233,7 @@ export function renderSampleComparison(renderAll) {
   }
   if (observed && !viewer && !request) loadArch();
   if (observed) viewer?.resize();
-  else {
+  else if (!state.sample.active) {
     request?.abort(); visitRequest?.abort(); visitRequest = null;
     request = null;
     viewer?.dispose();
