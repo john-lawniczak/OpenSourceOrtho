@@ -6,7 +6,9 @@ import json
 import pytest
 
 from orthoplan.datasets import SAMPLE_CASE_DIR, resolve_published_asset
-from tools.audit_surface_trim import audit_trim
+
+pytest.importorskip("numpy", reason="Surface trim auditing requires the motion-preview extra")
+from tools.audit_surface_trim import audit_trim  # noqa: E402
 
 ARCHIVE = SAMPLE_CASE_DIR / "private/surface-edits/week-18-lower-cleaned"
 
