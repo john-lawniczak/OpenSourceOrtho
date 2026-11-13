@@ -59,3 +59,7 @@ body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-up
   .tooth-explorer-grid button { min-height: 36px; }
   .tooth-explorer-viewer { height: 300px; }
 }
+
+.profile-launch { border: 2px solid transparent; border-radius: 10px; }
+.profile-launch[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 4px 0 var(--accent); font-weight: 750; }
+.profile-launch:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
