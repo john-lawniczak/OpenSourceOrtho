@@ -99,3 +99,7 @@ body:is([data-step="toothmap"], [data-step="notes"])[data-chat-collapsed="1"] .a
 .painting-notes-list { display: grid; gap: 16px; margin-block: 18px; }
 .painting-note { padding: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 .painting-note pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.5; }
+.plan-brief textarea { display: block; box-sizing: border-box; width: 100%; min-height: 210px; padding: 14px; margin-block: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink); font: inherit; line-height: 1.65; resize: vertical; }
+.plan-brief-summary li { margin-block: 10px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.plan-brief button, .plan-brief-summary button { padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.plan-brief button:focus-visible, .plan-brief-summary button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }

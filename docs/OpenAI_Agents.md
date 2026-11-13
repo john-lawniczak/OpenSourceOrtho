@@ -360,3 +360,12 @@ Selected USER_ONE context also supplies `dentition` from the specimen-checked
 with extraction dates unknown. This is reported history, not an independent
 anatomical finding. Published annotation drafts remain distinct from locally saved
 labels and the existing motion estimates.
+
+### Guided plan discussion notes
+
+The guided step labels now distinguish **Identify teeth** (step 2), **Your plan**
+(step 3), and **Review** (step 4). Chat stage metadata uses those labels. The new
+plan brief is user-authored discussion text stored separately in browser storage;
+it is not appended to provider requests, tooth-goal requests, generation prompts,
+or movement-plan JSON. The private sample brief is likewise not automatically
+shared. Writing these notes never applies an IPR, spacing or movement instruction.

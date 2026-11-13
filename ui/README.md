@@ -45,17 +45,18 @@ either mode.
 
 ## Modes
 
-The sidebar **Guided / Technician** toggle (always visible on the left) exposes two
-workflows:
+Choose **Your Teeth Profile** to open the guided workflow. Settings offers a
+Technician mode for the full controls.
 
-- **Guided** (default) is a six-step wizard for non-technical users -
-  **Upload → Teeth & time → Details → Review → 3D preview → Print / send** - with
-  a progress rail and Back/Next, showing one step at a time. It lets a user upload
-  an STL, choose which teeth move and the tray-wear pace (Balanced 10-day by
-  default, with Faster/Gentle behind a disclosure), build the plan, review it as a
-	  plain-language summary with a prominent Ask-AI box, preview it in 3D, and export
-	  printable files. It acknowledges that the preview is not a diagnosis or treatment
-	  plan and that physical use is the user's own responsibility and risk.
+- **Guided** uses six steps: **Upload → Identify teeth → Your plan → Review →
+  3D preview → Print / send**. Step 2 checks tooth numbers/painted boundaries and
+  timeline spacing (one week by default). Step 3 provides an editable overall
+  plan brief, one goal per line, above the tooth inspection controls. Step 4
+  repeats those goals beside geometric checks. Notes autosave in this browser,
+  keyed by plan ID and isolated from sample notes; download them as a text file
+  for a portable copy. They do not change movements, prescribe restorations or
+  IPR, get sent automatically to AI, or enter movement-plan exports. The optional
+  sample brief comes from a private dataset file excluded from public snapshots.
 - **Technician** is the advanced workspace for records, caps, staged movement,
   clinical controls, print metadata, optimized staging, and plan JSON.
 

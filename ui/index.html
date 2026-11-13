@@ -92,8 +92,8 @@
       <section class="workspace">
           <ol class="guided-rail" id="guidedRail">
             <li data-gstep-nav="upload"><button type="button"><span>1</span> Upload</button></li>
-            <li data-gstep-nav="plan"><button type="button"><span>2</span> Teeth &amp; time</button></li>
-            <li data-gstep-nav="details"><button type="button"><span>3</span> Details</button></li>
+            <li data-gstep-nav="plan"><button type="button"><span>2</span> Identify teeth</button></li>
+            <li data-gstep-nav="details"><button type="button"><span>3</span> Your plan</button></li>
             <li data-gstep-nav="review"><button type="button"><span>4</span> Review</button></li>
             <li data-gstep-nav="preview"><button type="button"><span>5</span> 3D preview</button></li>
             <li data-gstep-nav="print"><button type="button"><span>6</span> Print / send</button></li>
@@ -125,7 +125,7 @@
           <div class="guided-head">
             <div>
               <h2 id="guidedHeading">Review aligner geometry, step by step</h2>
-              <p class="guided-sub">Upload your scan, select a tooth, and explore a staged preview.</p>
+              <p class="guided-sub">Upload scans, check tooth labels, describe your goals, then review and explore a preview.</p>
             </div>
           </div>
 
@@ -165,7 +165,13 @@
           </section>
 
           <section class="gstep" data-gstep="plan">
-            <h3>2 · Explore teeth &amp; stages</h3>
+            <h3>2 · Identify teeth &amp; set the timeline</h3>
+            <p>Check tooth numbers and refine painted boundaries here. Describe your overall goals in step 3.</p>
+            <section class="plan-brief-summary workflow-card">
+              <h4>Your plan at a glance</h4>
+              <ul data-plan-brief-summary></ul>
+              <button type="button" data-plan-brief-edit>Describe or edit your plan →</button>
+            </section>
             <section class="boundary-entry" aria-label="Edit tooth precision">
               <strong>Edit your tooth precision in the painting workspace</strong>
               <p>Paint each tooth's edges and check its number so selecting a tooth highlights the right surface.</p>
@@ -209,7 +215,18 @@
           </section>
 
           <section class="gstep" data-gstep="details">
-            <h3>3 · Inspect teeth &amp; explore changes</h3>
+            <h3>3 · Your plan: goals &amp; tooth details</h3>
+            <section class="workflow-card plan-brief" aria-label="Overall plan and goals">
+              <h4>Describe your overall plan</h4>
+              <p>Write one goal per line. Include tooth numbers, what you want to change, relevant history, and options you want to discuss.</p>
+              <label for="planBriefText">Plan notes · one bullet per goal</label>
+              <textarea id="planBriefText" rows="8" maxlength="8000" aria-describedby="planBriefScope planBriefStatus" placeholder="- Teeth [numbers]: what I would like to change&#10;- Tooth [number]: relevant history and options to discuss&#10;- Questions for my dentist or orthodontist"></textarea>
+              <p id="planBriefStatus" role="status"></p>
+              <button id="downloadPlanBrief" type="button">Download plan notes</button>
+              <button id="retryPlanBrief" type="button" hidden>Retry loading sample goals</button>
+              <p id="planBriefScope" class="viewer-caveat">These are discussion goals. Writing notes does not prescribe movements, set gap sizes, select restorations, or apply IPR. Notes are saved separately in this browser and are not automatically sent to AI or included in movement-plan exports.</p>
+              <p id="samplePlanBriefCaveat" class="viewer-caveat" hidden>The sample preview has not been generated from these restoration goals. Reported size differences and tooth history still need professional assessment.</p>
+            </section>
             <details class="guided-help"><summary>Watch tooth selection and navigation</summary>
               <video controls preload="none" poster="./workflow-poster.jpg" aria-label="USER_ONE painted tooth selection and camera controls">
                 <source src="./workflow-demo.webm" type="video/webm" />
@@ -231,6 +248,12 @@
 
           <section class="gstep" data-gstep="review">
             <h3>4 · Review your plan</h3>
+            <section class="workflow-card plan-brief-summary">
+              <h4>Your stated goals</h4>
+              <ul data-plan-brief-summary></ul>
+              <p>Discussion notes, separate from the geometric checks below.</p>
+              <button type="button" data-plan-brief-edit>Edit plan notes</button>
+            </section>
             <div id="guidedReviewDashboard" class="guided-dashboard" aria-label="Guided review dashboard"></div>
             <div id="guidedHeadline" class="guided-headline"></div>
             <ul id="guidedSummary" class="guided-summary"></ul>

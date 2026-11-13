@@ -15,14 +15,15 @@ import { planJson } from "./plan.js";
 import { requestPrintPackage } from "./state.js";
 import { renderToothWorkspace } from "./tooth_workspace.js";
 import { guidedReviewDashboard } from "./guided_review.js";
+import { renderPlanBrief } from "./plan_brief.js";
 export { guidedReviewDashboard } from "./guided_review.js";
 
 // Step order. Each id maps to a <section class="gstep" data-gstep="..."> panel
 // and a progress-rail dot in index.html.
 export const GUIDED_STEPS = [
   { id: "upload", label: "Upload" },
-  { id: "plan", label: "Teeth & time" },
-  { id: "details", label: "Details" },
+  { id: "plan", label: "Identify teeth" },
+  { id: "details", label: "Your plan" },
   { id: "review", label: "Review" },
   { id: "preview", label: "3D preview" },
   { id: "print", label: "Print / send" },
@@ -124,6 +125,7 @@ export function placeSharedBlocks() {
 }
 
 export function renderGuided() {
+  renderPlanBrief();
   placeSharedBlocks();
   const active = currentGuidedStep();
 

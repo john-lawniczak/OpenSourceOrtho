@@ -93,12 +93,12 @@ const GUIDED_STAGE_CONTEXT = {
     purpose: "Collect scan files and confirm the educational-use acknowledgement.",
   },
   plan: {
-    label: "Guided step 2: Teeth and time",
-    purpose: "Generate a starter staged plan, choose which teeth move, and set tray wear interval.",
+    label: "Guided step 2: Identify teeth",
+    purpose: "Check tooth identities and boundaries, explore a staged preview, and set timeline spacing.",
   },
   details: {
-    label: "Guided step 3: Details",
-    purpose: "Inspect stage-by-stage movement and make small reviewed target edits.",
+    label: "Guided step 3: Your plan",
+    purpose: "Describe discussion goals separately from movement data, inspect teeth, and explore changes.",
   },
   review: {
     label: "Guided step 4: Review",

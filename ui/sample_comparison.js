@@ -199,7 +199,7 @@ function mount(renderAll) {
 
 export function renderSampleComparison(renderAll) {
   if (!mounted) mount(renderAll);
-  // Details is the tooth workspace; Scan history returns to Teeth & time.
+  // Your plan includes the tooth workspace; Scan history returns to Identify teeth.
   if (state.sample.active && state.guided.step === "details" && observedSampleActive()) {
     state.sample.view = "simulation";
     if (!state.segmentation.applied && !state.segmentation.busy) prepareSampleSegmentation({ allowFallback: true }).then(renderAll);

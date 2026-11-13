@@ -25,6 +25,7 @@ from orthoplan.mesh_workspace import default_mesh_workspace, resolve_mesh_path
 from orthoplan.occlusion.proximity_api import proximity_payload
 from orthoplan.region_corrections import load_baseline_corrections, save_baseline_corrections
 from orthoplan.painting_notes import painting_notes_payload
+from orthoplan.plan_brief import sample_plan_brief_payload
 from orthoplan.segmentation_api import segment_payload
 from orthoplan.sample_teeth import sample_teeth_payload, sample_walkthrough_path
 from orthoplan.server_uploads import handle_case_record_upload, handle_scan_upload
@@ -105,6 +106,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
+            if path == "/api/sample-plan-brief":
+                self._send_json(200, sample_plan_brief_payload())
+                return
             if path == "/api/painting-notes":
                 self._send_json(200, painting_notes_payload())
                 return
