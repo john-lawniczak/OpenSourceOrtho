@@ -5,15 +5,22 @@ from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
 
 
-def test_focus_teeth_toggle_persistence_and_profile_isolation(server_url, tmp_path):  # noqa: F811
+@pytest.mark.parametrize("supplied_focus", [[], ["12", "22", "31"]])
+def test_focus_teeth_toggle_persistence_and_profile_isolation(server_url, tmp_path, supplied_focus):  # noqa: F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        page.route("**/api/sample-plan-brief", lambda route: route.fulfill(json={
+            "ok": True, "available": bool(supplied_focus), "text": "", "focus_teeth": supplied_focus,
+        }))
         try:
             page.goto(server_url)
             page.locator("#sampleLaunch").click()
             page.locator('#guidedRail [data-gstep-nav="details"]').click()
-            expect(page.locator("#focusTeethInput")).to_have_value("12, 22, 31", timeout=60000)
+            expect(page.locator("#focusTeethInput")).to_have_value(", ".join(supplied_focus), timeout=60000)
+            if not supplied_focus:
+                page.locator("#focusTeethInput").fill("12, 22, 31")
+                page.get_by_role("button", name="Save highlighted teeth").click()
             expect(page.locator("#sampleReloadPainting")).to_be_enabled(timeout=90000)
             expect(page.locator("#scanRenderStatus")).to_contain_text("Showing your scan", timeout=60000)
             before = page.locator("#planJson").input_value()

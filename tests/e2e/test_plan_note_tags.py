@@ -14,6 +14,10 @@ def test_note_tags_add_to_saved_focus_and_stay_scoped(server_url):  # noqa: F811
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page()
+        # Synthetic defaults keep this test independent of unpublished case notes.
+        page.route("**/api/sample-plan-brief", lambda route: route.fulfill(json={
+            "ok": True, "available": True, "text": "", "focus_teeth": ["12", "22", "31"],
+        }))
         try:
             page.goto(server_url, wait_until="networkidle")
             open_personal_plan(page)
