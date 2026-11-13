@@ -2,7 +2,11 @@ import { scanFrontPose } from "./scan_view_pose.js";
 
 // Reported week labels, not elapsed calendar time or an observed weekly schedule.
 export function historyFrame(week, pair, motion = null, endpointEstimate = false, timing = "uniform") {
-  if (!Number.isInteger(week) || week < 1 || week > 7) throw new Error("Choose a week from 1 to 7.");
+  if (!Number.isInteger(week) || week < 1 || week > 18) throw new Error("Choose a week from 1 to 18.");
+  if (week > 7) {
+    const scan = week === 18 ? pair[2] || null : null;
+    return { week, index: scan ? 3 : null, fraction: 0, kind: scan ? "observed" : "unavailable", scan };
+  }
   const endpoint = week === 1 ? 0 : week === 7 ? 1 : null;
   const estimated = Boolean(motion) && (endpoint === null || (week === 7 && endpointEstimate));
   return { week, index: estimated ? 2 : endpoint, fraction: motion ? simulationFraction(week, motion.simulation, timing) : (week - 1) / 6,

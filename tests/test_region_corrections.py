@@ -32,6 +32,20 @@ def test_separate_arch_versions_roundtrip_and_keep_history(tmp_path):
     assert not list(tmp_path.rglob("*.tmp"))
 
 
+def test_week_eighteen_notes_and_labels_are_separate_and_source_bound(tmp_path):
+    for arch in ["upper", "lower"]:
+        labels = record(arch, visit="progress-02")
+        result = save_baseline_corrections({"arch": arch, "visit": "progress-02", "corrections": labels,
+                                           "notes": "Week 18 model chip to inspect"}, root=tmp_path)
+        assert result["ok"], result
+        assert f"week-18-{arch}" in result["path"]
+        restored = load_baseline_corrections(arch, visit="progress-02", root=tmp_path)
+        assert restored["notes"] == "Week 18 model chip to inspect"
+        assert restored["corrections"] == labels and restored["review_status"] == "draft"
+        assert not load_baseline_corrections(arch, visit="progress-01", root=tmp_path)["saved"]
+        assert not save_baseline_corrections({"arch": arch, "visit": "progress-01", "corrections": labels}, root=tmp_path)["ok"]
+
+
 @pytest.mark.parametrize("change", [
     {"source_sha256": "0" * 64}, {"arch": "upper"}, {"face_count": 1},
     {"reviewed": "yes"}, {"labels_base64": "not base64"}, {"extra": "field"},
@@ -92,7 +106,7 @@ def test_week_seven_isolated_from_baseline_and_resumes_versions(tmp_path, arch):
 def test_visit_binding_rejects_wrong_mesh_and_unknown_visit(tmp_path):
     payload = {"arch": "upper", "visit": "progress-01", "corrections": record("upper")}
     assert not save_baseline_corrections(payload, root=tmp_path)["ok"]
-    for visit in ["../initial", "progress-02", "", None]:
+    for visit in ["../initial", "progress-03", "", None]:
         assert not save_baseline_corrections({**payload, "visit": visit}, root=tmp_path)["ok"]
         assert not load_baseline_corrections("upper", visit=visit, root=tmp_path)["ok"]
     assert not list(tmp_path.rglob("*.json"))

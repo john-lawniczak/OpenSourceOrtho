@@ -527,9 +527,9 @@ document.body.addEventListener("click", (event) => {
     toggleStagePlayback();
   }
   if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab" || button?.id === "topbarAskAI") {
-    state.chat.collapsed = button.id === "topbarAskAI" ? false : !state.chat.collapsed;
+    state.chat.collapsed = !state.chat.collapsed;
     renderChat();
-    el(state.chat.collapsed ? "chatReopenTab" : "chatInput").focus();
+    el(state.chat.collapsed ? (button.id === "topbarAskAI" ? "topbarAskAI" : "chatReopenTab") : "chatInput").focus();
   }
   if (button?.id === "generatePlan") {
     generatePlan();

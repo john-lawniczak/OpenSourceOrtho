@@ -24,16 +24,17 @@ def correction_store() -> Path:
 
 
 def baseline_source(arch: str, visit: str = "initial") -> dict:
-    if visit not in {"initial", "progress-01"}:
-        raise ValueError("Choose week 1 or week 7.")
+    if visit not in {"initial", "progress-01", "progress-02"}:
+        raise ValueError("Choose week 1, week 7 or week 18.")
     if arch not in {"upper", "lower"}:
         raise ValueError("Choose upper or lower arch.")
     filename = f"{visit}-{arch}.stl"
-    manifest = json.loads((SAMPLE_CASE_DIR / "manifest.json").read_text())
+    folder = SAMPLE_CASE_DIR / "visits/progress-02" if visit == "progress-02" else SAMPLE_CASE_DIR
+    manifest = json.loads((folder / "manifest.json").read_text())
     source = next(item for item in manifest["scans"] if item["filename"] == filename)
-    if hashlib.sha256((SAMPLE_CASE_DIR / filename).read_bytes()).hexdigest() != source["sha256"]:
+    if hashlib.sha256((folder / filename).read_bytes()).hexdigest() != source["sha256"]:
         raise ValueError("Scan does not match its recorded hash.")
-    return source
+    return {**source, "filename": f"visits/progress-02/{filename}"} if visit == "progress-02" else source
 
 
 def validate_corrections(record: dict, arch: str, source: dict) -> dict:
@@ -65,7 +66,7 @@ def validate_corrections(record: dict, arch: str, source: dict) -> dict:
 
 
 def _folder(root: Path, arch: str, visit: str) -> Path:
-    prefix = "baseline" if visit == "initial" else "week-7"
+    prefix = {"initial": "baseline", "progress-01": "week-7", "progress-02": "week-18"}[visit]
     folder = root / "USER_ONE" / f"{prefix}-{arch}"
     if any(path.is_symlink() for path in [root, folder.parent, folder]):
         raise ValueError("Correction storage must not use symbolic links.")

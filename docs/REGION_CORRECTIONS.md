@@ -2,10 +2,10 @@
 
 Open **Edit Tooth Precision** in the app sidebar or in Guided **step 2: Teeth
 & time**, after loading scans and before building movement stages. Scan history
-also links directly to USER_ONE week 1 and week 7 upper/lower scans. **Edit tooth boundaries** under
+also links directly to USER_ONE week 1, week 7 and week 18 upper/lower scans. **Edit tooth boundaries** under
 an uploaded scan brings that surface into the editor. The direct URL is
 `/region-review.html`. This is a scan-labeling task, not an aligner stage; for
-USER_ONE, choose week 1 or week 7 with separate upper and lower annotations.
+USER_ONE, choose week 1, week 7 or week 18 with separate upper and lower annotations.
 Load the sample baseline or your own STL, then optionally import its correction
 JSON. Choose **Move view** to navigate; **Paint tooth** paints the chosen tooth number;
 Split only paints faces belonging to the From tooth; Merge changes the complete
@@ -233,3 +233,8 @@ checks and per-tooth counts are recorded in an ignored local audit folder.
 These are **automatic drafts**: inferred labels on observed geometry. The editor
 preserves that origin until painting or explicit boundary review; review every
 number and boundary, especially where teeth moved or a projected mask is incomplete.
+
+Week 18 notes and labels save to `.orthoplan-region-corrections/USER_ONE/week-18-upper/`
+and `week-18-lower/` by default (or the configured `ORTHOPLAN_REGION_CORRECTIONS`
+root). Each JSON snapshot contains both `notes` and `corrections`. Saving does not
+automatically fit motion; the week 1–18 endpoint comparison must be regenerated.

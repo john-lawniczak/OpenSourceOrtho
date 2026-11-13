@@ -76,7 +76,7 @@ test("week navigation without an estimate never substitutes endpoint scans for m
     assert.deepEqual(historyFrame(week, pair), { week, index: null, scan: null,
       kind: "unavailable", fraction: (week - 1) / 6 });
   }
-  for (const week of [0, 8, 1.5, NaN, Infinity, "2"]) assert.throws(() => historyFrame(week, pair));
+  for (const week of [0, 19, 1.5, NaN, Infinity, "2"]) assert.throws(() => historyFrame(week, pair));
 });
 
 test("upper front/side camera is rolled so crowns point down; lower retains upright orientation", () => {
@@ -89,6 +89,17 @@ test("upper front/side camera is rolled so crowns point down; lower retains upri
     const { position, up } = historyCamera(arch, "occlusal");
     assert.equal(position.reduce((sum, v, i) => sum + v * up[i], 0), 0);
   }
+});
+
+test("week 18 is a separate observation and never extrapolates the week 1–7 fit", () => {
+  const scans = [...observedPairMetadata(...records(), "upper"), { label: "Week 18" }];
+  const motion = { simulation: {} };
+  for (let week = 8; week < 18; week++) {
+    assert.deepEqual(historyFrame(week, scans, motion, true), { week, index: null, scan: null, kind: "unavailable", fraction: 0 });
+  }
+  assert.equal(historyFrame(18, scans, motion, true).scan, scans[2]);
+  assert.equal(historyFrame(18, scans, motion, true).index, 3);
+  assert.equal(historyFrame(18, scans.slice(0, 2), motion).kind, "unavailable");
 });
 
 test("display geometry preserves triangle coordinates up to proper rotation and translation", () => {

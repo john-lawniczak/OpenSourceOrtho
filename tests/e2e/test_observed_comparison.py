@@ -9,6 +9,7 @@ from test_chat_workspace import server_url  # noqa: E402,F401
 def canvas_snapshot(canvas, **kwargs):
     # Rounded CSS corners can differ by 1–2 RGB levels after browser scrolling.
     # Exclude the border mask and sticky workflow rail from scan-pixel comparisons.
+    canvas.evaluate("el => el.scrollIntoView({block: 'center'})")
     return canvas.screenshot(style=".comparison-stage { border-radius: 0 !important; } .comparison-visit, #guidedRail { visibility: hidden !important; }", **kwargs)
 
 
@@ -29,7 +30,7 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     frames = []
     for week in range(2, 7):
         page.locator("#comparisonNext").click()
-        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 7")
+        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 18")
         expect(page.locator("#comparisonMissing")).not_to_be_visible()
         expect(canvas).to_be_visible()
         expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")
@@ -39,7 +40,7 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     page.locator("#sampleComparison").screenshot(path=str(tmp_path / "estimated-week6.png"))
     page.locator("#comparisonNext").click()
     expect(page.locator("#comparisonVisit")).to_contain_text("Reported week 7")
-    expect(page.locator("#comparisonNext")).to_be_disabled()
+    expect(page.locator("#comparisonNext")).to_be_enabled()
     recorded = canvas_snapshot(canvas)
     page.locator("#comparisonEndpointFit").click()
     expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")

@@ -161,3 +161,17 @@ case's `private/media/` folder. The local server serves its video, captions, and
 poster through the three fixed `/workflow-*` routes; without those private assets,
 the bundled public walkthrough remains the fallback. Public release filtering
 excludes these private recordings and annotations.
+
+## Observed week 18
+
+The sample history now exposes reported weeks 1–18. The original week 18 upper
+and lower pair loads on demand from its published visit manifest and source
+metadata, with SHA-256 verification. Acquisition date remains unknown. Display
+centering and scanner-axis assumptions are not cross-visit or bite registration.
+
+Weeks 2–6 retain the existing week 1–7 fit. Weeks 8–17 explicitly show **Not fitted**;
+week 18 is an observation and does not inherit earlier tooth labels, motion or
+proximity values. Week 18 painting links open that exact arch and visit with
+separate saves. After painting, a new endpoint fit can attempt a best-effort
+week 1–18 research preview, retaining uncertainty for model chips and unmatched
+regions. Painting alone does not regenerate it.

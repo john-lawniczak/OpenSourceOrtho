@@ -1,5 +1,5 @@
 /* Persistent orientation and compact, approachable reference tools. */
-.topbar-settings { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; font-size: 22px; }
+.topbar-settings { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; font-size: 16px; }
 .topbar-settings span { display: inline !important; }
 .profile-launch { display: grid; gap: 6px; padding: 14px; background: #203d3b; color: #e5f7f3; border: 1px solid #44605e; text-align: left; cursor: pointer; }
 .profile-launch small { color: #b0cac5; font-size: 11px; font-weight: 400; }
@@ -74,3 +74,11 @@ body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-up
 .precision-dialog > header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .precision-dialog button { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--panel-alt); color: var(--ink); cursor: pointer; }
 .precision-dialog iframe { flex: 1; min-height: 0; width: 100%; border: 0; background: var(--panel); }
+
+.brand-title { display: flex; align-items: center; gap: 8px; }
+.brand-title .topbar-settings { width: 32px; height: 32px; font-size: 14px; border-color: transparent; }
+.brand-title h1 { white-space: nowrap; }
+.painting-workspace-button { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 1px solid #0f766e; border-radius: 10px; background: #0f766e; color: #fff; font-weight: 700; text-decoration: none; box-shadow: 0 2px 5px #0002; }
+.painting-workspace-button:hover { background: #115e59; color: #fff; }
+.painting-workspace-button:focus-visible { outline: 3px solid #65e6d1; outline-offset: 3px; }
+@media (max-width: 480px) { .app-topbar { gap: 6px; } .app-topbar .brand-block { gap: 6px; } .brand-title { gap: 3px; } .app-topbar .brand-mark { display: none; } }

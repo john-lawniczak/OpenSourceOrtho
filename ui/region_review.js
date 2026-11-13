@@ -7,6 +7,7 @@ import { setupRegionSaving, fetchBaselineSave } from "./region_review_save.js";
 import { setupReviewControls } from "./region_review_controls.js";
 import { setupFragmentReview } from "./region_fragment_review.js";
 import { inferArchFromName } from "./core.js";
+import { loadWeekEighteenScan } from "./scan_week_eighteen.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
 import { loadMotionPreview } from "./scan_motion_data.js";
 import { RegionEdits } from "./region_edits.js";
@@ -29,7 +30,7 @@ function mount() {
   viewer?.dispose();
   el("reviewWorkspaceLink").href = scan.visit ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
-  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : "week 7 observed scan"} · ` : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
+  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
     brushSettings: () => ({ mode: el("reviewEditing").disabled ? "orbit" : el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
@@ -48,21 +49,21 @@ async function loadBaseline(arch, visit = el("reviewVisit").value) {
   if (!["upper", "lower"].includes(arch)) throw new Error("Choose Upper or Lower first.");
   if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; return; }
   const current = ++generation;
-  el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : 7} ${arch}…`;
+  el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : visit === "progress-01" ? 7 : 18} ${arch}…`;
   el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
   try {
-    const [pair, saved, caseData] = await Promise.all([loadObservedPair(arch), fetchBaselineSave(arch, visit), loadBaselineCaseData(arch, visit)]);
+    const [pair, saved, caseData] = await Promise.all([visit === "progress-02" ? loadWeekEighteenScan(arch).then(scan => [scan]) : loadObservedPair(arch), fetchBaselineSave(arch, visit), loadBaselineCaseData(arch, visit)]);
     const corrections = saved.saved ? saved.corrections : caseData.corrections;
     const motion = corrections || visit !== "initial" ? null : await loadMotionPreview(pair);
     if (current !== generation) return;
-    const nextScan = { ...pair[visit === "initial" ? 0 : 1], baseline: visit === "initial", visit, absentTeeth: caseData.absentTeeth };
+    const nextScan = { ...pair[visit === "progress-01" ? 1 : 0], baseline: visit === "initial", visit, absentTeeth: caseData.absentTeeth };
     const mapping = motion && Object.fromEntries(motion.teeth.map(t => [t.face_label, Number(t.tooth)]));
     const count = parseStlFaceCount(nextScan.bytes);
     const nextEdits = corrections ? RegionEdits.restore(corrections, nextScan.sha256, count, arch)
       : new RegionEdits(motion ? motion.faceLabels.map(id => caseData.absentTeeth.includes(mapping[id]) ? 0 : mapping[id] || 0) : new Uint8Array(count), arch);
     scan = nextScan; edits = nextEdits; mount(); saving.setSaved(saved);
     el("reviewVisit").value = visit; void saving.refreshSummary();
-    if (!saved.saved && visit === "progress-01") el("reviewSaveStatus").textContent = "Week 7 · unpainted original surface · choose a tooth to begin";
+    if (!saved.saved && visit !== "initial") el("reviewSaveStatus").textContent = `Week ${visit === "progress-01" ? 7 : 18} · unpainted original surface · choose a tooth to begin`;
     if (!saved.saved && corrections) el("reviewSaveStatus").textContent = "Published draft · boundaries need review";
     const url = new URL(location.href); url.searchParams.delete("edit"); url.searchParams.set("baseline", arch); url.searchParams.set("visit", visit);
     history.replaceState(null, "", url);
@@ -150,7 +151,7 @@ el("reviewVisit").onchange = () => {
   else void saving.refreshSummary();
 };
 const requestedVisit = new URLSearchParams(location.search).get("visit") || "initial";
-if (["initial", "progress-01"].includes(requestedVisit)) el("reviewVisit").value = requestedVisit;
+if (["initial", "progress-01", "progress-02"].includes(requestedVisit)) el("reviewVisit").value = requestedVisit;
 void saving.refreshSummary();
 const requestedBaseline = new URLSearchParams(location.search).get("baseline");
 if (!transferId && ["upper", "lower"].includes(requestedBaseline)) void action(() => loadBaseline(requestedBaseline));

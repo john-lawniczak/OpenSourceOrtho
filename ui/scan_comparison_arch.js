@@ -18,6 +18,11 @@ export function comparisonArch(scans, preview, material) {
   const group = new THREE.Group(), nodes = [...meshes, simulation?.group];
   nodes.filter(Boolean).forEach(node => group.add(node));
   return { group, meshes, nodes, simulation, motion: preview, arch: scans[0].arch,
+    addObservedVisit(scan) {
+      const mesh = new THREE.Mesh(comparisonGeometry(scan), material);
+      if (meshes[2]) { group.remove(meshes[2]); meshes[2].geometry.dispose(); }
+      meshes[2] = mesh; nodes[3] = mesh; group.add(mesh);
+    },
     dispose() { meshes.forEach(mesh => mesh.geometry.dispose()); simulation?.dispose(); } };
 }
 

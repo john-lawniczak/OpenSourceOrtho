@@ -42,8 +42,10 @@ document.addEventListener("click", event => {
   if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.button) return;
   event.preventDefault();
   if (state.sample.active) {
+    if (new URL(link.href).searchParams.has("baseline")) { openPrecisionWorkspace(link.href); return; }
     const arch = document.getElementById("boundaryArch")?.value || "upper";
-    openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${state.sample.visit || "progress-01"}`);
+    const visit = state.sample.view === "observed" && document.getElementById("sampleComparison")?.dataset.week === "18" ? "progress-02" : state.sample.visit || "progress-01";
+    openPrecisionWorkspace(`./region-review.html?baseline=${arch}&visit=${visit}`);
   } else {
     const openScan = document.getElementById("openBoundaryEditor");
     if (state.scanSources.length && document.getElementById("boundaryArch")?.value && !openScan?.disabled) openScan.click();
