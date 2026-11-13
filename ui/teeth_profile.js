@@ -1,6 +1,8 @@
+import { renderScanDates } from "./scan_dates_view.js";
 import { el, state } from "./state.js";
 
 export function renderProfile() {
+  renderScanDates();
   const sample = state.sample.active;
   const scans = state.scanSources.length || state.files.length;
   el("teethProfileStatus").textContent = sample ? "Return to your own scans" : scans ? `${scans} scan${scans === 1 ? "" : "s"} · your workspace` : "";

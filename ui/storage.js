@@ -40,9 +40,10 @@ async function withStore(mode, callback) {
   }
 }
 
-export async function saveUploadedFiles(files) {
+export async function saveUploadedFiles(files, dates = []) {
   await withStore("readwrite", (store) => {
     store.put(Array.from(files), UPLOAD_KEY);
+    store.put(dates, "current-scan-dates");
   });
 }
 
@@ -57,6 +58,7 @@ export async function restoreUploadedFiles() {
 export async function clearUploadedFiles() {
   await withStore("readwrite", (store) => {
     store.delete(UPLOAD_KEY);
+    store.delete("current-scan-dates");
   });
 }
 
@@ -102,4 +104,15 @@ export function clearSegmentationReview(planId) {
   } catch {
     // Non-fatal.
   }
+}
+
+export async function saveUploadDates(dates) {
+  return withStore("readwrite", store => store.put(dates, "current-scan-dates"));
+}
+export async function restoreUploadDates() {
+  return withStore("readonly", store => new Promise((resolve, reject) => {
+    const request = store.get("current-scan-dates");
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  }));
 }

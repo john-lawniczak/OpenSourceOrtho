@@ -1,3 +1,5 @@
+import { newScanDates } from "./scan_dates.js";
+import { restoreUploadDates } from "./storage.js";
 import { initializeChatPersistence } from "./chat_persistence.js";
 import { installToothWorkspace } from "./tooth_workspace.js";
 import { bindCbctRegistration } from "./cbct_registration_review.js";
@@ -590,7 +592,7 @@ async function setUploadedFiles(files) {
   state.demoInitialOffsets = {};
   el("scanUnits").value = "unverified";
   const scanFiles = files.filter((file) => isSupportedScanName(file?.name));
-  state.files = scanFiles;
+  state.files = scanFiles; state.scanDates = newScanDates(scanFiles);
   state.file = scanFiles[0] || null;
   state.scanSources = [];
   state.useDemoMeshes = false;
@@ -609,7 +611,7 @@ async function setUploadedFiles(files) {
   if (scanFiles.length) {
     state.uploadStorageStatus = "Saving scan files locally in this browser...";
     try {
-      await saveUploadedFiles(scanFiles);
+      await saveUploadedFiles(scanFiles, state.scanDates);
       state.uploadStorageStatus = "Saved locally in this browser. Registering scan bytes with the local engine...";
     } catch (error) {
       state.uploadStorageStatus = `Loaded for this session only; browser storage failed: ${error.message}`;
@@ -1016,7 +1018,7 @@ async function restoreStoredUploads() {
   try {
     const files = await restoreUploadedFiles();
     if (!files.length) return;
-    state.files = files;
+    state.files = files; state.scanDates = await restoreUploadDates();
     state.file = files[0];
     state.scanSources = [];
     state.useDemoMeshes = false;

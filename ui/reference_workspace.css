@@ -63,3 +63,7 @@ body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-up
 .profile-launch { border: 2px solid transparent; border-radius: 10px; }
 .profile-launch[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 4px 0 var(--accent); font-weight: 750; }
 .profile-launch:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.scan-date-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.scan-date-row strong { overflow-wrap: anywhere; }
+.scan-date-row small { color: var(--muted); }
