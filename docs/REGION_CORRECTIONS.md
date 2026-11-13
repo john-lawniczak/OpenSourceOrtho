@@ -245,3 +245,52 @@ Week 18 notes and labels save to `.orthoplan-region-corrections/USER_ONE/week-18
 and `week-18-lower/` by default (or the configured `ORTHOPLAN_REGION_CORRECTIONS`
 root). Each JSON snapshot contains both `notes` and `corrections`. Saving does not
 automatically fit motion; the week 1–18 endpoint comparison must be regenerated.
+
+## Repair surface: small holes
+
+Open **Repair surface · small holes** alongside the painting controls. **Find
+small holes** inspects exact-coordinate boundary loops in a background worker.
+Choose an opening, select **Preview patch**, and rotate to inspect the yellow
+proposal. **Cancel preview** leaves geometry unchanged; **Accept patch** creates
+an estimated repaired version. Purple marks added faces; **Estimated surfaces**
+toggles that coloring, while the source summary continues to identify the repair.
+
+The first release supports only small, nearly planar, convex openings. It keeps
+the largest boundary of each connected component open as an outer or ambiguous
+edge, excludes branching/non-manifold or inconsistently wound boundaries, and
+rejects oversized, highly curved, non-convex or overlapping proposals. The size
+input is in source scan units, not assumed millimetres, and is capped at 15% of
+the scan bounding-box diagonal. Scans over one million triangles or 50,000 open
+edges, or over 128 separate boundary loops, require separate inspection. These conservative checks can reject genuine
+holes; geometry alone cannot distinguish all intentional openings. They do not
+certify a whole mesh as intersection-free or watertight.
+
+Each accepted patch appends triangles without moving or reordering original
+faces. Existing painted labels stay on the same faces. New faces start unlabeled,
+the review checkbox resets, and new faces remain marked as estimated even after
+painting. **Undo last patch** removes the last accepted patch while retaining
+current labels on surviving faces (up to five patches in the current editor
+session). Geometry changes reset the painting undo history. Scan replacement
+clears patch undo; saved files retain patch provenance rather than undo history.
+
+**Save locally** stores repaired versions in this browser's IndexedDB, including
+STL bytes, labels, notes, source hash, original face count and estimated face
+ranges. This also applies when starting from USER_ONE: the original server-side
+painting and observed-history scan stay separate. **My Notes** reopens the exact
+repaired version. Concurrent stale saves are rejected by the existing browser
+revision check. Browser data can be cleared or evicted.
+
+**Download repair bundle** backs up geometry, labels, notes and repair provenance
+in one JSON file. Restore through **Import scan or corrections → Repair bundle**;
+the importer checks the mesh hash, finite coordinates, face ranges and labels.
+An STL or label-only file cannot carry all this provenance, so repaired versions
+export the complete bundle instead of labels alone. Import provenance is a record
+of estimated regions, not independent verification of anatomy. Repaired versions
+are not automatically returned to an endpoint-fitting case, published, or used to
+regenerate motion previews.
+
+A closed dent or missing tooth shape from an incomplete mold is not a small mesh
+hole. This tool does not sculpt or reconstruct those defects. USER_ONE's cleaned
+week 18 upper has complex/curved openings that this first release keeps unpatched;
+raising the size limit does not bypass the geometry checks. Surface reconstruction
+from an earlier scan remains a separate future feature.

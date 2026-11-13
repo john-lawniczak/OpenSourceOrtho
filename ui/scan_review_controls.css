@@ -113,3 +113,14 @@
 .precision-embedded .review-header { display: none; }
 .precision-embedded main { padding-top: 12px; }
 #reviewCaptureField[hidden], #reviewCaptureNote[hidden] { display: none; }
+
+#repairPanel { margin: 0 0 12px; padding: 12px; border: 1px solid #b477d0; border-radius: 8px; }
+#repairPanel summary { font-weight: 650; cursor: pointer; }
+#repairPanel > label { display: grid; gap: 6px; margin: 10px 0; }
+#repairPanel input[type="number"] { width: 7rem; }
+#repairPanel select { width: 100%; min-width: 0; }
+#repairPanel > .repair-toggle { display: flex; align-items: center; }
+#repairPanel .repair-toggle input { width: 18px; height: 18px; flex: 0 0 18px; accent-color: #ca67f0; }
+#repairPanel small { display: block; margin-bottom: 10px; }
+#repairPanel button { padding: 8px 10px; margin: 4px 0; }
+#repairStatus { overflow-wrap: anywhere; }

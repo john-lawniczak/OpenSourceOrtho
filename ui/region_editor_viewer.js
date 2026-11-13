@@ -1,3 +1,4 @@
+import { createRepairView } from "./surface_repair_view.js";
 import { createRegionSelection } from "./region_selection_view.js";
 import { createBoundaryView } from "./region_boundary_view.js";
 import { createFragmentView } from "./region_fragment_view.js";
@@ -20,6 +21,8 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   const selection = createRegionSelection(host, scene, geometry, camera);
   const boundaries = createBoundaryView(scene, geometry);
   const fragments = createFragmentView(scene, geometry);
+  const repairView = createRepairView(scene, geometry, scan);
+  let estimatedVisible = true, lastColors = [[], 0, true];
   let activeLabels = [], pointerStart = null, lastHit = null, focused = false, pointBounds = null, selectedLabel = 0;
   let controls = new OrbitControls(camera, renderer.domElement); controls.addEventListener("change", render);
   const box = geometry.boundingBox.clone();
@@ -121,18 +124,36 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
   controls = frameScanView(camera, controls, renderer.domElement, box, scan.autoView ? "auto" : "default", render, viewContext);
   return {
     colorLabels(labels, selected = 0, showOtherColors = true) {
+      lastColors = [labels, selected, showOtherColors];
       const changedSelection = selectedLabel !== selected; selectedLabel = selected;
       activeLabels = labels;
       const palette = new Map([[0, new THREE.Color(0x8a989d)]]);
       for (const id of new Set(labels)) if (id) palette.set(id, showOtherColors ? new THREE.Color().setHSL((id * 0.6180339) % 1, 0.65, 0.55) : new THREE.Color(0x607c8b));
       if (selected) palette.set(selected, new THREE.Color(0xffbf47));
-      labels.forEach((id, face) => { const color = palette.get(id); for (let i = 0; i < 3; i++) colors.set([color.r, color.g, color.b], face * 9 + i * 3); });
+      const estimatedColor = new THREE.Color(0xca67f0);
+      labels.forEach((id, face) => { const color = estimatedVisible && scan.repair && face >= scan.repair.originalFaceCount ? estimatedColor : palette.get(id); for (let i = 0; i < 3; i++) colors.set([color.r, color.g, color.b], face * 9 + i * 3); });
       selection.update(labels, selected);
       boundaries.update(labels);
       geometry.attributes.color.needsUpdate = true;
       if (focused && changedSelection && !pointBounds) focusSelected();
       render();
     },
+    navigationPose() { return { position: camera.position.toArray(), up: camera.up.toArray(), target: controls.target.toArray() }; },
+    restoreNavigation(pose) {
+      camera.position.fromArray(pose.position); camera.up.fromArray(pose.up); controls.target.fromArray(pose.target);
+      controls.update(); render();
+    },
+    showRepair(hole, preview = false, focus = false) {
+      const target = repairView.show(hole, preview);
+      if (focus && target) {
+        const minimum = box.getSize(new THREE.Vector3()).length() * .1;
+        target.expandByScalar(minimum * .5); pointBounds = target; focused = true;
+        controls = frameScanView(camera, controls, renderer.domElement, target, "fit", render);
+        configureNavigation();
+      }
+      render();
+    },
+    setEstimatedVisible(value) { estimatedVisible = value; this.colorLabels(...lastColors); },
     setMarkerVisible(visible) { selection.setMarkerVisible(visible); render(); },
     setBoundariesVisible(visible) { boundaries.visible(visible); render(); },
     showFragments(groups, visible = true) { fragments.update(groups); fragments.visible(visible); render(); },
@@ -157,6 +178,6 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onStrok
       camera.position.copy(controls.target).add(offset); controls.update(); render();
     },
     focusSelected, updateBrush,
-    dispose() { fragments.dispose(); boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
+    dispose() { repairView.dispose(); fragments.dispose(); boundaries.dispose(); selection.dispose(); viewControls.remove(); cursor.geometry.dispose(); cursor.material.dispose(); observer.disconnect(); controls.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); host.replaceChildren(); },
   };
 }

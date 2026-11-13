@@ -1,3 +1,4 @@
+import { setupSurfaceRepair } from "./surface_repair.js";
 import { setupEmbeddedPrecision } from "./precision_embedded.js";
 import { loadBrowserPainting, browserSaveSummary } from "./region_browser_saves.js";
 import { sourceRotation } from "./scan_source_orientation.js";
@@ -23,10 +24,20 @@ const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: (
 const fragments = setupFragmentReview(() => ({ scan, edits, viewer }), id => {
   el("reviewTo").value = id; el("reviewTool").value = "orbit"; selectionChanged(); viewer?.updateBrush();
 });
+const repair = setupSurfaceRepair(() => ({ scan, edits, viewer }), (nextScan, labels, token, notes = el("reviewNotes").value) => {
+  const sameSource = nextScan.repair?.sourceSha256 === (scan?.repair?.sourceSha256 || scan?.sha256) || nextScan.sha256 === scan?.repair?.sourceSha256;
+  const pose = sameSource ? viewer?.navigationPose() : null;
+  generation++; scan = nextScan; edits = new RegionEdits(labels, scan.arch);
+  mount(true); if (pose) viewer.restoreNavigation(pose); saving.setSaved({ saved_at: token, notes }); saving.markDirty();
+  const url = new URL(location.href); for (const key of ["baseline", "visit", "capture", "edit"]) url.searchParams.delete(key);
+  history.replaceState(null, "", url);
+}, saving);
 function selectedCount() { return edits ? edits.labels.reduce((count, id) => count + (id === Number(el("reviewTo").value)), 0) : 0; }
 function selectionChanged() { viewer?.colorLabels(edits.labels, Number(el("reviewTo").value), el("reviewOtherColors").checked); panel.update(Boolean(scan), selectedCount()); }
-function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; fragments.invalidate(); } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · original scan unchanged`; }
-function mount() {
+function refresh(changed = false) { if (changed) { saving.markDirty(); el("reviewChecked").checked = false; fragments.invalidate(); } selectionChanged(); el("reviewStatus").textContent = `${edits.undoStack.length} correction operations · ${scan?.repair ? "estimated repaired version" : "original scan unchanged"}`; }
+function mount(repairTransition = false) {
+  repair.validate(scan);
+  el("reviewExport").textContent = scan.repair ? "Download repair bundle" : "Download JSON";
   viewer?.dispose();
   el("reviewCaptureField").hidden = scan.visit !== "progress-02" || scan.arch !== "lower";
   el("reviewCaptureNote").hidden = scan.visit !== "progress-02";
@@ -34,7 +45,7 @@ function mount() {
   el(scan.arch === "upper" ? "reviewUpperCapture" : "reviewCapture").value = scan.capture || "original";
   el("reviewWorkspaceLink").href = scan.visit ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
-  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
+  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.repair ? "Estimated repaired surface · " : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
     brushSettings: () => ({ mode: el("reviewEditing").disabled ? "orbit" : el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
@@ -46,7 +57,7 @@ function mount() {
     onStrokeStart: () => edits.beginStroke(),
     onStrokeEnd: () => { edits.endStroke(); refresh(); },
     onPaint: (faces, settings) => action(() => { const changed = edits.paint(faces, settings.mode === "erase" ? 0 : Number(el("reviewTo").value), settings.mode === "split" ? Number(el("reviewFrom").value) : null); refresh(changed > 0); }),
-  }); fragments.reset(); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
+  }); fragments.reset(); repair.reset(!repairTransition); viewer.setMarkerVisible(el("reviewShowLabel").checked); viewer.setBoundariesVisible(el("reviewShowEdges").checked); refresh(); saving.update();
 }
 async function action(fn) { try { await fn(); } catch (error) { el("reviewStatus").textContent = error.message; } }
 async function loadBaseline(arch, visit = el("reviewVisit").value) {
@@ -102,7 +113,7 @@ el("reviewScan").onchange = () => action(async () => {
   const saved = await loadBrowserPainting(nextScan).catch(() => null);
   if (current !== generation) return;
   const nextEdits = saved ? RegionEdits.restore(saved.labels, sha256, count, arch) : new RegionEdits(new Uint8Array(count), arch);
-  scan = nextScan; edits = nextEdits; mount(); saving.setSaved(browserSaveSummary(saved));
+  scan = saved?.scan?.repair ? { ...nextScan, repair: saved.scan.repair, rotation: saved.scan.rotation, paintingFront: saved.scan.paintingFront } : nextScan; edits = nextEdits; mount(); saving.setSaved(browserSaveSummary(saved));
 });
 el("reviewLabels").onchange = () => action(async () => {
   if (!scan) throw new Error("Load the matching scan first.");
@@ -121,6 +132,7 @@ for (const [id, fn] of [["reviewUndo", () => edits.undo()], ["reviewRedo", () =>
   });
 }
 el("reviewExport").onclick = () => action(() => {
+  if (scan?.repair) { el("repairExport").click(); return; }
   if (!edits) throw new Error("Load a scan first.");
   const blob = new Blob([JSON.stringify(edits.export(scan.sha256, el("reviewChecked").checked))], {type:"application/json"});
   const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href=url; a.download=`${(scan.filename || "scan").replace(/\.stl$/i, "")}-tooth-corrections.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000); saving.exported();

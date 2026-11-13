@@ -15,7 +15,7 @@
 <p id="reviewCaptureNote" hidden>Week 18 scans are from chipped models. Paint visible tooth boundaries; leave missing or uncertain surfaces unreviewed. Cleaned upper removes excess model material; it does not fill gaps. Fusion H4 is suggested for its compact margins, not proven anatomical accuracy.</p>
 <details class="review-import"><summary>Import scan or corrections</summary>
 <div class="controls"><label>Arch <select id="reviewArch"><option value="" selected>Choose arch…</option><option value="upper">Upper</option><option value="lower">Lower</option></select></label><button id="loadSample" disabled>Load USER_ONE scan</button>
-<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label></div></details>
+<label>Own STL <input type="file" id="reviewScan" accept=".stl"></label><label>Correction JSON <input type="file" id="reviewLabels" accept=".json"></label><label>Repair bundle <input id="repairImport" type="file" accept=".json"></label></div></details>
 <p id="reviewSource" class="review-summary">No scan loaded.</p>
 <section class="review-workbench">
 <div class="review-surface">
@@ -34,6 +34,18 @@
 <p id="reviewStatus" role="status">Load a scan to begin.</p>
 </div>
 <aside class="review-paint-controls">
+<details id="repairPanel"><summary>Repair surface · small holes</summary>
+<p>Patch small openings with an estimated surface. This does not reconstruct dents or missing tooth shape.</p>
+<label>Maximum opening span <input id="repairMaxSize" type="number" min="0.01" step="0.1" value="3"></label>
+<small>Scan units, not verified millimetres. Outer or ambiguous edges stay open. Geometry alone cannot identify every intentionally open region.</small>
+<button id="repairFind" type="button" disabled>Find small holes</button>
+<label>Opening <select id="repairHole" disabled></select></label>
+<div class="controls"><button id="repairPreview" type="button" disabled>Preview patch</button><button id="repairCancel" type="button" disabled>Cancel preview</button><button id="repairAccept" type="button" disabled>Accept patch</button><button id="repairUndo" type="button" disabled>Undo last patch</button></div>
+<label class="repair-toggle"><input id="repairEstimated" type="checkbox" checked disabled> Estimated surfaces · purple</label>
+<p id="repairStatus" role="status">Load a scan to inspect openings.</p>
+<p id="repairProvenance"></p>
+<button id="repairExport" type="button" disabled>Download repair bundle</button>
+</details>
 <fieldset id="reviewEditing" disabled><legend>Select a region</legend>
 <p id="reviewArchNotice" class="review-arch-notice"></p>
 <div id="reviewSelectedTooth" class="review-selected-tooth" role="status"></div>
