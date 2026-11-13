@@ -175,19 +175,9 @@ def test_review_ui_renders_engine_state_and_canvas_pixels(server_url: str) -> No
             acquisition = page.locator("#acquisitionList").inner_text()
             assert "Root data" in acquisition or "CBCT" in acquisition
 
-            page.click('button.dim[data-dim="2d"]')
-            non_background = page.locator("#archCanvas").evaluate(
-                """canvas => {
-                  const ctx = canvas.getContext('2d');
-                  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                  let changed = 0;
-                  for (let i = 0; i < data.length; i += 4) {
-                    if (!(data[i] === 251 && data[i + 1] === 253 && data[i + 2] === 254)) changed++;
-                  }
-                  return changed;
-                }"""
-            )
-            assert non_background > 1000
+            expect(page.locator('#viewer3d canvas')).to_be_visible()
+            expect(page.locator('#archCanvas')).to_be_hidden()
+            assert len(page.locator('#viewer3d canvas').screenshot()) > 1000
 
             page.click('button.step[data-step="stages"]')
             page.click("#addStage")
@@ -245,10 +235,7 @@ def test_acquisition_print_export_and_visual_screenshots(
             page.locator("#viewer3d").screenshot(path=str(viewer_path))
             assert viewer_path.stat().st_size > 1000
 
-            page.click('button.dim[data-dim="2d"]')
-            canvas_path = tmp_path / "viewer2d.png"
-            page.locator("#archCanvas").screenshot(path=str(canvas_path))
-            assert canvas_path.stat().st_size > 1000
+            expect(page.locator('[data-dim="2d"]')).to_have_count(0)
         finally:
             browser.close()
 

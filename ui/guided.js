@@ -41,7 +41,7 @@ export function currentGuidedStep() {
 
 export function goGuided(stepId) {
   if (!GUIDED_STEPS.some((step) => step.id === stepId)) return;
-  state.guided.step = stepId;
+  state.guided.step = stepId; state.dim = "3d";
   pendingStepFocus = true;
   // The 3D preview is only meaningful in a view where staged movement renders;
   // "current" shows just the static baseline scan, so default to overlay.

@@ -88,21 +88,20 @@ function ensureViewer() {
     });
   } catch (error) {
     viewerFailed = true;
-    el("viewer3d").hidden = true;
+    el("viewer3d").textContent = "3D preview could not start. Try reloading in a browser with WebGL enabled.";
     el("viewerZoom").hidden = true;
-    el("archCanvas").hidden = false;
-    state.dim = "2d";
+    el("archCanvas").hidden = true;
+    state.dim = "3d";
   }
   return viewer;
 }
 
-// Called by the 3D/2D toggle. Falls back to 2D if WebGL is unavailable.
-export function setDimension(dim) {
-  state.dim = dim;
-  const use3d = dim === "3d" && !viewerFailed;
-  el("viewer3d").hidden = !use3d;
-  el("archCanvas").hidden = use3d;
-  el("viewerZoom").hidden = !use3d;
+// Keep the public workspace on the source-based 3D preview.
+export function setDimension() {
+  state.dim = "3d";
+  el("viewer3d").hidden = false;
+  el("archCanvas").hidden = true;
+  el("viewerZoom").hidden = viewerFailed;
   renderAll();
 }
 
