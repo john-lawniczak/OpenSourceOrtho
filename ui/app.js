@@ -522,10 +522,10 @@ document.body.addEventListener("click", (event) => {
   if (button?.id === "stagePlayToggle") {
     toggleStagePlayback();
   }
-  if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab") {
-    state.chat.collapsed = !state.chat.collapsed;
+  if (button?.id === "toggleChatPanel" || button?.id === "chatReopenTab" || button?.id === "topbarAskAI") {
+    state.chat.collapsed = button.id === "topbarAskAI" ? false : !state.chat.collapsed;
     renderChat();
-    el(state.chat.collapsed ? "chatReopenTab" : "chatCaseSource").focus();
+    el(state.chat.collapsed ? "chatReopenTab" : "chatInput").focus();
   }
   if (button?.id === "generatePlan") {
     generatePlan();

@@ -19,6 +19,7 @@ initializeChatComposer();
 
 export function renderChat() {
   renderChatContext();
+  el("topbarAskAI")?.setAttribute("aria-expanded", String(!state.chat.collapsed));
   document.body.dataset.chatCollapsed = state.chat.collapsed ? "1" : "";
   el("aiChatBlock").inert = state.chat.collapsed;
   renderChatConnectorControls();
