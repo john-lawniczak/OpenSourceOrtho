@@ -3,7 +3,7 @@ body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(#guidedPlanVi
 body[data-sample-view="observed"] #panel-review .panel-heading,
 body[data-sample-view="observed"] #panel-review .workflow-card,
 body[data-sample-view="observed"] #sampleStatusChip { display: none !important; }
-body[data-sample-view="observed"] .ai-rail { display: none !important; }
+body[data-sample-view="observed"][data-chat-collapsed="1"] .ai-rail { display: none !important; }
 @media (min-width: 1201px) {
   body[data-sample-view="observed"] .app-shell { grid-template-columns: 248px minmax(0, 1fr) 0; }
 }
@@ -63,3 +63,5 @@ body[data-theme="dark"] .comparison-estimate-note { background: #40341e; color: 
 body[data-theme] #sampleComparison .comparison-weeks button[aria-current="step"] {
   background: #0f766e; color: #fff; border: 2px solid #65e6d1; box-shadow: 0 0 0 2px #0f766e;
 }
+/* The header assistant shortcut also works while inspecting observed history. */
+body[data-sample-view="observed"]:not([data-chat-collapsed="1"]) .ai-rail { display: block; position: fixed; z-index: 40; inset: 60px 0 0 auto; width: min(580px, 100%); padding: 12px; background: var(--bg); }
