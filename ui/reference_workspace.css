@@ -67,3 +67,10 @@ body[data-sample="1"] [data-remove-upload], body[data-sample="1"] [data-clear-up
 .scan-date-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
 .scan-date-row strong { overflow-wrap: anywhere; }
 .scan-date-row small { color: var(--muted); }
+
+.precision-dialog { width: min(1360px, 96vw); height: 94dvh; max-width: 96vw; max-height: 96dvh; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); overflow: hidden; }
+.precision-dialog[open] { display: flex; flex-direction: column; }
+.precision-dialog::backdrop { background: #081214a8; }
+.precision-dialog > header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.precision-dialog button { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--panel-alt); color: var(--ink); cursor: pointer; }
+.precision-dialog iframe { flex: 1; min-height: 0; width: 100%; border: 0; background: var(--panel); }

@@ -108,3 +108,7 @@
 
 #reviewSaveDetails > label { display: grid; width: 100%; }
 #reviewNotes { box-sizing: border-box; display: block; width: 100%; min-height: 160px; padding: 12px; font: inherit; line-height: 1.5; border: 1px solid #82989e; border-radius: 8px; resize: vertical; overflow-y: hidden; }
+
+.review-header > a { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid currentColor; border-radius: 8px; text-decoration: none; font-weight: 650; }
+.precision-embedded .review-header { display: none; }
+.precision-embedded main { padding-top: 12px; }

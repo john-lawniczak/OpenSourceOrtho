@@ -69,6 +69,7 @@ export function setupRegionSaving(getContext) {
   el("reviewChecked").addEventListener("change", markDirty);
   window.addEventListener("beforeunload", event => { if (dirty) { event.preventDefault(); event.returnValue = ""; } });
   return { update, markDirty, setSaved, refreshSummary,
+    canLeave: () => { if (dirty && !window.confirm("Leave without saving your latest painting or notes? Choose Cancel to save first.")) return false; dirty = false; return true; },
     canReplace: () => !dirty || window.confirm("There are unsaved labels or notes. Cancel to save first, or OK to discard them and load another scan."),
     exported: () => { if (!getContext().scan?.visit && !el("reviewNotes").value) dirty = false; },
   };

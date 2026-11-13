@@ -1,3 +1,4 @@
+import "./precision_workspace.js";
 import { newScanDates } from "./scan_dates.js";
 import { restoreUploadDates } from "./storage.js";
 import { initializeChatPersistence } from "./chat_persistence.js";

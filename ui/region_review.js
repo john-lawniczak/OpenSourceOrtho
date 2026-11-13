@@ -1,3 +1,4 @@
+import { setupEmbeddedPrecision } from "./precision_embedded.js";
 import { sourceRotation } from "./scan_source_orientation.js";
 import { setupReviewShortcuts } from "./region_review_shortcuts.js";
 import { loadBaselineCaseData } from "./region_case_data.js";
@@ -14,6 +15,7 @@ import { caseStore } from "./progress_case_store.js";
 const el = id => document.getElementById(id);
 let scan, edits, viewer, generation = 0;
 const saving = setupRegionSaving(() => ({ scan, edits }));
+setupEmbeddedPrecision(saving);
 setupReviewShortcuts(() => viewer?.updateBrush());
 const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: () => { panel.update(Boolean(scan), selectedCount()); viewer?.updateBrush(); } });
 const fragments = setupFragmentReview(() => ({ scan, edits, viewer }), id => {

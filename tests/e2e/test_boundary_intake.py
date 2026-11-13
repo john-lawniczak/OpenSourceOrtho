@@ -60,6 +60,15 @@ def verify_selected_surface(page, tmp_path, canvas, box, painted):
     assert export(page, tmp_path, "after-selection.json") == painted
 
 
+def continue_in_standalone_editor(page, source):
+    editor_url = page.locator('.precision-dialog iframe').get_attribute('src')
+    expect(page.frame_locator('.precision-dialog iframe').locator('#reviewSource')).to_contain_text(source.name)
+    page.locator('#precisionBack').click()
+    # Continue the source-bound paint/undo regression in the standalone editor.
+    page.goto(editor_url)
+    expect(page).to_have_url(re.compile(r"region-review.html\?edit="))
+
+
 def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa: F811
     source = surface(tmp_path)
     with sync_playwright() as pw:
@@ -75,7 +84,7 @@ def test_upload_handoff_views_and_stroke_undo(intake_server, tmp_path):  # noqa:
             page.screenshot(path=str(tmp_path / "upload-view.png"), full_page=True)
             page.locator('[data-scan-view="roll-right"]').click()
             page.locator("#openBoundaryEditor").click()
-            expect(page).to_have_url(re.compile(r"region-review.html\?edit="))
+            continue_in_standalone_editor(page, source)
             expect(page.locator("#reviewSource")).to_contain_text(source.name)
             expect(page.locator("#reviewArch")).to_have_value("lower")
             expect(page.locator("#reviewTo")).to_have_value("32")
