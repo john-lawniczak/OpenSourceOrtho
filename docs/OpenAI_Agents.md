@@ -98,6 +98,22 @@ Responses API, as in the [official Python quickstart](https://developers.openai.
 
 ## Chat Connector Use
 
+The offline helper is explicitly labeled as having no AI model connected. Its
+tooth-size/reshaping response addresses the comparison, distinguishes width,
+height and prominence, and explains the missing measurements and irreversible
+nature of enamel removal without recommending it. It recognizes the reported
+"fied down" typo. Other offline replies disclose their built-in summary behavior
+instead of presenting a generic timeline suggestion as an answer to any question.
+External chat prompts likewise prioritize the actual question and useful
+educational explanation over boilerplate, while retaining consent and linting.
+They request plain paragraphs or simple lists to match the text-only renderer;
+Markdown emphasis and pipe tables otherwise appear literally in the transcript.
+Scan-axis bounding-box extents can describe labeled regions, but must not be
+presented as anatomical crown dimensions or justification for reshaping.
+USER_ONE context declares FDI numbering and the absence of individual crown
+dimensions; face counts must never be treated as tooth size. Workspace-only
+requests guide users to select USER_ONE explicitly without silently sharing it.
+
 Beyond the `advise` pipeline, the adapter also backs the live AI chat layer. The
 chat path (`orthoplan/ai_chat.py` + `orthoplan/ai_connectors.py`) builds an
 provider adapter per request from a browser-supplied key/endpoint, but only after

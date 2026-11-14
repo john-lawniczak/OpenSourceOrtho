@@ -5,7 +5,7 @@ import { el, state } from "./state.js";
 import { renderChatMessages } from "./chat_thread.js";
 
 const AI_KEY_HELP = {
-  local: "Offline. No key needed.",
+  local: "Built-in summaries only; no AI model is connected. Choose a provider for conversational answers.",
   anthropic: "Paste an Anthropic API key here. Use Claude Code instead for local CLI sign-in.",
   openai: "Paste the complete key from platform.openai.com. Kept for this page only.",
   "claude-code": "Uses your signed-in Claude Code CLI on this machine. To enter an API key, choose Claude API (Anthropic).",
@@ -48,7 +48,7 @@ export function renderChat() {
   el("chatEndpointField").hidden = !["mcp", "open-source"].includes(state.chat.provider);
   el("chatSharingField").hidden = isLocal;
   el("chatCustomModelField").hidden = el("chatModel").value !== "__custom__";
-  el("chatConnection").textContent = isLocal ? "Local helper · offline" : `${connector?.label} · ${state.chat.model}`;
+  el("chatConnection").textContent = isLocal ? "Offline helper · no AI model connected" : `${connector?.label} · ${state.chat.model}`;
   el("aiKeyHelp").textContent = AI_KEY_HELP[state.chat.provider] || AI_KEY_HELP.local;
   el("chatStatus").textContent = state.chat.status;
   for (const id of ["chatProvider", "chatModel", "chatCustomModel", "chatApiKey", "agentEndpoint", "agentAccessEnabled"]) el(id).disabled = state.chat.busy;
