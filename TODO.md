@@ -1,6 +1,6 @@
 # Development TODO
 
-Updated: November 12, 2026. This backlog belongs to private development in
+Updated: November 14, 2026. This backlog belongs to private development in
 `john-lawniczak/OpenSourceOrtho-dev`. Follow
 [the private development and release workflow](docs/PRIVATE_DEVELOPMENT.md).
 Keep personal scans, CBCT pixels, and unpublished annotations out of public
@@ -9,6 +9,40 @@ release trees unless publication is explicitly authorized.
 OpenSource Ortho is a clear-aligner planning safety playground and research
 toolkit. The roadmap deepens measurement, exploratory simulation, and review;
 completing it does not establish clinical equivalence or authorize physical use.
+
+## November 14 implementation increments
+
+- [x] Add local saved-painting refits with immutable previous results, scan/label/
+  configuration bindings, stale detection and bundled/previous fit comparisons.
+- [x] Persist per-tooth contributor check/uncertainty/notes against each exact
+  source and region mask; reload valid reviews and invalidate changed regions.
+- [x] Freeze contributor label snapshots in downloadable automatic-label agreement
+  reports with FDI IoU/precision/recall, confusion counts and unavailable metrics.
+- [x] Retain multiple captures per endpoint/arch, explicit active choices, dates,
+  model IDs and damage notes; round-trip them through local and portable saves,
+  including intake saved before fitting.
+- [x] Add applied-edit redo and browser session recovery bound to the same source,
+  painting and units. Pending proposals and review flags are not restored.
+
+These are bounded code increments, not completion of the broader evidence phases.
+See [workflow details and limits](docs/LOCAL_RESEARCH_WORKFLOWS.md). Independent
+review, boundary-distance scoring, measured repeatability, general multi-visit
+tracking, shared review conflict handling and named editing alternatives remain.
+
+Local USER_ONE run (November 14): upper 13/14 → 14/14 fitted; lower stayed
+14/14. Weak-fit flags fell from 8 upper / 6 lower to 0 / 0. Mean per-region p90
+surface residual changed from 0.399 to 0.252 upper (13 → 14 fitted-region
+denominator), and 0.280 to 0.225 lower (14 regions). These are unverified scan
+units and changed painted regions; they do not establish anatomical motion
+accuracy. Independent reference/boundary evidence is still needed.
+
+Private local records (not committed or published):
+- upper: fit `710a8984445540acaa1d0472239848ee`, agreement report `dd6b90d6d305429ea3650edc0b98c2e6`.
+- lower: fit `e9a0c5dcb39941a3b9abad97365d4c2b`, agreement report `c3ca7449f3b94f5684ee8cac8f67e3c4`.
+
+Validation: 20 focused Python checks, 42 JavaScript checks, and 9 affected browser
+workflows passed, including real refitting, v1/v2 backup handling, saved reviews,
+redo/recovery, and scan-history rendering. Strict maintainability and Ruff passed.
 
 ## Primary input — each user's own model
 
@@ -132,8 +166,8 @@ and [lower](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-l
   and bind regenerated results to both scan and annotation hashes. Compare
   endpoint residuals, ambiguity and unmatched regions; residuals alone do not
   establish motion accuracy. Keep weeks 2–6 explicitly estimated and separate
-  from authored treatment-plan data. Existing fits have not incorporated this
-  latest painting.
+  from authored treatment-plan data. Local saved-painting refits now exist; bundled
+  fits remain unchanged. Independent identity/boundary review is still pending.
 - [ ] **Expand to other independently reviewed cases.** Obtain appropriately
   licensed/consented scans from different people, split development and held-out
   evaluation by person, and measure generalization and correction effort. Keep

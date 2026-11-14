@@ -574,6 +574,7 @@
                 <div class="guided-edit-top">
                   <h4 id="guidedEditTitle">No tooth selected</h4>
                   <button id="guidedEditUndo" type="button" aria-label="Undo last guided edit" disabled>Undo</button>
+                  <button id="guidedEditRedo" type="button" disabled>Redo</button>
                 </div>
                 <label class="hold-tooth"><input id="holdSelectedTooth" type="checkbox" /> Hold this tooth in place</label>
                 <p id="guidedEditStatus" class="guided-edit-status">Select a tooth in the 3D view.</p>
@@ -590,6 +591,18 @@
                 </div>
                 <div id="guidedEditReadout" class="guided-edit-readout"></div>
                 <label id="selectedRegionReview"><input type="checkbox" id="reviewSelectedRegion" /> I checked this tooth’s number and boundary</label>
+                <details id="editSessionDetails"><summary>Recover applied edits</summary>
+                  <button id="saveEditSession" type="button">Save edit session</button>
+                  <button id="restoreEditSession" type="button">Restore edit session</button>
+                  <p id="editSessionStatus" role="status">Applied movements and hold choices save in this browser. Reload the same scan and painting to restore them.</p>
+                </details>
+                <details id="toothReviewDetails"><summary>Review notes</summary>
+                  <label>Contributor name <input id="toothReviewer" maxlength="120" autocomplete="off"></label>
+                  <label>Notes <textarea id="toothReviewNotes" maxlength="2000"></textarea></label>
+                  <label><input id="toothReviewUncertain" type="checkbox"> Region is uncertain</label>
+                  <button id="saveToothReview" type="button">Save review notes</button>
+                  <p id="toothReviewStatus" role="status"></p>
+                </details>
                 <button class="primary-action" id="guidedRebuild" type="button">Rebuild plan</button>
                 <details class="guided-help">
                   <summary>What these edits do</summary>

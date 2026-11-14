@@ -4,7 +4,7 @@ import { comparisonTemplate } from "./scan_comparison_template.js";
 import { createHistoryViewer } from "./scan_history_viewer.js";
 import { loadWeekEighteenScan } from "./scan_week_eighteen.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
-import { loadMotionPreview } from "./scan_motion_data.js";
+import { loadResearchMotion, installSampleResearch } from "./sample_research.js";
 import { renderMotionControls } from "./scan_motion_controls.js";
 import { proximitySummary } from "./proximity_summary.js";
 import { historyFrame } from "./scan_history.js";
@@ -115,7 +115,7 @@ async function loadArch() {
     const bundles = await Promise.all((arch === "both" ? ["upper", "lower"] : [arch]).map(async name => {
       const scans = await loadObservedPair(name, { signal: pending.signal });
       let preview = null;
-      try { preview = await loadMotionPreview(scans, { signal: pending.signal }); }
+      try { preview = await loadResearchMotion(scans, { signal: pending.signal }); }
       catch (error) { if (!pending.signal.aborted) motionError = `${name} motion preview unavailable: ${error.message}`; }
       return { pair: scans, motion: preview };
     }));
@@ -153,6 +153,7 @@ function mount(renderAll) {
   panel.id = "sampleComparison";
   panel.innerHTML = comparisonTemplate;
   el("viewerBlock").prepend(modes, panel);
+  installSampleResearch(el("comparisonDiagnostics"), loadArch);
   el("highlightScanWeeks").addEventListener("change", event => {
     panel.classList.toggle("scan-highlights-off", !event.target.checked);
   });

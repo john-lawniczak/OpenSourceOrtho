@@ -5,6 +5,9 @@ obtain usable endpoint matches and simulate the gaps between scans. Two visits
 are enough to attempt a **best-effort research preview**. Intermediate scans are
 not a prerequisite; the UI distinguishes inferred poses from observations.
 
+For saved-painting refits, contributor-agreement reports, capture alternatives
+and edit recovery, see [local research workflows](LOCAL_RESEARCH_WORKFLOWS.md).
+
 ## Repository review and resulting implementation
 
 The repository already provided a local hybrid segmenter, a learned-model

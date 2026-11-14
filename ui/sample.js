@@ -153,7 +153,7 @@ export async function prepareSampleSegmentation({ visit = state.sample.visit || 
     state.rows = Array.from({ length: 4 }, (_, stage) => teeth.map(tooth =>
       ({ stage, tooth, x: 0, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 }))).flat();
     state.demoInitialOffsets = {}; state.manualEdit = { selectedTooth: teeth[0] || null, status: "", undoStack: [] };
-    state.availability = { ...state.availability, segmented_teeth: false };
+    state.availability = { ...state.availability, segmented_teeth: seg.applied.tooth_meshes.every(link => link.reviewed) };
     state.caseRecords = []; state.fixtureMeshAssets = []; state.registrations = []; state.derivedAnatomy = null;
     state.availability = { ...state.availability, cbct: false, roots: false };
     state.view = "current"; state.activeStep = "review";

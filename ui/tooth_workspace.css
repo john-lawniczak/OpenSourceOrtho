@@ -76,3 +76,12 @@
 #focusTeethForm button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
 .viewer-tooth-row button.is-plan-focus { background: #2563eb; color: white; }
 .viewer-tooth-row button.is-plan-focus[aria-pressed="true"] { border: 3px solid #e9ab36; }
+
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) { grid-column: 1 / -1; }
+.tooth-workspace #toothReviewDetails label { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.tooth-workspace #toothReviewDetails :is(input:not([type="checkbox"]), textarea) { flex: 1; min-width: 0; }
+.tooth-workspace #toothReviewUncertain { width: 18px; height: 18px; min-height: 18px; accent-color: var(--accent); }
+.tooth-workspace .guided-edit-top h4 { flex: 1; }
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) summary { color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; }
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) button { margin-top: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) p { color: var(--muted); font-size: 13px; }

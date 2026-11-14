@@ -9,6 +9,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from orthoplan.sample_reviews import save_tooth_review
 from orthoplan.geometry_jobs import GeometryBusy, jobs
 from orthoplan.evaluation.motion_review import motion_review_payload
 from orthoplan.goal_preview import preview_goal_payload
@@ -51,7 +52,7 @@ _CONTENT_TYPES = {
 }
 
 JSON_POST_ENDPOINTS = {
-    "/api/region-corrections", "/api/sample-teeth",
+    "/api/region-corrections", "/api/sample-teeth", "/api/tooth-review",
     "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
@@ -110,6 +111,11 @@ class Handler(BaseHTTPRequestHandler):
             if path in notes:
                 self._send_json(200, notes[path]())
                 return
+            if path.startswith("/api/sample-refits/"):
+                from orthoplan.sample_refit import refit_status, open_refit
+                identity = path.rsplit("/", 1)[-1]
+                self._send_json(200, refit_status(identity) if identity in {"upper", "lower"} else open_refit(identity))
+                return
             if path.startswith("/api/region-corrections/"):
                 query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
                 self._send_json(200, load_baseline_corrections(path.rsplit("/", 1)[-1], visit=query.get("visit", ["initial"])[0], capture=query.get("capture", ["original"])[0]))
@@ -133,13 +139,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(body)
                 return
             if path == "/api/ai/connectors":
-                self._send_json(
-                    200,
-                    {
-                        "ok": True,
-                        "connectors": [connector.model_dump(mode="json") for connector in connector_catalog()],
-                    },
-                )
+                self._send_json(200, {"ok": True, "connectors": [c.model_dump(mode="json") for c in connector_catalog()]})
                 return
             if path == "/api/cases":
                 self._send_json(200, list_cases_payload(store_path=self._case_store()))
@@ -212,6 +212,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/tooth-review":
+        return save_tooth_review(payload)
     if path == "/api/sample-teeth":
         return sample_teeth_payload(payload, workspace=handler._mesh_workspace())
     if path == "/api/region-corrections":

@@ -13,7 +13,13 @@ def main():
     request = json.loads(source.read_text())
     workspace = Path(request["workspace"])
     try:
-        if request["operation"] == "segment":
+        if request["operation"] == "sample-refit":
+            from orthoplan.sample_refit import refit_payload
+            result = refit_payload(request["payload"])
+        elif request["operation"] == "sample-benchmark":
+            from orthoplan.sample_benchmark import benchmark_payload
+            result = benchmark_payload(request["payload"])
+        elif request["operation"] == "segment":
             result = segment_payload(
                 request["payload"], workspace=workspace, ui_dir=Path(request["ui_dir"])
             )

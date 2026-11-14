@@ -80,6 +80,7 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             tooth.click()
             expect(tooth).to_have_attribute('aria-pressed', 'true')
             page.locator('#reviewSelectedRegion').check()
+            expect(page.locator('#toothWorkspace [data-manual-nudge="x+"]')).to_be_enabled()
             before = json.loads(page.locator('#planJson').input_value())
             (tmp_path / "before.json").write_text(json.dumps(before))
             assert not before['fixed_teeth']

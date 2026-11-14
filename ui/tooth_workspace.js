@@ -1,4 +1,6 @@
 // The shared viewer owns one selection, whether picked by raycast or FDI button.
+import { renderEditSession, installEditSession, saveEditSession } from "./edit_sessions.js";
+import { renderToothReview, installToothReview, toothReviewPending, toothReviewError } from "./tooth_review.js";
 import { renderViewerToothNumbers } from "./viewer_tooth_numbers.js";
 import { el, state } from "./state.js";
 import { renderProfile } from "./teeth_profile.js";
@@ -16,6 +18,8 @@ export function toothEditBlocker() {
   if (!selectableTeeth().includes(tooth)) return "Identify and review individual teeth before editing.";
   if (state.goalPreview) return "Apply or discard the current preview first.";
   if (state.goalBusy) return "Preparing the preview…";
+  if (toothReviewPending()) return "Saving region review…";
+  if (toothReviewError()) return toothReviewError();
   const missing = [];
   if (!scaleConfirmed(state.scanUnits)) missing.push("confirm scan units as mm in Upload");
   if (!state.segmentation.applied?.tooth_meshes.find(link => String(link.tooth.value) === tooth)?.reviewed) missing.push("check the tooth number and boundary");
@@ -55,6 +59,8 @@ export function renderToothWorkspace() {
   if (!selected) el("chatEditMode").checked = false;
   el("imagingScanList").textContent = (state.scanSources.map(source => source.name).filter(Boolean).join(" · ")
     || state.files.map(file => file.name).join(" · ")) || "Upload a scan in step 1 or open the sample.";
+  renderEditSession();
+  renderToothReview();
   renderPreview();
 }
 
@@ -69,13 +75,8 @@ el("toothNumberForm").addEventListener("submit", event => {
   state.manualEdit.selectedTooth = tooth; el("toothNumberStatus").textContent = `Selected FDI ${tooth} · US ${universalToothNumber(tooth)}`;
   renderAll();
 });
-el("reviewSelectedRegion").addEventListener("input", event => {
-  if (!state.sample.active || state.goalPreview || state.goalBusy) return;
-  const link = state.segmentation.applied?.tooth_meshes.find(item => item.tooth.value === state.manualEdit.selectedTooth);
-  if (link) link.reviewed = event.target.checked;
-  state.availability = { ...state.availability, segmented_teeth: state.segmentation.applied?.tooth_meshes.every(item => item.reviewed) || false };
-  renderAll();
-});
+installToothReview(renderAll);
+installEditSession(renderAll);
 document.body.addEventListener("click", event => {
   const button = event.target.closest?.("button");
   if (button?.dataset.selectTooth) {
@@ -97,6 +98,7 @@ document.body.addEventListener("input", event => {
   const held = new Set(state.guided.excludedTeeth);
   if (event.target.checked) held.add(selected); else held.delete(selected);
   state.guided.excludedTeeth = [...held];
+  void saveEditSession();
   renderAll();
 });
 

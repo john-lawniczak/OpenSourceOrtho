@@ -35,7 +35,7 @@ def test_tooth_estimate_selection_and_week_progress(server_url, tmp_path):  # no
             assert canvas_snapshot(canvas) != third, "Timing selection must change actual estimated poses"
             page.locator("#comparisonTiming").select_option("uniform")
             assert canvas_snapshot(canvas) == third
-            page.locator("#sampleComparison details summary").click()
+            page.locator("#comparisonDiagnostics > summary").click()
             expect(page.locator("#comparisonProximity")).to_contain_text("Absence does not establish clearance")
             page.locator('[data-comparison-week="5"]').click()
             assert canvas_snapshot(canvas) != third

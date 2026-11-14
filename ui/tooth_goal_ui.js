@@ -1,4 +1,5 @@
 // A proposal is separate from authored rows. Exports continue to use the applied plan.
+import { pushEditUndo, saveEditSession } from "./edit_sessions.js";
 import { el, state, evaluatePlan } from "./state.js";
 import { rowsFromPlan } from "./core.js";
 import { planJson } from "./plan.js";
@@ -66,9 +67,10 @@ document.body.addEventListener("click", event => {
   if (id === "applyGoalPreview") {
     const proposal = state.goalPreview;
     if (proposal && snapshot() === proposal.baseline) {
-      state.manualEdit.undoStack = [...(state.manualEdit.undoStack || []), state.rows.map(row => ({ ...row }))].slice(-20);
+      pushEditUndo();
       state.rows = rowsFromPlan(proposal.plan);
       acceptGoalEvaluation(proposal.evaluation);
+      void saveEditSession();
     }
     discardGoalPreview();
     renderAll();
