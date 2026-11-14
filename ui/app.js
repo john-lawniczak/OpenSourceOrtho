@@ -831,8 +831,7 @@ async function exportCaseReview() {
     const review = result.review;
     downloadJson(`orthoplan-case-review-${safeDownloadToken(review.case_id || review.plan_id || "case")}.json`, review);
     if (status) {
-      const tier = review.review_tier?.label || review.review_tier?.tier || "review";
-      status.textContent = `Exported ${tier} (read-only on mobile). Open on a device: ${review.handoff.qr_payload}`;
+      status.textContent = `Exported case review (read-only on mobile). Open on a device: ${review.handoff.qr_payload}`;
     }
     renderCaseHandoff(review);
   } catch (error) {

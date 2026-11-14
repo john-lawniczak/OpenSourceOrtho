@@ -111,7 +111,6 @@ function rootBoneCard(tier, review) {
     status: aware ? "ready" : "cannot-assess",
     value: aware ? "Trusted anatomy" : "Cannot assess",
     detail: [
-      tier.label || "STL surface only",
       review?.verdict ? `Review: ${review.verdict}` : "",
     ].filter(Boolean),
   };

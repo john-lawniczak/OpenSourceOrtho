@@ -15,7 +15,7 @@ function baseState() {
 test("trust status fails closed before evaluation", () => {
   const items = trustStatusItems(baseState());
   assert.deepEqual(items.map((entry) => entry.value), [
-    "Not evaluated", "Unverified", "No scan", "Not proposed",
+    "Unverified", "No scan", "Not proposed",
     "Unavailable", "No active plan", "Not evaluated",
   ]);
 });
@@ -43,7 +43,7 @@ test("trust status reports known inputs without implying approval", () => {
 test("trust status exposes local segmentation work in progress", () => {
   const state = baseState();
   state.segmentation.busy = true;
-  assert.equal(trustStatusItems(state)[3].value, "Processing locally…");
+  assert.equal(trustStatusItems(state).find(item => item.label === "Segmentation").value, "Processing locally…");
 });
 
 test("trust status markup escapes values and links to detail regions", () => {
@@ -56,7 +56,8 @@ test("trust status markup escapes values and links to detail regions", () => {
 
 test("every trust status item links to a detail region", () => {
   const items = trustStatusItems(baseState());
-  assert.equal(items.length, 7);
+  assert.equal(items.length, 6);
+  assert.ok(items.every((entry) => entry.label !== "Review tier"));
   assert.ok(items.every((entry) => entry.target && !entry.target.startsWith("#")));
-  assert.equal((trustStatusMarkup(items).match(/href="#/g) || []).length, 7);
+  assert.equal((trustStatusMarkup(items).match(/href="#/g) || []).length, 6);
 });

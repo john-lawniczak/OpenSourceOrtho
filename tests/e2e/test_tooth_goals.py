@@ -116,9 +116,7 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             assert json.loads(page.locator('#planJson').input_value())['fixed_teeth'][0]['tooth']['value'] == '11'
             page.locator('#holdSelectedTooth').uncheck()
             page.locator('#viewerBlock').screenshot(path=str(tmp_path/'tooth-workspace.png'))
-            page.get_by_role('button', name='Open the imaging and photos guide').click()
-            expect(page.locator('#imagingViewerHost #viewer3d canvas')).to_be_visible()
-            expect(page.locator('#imagingScanList')).to_contain_text('initial-upper.stl')
+            expect(page.locator('.sidebar [data-step-target="photos"]')).to_have_count(0)
             page.set_viewport_size({"width": 390, "height": 844})
             assert page.locator('#viewerBlock').evaluate('el => el.scrollWidth <= el.clientWidth')
             assert not errors

@@ -681,7 +681,6 @@ function caseRecordDetail(record) {
 
 function renderEvaluation(result) {
   result = state.goalPreview?.evaluation || result;
-  renderReviewTier(result.review_tier);
   renderCbct(result.cbct_status, result.cbct_handoff, result.registration);
   renderAnatomyReview(result.derived_anatomy);
   el("dataGapList").innerHTML = dataGapMarkup(result);
@@ -710,26 +709,6 @@ function renderEvaluation(result) {
   renderPrintExport(el("printExportStatus"), result.print_export);
   renderOptimizedStaging(result.optimized_staging);
   renderDownloadActions();
-}
-
-function renderReviewTier(info) {
-  const container = el("reviewTierBanner");
-  if (!container) return;
-  if (!info) {
-    container.innerHTML = "";
-    return;
-  }
-  const expanded = container.querySelector("details")?.open;
-  container.dataset.tier = info.tier;
-  container.innerHTML = `
-    <p class="review-tier-label"><strong>${escapeHtml(info.label)}</strong></p>
-    <details class="review-scope-details" ${expanded ? "open" : ""}><summary>Scope & limitations</summary>
-    <p class="review-tier-summary">${escapeHtml(info.summary)}</p>
-    ${info.root_bone_aware
-      ? ""
-      : `<p class="review-tier-note">Root/bone-aware review is not available for this plan.</p>`}
-    </details>
-  `;
 }
 
 const CBCT_STATUS_COPY = {
