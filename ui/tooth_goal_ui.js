@@ -40,7 +40,7 @@ export async function requestToothGoal(message, adjustment) {
     if (version !== requestVersion || snapshot() !== baseline) throw new Error("The working plan changed; request a new preview.");
     state.goalPreview = { ...result, baseline, evaluation };
     state.view = "planned";
-    if (state.userMode === "simple") state.guided.step = "plan";
+    if (state.sample.active) state.sample.view = "simulation";
     el("stageSlider").max = String(Math.max(0, evaluation.frames.length - 1));
     el("stageSlider").value = el("stageSlider").max;
     return `Tooth ${result.change.tooth}: ${result.finding.message} Drag the stage timeline to inspect it, then Apply or Discard.`;

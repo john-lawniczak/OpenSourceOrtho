@@ -239,6 +239,12 @@ In-flight results are rejected when the working plan changes. Model provenance
 is retained on applied movement rows. This is geometric intent editing, not
 an autonomous treatment recommendation from an uploaded scan.
 
+Tooth selection uses the number rows around the viewer or a crown click, with
+an optional FDI/US number lookup. The compact edit panel lists all unmet local
+prerequisites together (units, region review and hold). A preview stays in the
+current guided step and selects the sample's proposed-stage view, avoiding an
+unexpected return to recorded scan history. Apply/Discard and Undo are unchanged.
+
 ### Structured workspace context
 
 Full-plan chat includes `workspace`: scan formats, arch, confirmed units, counts,

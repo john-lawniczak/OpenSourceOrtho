@@ -3,7 +3,6 @@ import { renderViewerToothNumbers } from "./viewer_tooth_numbers.js";
 import { el, state } from "./state.js";
 import { renderProfile } from "./teeth_profile.js";
 import { toothName, universalToothNumber, toothFromNumber } from "./tooth_selection.js";
-import { escapeHtml } from "./core.js";
 import { scaleConfirmed } from "./manual_edit.js";
 let renderPreview = () => {};
 
@@ -13,14 +12,15 @@ export function selectableTeeth() {
 
 export function toothEditBlocker() {
   const tooth = state.manualEdit.selectedTooth;
-  if (!tooth) return "Select a crown or its number below the viewer.";
-  if (!scaleConfirmed(state.scanUnits)) return "Confirm scan units as mm in Upload.";
+  if (!tooth) return "Select a crown or its number in the 3D view.";
   if (!selectableTeeth().includes(tooth)) return "Identify and review individual teeth before editing.";
-  if (!state.segmentation.applied?.tooth_meshes.find(link => String(link.tooth.value) === tooth)?.reviewed) return "Inspect this painted region, then check its number and boundary below before proposing movement.";
-  if (state.guided.excludedTeeth.includes(tooth)) return "Release this tooth's hold to edit it.";
   if (state.goalPreview) return "Apply or discard the current preview first.";
   if (state.goalBusy) return "Preparing the preview…";
-  return "";
+  const missing = [];
+  if (!scaleConfirmed(state.scanUnits)) missing.push("confirm scan units as mm in Upload");
+  if (!state.segmentation.applied?.tooth_meshes.find(link => String(link.tooth.value) === tooth)?.reviewed) missing.push("check the tooth number and boundary");
+  if (state.guided.excludedTeeth.includes(tooth)) missing.push("release this tooth's hold");
+  return missing.length ? `To enable movement: ${missing.join("; ")}.` : "";
 }
 
 export function renderToothWorkspace() {
@@ -36,15 +36,8 @@ export function renderToothWorkspace() {
   el("toothWorkspace").hidden = !scanned;
   const reviewed = (state.segmentation.applied?.tooth_meshes || []).filter(link => link.reviewed).length;
   el("toothSelectionStatus").textContent = teeth.length ? `${teeth.length} painted regions · ${reviewed} checked for edits` : "Identify and review teeth in step 2 to enable editing";
-  el("guidedTeeth").innerHTML = [["1", "Upper right"], ["2", "Upper left"], ["4", "Lower right"], ["3", "Lower left"]].map(([quadrant, name]) => {
-    const ids = teeth.filter(tooth => tooth.startsWith(quadrant));
-    if (quadrant === "1" || quadrant === "4") ids.reverse();
-    return `<fieldset><legend>${name}</legend>${ids.map(tooth => `<button type="button" data-select-tooth="${tooth}"
-      title="${escapeHtml(toothName(tooth))}" aria-label="${tooth} · ${escapeHtml(toothName(tooth))}"
-      aria-pressed="${selected === tooth}" class="tooth-pick ${state.guided.excludedTeeth.includes(tooth) ? "is-held" : ""}">${tooth}<small>US ${universalToothNumber(tooth)}</small></button>`).join("")}</fieldset>`;
-  }).join("");
   el("guidedEditTitle").textContent = selected ? `FDI ${selected} · US ${universalToothNumber(selected)} · ${toothName(selected)}` : "Choose a tooth";
-  el("guidedEditStatus").textContent = blocker || "Nudge by 0.2 mm in scan-local axes, or ask AI for a preview.";
+  el("guidedEditStatus").textContent = blocker || "Each arrow previews a 0.2 mm shift. Apply to keep it, or Discard.";
   el("guidedEditReadout").textContent = "";
   el("reviewSelectedRegion").checked = Boolean(state.segmentation.applied?.tooth_meshes.find(link => link.tooth.value === selected)?.reviewed);
   el("reviewSelectedRegion").disabled = !selected || Boolean(state.goalPreview) || state.goalBusy;

@@ -56,8 +56,12 @@ tooth anatomy. FDI numbering and boundaries remain drafts, and the baseline
 heuristic can include gingiva or parts of neighboring crowns.
 
 The UI exposes each region's draft/uncertain/held status, estimated pivot shift,
-rotation magnitude, and symmetric 90th-percentile surface residual. Independent
-label disagreement or weak geometric fit flags an uncertain match; it does not
+rotation magnitude, and symmetric 90th-percentile surface residual. These
+match details and sampled same-arch proximity are available in the collapsed
+**Scan details & match quality** section. Routine file-integrity/alignment text
+is also kept there; loading failures and unavailable weeks remain visible.
+Observed/estimated week labels and the simulated-estimate badge stay visible.
+Independent label disagreement or weak geometric fit flags an uncertain match; it does not
 turn the entire preview off. Missing data, non-finite/degenerate fits, and gross
 assignment failures must not become fabricated motion. Held regions are counted
 explicitly and their zero motion does not mean the actual tooth was stationary.

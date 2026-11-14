@@ -30,7 +30,6 @@ function setWeek(value) {
   el("comparisonMissing").hidden = !ready || frame.kind !== "unavailable";
   el("comparisonMissingTitle").textContent = `Week ${week} estimate unavailable`;
   el("comparisonCanvas").style.visibility = ready && frame.kind === "unavailable" ? "hidden" : "visible";
-  el("comparisonHelp").hidden = frame.kind === "unavailable";
   viewer?.setFrame(frame);
   viewer?.selectTooth(selectedTooth);
   renderMotionControls(week <= 7 ? motion : null, selectedTooth, frame, week <= 7 ? motionError : "");
@@ -58,6 +57,9 @@ function setWeek(value) {
     if (!pair[2] && !visitRequest && !visitError) void loadWeekEighteen();
   }
   if (ready && frame.kind === "estimated" && motionError) el("comparisonStatus").textContent += ` ${motionError}. Only available arch estimates are displayed.`;
+  const status = el("comparisonStatus");
+  status.hidden = ready && frame.kind !== "unavailable" && !(frame.kind === "estimated" && motionError) && !(week === 18 && !pair[2]);
+  el("comparisonRecordDetail").textContent = status.hidden ? status.textContent : "";
 }
 
 async function loadWeekEighteen() {
@@ -145,7 +147,6 @@ function mount(renderAll) {
   modes.setAttribute("aria-label", "Sample example mode");
   modes.innerHTML = `<button type="button" data-sample-view="observed">Scan history</button>
     <button type="button" data-sample-view="simulation">Explore individual teeth</button>
-    <p id="sampleSimulationNote" hidden>Exploratory workspace — painted regions are contributor drafts. Proposed stages are separate from observed history. Week 7 arches are arranged for viewing; their displayed gap is not a measured bite.</p>
     <label id="sampleVisitControl" hidden>Painted scan <select id="samplePaintedVisit"><option value="progress-01">Week 7 · latest saved painting</option><option value="initial">Week 1 · baseline painting</option></select></label>
     <button id="sampleReloadPainting" type="button" hidden>Reload saved painting</button>`;
   const panel = document.createElement("section");

@@ -235,10 +235,6 @@
                 <track kind="captions" src="./workflow-demo.vtt" srclang="en" label="English" default />
               </video>
             </details>
-            <div class="guided-action-strip">
-              <span>Select a painted tooth by FDI or US number, or click its crown above.</span>
-              <span>Rotate and Pan move the view. Tooth nudges propose a separate geometric change.</span>
-            </div>
           </section>
 
           <section class="gstep" data-gstep="review">
@@ -569,10 +565,11 @@
                   <canvas id="archCanvas" width="900" height="520" aria-label="2D tooth progress preview" hidden></canvas>
                   <div id="viewerDetails">
                   <section id="toothWorkspace" class="tooth-workspace">
-                    <div class="tooth-selection-heading"><h4>Select a tooth</h4><span id="toothSelectionStatus" role="status"></span></div>
+                    <details id="toothNumberFinder" class="tooth-number-finder">
+                    <summary>Find by tooth number</summary>
                     <form id="toothNumberForm" class="controls"><label>Numbering <select id="toothNumberSystem"><option value="FDI">FDI</option><option value="US">US Universal</option></select></label><label>Tooth number <input id="toothNumberInput" type="number" min="1" max="48" step="1" inputmode="numeric" /></label><button type="submit">Select tooth</button><span id="toothNumberStatus" role="status"></span></form>
-                    <p class="guided-hint">Click a crown or its number. Selected = amber · held = blue-grey.</p>
-                    <div id="guidedTeeth" class="guided-teeth" aria-label="Select a scan tooth"></div>
+                    <span id="toothSelectionStatus" role="status"></span>
+                    </details>
               <aside class="guided-edit-card" aria-label="Guided tooth edit controls">
                 <div class="guided-edit-top">
                   <h4 id="guidedEditTitle">No tooth selected</h4>
@@ -592,7 +589,7 @@
                   <button id="guidedClearSelection" type="button" disabled>Deselect</button>
                 </div>
                 <div id="guidedEditReadout" class="guided-edit-readout"></div>
-                <label id="selectedRegionReview"><input type="checkbox" id="reviewSelectedRegion" /> I checked this region’s tooth number and boundary for exploratory edits</label>
+                <label id="selectedRegionReview"><input type="checkbox" id="reviewSelectedRegion" /> I checked this tooth’s number and boundary</label>
                 <button class="primary-action" id="guidedRebuild" type="button">Rebuild plan</button>
                 <details class="guided-help">
                   <summary>What these edits do</summary>
@@ -606,6 +603,7 @@
                   </section>
 
                   <details class="viewer-diagnostics"><summary>Scan details &amp; checks</summary>
+                  <p id="sampleSimulationNote" hidden>Contributor-draft tooth regions. Proposed stages are separate from scan history. Week 7 arch spacing is for display, not a measured bite.</p>
                   <section id="trustStatusStrip" class="trust-status-strip" aria-label="What can I trust here?" aria-live="polite"></section>
                   <p id="movementFidelityStatus" class="scan-status"></p>
                   <p id="scanRenderStatus" class="scan-status"></p>
