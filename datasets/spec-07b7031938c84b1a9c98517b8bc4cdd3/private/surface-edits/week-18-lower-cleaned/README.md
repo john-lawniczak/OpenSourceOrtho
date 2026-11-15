@@ -11,8 +11,13 @@ This is useful for reducing excess model-base geometry, with a specific caveat:
 the automatic draft label 43 (about 0.34% of that label's prior surface area).
 All 14 present tooth labels remain; retained face records and labels are exact.
 The 43 margin needs inspection. Gray/unlabeled material is not automatically
-non-tooth, so this is an **unreviewed cleanup draft**, not an anatomical approval
-or a new default observation. No hole fills were applied to this saved version.
+non-tooth, so this remains an **unreviewed cleanup draft**. No hole fills were
+applied. On November 15, 2026 the contributor explicitly selected this exact copy
+for the local week-18 history display, alongside the cleaned upper. The local
+endpoint verifies its hash and original H4 source and returns only geometry and
+minimal provenance. This does not publish the bundle, transfer review, or turn
+the approximate bite display into measured registration. The ordinary painting
+link still opens original H4 with its source-bound labels.
 
 `audit.json` quantifies removals against the original scan and its initial draft
 painting. `removal-comparison.png` shows retained/removed geometry in three source

@@ -22,8 +22,11 @@ from the algorithm's assigned FDI label. Predictions need `target_faces` per reg
 to score identity. Synthetic and reviewed-real results remain separate.
 
 Current status: executable scoring and controlled zero-motion/error-injection tests
-are available. Independently reviewed USER_ONE boundary/pose/correspondence labels
-and repeat scans have not yet been supplied. Existing input validation statements
+are available. H4/H6 same-model captures are available, but unchanged-model status,
+reviewed regions and a reproducible capture-consistency report remain pending.
+Independently reviewed USER_ONE boundary/pose/correspondence labels remain missing.
+See [the H4/H6 review steps](LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
+Existing input validation statements
 and the root/bone engineering fixture do not substitute for that benchmark truth.
 The Desktop IMGDATA CBCT is locally accessible: 825 DICOM objects, including an
 824-slice 900×900 primary stack at 0.2 mm spacing. Its ignored local pointer has

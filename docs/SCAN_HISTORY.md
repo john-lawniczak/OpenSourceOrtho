@@ -108,8 +108,8 @@ mobile layout, failure recovery, and separation from authored planning.
 
 ## Additional workflows
 
-Both arches are displayed in separate simultaneous viewports by default. They
-share timeline commands, without implying a bite registration. Right-side zoom
+Both arches are displayed together in one scene with a shared camera by default.
+Their display arrangement does not imply bite registration. Right-side zoom
 controls and highlighted week buttons support close inspection.
 
 See [accuracy scoring](MOTION_BENCHMARK.md), [region correction](REGION_CORRECTIONS.md),
@@ -171,10 +171,21 @@ excludes these private recordings and annotations.
 
 ## Observed week 18
 
-The sample history now exposes reported weeks 1–18. The original week 18 upper
-and lower pair loads on demand from its published visit manifest and source
-metadata, with SHA-256 verification. Acquisition date remains unknown. Display
-centering and scanner-axis assumptions are not cross-visit or bite registration.
+The sample history exposes reported weeks 1–18. Week 18 loads the cleaned upper
+and Fusion H4 lower with SHA-256 verification. On the private development machine,
+the explicitly selected saved H4 cleanup replaces the untrimmed H4 display.
+Its exact hash and original H4 source are checked; only its surface bytes and
+minimal provenance are returned through `/api/sample-history/lower-cleaned`,
+without contributor annotations or notes. The private bundle stays outside the
+public asset allowlist. When that bundle is absent, history identifies the lower
+as original H4; corrupt or mismatched copies fail instead of silently substituting.
+
+Separate approximate inspection rotations orient the two model captures, then
+robust crown-facing/anterior edges place them against the existing display frame.
+Only rigid display transforms are applied; no scaling, deformation, measured bite,
+or cross-visit registration is inferred. The visible week-18 label says
+**approximate bite display**. Loading it does not reposition earlier visits.
+Acquisition date and scale remain unknown. Original source files are preserved.
 
 Weeks 2–6 retain the existing week 1–7 fit. Weeks 8–17 explicitly show **Not fitted**;
 week 18 is an observation and does not inherit earlier tooth labels, motion or
@@ -187,7 +198,7 @@ regions. Painting alone does not regenerate it.
 
 The scan-history painting buttons prepare the trimmed `progress-02-upper-clean.stl`
 version and the additional lower **Fusion H4** capture. The painting controls
-offer only this suggested pair; original observations remain in history. H4 is
+offer only this suggested pair; original source files remain preserved. H4 is
 a tentative lower painting preference because its margins appear
 more compact in the existing capture comparison; it is not a validated accuracy
 winner. The week-18 model-chip notes remain visible in the editor.
@@ -203,9 +214,11 @@ These prepared surfaces start unpainted unless a matching local draft exists;
 no old face labels are copied onto a different mesh. Painting does not reconstruct
 missing model surfaces. Leave uncertain chip regions unreviewed.
 
-The observed week-18 history continues to display the original pair. Choosing H4
-for painting does not replace that observation or generate a week 1–18 motion fit.
-After both paintings are saved and reviewed, they can be incorporated separately.
+History now selects the cleaned upper and the saved trimmed H4 when locally
+available. The lower painting link still opens original H4 with its existing
+source-bound labels; the trimmed version can be opened through its repair bundle
+or saved edited-copy notes. Neither display selection nor painting generates a
+week 1–18 motion fit. Paintings can be incorporated into a separate fit later.
 
 Week 18 painting uses a separate inspection camera because these model captures
 have different axes from the earlier intraoral scans. Default/Face-on and the
@@ -223,7 +236,8 @@ not an additional observed visit.
 The week 18 upper painting action selects this version explicitly. Historical
 upper links remain valid and retain their separate hash-bound drafts. My Notes
 links back to the saved version. Painting
-this version does not replace the original observed-history scan or fit motion.
+this version does not change its source geometry or fit motion. History explicitly
+selects this cleaned version independently of painting saves.
 
 ### Week 18 first painting sweep
 

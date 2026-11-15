@@ -2,7 +2,7 @@ import { el, state } from "./state.js";
 import { prepareSampleSegmentation } from "./sample.js";
 import { comparisonTemplate } from "./scan_comparison_template.js";
 import { createHistoryViewer } from "./scan_history_viewer.js";
-import { loadWeekEighteenScan } from "./scan_week_eighteen.js";
+import { loadHistoryObservation } from "./scan_history_observation.js";
 import { loadObservedPair } from "./scan_comparison_data.js";
 import { loadResearchMotion, installSampleResearch } from "./sample_research.js";
 import { renderMotionControls } from "./scan_motion_controls.js";
@@ -13,6 +13,7 @@ import { sampleViewForStep } from "./sample_view.js";
 let motion = null, motionError = "", selectedTooth = "", endpointEstimate = false;
 let pair = [], week = 1, arch = "both", ready = false, timing = "uniform";
 let visitRequest = null, visitError = "";
+let visitSurfaces = "";
 let mounted = false, viewer = null, request = null, session = null, preparedSession = null;
 
 export function observedSampleActive() {
@@ -26,7 +27,7 @@ function setWeek(value) {
   const frame = historyFrame(week, pair, motion, endpointEstimate, timing);
   el("comparisonWeekLabel").textContent = `Week ${week} of 18`;
   el("comparisonVisit").textContent = frame.kind === "estimated" ? `Week ${week} · SIMULATED ESTIMATE`
-    : frame.scan ? `${frame.scan.label} · ${frame.scan.date} · observed scan` : `Week ${week} · estimate unavailable`;
+    : frame.scan ? `${frame.scan.label} · ${frame.scan.date} · observed scan${week === 18 ? " · approximate bite display" : ""}` : `Week ${week} · estimate unavailable`;
   el("comparisonMissing").hidden = !ready || frame.kind !== "unavailable";
   el("comparisonMissingTitle").textContent = `Week ${week} estimate unavailable`;
   el("comparisonCanvas").style.visibility = ready && frame.kind === "unavailable" ? "hidden" : "visible";
@@ -52,7 +53,7 @@ function setWeek(value) {
       : `Week ${week}: motion preview unavailable. The original endpoint scans remain available.`;
   if (ready && week === 18) {
     el("comparisonMissingTitle").textContent = visitError ? "Week 18 scan unavailable" : "Loading week 18 scans…";
-    el("comparisonStatus").textContent = pair[2] ? "Week 18 original scans · file integrity verified. Model chips are reported; scale and cross-visit alignment are unverified. Display placement is not a measured bite."
+    el("comparisonStatus").textContent = pair[2] ? `Week 18 observed surfaces: ${visitSurfaces} · file integrity verified. Model chips are reported; scale and cross-visit alignment are unverified. Approximate display placement, not a measured bite.`
       : visitError || "Loading and verifying week 18 scans…";
     if (!pair[2] && !visitRequest && !visitError) void loadWeekEighteen();
   }
@@ -67,9 +68,10 @@ async function loadWeekEighteen() {
   visitRequest = pending;
   try {
     const scans = await Promise.all((arch === "both" ? ["upper", "lower"] : [arch])
-      .map(name => loadWeekEighteenScan(name, { signal: pending.signal })));
+      .map(name => loadHistoryObservation(name, { signal: pending.signal })));
     if (pending.signal.aborted || viewer !== currentViewer || !state.sample.active) return;
     viewer.setObservedVisit(scans); pair[2] = scans[0];
+    visitSurfaces = scans.map(scan => scan.surfaceDescription).join(" + ");
     if (week === 18) setWeek(week);
   } catch (error) {
     if (pending.signal.aborted || viewer !== currentViewer) return;

@@ -48,7 +48,7 @@ test("cleaned upper is a separate hash-bound derivative, not another arch or vis
   assert.throws(() => weekEighteenMetadata(manifest, source, "upper"), /identity/);
 });
 
-test("painting defaults use only the suggested week 18 pair without changing observed scan defaults", () => {
+test("painting defaults select the working pair; original capture metadata remains available", () => {
   assert.equal(suggestedPaintingCapture("upper", "progress-02"), "upper-clean");
   assert.equal(suggestedPaintingCapture("lower", "progress-02"), "fusion-h-4");
   assert.equal(suggestedPaintingCapture("upper", "progress-01"), "original");

@@ -361,8 +361,11 @@ Reconstruction from an earlier scan remains a separate future feature.
 The contributor's November 13 lower cleanup is archived privately at
 `private/surface-edits/week-18-lower-cleaned/` with a complete repair bundle and
 reproducible audit. It removes 66,640 faces, of which 28 carried the draft label 43
-(about 0.34% of its labeled surface area). It remains an unreviewed optional copy;
-the original suggested scan and observed history are unchanged.
+(about 0.34% of its labeled surface area). On November 15 the contributor selected
+this exact unreviewed trim for the local week-18 history display. Its FDI 43 margin
+still needs inspection. Original H4 and its painting remain unchanged; history's
+selection does not transfer review or generate motion. See
+[the display workflow](LOCAL_RESEARCH_WORKFLOWS.md#november-15-2026--week-18-observed-display).
 
 Week 18 painting offers only the **Cleaned upper** and **Fusion H4 lower** working
 surfaces. The initial color sweep is an unreviewed automatic draft transferred

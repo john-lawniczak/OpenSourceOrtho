@@ -1,6 +1,7 @@
 import * as THREE from "./vendor/three.module.js";
 import { comparisonGeometry } from "./scan_comparison_geometry.js";
 import { createMotionSurfaces, viewerRegistration } from "./scan_motion_geometry.js";
+import { placeHistoryObservation } from "./scan_history_placement.js";
 
 export function comparisonArch(scans, preview, material) {
   const meshes = [];
@@ -20,6 +21,7 @@ export function comparisonArch(scans, preview, material) {
   return { group, meshes, nodes, simulation, motion: preview, arch: scans[0].arch,
     addObservedVisit(scan) {
       const mesh = new THREE.Mesh(comparisonGeometry(scan), material);
+      placeHistoryObservation(mesh, meshes[0], scan);
       if (meshes[2]) { group.remove(meshes[2]); meshes[2].geometry.dispose(); }
       meshes[2] = mesh; nodes[3] = mesh; group.add(mesh);
     },

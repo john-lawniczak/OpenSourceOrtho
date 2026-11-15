@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from orthoplan.sample_reviews import save_tooth_review
+from orthoplan.sample_history_surface import local_history_surface
 from orthoplan.geometry_jobs import GeometryBusy, jobs
 from orthoplan.evaluation.motion_review import motion_review_payload
 from orthoplan.goal_preview import preview_goal_payload
@@ -107,7 +108,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
-            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload}
+            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload,
+                     "/api/sample-history/lower-cleaned": local_history_surface}
             if path in notes:
                 self._send_json(200, notes[path]())
                 return

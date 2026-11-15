@@ -3,6 +3,60 @@
 These local tools extend the exploratory workflow. Original scans, inferred
 history and applied planning edits remain separate.
 
+## November 15, 2026 — week 18 observed display
+
+Scan history now selects the cleaned upper and, when the private saved bundle is
+present, the contributor's explicitly chosen trimmed H4 lower. Separate rigid
+inspection rotations and robust surface anchors arrange the arches in a bite-like
+view. The visible label says **approximate bite display**: this is neither measured
+bite registration nor a week-18 motion fit. Earlier week views retain their
+geometry and camera placement. Original scans and source-bound painting saves
+are preserved.
+
+The selected lower copy is checked against its exact hash and original H4 source.
+The local endpoint returns geometry and minimal provenance, excluding annotations
+and notes. Public installations without that private bundle use explicitly named
+original H4. Invalid copies fail visibly. See [scan history](SCAN_HISTORY.md#observed-week-18)
+for capture selection and the local endpoint. Restart the local Python server and
+refresh the browser after updating to load this endpoint.
+
+Validation: 20 focused JavaScript checks, 2 Python checks, and 5 affected browser
+workflows passed; front/side screenshots were inspected. Earlier scan pixels,
+loading failure/retry, and painting save/reopen were checked. Ruff, strict
+maintainability, and diff whitespace checks passed. These verify software behavior,
+not anatomical accuracy. H4/H6 repeatability measurement remains unimplemented.
+
+## Prepare an H4/H6 repeatability check
+
+H4 and H6 are captures of the same physical lower model. If the model did not
+change between captures, apparent tooth movement describes capture/fitting
+inconsistency. Shared-model provenance does not establish that it was unchanged:
+chip timing, repairs and physical trimming still need confirmation.
+
+1. Open **Paint USER_ONE week 18 lower** to review original H4 and its saved labels.
+   Start with an intact front tooth, premolar and molar. Check each tooth number
+   and boundary from front, inside and biting-surface views.
+2. Record the reviewed tooth numbers, uncertainty and chip location in **Notes**,
+   then **Save locally**. Leave the whole-scan reviewed checkbox off for partial
+   review. This is contributor review, not independent reference labeling.
+3. Open `/region-review.html?baseline=lower&visit=progress-02&capture=fusion-h-6`
+   on the same local server. H6 may start unpainted. Paint/check the same intact
+   teeth and save its separate source-bound record; never copy H4 face labels
+   onto H6. The ordinary week-18 lower button continues to select H4.
+4. Confirm whether the physical model changed between captures and supply scanner
+   export-unit evidence if available. Unknown dimensions remain in scan units.
+
+The history viewer uses trimmed H4 locally, but the ordinary lower painting link
+opens original H4. The repeatability experiment should explicitly select original
+H4/H6 or separately record any tested trimming variant; never silently mix them.
+
+The remaining coding task is a reproducible report: retain exact scans, labels
+and settings, align the scans in several ways, and repeat with different sampled
+surface points. Report how apparent movement changes, with coverage and unmatched
+teeth. The contributor supplies reviews and provenance; painting alone does not
+run this experiment. Results will measure capture consistency, not reconstruct
+missing tooth surfaces or establish tooth-motion accuracy.
+
 ## Refit USER_ONE from saved painting
 
 In **Scan history → Scan details & match quality → Saved-label experiments**,

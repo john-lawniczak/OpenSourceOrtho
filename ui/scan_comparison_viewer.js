@@ -106,10 +106,9 @@ export function createScanComparison(host, { onFocus = () => {}, onTooth = () =>
     setObservedVisit(scans) {
       entries.forEach(entry => {
         entry.addObservedVisit(scans.find(scan => scan.arch === entry.arch));
-        // Align crown-facing display edges; this is not an occlusion registration.
-        if (entries.length > 1) entry.meshes[2].position.y = entry.meshes[0].geometry.boundingBox.max.y - entry.meshes[2].geometry.boundingBox.max.y;
       });
-      span = arrangeComparisonArches(entries); resize();
+      // Keep the existing arch groups, camera, and earlier visits unchanged.
+      render();
     },
     setFrame(frame) {
       activeIndex = frame.index;
