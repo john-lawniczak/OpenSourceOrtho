@@ -3,6 +3,15 @@
 These local tools extend the exploratory workflow. Original scans, inferred
 history and applied planning edits remain separate.
 
+## November 15, 2026 — local family profiles
+
+The top **Profile** selector now offers separate local workspaces, **Add profile**,
+**Rename**, and **Save progress**. Existing data stays in **My profile**. Main
+workspace progress saves automatically and before switching; paintings still
+save explicitly in their editor. Browser and server records are separated by
+profile, with stale-workspace protection. See [local profiles](LOCAL_PROFILES.md)
+for saved data, migration, browser-local limits and verification.
+
 ## November 15, 2026 — week 18 observed display
 
 Scan history now selects the cleaned upper and, when the private saved bundle is

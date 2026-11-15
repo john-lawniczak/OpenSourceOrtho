@@ -38,6 +38,8 @@ Most project documentation lives in [docs/](docs/README.md), including the
 current [application maturity](docs/application%20maturity.md) scorecard.
 
 New users can start with [HOW_TO.md](HOW_TO.md).
+For separate family workspaces, use the top **Profile** selector and **Save
+progress**; see [local profiles and autosave](docs/LOCAL_PROFILES.md).
 See the [acquisition photos and week 18 scan results](HOW_TO.md#user_one-photo-walkthrough)
 and [tooth-painting example](docs/REGION_CORRECTIONS.md#painting-example).
 

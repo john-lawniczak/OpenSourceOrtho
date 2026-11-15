@@ -1,10 +1,11 @@
+import { profileFetch } from "./profile_context.js";
 import { suggestedPaintingCapture } from "./scan_week_eighteen.js";
 import { autoGrowTextarea } from "./auto_textarea.js";
 import { saveBrowserPainting } from "./region_browser_saves.js";
 const el = id => document.getElementById(id);
 
 export async function fetchBaselineSave(arch, visit = "initial", capture = "original") {
-  const response = await fetch(`/api/region-corrections/${arch}?visit=${encodeURIComponent(visit)}${capture === "original" ? "" : `&capture=${encodeURIComponent(capture)}`}`, { cache: "no-store" });
+  const response = await profileFetch(`/api/region-corrections/${arch}?visit=${encodeURIComponent(visit)}${capture === "original" ? "" : `&capture=${encodeURIComponent(capture)}`}`, { cache: "no-store" });
   const result = await response.json();
   if (!response.ok || !result.ok) throw new Error((result.errors || ["Could not read saved labels."]).join(" "));
   return result;
@@ -61,7 +62,7 @@ export function setupRegionSaving(getContext) {
       let result;
       if (!scan.visit) result = await saveBrowserPainting(scan, corrections, notes, baseSavedAt);
       else {
-        const response = await fetch("/api/region-corrections", { method: "POST", headers: { "Content-Type": "application/json" },
+        const response = await profileFetch("/api/region-corrections", { method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ arch: scan.arch, visit: scan.visit, capture: scan.capture || "original", corrections, notes, base_saved_at: baseSavedAt }) });
         result = await response.json();
         if (!response.ok || !result.ok) throw new Error((result.errors || ["Save failed."]).join(" "));

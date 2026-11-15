@@ -1,7 +1,8 @@
 // Explicit local saves include original bytes so fitting can be repeated after restart.
+import { profileKey } from "./profile_context.js";
 async function database() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("ortho-two-visit-cases", 2);
+    const request = indexedDB.open(profileKey("ortho-two-visit-cases"), 2);
     request.onupgradeneeded = () => {
       for (const name of ["cases","edits"]) if (!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name, {keyPath:"name"});
     };

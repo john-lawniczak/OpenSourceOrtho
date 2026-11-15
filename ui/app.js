@@ -1,3 +1,4 @@
+import { initializeProfiles } from "./profile_switcher.js";
 import { pushEditUndo, travelEdit, saveEditSession } from "./edit_sessions.js";
 import "./precision_workspace.js";
 import { registerUploadedScans } from "./upload_registration.js";
@@ -1218,8 +1219,8 @@ function restoreClinicalControls(snapshot) {
 renderGlossaryTerms();
 renderAvailability();
 renderAll();
-restoreStoredUploads();
-restoreStoredSegmentation();
+await initializeProfiles({ state, render: renderAll, leaveSample: exitSample, restoreLegacy: async () => { await restoreStoredUploads(); restoreStoredSegmentation(); } });
+resumeUploadRegistration();
 loadVersions();
 
 function resumeUploadRegistration() {

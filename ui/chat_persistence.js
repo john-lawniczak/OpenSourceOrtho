@@ -1,6 +1,7 @@
 import { el, state } from "./state.js";
+import { profileKey } from "./profile_context.js";
 
-const STORAGE_KEY = "orthoplan-chat-session-v1";
+const STORAGE_KEY = profileKey("orthoplan-chat-session-v1");
 const PROVIDERS = ["local", "openai", "anthropic", "claude-code", "deepseek", "glm", "mcp", "open-source"];
 let activeRequest = null;
 let storageAvailable = true;

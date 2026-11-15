@@ -8,6 +8,12 @@ of notes per annotation. It excludes raw face labels, scan bytes and unsaved
 browser edits. Notes remain untrusted data. External sharing still requires the
 existing explicit consent; loading newer labels does not regenerate motion fits.
 
+Local profile selection scopes chat session storage and the server-side saved
+annotation/research context. A profile switch reloads the workspace, clearing
+in-memory credentials and provider permissions. Profile snapshots exclude those
+credentials and pending model requests. Bundled USER_ONE source facts remain
+explicit sample context; profiles are local workspaces, not authenticated users.
+
 ## Role
 
 OpenAI-backed agents are advisory reviewers only. They may summarize plan data, identify configured-rule findings already present in the report, and suggest follow-up questions under declared data limitations.

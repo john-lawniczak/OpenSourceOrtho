@@ -1,10 +1,11 @@
+import { profileFetch } from "./profile_context.js";
 // Explicit local experiments; bundled observations and previous fits stay intact.
 import { geometryJob } from "./geometry_jobs.js";
 import { validateMotionPreview, loadMotionPreview } from "./scan_motion_data.js";
 import { downloadJson } from "./progress_case_archive.js";
 const selected = new Map();
 async function get(path, options) {
-  const response = await fetch(path, options), result = await response.json();
+  const response = await profileFetch(path, options), result = await response.json();
   if (!response.ok || !result.ok) throw new Error(result.errors?.join("; ") || "Could not load research records.");
   return result;
 }

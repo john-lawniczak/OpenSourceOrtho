@@ -13,14 +13,15 @@ import uuid
 from threading import RLock
 
 from orthoplan.datasets import SAMPLE_CASE_DIR, SAMPLE_SPECIMEN_ID
+from orthoplan.profile_storage import profile_directory
 
 _SAVE_LOCK = RLock()
 
 
 def correction_store() -> Path:
-    return Path(os.environ.get("ORTHOPLAN_REGION_CORRECTIONS", str(
+    return profile_directory(Path(os.environ.get("ORTHOPLAN_REGION_CORRECTIONS", str(
         Path(__file__).resolve().parents[1] / ".orthoplan-region-corrections"
-    )))
+    ))))
 
 
 def baseline_source(arch: str, visit: str = "initial", capture: str = "original") -> dict:

@@ -3,6 +3,7 @@
 import json
 import sys
 from pathlib import Path
+from orthoplan.profile_storage import current_profile, profile_case_store
 
 
 def main():
@@ -11,6 +12,9 @@ def main():
 
     source, destination = map(Path, sys.argv[1:])
     request = json.loads(source.read_text())
+    identity = request.get("profile_id", "default")
+    profile_case_store(Path("validate.json"), identity)
+    current_profile.set(identity)
     workspace = Path(request["workspace"])
     try:
         if request["operation"] == "sample-refit":

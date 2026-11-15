@@ -8,6 +8,7 @@ import re
 import uuid
 
 from orthoplan.hashing import canonical_json, sha256_text
+from orthoplan.profile_storage import profile_directory
 
 KINDS = {"fits", "reviews", "benchmarks"}
 
@@ -21,7 +22,7 @@ def folder(kind):
             str(Path(__file__).resolve().parents[1] / ".orthoplan-research"),
         )
     )
-    path = root / kind
+    path = profile_directory(root) / kind
     if any(p.is_symlink() for p in [path, *path.parents]):
         raise ValueError("Research storage cannot follow symbolic links")
     return path

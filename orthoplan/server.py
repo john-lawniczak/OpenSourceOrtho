@@ -19,7 +19,7 @@ from orthoplan.ai_chat_stream import send_chat_stream
 from orthoplan.api import evaluate_plan_payload, print_package_payload
 from orthoplan.case_api import case_versions_payload, list_cases_payload, save_plan_version_payload
 from orthoplan.case_review import case_review_payload
-from orthoplan.cases import default_case_store
+from orthoplan.profile_storage import handler_case_store, profile_request
 from orthoplan.cbct_workflow import cbct_proposal_payload, cbct_review_payload
 from orthoplan.generation import generate_plan_payload
 from orthoplan.datasets import resolve_published_asset
@@ -91,9 +91,7 @@ class Handler(BaseHTTPRequestHandler):
         raw = os.environ.get("ORTHOPLAN_MESH_WORKSPACE")
         return Path(raw) if raw else default_mesh_workspace()
 
-    def _case_store(self) -> Path:
-        raw = os.environ.get("ORTHOPLAN_CASE_STORE")
-        return Path(raw) if raw else default_case_store()
+    _case_store = handler_case_store
 
     def _content_length(self) -> int | None:
         """Parsed Content-Length, or None if the header is missing/malformed."""
@@ -105,6 +103,7 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:
             return None
 
+    @profile_request
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
@@ -166,11 +165,10 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 
+    @profile_request
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         try:
-            # A foreign page can send a simple POST to localhost even though
-            # CORS blocks reading the response. Reject it before any provider,
-            # upload or plan mutation; explicit non-browser clients have no Origin.
+            # Reject foreign pages before provider/upload/plan mutations; CLI clients have no Origin.
             origin = self.headers.get("Origin")
             host = self.headers.get("Host", "")
             if (origin is not None and origin not in {f"http://{host}", f"https://{host}"}) or self.headers.get("Sec-Fetch-Site") == "cross-site":
@@ -206,6 +204,8 @@ class Handler(BaseHTTPRequestHandler):
                 send_chat_stream(self, payload)
                 return
             self._send_json(200, _dispatch_json_post(self, path, payload))
+        except (BrokenPipeError, ConnectionResetError):
+            return
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 

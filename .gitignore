@@ -9,6 +9,7 @@ build/
 *.egg-info/
 .orthoplan-meshes/
 .orthoplan-cases.json
+.orthoplan-profiles/
 datasets/**/.local/
 datasets/**/records/
 datasets/**/local-cbct-record.json

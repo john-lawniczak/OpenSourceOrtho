@@ -318,8 +318,11 @@ interpolation or successful file export does not establish physical performance.
 
 - [ ] Build on Phase 1 provenance with durable case revisions, review comments,
   result invalidation, audit history, and reproducible exports of reviewed versions.
-- [ ] Test storage migrations, interrupted saves, corruption detection, backup/restore,
-  concurrent edits, and large-case limits before adding shared case collaboration.
+- [ ] Add a complete portable profile backup/restore with original scans, painting,
+  notes and settings; verify restoration into a fresh browser independently of USER_ONE.
+- [ ] Extend profile recovery checks to interrupted writes, corrupted snapshots,
+  later schema migrations and large-case limits. Local profile switching, legacy
+  upload retention, failed saves and stale workspace revisions are covered.
 - [ ] Add access controls and conflict handling if shared storage is introduced;
   retain private-data boundaries in exports and public release preparation.
 - [ ] Connect guidance and glossary entries to correction tasks. Keep assistant

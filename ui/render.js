@@ -327,6 +327,7 @@ export function renderAll() {
   scheduleSetupCompare(currentPlan);
   drawCanvas();
   if (state.lastEval) updateViewer(state.lastEval);
+  document.dispatchEvent(new Event("workspace-rendered"));
 }
 
 export function renderStagePreview() {

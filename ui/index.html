@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="./chat.css" />
     <link rel="stylesheet" href="./reference_workspace.css" />
     <link rel="stylesheet" href="./scan_comparison.css" />
+    <link rel="stylesheet" href="./profiles.css" />
     <script type="importmap">
       { "imports": { "three": "./vendor/three.module.js" } }
     </script>
@@ -42,6 +43,21 @@
         </span>
       </button></div>
     </header>
+    <section class="local-profiles" aria-label="Local profiles">
+      <label>Profile <select id="profileSelect" disabled aria-label="Active profile"><option>My profile</option></select></label>
+      <button id="profileAdd" type="button" disabled>Add profile</button>
+      <button id="profileRename" type="button" disabled>Rename</button>
+      <button id="profileSave" type="button" disabled>Save progress</button>
+      <span id="profileSaveStatus" role="status">Loading profile…</span>
+      <small>Separate workspaces on this browser. Not password-protected. Save paintings in their editor.</small>
+    </section>
+    <dialog id="profileDialog" aria-labelledby="profileDialogTitle">
+      <form id="profileForm"><h2 id="profileDialogTitle">Add profile</h2>
+        <label>Profile name <input id="profileName" required maxlength="60" autocomplete="off"></label>
+        <p id="profileError" role="alert"></p>
+        <div><button id="profileConfirm" type="submit">Save</button> <button id="profileCancel" type="button">Cancel</button></div>
+      </form>
+    </dialog>
     <main class="app-shell">
       <aside class="sidebar" aria-label="Plan workflow">
 

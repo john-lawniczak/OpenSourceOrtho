@@ -1,3 +1,4 @@
+import { profileFetch } from "./profile_context.js";
 import { el, state } from "./state.js";
 let lastKey = "", busy = false, pendingReview = null, reviewError = "", errorKey = "";
 export const toothReviewPending = () => busy;
@@ -29,7 +30,7 @@ export function installToothReview(renderAll) {
     const segmentation = state.segmentation;
     busy = true; reviewError = ""; pendingReview = {key,checked}; renderAll();
     try {
-      const response = await fetch("/api/tooth-review", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+      const response = await profileFetch("/api/tooth-review", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
         tooth, arch:annotation.arch, visit:state.sample.visit, source_sha256:annotation.source_sha256,
         mask_sha256:annotation.tooth_bindings[tooth], status:el("toothReviewUncertain").checked ? "uncertain" : checked ? "checked" : "unchecked",
         reviewer:el("toothReviewer").value, notes:el("toothReviewNotes").value,
