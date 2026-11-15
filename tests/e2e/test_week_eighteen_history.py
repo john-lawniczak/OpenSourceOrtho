@@ -161,3 +161,27 @@ def test_clean_upper_painting_save_switch_and_reopen(server_url, tmp_path, monke
             assert not errors
         finally:
             browser.close()
+
+
+def test_week_eighteen_single_arch_and_original_h4_fallback(server_url, tmp_path):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        try:
+            page.route("**/api/sample-history/lower-cleaned", lambda route: route.fulfill(
+                content_type="application/json", body='{"available":false}'))
+            page.goto(server_url)
+            page.locator("#sampleLaunch").click()
+            expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=60000)
+            page.locator('[data-comparison-week="18"]').click()
+            expect(page.locator("#comparisonStatus")).to_contain_text("original H4 lower", timeout=60000)
+            for arch, description in [("upper", "cleaned upper"), ("lower", "original H4 lower")]:
+                page.locator(f'[data-comparison-arch="{arch}"]').click()
+                expect(page.locator("#comparisonStatus")).to_contain_text(description, timeout=60000)
+                expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "observed")
+                page.locator("#comparisonCanvas").screenshot(path=str(tmp_path / f"week-18-{arch}.png"))
+            assert not errors
+        finally:
+            browser.close()

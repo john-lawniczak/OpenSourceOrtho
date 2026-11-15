@@ -1,27 +1,44 @@
 import * as THREE from "./vendor/three.module.js";
+import { historyFrames } from "./scan_history_frames.js";
 
-// Approximate inspection poses for the selected model captures, in the comparison
-// display frame. Rounded Euler angles are not anatomical/cross-visit registrations.
-const MODEL_POSES = { upper: [-145, 15, 150], lower: [70, -5, -10] };
-
-function surfaceAnchor(mesh) {
-  mesh.updateMatrix();
-  const points = mesh.geometry.attributes.position, axes = [[], [], []];
-  const point = new THREE.Vector3(), stride = Math.max(1, Math.floor(points.count / 12000));
-  for (let i = 0; i < points.count; i += stride) {
-    point.fromBufferAttribute(points, i).applyMatrix4(mesh.matrix);
-    axes[0].push(point.x); axes[1].push(point.y); axes[2].push(point.z);
-  }
-  axes.forEach(axis => axis.sort((a, b) => a - b));
-  const q = (axis, fraction) => axes[axis][Math.floor((axes[axis].length - 1) * fraction)];
-  // Robust lateral center, crown-facing edge, and anterior edge reduce the effect
-  // of stray model-base triangles. No scaling or geometry modification.
-  return new THREE.Vector3((q(0, .02) + q(0, .98)) / 2, q(1, .98), q(2, .98));
-}
-
-export function placeHistoryObservation(mesh, baseline, scan) {
+// Separate rigid inspection frames use draft crown rows, not cast/base outlines.
+// A small display gap keeps the arches distinct; it is not measured occlusion.
+export function placeHistoryObservation(mesh, group, scan) {
   if (!scan.historyDisplay) return;
-  mesh.rotation.set(...MODEL_POSES[scan.arch].map(THREE.MathUtils.degToRad));
-  mesh.position.copy(surfaceAnchor(baseline).sub(surfaceAnchor(mesh)));
+  const frame = historyFrames.find(item => item.source_sha256 === scan.sha256 && item.arch === scan.arch);
+  if (!frame) throw new Error("Week 18 inspection frame does not match this scan.");
+  const up = new THREE.Vector3().fromArray(frame.up).normalize();
+  const front = new THREE.Vector3().fromArray(frame.front);
+  front.addScaledVector(up, -front.dot(up)).normalize();
+  const right = up.clone().cross(front).normalize(), origin = new THREE.Vector3().fromArray(frame.origin);
+  const sourceToCrown = new THREE.Matrix4().set(
+    right.x, right.y, right.z, -right.dot(origin),
+    up.x, up.y, up.z, -up.dot(origin),
+    front.x, front.y, front.z, -front.dot(origin),
+    0, 0, 0, 1);
+  const [rx, ry, rz] = scan.rotation;
+  const sourceToGeometry = new THREE.Matrix4().set(rx,0,0,0, 0,0,rz,0, 0,-ry,0,0, 0,0,0,1);
+  const center = mesh.geometry.userData.sourceCenter;
+  const world = sourceToCrown.multiply(sourceToGeometry.invert())
+    .multiply(new THREE.Matrix4().makeTranslation(center.x, center.y, center.z));
+  const depthCenter = Math.max(...historyFrames.map(item => item.crown_depth_scan_units)) / 2;
+  let vertical = 0;
+  if (group.userData.historyCombined) {
+    const upper = scan.arch === "upper";
+    if (upper) world.premultiply(new THREE.Matrix4().makeRotationZ(Math.PI));
+    vertical = upper ? .6 : -.6;
+  }
+  world.premultiply(new THREE.Matrix4().makeTranslation(0, vertical, depthCenter));
+  if (!group.userData.historyCombined) {
+    // An individual arch is centered for inspection, without changing its
+    // crown orientation. Pair placement continues to use the common origins.
+    const center = mesh.geometry.boundingBox.clone().applyMatrix4(world).getCenter(new THREE.Vector3());
+    world.premultiply(new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z));
+  }
+  // Cancel the older visits' group placement for this node only. Otherwise the
+  // baseline cast bounds would offset/tilt the new crown frame a second time.
+  group.updateMatrixWorld(true);
+  const local = group.matrixWorld.clone().invert().multiply(world);
+  local.decompose(mesh.position, mesh.quaternion, mesh.scale);
   mesh.updateMatrixWorld(true);
 }

@@ -21,7 +21,7 @@ export function comparisonArch(scans, preview, material) {
   return { group, meshes, nodes, simulation, motion: preview, arch: scans[0].arch,
     addObservedVisit(scan) {
       const mesh = new THREE.Mesh(comparisonGeometry(scan), material);
-      placeHistoryObservation(mesh, meshes[0], scan);
+      placeHistoryObservation(mesh, group, scan);
       if (meshes[2]) { group.remove(meshes[2]); meshes[2].geometry.dispose(); }
       meshes[2] = mesh; nodes[3] = mesh; group.add(mesh);
     },
@@ -32,6 +32,7 @@ export function comparisonArch(scans, preview, material) {
 // this does not estimate an occlusal/bite registration or change motion geometry.
 export function arrangeComparisonArches(entries) {
   const combined = entries.length > 1;
+  entries.forEach(entry => { entry.group.userData.historyCombined = combined; });
   if (!combined) return Math.max(...entries[0].meshes.map(mesh => mesh.geometry.boundingSphere.radius), 5) * 1.08;
   const gap = combined ? Math.max(...entries.map(e => e.meshes[0].geometry.boundingSphere.radius)) * .04 : 0;
   for (const entry of entries) {

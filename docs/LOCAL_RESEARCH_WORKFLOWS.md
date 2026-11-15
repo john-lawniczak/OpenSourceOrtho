@@ -6,9 +6,14 @@ history and applied planning edits remain separate.
 ## November 15, 2026 — week 18 observed display
 
 Scan history now selects the cleaned upper and, when the private saved bundle is
-present, the contributor's explicitly chosen trimmed H4 lower. Separate rigid
-inspection rotations and robust surface anchors arrange the arches in a bite-like
-view. The visible label says **approximate bite display**: this is neither measured
+present, the contributor's explicitly chosen trimmed H4 lower. Following the report
+that the pair looked warped, crown-row inspection frames replace the initial
+rounded rotations and whole-model outline anchors. Draft tooth centers level
+the arches, incisor midlines center them, and a shared depth offset centers side
+views. Individual-arch views center the whole model, and week-18-specific viewport
+bounds prevent clipping without changing earlier weeks' framing. Original scale
+and geometry are retained; cast-base bulk no longer sets
+the alignment. The visible label says **approximate bite display**: this is neither measured
 bite registration nor a week-18 motion fit. Earlier week views retain their
 geometry and camera placement. Original scans and source-bound painting saves
 are preserved.
@@ -25,6 +30,12 @@ workflows passed; front/side screenshots were inspected. Earlier scan pixels,
 loading failure/retry, and painting save/reopen were checked. Ruff, strict
 maintainability, and diff whitespace checks passed. These verify software behavior,
 not anatomical accuracy. H4/H6 repeatability measurement remains unimplemented.
+
+The alignment follow-up additionally checks proper rigid transforms, unchanged
+vertex coordinates and distances, crown-frame invariance to extra cast-base
+geometry, source-hash rejection, and independence from earlier visit placement.
+The view remains an unreviewed arrangement; it cannot establish actual occlusion
+or correct surface defects already present in the physical-model scans.
 
 ## November 15, 2026 — stronger surface trimming
 

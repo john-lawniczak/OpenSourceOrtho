@@ -180,12 +180,30 @@ without contributor annotations or notes. The private bundle stays outside the
 public asset allowlist. When that bundle is absent, history identifies the lower
 as original H4; corrupt or mismatched copies fail instead of silently substituting.
 
-Separate approximate inspection rotations orient the two model captures, then
-robust crown-facing/anterior edges place them against the existing display frame.
-Only rigid display transforms are applied; no scaling, deformation, measured bite,
-or cross-visit registration is inferred. The visible week-18 label says
+Hash-bound inspection frames now use frozen unreviewed draft crown regions:
+each tooth contributes one median center to the fitted crown-row plane, and
+incisor/molar centers define the anterior direction. Incisor midlines and crown
+edges establish a common display origin with a 1.2-scan-unit illustrative gap.
+The same depth offset centers both arches for side views. Individual arches
+are centered separately for inspection. Week 18 has its own viewport bounds so
+larger model bases do not clip; earlier weeks restore their original framing.
+This replaces rounded
+Euler angles and cast/base outline anchors, which made the pair look skewed.
+The week-18 nodes cancel inherited baseline placement without moving earlier visits.
+
+Only rigid display transforms are applied; there is no independent arch scaling,
+deformation, measured bite, or cross-visit registration. The visible label says
 **approximate bite display**. Loading it does not reposition earlier visits.
 Acquisition date and scale remain unknown. Original source files are preserved.
+
+`tools/build_week_eighteen_display_frames.py` reproduces `ui/scan_history_frames.js`
+using the frozen private upper draft and selected H4 trim bundle. The generated
+file contains only view axes/anchors and provenance hashes, not annotation arrays.
+Frames are bound to the exact cleaned upper/trimmed H4 hashes; original H4 can
+reuse its exact-subset trim's frame in the same scanner coordinates. An unmatched
+source fails visibly. A new save does not silently replace the selected frame.
+These frames remain unreviewed; irregularities already in the model surfaces
+are preserved rather than smoothed into invented anatomy.
 
 Weeks 2–6 retain the existing week 1–7 fit. Weeks 8–17 explicitly show **Not fitted**;
 week 18 is an observation and does not inherit earlier tooth labels, motion or
