@@ -22,9 +22,13 @@ week-18 display changes are documented in
   explicit unmatched regions. Repeat with different registration choices and
   surface samples; keep unknown scale in scan units. No H4/H6 report has been run.
 - [ ] Review the same small intact tooth subset in original H4 and H6, save each
-  painting and notes separately, and identify the chipped tooth/surface. The
+  painting and notes separately, and map the suspected FDI 32 chip surface and
+  protruding H6 material. The
   contributor confirmed on November 15 that the physical model was unchanged
   between H4/H6 and the chip predated both. See the [review steps](docs/LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
+- [ ] Review the prepared edited-H6 painting, especially suspected model chip
+  FDI 32, partial FDI 41 coverage and protruding material; refine cleanup and save.
+  Keep this six-trim variant distinct from original H6 in repeatability reports.
 - [ ] Inspect the trimmed H4 margin around draft FDI 43, where cleanup removed
   28 labeled faces. Display selection does not establish boundary accuracy.
 - [ ] Add source-bound week-18 endpoint fitting using the selected captures and
@@ -156,7 +160,9 @@ and [lower](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-l
 - [ ] Extend existing USER_ONE per-tooth reviews to uploaded cases and independent
   reviewers; add explicit unknown-boundary/model-defect masks and surface-level
   review scope. Preserve originals and distinguish model damage from anatomy.
-- [ ] Verify USER_ONE scale; record unknown units until supporting evidence exists.
+- [ ] Bind the contributor-reported JMStudio millimetre export setting to exact
+  USER_ONE files and add dimensional calibration evidence; retain unknown scale
+  for files without unit confirmation.
 - [ ] Separate development, held-out, and repeat-scan cohorts. Split by subject for
   multi-subject data; label any USER_ONE-only evaluation as case-specific.
 - [ ] Connect the existing agreement and motion scorers to independently reviewed

@@ -65,8 +65,37 @@ H4 and H6 are captures of the same physical lower model. On November 15, 2026,
 the contributor confirmed no physical changes between these scans and that the
 chip was already present in both. This supports evaluating apparent tooth motion
 as capture/fitting inconsistency; it is contributor evidence, not independent
-verification. The chipped tooth/surface location, scale and acquisition dates
-remain unknown. Later digital trimming is separate from physical-model changes.
+verification. The contributor now tentatively identifies the chip near **FDI 32**,
+reports protruding material in H6, and considers the other teeth relatively
+accurate by visual inspection. The exact defect surface remains unmapped; neither
+scan is established reference geometry. JMStudio exports are reported in
+**millimetres**. This is recorded as export-unit provenance, separate from
+exact-file settings and dimensional calibration; no geometry is rescaled.
+Acquisition dates remain unknown. Later digital trimming is separate from
+physical-model changes.
+
+The contributor supplied the **edited H6 copy** with six trims and 442,757 faces.
+H4-derived draft colors were transferred through original H6 onto exact retained
+face records: 14 tooth regions, 135,761 painted faces. Every geometry byte and the
+complete trim history are unchanged. This copy had no existing painted faces;
+the transfer preserves existing nonzero labels when present. The draft remains
+unreviewed, especially FDI 32, partially covered FDI 41, and protruding material.
+No original-H6 painting was installed and no repeatability report was produced.
+
+The private output lives in
+`.orthoplan-region-corrections/USER_ONE/edited-h6-draft/`; the full repair bundle
+is `H6-cleaned-painted-draft-repair.json`. For the existing browser save, reopen
+the six-trim H6 copy from **My Notes**, expand **Import scan or corrections**, load
+`H6-cleaned-painted-draft-corrections.json` into **Correction JSON**, inspect, then
+**Save locally**. The corrections are bound to that exact cleaned mesh hash;
+using a more recently trimmed copy requires another transfer. The full repair
+bundle is a portable backup. Keep the original unpainted export too.
+
+`tools/paint_edited_h6.mjs` validates the bundle using the editor's importer,
+matches retained binary face records, rejects changed geometry, and writes a new
+file without overwriting an existing one. Browser checks cover automatic-draft
+provenance, geometry/trim/label round trips, and correction import into an existing
+saved copy. These check preservation and workflow, not segmentation accuracy.
 
 1. Open **Paint USER_ONE week 18 lower** to review original H4 and its saved labels.
    Start with an intact front tooth, premolar and molar. Check each tooth number
@@ -78,8 +107,9 @@ remain unknown. Later digital trimming is separate from physical-model changes.
    on the same local server. H6 may start unpainted. Paint/check the same intact
    teeth and save its separate source-bound record; never copy H4 face labels
    onto H6. The ordinary week-18 lower button continues to select H4.
-4. Supply scanner export-unit evidence if available. Unknown dimensions remain in
-   scan units. Retain the November 15 unchanged-model confirmation with the report.
+4. Associate the reported JMStudio millimetre setting with the exact files and
+   retain its contributor provenance. Unconfirmed file scales remain in scan
+   units. Retain the November 15 unchanged-model confirmation with the report.
 
 The history viewer uses trimmed H4 locally, but the ordinary lower painting link
 opens original H4. The repeatability experiment should explicitly select original

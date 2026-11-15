@@ -140,7 +140,7 @@ export function setupSurfaceRepair(getState, replaceSurface, saving) {
       const result=await readRepairBundle(JSON.parse(await file.text()));
       if(ticket!==epoch||getState().scan!==source||request!==importRequest) return;
       saving.requireUnchanged(version);
-      undo=[]; replaceSurface(result.scan,result.edits.labels,null,result.notes);
+      undo=[]; replaceSurface(result.scan,result.edits.labels,null,result.notes,result.edits.provenance);
       status("Repair bundle imported. Estimated surfaces remain marked; save locally to keep a browser copy.");
     } catch(error) { if(ticket===epoch&&request===importRequest) status(error.message); }
     finally { if(request===importRequest) el("repairImport").value=""; }
