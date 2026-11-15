@@ -26,6 +26,28 @@ loading failure/retry, and painting save/reopen were checked. Ruff, strict
 maintainability, and diff whitespace checks passed. These verify software behavior,
 not anatomical accuracy. H4/H6 repeatability measurement remains unimplemented.
 
+## November 15, 2026 — stronger surface trimming
+
+The H6 cleanup report exposed a screen-resolution selection limit: the old picker
+could record only one triangle per pixel, leaving dense subpixel triangles behind.
+The removal brush now supplements visible face IDs with depth-checked projected
+triangle centers, includes a one-pixel depth band for near-surface roughness, and
+covers the path between pointer events. This improves dense surface selection and
+fast sweeps while excluding deeper occluded geometry. It is not an opacity
+adjustment; selected faces are fully deleted.
+
+At the contributor's request, **Apply trim** is now the only approval for deleting
+the red selection, including painted faces. The redundant checkbox is removed,
+and the selection count identifies painted faces before applying. Deselect/Clear,
+Undo surface edit, separate-copy provenance, and save/reopen remain available.
+This changes the editor, not any existing H6 save or original scan. Review and
+save the intended cleanup explicitly. See [surface cleanup](REGION_CORRECTIONS.md#clean-up-model-surface).
+
+Validation covers dense flat/tilted surfaces, nearby roughness, hidden back layers,
+fast strokes versus separate clicks, painted-face approval, undo/save/reopen, and
+a temporary trim/undo on the original H6 scan. The changes do not assess the
+anatomical correctness of a contributor's removal selection.
+
 ## Prepare an H4/H6 repeatability check
 
 H4 and H6 are captures of the same physical lower model. On November 15, 2026,
