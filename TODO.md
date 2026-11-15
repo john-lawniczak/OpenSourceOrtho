@@ -22,9 +22,9 @@ week-18 display changes are documented in
   explicit unmatched regions. Repeat with different registration choices and
   surface samples; keep unknown scale in scan units. No H4/H6 report has been run.
 - [ ] Review the same small intact tooth subset in original H4 and H6, save each
-  painting and notes separately, and identify the chip. Confirm whether the
-  physical model changed between captures; shared-model provenance alone does
-  not establish an unchanged repeat. See the [review steps](docs/LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
+  painting and notes separately, and identify the chipped tooth/surface. The
+  contributor confirmed on November 15 that the physical model was unchanged
+  between H4/H6 and the chip predated both. See the [review steps](docs/LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
 - [ ] Inspect the trimmed H4 margin around draft FDI 43, where cleanup removed
   28 labeled faces. Display selection does not establish boundary accuracy.
 - [ ] Add source-bound week-18 endpoint fitting using the selected captures and

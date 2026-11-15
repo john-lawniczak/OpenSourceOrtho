@@ -28,10 +28,12 @@ not anatomical accuracy. H4/H6 repeatability measurement remains unimplemented.
 
 ## Prepare an H4/H6 repeatability check
 
-H4 and H6 are captures of the same physical lower model. If the model did not
-change between captures, apparent tooth movement describes capture/fitting
-inconsistency. Shared-model provenance does not establish that it was unchanged:
-chip timing, repairs and physical trimming still need confirmation.
+H4 and H6 are captures of the same physical lower model. On November 15, 2026,
+the contributor confirmed no physical changes between these scans and that the
+chip was already present in both. This supports evaluating apparent tooth motion
+as capture/fitting inconsistency; it is contributor evidence, not independent
+verification. The chipped tooth/surface location, scale and acquisition dates
+remain unknown. Later digital trimming is separate from physical-model changes.
 
 1. Open **Paint USER_ONE week 18 lower** to review original H4 and its saved labels.
    Start with an intact front tooth, premolar and molar. Check each tooth number
@@ -43,8 +45,8 @@ chip timing, repairs and physical trimming still need confirmation.
    on the same local server. H6 may start unpainted. Paint/check the same intact
    teeth and save its separate source-bound record; never copy H4 face labels
    onto H6. The ordinary week-18 lower button continues to select H4.
-4. Confirm whether the physical model changed between captures and supply scanner
-   export-unit evidence if available. Unknown dimensions remain in scan units.
+4. Supply scanner export-unit evidence if available. Unknown dimensions remain in
+   scan units. Retain the November 15 unchanged-model confirmation with the report.
 
 The history viewer uses trimmed H4 locally, but the ordinary lower painting link
 opens original H4. The repeatability experiment should explicitly select original

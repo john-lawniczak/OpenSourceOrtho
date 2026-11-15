@@ -22,8 +22,9 @@ from the algorithm's assigned FDI label. Predictions need `target_faces` per reg
 to score identity. Synthetic and reviewed-real results remain separate.
 
 Current status: executable scoring and controlled zero-motion/error-injection tests
-are available. H4/H6 same-model captures are available, but unchanged-model status,
-reviewed regions and a reproducible capture-consistency report remain pending.
+are available. On November 15, 2026 the contributor confirmed the H4/H6 physical
+model was unchanged between captures, with the chip already present in both.
+Reviewed regions and a reproducible capture-consistency report remain pending.
 Independently reviewed USER_ONE boundary/pose/correspondence labels remain missing.
 See [the H4/H6 review steps](LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
 Existing input validation statements

@@ -81,8 +81,11 @@ The additional captures have a separate [comparative evaluation](captures/qualit
 587,840. Both preserve every source byte. Acquisition date, scale, capture method,
 and anatomical registration remain unverified for both. The contributor confirms
 H4 and H6 share the same physical lower model, with a small chip on an unidentified
-front tooth. The chip location, timing, and any repair/trimming history are not
-yet mapped. This reports model damage, not actual tooth damage.
+front tooth. On November 15, 2026 the contributor confirmed no physical changes between H4
+and H6 and that the chip was already present in both. The exact chipped tooth and
+surface location remain unknown, as does any earlier repair/trimming history.
+This reports model damage, not actual tooth damage. Later digital trimming of H4
+is separate from these physical-model observations.
 
 Both binary STLs have valid declared record lengths and no non-finite face
 records. H4 is 29,057,284 bytes; H6 is 29,392,084 bytes. These are file checks,

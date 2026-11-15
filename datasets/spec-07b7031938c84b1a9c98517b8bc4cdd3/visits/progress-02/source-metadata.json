@@ -155,6 +155,19 @@
     "cross_attempt_physical_cast_identity_note": "The clarification groups the attempts at the same reported week. Exact impression, pour, rescan, repair and physical-cast relationships between the November 10 pair and H4/H6 are not separately specified.",
     "intact_donor_regions_verified": false,
     "fusion_performed": false,
-    "evaluation_scope_note": "Existing per-file quality/damage assessments retain their scope; membership in one model series does not establish identical defects or recover missing surfaces."
+    "evaluation_scope_note": "Existing per-file quality/damage assessments retain their scope; membership in one model series does not establish identical defects or recover missing surfaces.",
+    "repeat_capture_confirmation": {
+      "recorded_on": "2026-11-15",
+      "status": "contributor-confirmed",
+      "captures": [
+        "fusion-h-4",
+        "fusion-h-6"
+      ],
+      "physical_model_unchanged_between_captures": true,
+      "chip_present_before_both_captures": true,
+      "independently_verified": false,
+      "provenance": "Contributor replied: No physical changes between scans; chip was already there.",
+      "scope_note": "Applies to the physical lower model during H4/H6 acquisition, not subsequent digital trimming. Exact chipped tooth/location and acquisition dates remain unknown; no inference about the November 10 pair."
+    }
   }
 }
