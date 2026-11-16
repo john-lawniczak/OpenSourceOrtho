@@ -1,8 +1,10 @@
 # Local profiles and saved progress
 
-Use the **Profile** selector above the workspace for a small family or a few
-separate research workspaces. **Add profile** creates an empty workspace and
-switches to it; **Rename** changes its display name without moving data. Existing
+Use the dropdown arrow beside **Your Teeth Profile** to switch local workspaces.
+The main button still opens your own teeth. Gear **Settings → Profiles** contains
+the full selector, **Add profile**, **Rename**, and **Save progress**, keeping the
+top bar clear. **Add profile** creates an empty workspace and switches to it;
+**Rename** changes its display name without moving data. Existing
 uploads, paintings and saved records remain under **My profile**. Names are local
 display labels, not patient identifiers published to a dataset.
 

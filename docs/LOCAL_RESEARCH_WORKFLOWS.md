@@ -5,8 +5,9 @@ history and applied planning edits remain separate.
 
 ## November 15, 2026 — local family profiles
 
-The top **Profile** selector now offers separate local workspaces, **Add profile**,
-**Rename**, and **Save progress**. Existing data stays in **My profile**. Main
+Gear **Settings → Profiles** offers separate local workspaces, **Add profile**,
+**Rename**, and **Save progress**. A dropdown beside **Your Teeth Profile** provides
+quick switching without a separate profile bar. Existing data stays in **My profile**. Main
 workspace progress saves automatically and before switching; paintings still
 save explicitly in their editor. Browser and server records are separated by
 profile, with stale-workspace protection. See [local profiles](LOCAL_PROFILES.md)

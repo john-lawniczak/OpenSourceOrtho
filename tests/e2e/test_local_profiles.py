@@ -14,12 +14,20 @@ def value(page, identity, text):
     )
 
 
+def settings(page):
+    if not page.locator("#chatSettingsDialog").is_visible():
+        page.locator("#openChatSettings").click()
+
+
 def save(page):
+    settings(page)
     page.locator("#profileSave").click()
     expect(page.locator("#profileSaveStatus")).to_contain_text("Saved locally", timeout=15000)
+    page.locator('#chatSettingsDialog [aria-label="Close settings"]').click()
 
 
 def add(page, name):
+    settings(page)
     page.locator("#profileAdd").click()
     page.locator("#profileName").fill(name)
     with page.expect_navigation(wait_until="domcontentloaded"):
@@ -29,9 +37,11 @@ def add(page, name):
     return page.locator("#profileSelect").input_value()
 
 
-def switch(page, identity):
+def switch(page, identity, in_settings=False):
+    if in_settings:
+        settings(page)
     with page.expect_navigation(wait_until="domcontentloaded"):
-        page.locator("#profileSelect").select_option(identity)
+        page.locator("#profileSelect" if in_settings else "#profileQuickSelect").select_option(identity)
     expect(page.locator("#profileSave")).to_be_enabled()
     page.wait_for_function(
         "id => document.querySelector('#profileSelect').value === id && !document.querySelector('main').inert",
@@ -40,6 +50,8 @@ def switch(page, identity):
 
 
 def prepare_parent(page, scan):
+    expect(page.locator("body > .local-profiles")).to_have_count(0)
+    expect(page.locator("#profileAdd")).not_to_be_visible()
     page.locator("#simpleStlFile").set_input_files(scan)
     page.wait_for_function(
         "async () => (await import('/state.js')).state.scanSources.length === 1"
@@ -115,7 +127,7 @@ def test_three_profiles_restore_uploads_notes_edits_and_keep_old_tab_bound(
             page.reload()
             expect(page.locator("#profileSelect option:checked")).to_have_text("Child B")
             expect(page.locator("#planTitle")).to_have_value("Child B progress")
-            switch(page, other)
+            switch(page, other, in_settings=True)
             expect(page.locator("#planTitle")).to_have_value("Child A progress")
             expect(page.locator("#generationNotes")).to_have_value("Child-only notes")
             switch(page, "default")
@@ -152,6 +164,7 @@ def test_conflict_failed_save_and_duplicate_name_do_not_switch(intake_server):  
             value(page, "planTitle", "Newest progress")
             save(page)
             value(stale, "planTitle", "Stale progress")
+            settings(stale)
             stale.locator("#profileSave").click()
             expect(stale.locator("#profileSaveStatus")).to_contain_text("another tab")
             assert (
@@ -161,6 +174,7 @@ def test_conflict_failed_save_and_duplicate_name_do_not_switch(intake_server):  
                 == "Newest progress"
             )
             # Rename does not move any stored data, and duplicate names are rejected.
+            settings(page)
             page.locator("#profileRename").click()
             page.locator("#profileName").fill("Parent")
             page.locator("#profileConfirm").click()

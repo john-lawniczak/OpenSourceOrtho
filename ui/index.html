@@ -43,14 +43,6 @@
         </span>
       </button></div>
     </header>
-    <section class="local-profiles" aria-label="Local profiles">
-      <label>Profile <select id="profileSelect" disabled aria-label="Active profile"><option>My profile</option></select></label>
-      <button id="profileAdd" type="button" disabled>Add profile</button>
-      <button id="profileRename" type="button" disabled>Rename</button>
-      <button id="profileSave" type="button" disabled>Save progress</button>
-      <span id="profileSaveStatus" role="status">Loading profile…</span>
-      <small>Separate workspaces on this browser. Not password-protected. Save paintings in their editor.</small>
-    </section>
     <dialog id="profileDialog" aria-labelledby="profileDialogTitle">
       <form id="profileForm"><h2 id="profileDialogTitle">Add profile</h2>
         <label>Profile name <input id="profileName" required maxlength="60" autocomplete="off"></label>
@@ -61,7 +53,10 @@
     <main class="app-shell">
       <aside class="sidebar" aria-label="Plan workflow">
 
-        <button class="profile-launch" id="teethProfile" type="button">Your Teeth Profile<small id="teethProfileStatus" hidden></small></button>
+        <div class="profile-launcher">
+          <button class="profile-launch" id="teethProfile" type="button">Your Teeth Profile<small id="profileCurrentName">My profile</small><small id="teethProfileStatus" hidden></small></button>
+          <label class="profile-quick" title="Switch teeth profile"><select id="profileQuickSelect" disabled aria-label="Switch teeth profile"><option>My profile</option></select><span aria-hidden="true">▾</span></label>
+        </div>
         <button class="sample-launch" id="sampleLaunch" type="button">Sample Test Case</button>
 
         <nav class="step-list" aria-label="Workflow steps">
@@ -996,7 +991,13 @@
     </main>
     <dialog id="chatSettingsDialog" class="chat-settings-dialog" aria-labelledby="chatSettingsTitle">
       <form method="dialog">
-        <div class="ai-chat-heading"><div><h2 id="chatSettingsTitle">Settings</h2><p>Workspace and AI connection.</p></div><button aria-label="Close settings" value="close">×</button></div>
+        <div class="ai-chat-heading"><div><h2 id="chatSettingsTitle">Settings</h2><p>Profiles, workspace and AI connection.</p></div><button aria-label="Close settings" value="close">×</button></div>
+        <fieldset class="local-profiles"><legend>Profiles</legend>
+          <label>Active profile <select id="profileSelect" disabled aria-label="Active profile"><option>My profile</option></select></label>
+          <div class="profile-actions"><button id="profileAdd" type="button" disabled>Add profile</button><button id="profileRename" type="button" disabled>Rename</button><button id="profileSave" type="button" disabled>Save progress</button></div>
+          <span id="profileSaveStatus" role="status">Loading profile…</span>
+          <small>Separate workspaces on this browser. Not password-protected. Save paintings in their editor.</small>
+        </fieldset>
         <fieldset class="workspace-mode-settings"><legend>Workspace</legend>        <div class="mode-switch" aria-label="Workspace mode">
           <button class="mode-choice" data-user-mode="simple" type="button">Guided</button>
           <button class="mode-choice is-active" data-user-mode="advanced" type="button">Technician</button>

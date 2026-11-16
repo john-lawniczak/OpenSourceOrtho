@@ -9,8 +9,11 @@ export async function initializeProfiles({ state, render, restoreLegacy, leaveSa
   main.inert = true;
   const updateList = async () => {
     profiles = await listProfiles();
-    el("profileSelect").replaceChildren(...profiles.map(profile => new Option(profile.name, profile.id)));
-    el("profileSelect").value = activeProfileId;
+    for (const id of ["profileSelect", "profileQuickSelect"]) {
+      el(id).replaceChildren(...profiles.map(profile => new Option(profile.name, profile.id)));
+      el(id).value = activeProfileId;
+    }
+    el("profileCurrentName").textContent = profiles.find(p => p.id === activeProfileId)?.name || "My profile";
   };
   function save() {
     clearTimeout(timer);
@@ -19,7 +22,7 @@ export async function initializeProfiles({ state, render, restoreLegacy, leaveSa
     try { data = captureWorkspace(state, document); }
     catch (error) { status(`Not saved: ${error.message}`); return Promise.reject(error); }
     const capturedChange = change;
-    if (!data) return Promise.reject(new Error("Return to your profile and apply or discard the current preview before saving."));
+    if (!data) { const error = new Error("Return to your profile and apply or discard the current preview before saving."); status(error.message); return Promise.reject(error); }
     dirty = true; status("Saving progress…");
     const request = queue.catch(() => {}).then(() => saveWorkspace(data, revision));
     queue = request.then(record => {
@@ -49,19 +52,23 @@ export async function initializeProfiles({ state, render, restoreLegacy, leaveSa
     else await restoreLegacy();
     render(); ready = true;
     status(saved ? "Saved progress restored" : "Progress saves automatically in this browser");
-    for (const id of ["profileSelect", "profileAdd", "profileRename", "profileSave"]) el(id).disabled = false;
+    for (const id of ["profileSelect", "profileQuickSelect", "profileAdd", "profileRename", "profileSave"]) el(id).disabled = false;
   } catch (error) { status(`Profile unavailable: ${error.message}`); }
   finally { main.inert = false; }
   el("profileSave").onclick = () => {
     if (state.sample.active) { leaveSample(); render(); }
     void save().catch(() => {});
   };
-  el("profileSelect").onchange = async () => {
-    const id = el("profileSelect").value;
+  for (const select of [el("profileSelect"), el("profileQuickSelect")]) select.onchange = async () => {
+    const id = select.value;
     if (id === activeProfileId) return;
-    el("profileSelect").disabled = true;
+    for (const picker of [el("profileSelect"), el("profileQuickSelect")]) picker.disabled = true;
     try { await switchTo(id); }
-    catch (error) { status(error.message); el("profileSelect").value = activeProfileId; el("profileSelect").disabled = false; }
+    catch (error) {
+      status(error.message);
+      for (const picker of [el("profileSelect"), el("profileQuickSelect")]) { picker.value = activeProfileId; picker.disabled = false; }
+      if (!el("chatSettingsDialog").open) el("chatSettingsDialog").showModal();
+    }
   };
   const openName = mode => {
     el("profileForm").dataset.mode = mode;
@@ -88,7 +95,7 @@ export async function initializeProfiles({ state, render, restoreLegacy, leaveSa
     finally { el("profileConfirm").disabled = false; }
   };
   for (const name of ["input", "change"]) document.addEventListener(name, event => {
-    if (!event.target.closest(".local-profiles, #profileDialog")) schedule();
+    if (!event.target.closest(".local-profiles, .profile-quick, #profileDialog")) schedule();
   }, true);
   document.addEventListener("workspace-rendered", schedule);
   document.addEventListener("workspace-before-sample", () => { if (ready) void save().catch(() => {}); });

@@ -1,14 +1,22 @@
-.local-profiles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.local-profiles { display: grid; gap: 10px; padding: 12px; margin: 0; min-width: 0; border: 1px solid var(--line); border-radius: 10px; }
+.profile-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .local-profiles button, #profileDialog button { min-height: 38px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-alt); color: var(--ink); cursor: pointer; font-size: 13px; }
 .local-profiles button:hover, #profileDialog button:hover { border-color: var(--accent); }
 #profileSave, #profileConfirm { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 #profileSaveStatus { font-size: 13px; }
 .local-profiles label { display: flex; align-items: center; gap: 8px; margin: 0; }
-.local-profiles select { max-width: 210px; }
-.local-profiles small { flex-basis: 100%; color: var(--muted, #96aeb4); }
+.local-profiles select { flex: 1; min-width: 0; }
+.local-profiles small { color: var(--muted); }
+.profile-launcher { display: flex; min-width: 0; }
+.profile-launcher .profile-launch { flex: 1; min-width: 0; border-radius: 10px 0 0 10px; }
+#profileCurrentName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-quick { position: relative; display: flex; margin: 0; width: 40px; flex: 0 0 40px; border-left: 1px solid #44605e; border-radius: 0 10px 10px 0; background: #203d3b; color: #e5f7f3; }
+.profile-quick select { position: absolute; inset: 0; width: 100%; height: 100%; appearance: none; opacity: 0; cursor: pointer; }
+.profile-quick span { margin: auto; pointer-events: none; }
+.profile-quick:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
 #profileDialog { width: min(420px, calc(100vw - 32px)); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
 #profileDialog form { display: grid; gap: 12px; }
 #profileDialog h2, #profileDialog p { margin: 0; }
 #profileError { color: #ed967d; }
 #profileDialog::backdrop { background: #0008; }
-@media (max-width: 600px) { .local-profiles { padding: 8px; } .local-profiles label { width: 100%; } .local-profiles select { flex: 1; max-width: none; } }
+@media (max-width: 600px) { .sidebar .profile-launcher { grid-column: 1 / -1; } }
