@@ -59,6 +59,7 @@ def prepare_parent(page, scan):
     value(page, "planTitle", "Parent progress")
     value(page, "generationNotes", "Parent-only notes")
     value(page, "chatApiKey", "test-only-not-a-secret")
+    page.locator('[data-availability="photos"]').evaluate("el => el.click()")
     await_state = """async () => {
       const {state}=await import('/state.js');
       state.rows=[{stage:1,tooth:'11',x:0.1,y:0,z:0,tip:0,torque:0,rotation:0,source:'manual'}];
@@ -71,6 +72,7 @@ def prepare_parent(page, scan):
 
 
 def check_other_tab_and_mobile(page, context, intake_server, other, tmp_path):  # noqa: F811
+    expect(page.locator('[data-availability="photos"]')).to_be_checked()
     # Another tab stays attached to its original profile after this tab switches.
     old = context.new_page()
     old.goto(intake_server)

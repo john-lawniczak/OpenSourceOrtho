@@ -1219,7 +1219,7 @@ function restoreClinicalControls(snapshot) {
 renderGlossaryTerms();
 renderAvailability();
 renderAll();
-await initializeProfiles({ state, render: renderAll, leaveSample: exitSample, restoreLegacy: async () => { await restoreStoredUploads(); restoreStoredSegmentation(); } });
+await initializeProfiles({ state, render: () => { renderAvailability(); renderAll(); }, leaveSample: exitSample, restoreLegacy: async () => { await restoreStoredUploads(); restoreStoredSegmentation(); } });
 resumeUploadRegistration();
 loadVersions();
 

@@ -148,6 +148,9 @@ The bundled artifacts and earlier experiments are never overwritten. Choose
 their reports remain available, but regenerating is required to display them as
 current estimates. Original observations stay available.
 
+Refresh and fit selections discard superseded responses. Starting an experiment
+locks its inputs immediately; cancellation also covers the initial input refresh.
+
 The preview still labels intermediate weeks as estimates. Surface agreement,
 including lower residuals or fewer weak matches, does not establish tooth-motion
 accuracy. Whole-arch registration and unverified scale retain their limitations.
@@ -187,6 +190,11 @@ visit and arch; they do not create extra weeks. Each capture retains its origina
 bytes/hash, capture date, local import time, model/cast ID, damage notes,
 orientation and corrected labels. The model ID is contributor-entered evidence,
 not proof that two captures share a cast.
+
+Both endpoints can import concurrently within the shared size limit. Changing
+the case or arch rejects unfinished scan reads. Imported labels are validated
+against and retained with their selected capture before fitting, so switching
+captures does not discard them. Fit and save wait until label reads finish.
 
 Save both selected visits before fitting if desired. Local saves and v2 portable
 backups retain all alternatives and the active choices; v1 backups still open.

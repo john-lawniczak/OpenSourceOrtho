@@ -29,21 +29,30 @@ export function installSampleResearch(host, reload) {
     </div><p data-research="status" role="status">Local experiments use week 1 and week 7 saved painting.</p>`;
   host.append(section);
   const field = name => section.querySelector(`[data-research="${name}"]`);
-  let inputs = null, report = null, pending = null;
+  let report = null, pending = null, refreshVersion = 0, selectionVersion = 0;
   const summary = s => `${s.fitted}/${s.regions} fitted · ${s.uncertain} uncertain · ${s.unmatched} unmatched · mean p90 ${s.mean_p90_residual?.toFixed(3) ?? "unavailable"} scan units`;
-  async function refresh() {
-    inputs = await get(`/api/sample-refits/${field("arch").value}`);
+  async function refresh(signal) {
+    const arch = field("arch").value, version = ++refreshVersion;
+    selectionVersion++;
+    field("fit").disabled = true;
+    let inputs;
+    try { inputs = await get(`/api/sample-refits/${arch}`, { signal }); }
+    catch (error) { if (version === refreshVersion) throw error; return null; }
+    finally { if (version === refreshVersion) field("fit").disabled = Boolean(pending); }
+    if (version !== refreshVersion || arch !== field("arch").value) return null;
     field("fit").replaceChildren(new Option("Bundled fit", ""), ...inputs.versions.map(v => new Option(`${v.created_at.slice(0,19)} · ${v.stale ? "stale · " : ""}${summary(v.summary)}`, v.id)));
     field("fit").value = selected.get(field("arch").value) || "";
     field("status").textContent = `${inputs.versions.length} saved fits. Painting: ${inputs.inputs.annotations.map(a=>`${a.visit}: ${a.origin}`).join("; ")}.`;
+    return inputs;
   }
   async function action(fn) { try { await fn(); } catch(error) { field("status").textContent = error.message; } }
   field("refresh").onclick = () => action(refresh);
   field("arch").onchange = () => action(refresh);
   field("fit").onchange = () => action(async () => {
-    const arch = field("arch").value, id = field("fit").value;
+    const arch = field("arch").value, id = field("fit").value, version = ++selectionVersion;
     if (id) {
       const result = await get(`/api/sample-refits/${id}`);
+      if (version !== selectionVersion || arch !== field("arch").value) return;
       report = result.record; field("download").disabled = false;
       if (result.stale) { field("fit").value = selected.get(arch) || ""; throw new Error("This fit used older inputs. Its report is available; rebuild or select another preview."); }
       field("status").textContent = summary(report.summary);
@@ -53,15 +62,19 @@ export function installSampleResearch(host, reload) {
   for (const [button, operation] of [["build","sample-refit"],["benchmark","sample-benchmark"]]) {
     field(button).onclick = () => action(async () => {
       if (pending) return;
-      await refresh();
       const arch = field("arch").value, controller = new AbortController(); pending = controller;
       for (const name of ["arch","fit","build","benchmark","refresh"]) field(name).disabled = true;
       field("cancel").disabled = false; field("status").textContent = "Processing saved painting…";
       try {
+        const inputs = await refresh(controller.signal);
+        controller.signal.throwIfAborted();
+        if (!inputs) throw new Error("Research inputs changed. Try again.");
         const result = await geometryJob(operation, { arch, input_digest: inputs.input_digest }, {signal:controller.signal});
+        controller.signal.throwIfAborted();
         if (!result.ok) throw new Error(result.errors?.join("; ") || "Experiment failed");
         report = result.record; field("download").disabled = false;
-        await refresh();
+        await refresh(controller.signal);
+        controller.signal.throwIfAborted();
         if (button === "build") {
           selected.set(arch, report.id); field("fit").value = report.id;
           field("status").textContent = `Saved fit: ${summary(report.summary)}. Bundled: ${summary(report.comparison.original)}. Residuals measure surface agreement, not motion accuracy.`;

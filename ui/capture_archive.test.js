@@ -13,6 +13,7 @@ test("v1 intake archives remain readable without inventing a fit or scale confir
   const restored=await restoreArchive(archiveCase(record));
   assert.equal(restored.motion,null);assert.equal(restored.unitsConfirmed,false);
   assert.deepEqual(restored.pair[0].bytes,source.bytes);
+  await assert.rejects(restoreArchive({...archiveCase(record), unitsConfirmed:"false"}), /Invalid case archive/);
 });
 test("v2 preserves alternatives and selected capture; rejects tampering and missing active IDs",async()=>{
   const first=await scan(), second=await scan(2);

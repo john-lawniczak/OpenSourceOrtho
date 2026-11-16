@@ -26,13 +26,26 @@ function invalidate() {
   el("frameLabel").textContent = ""; status("Inputs changed. Fit again to update estimates.");
 }
 for (const id of ["caseSegmenter", "caseArch", "caseUnits", "unitsConfirmed", "referenceTeeth", "date0", "date1", "orientation0", "orientation1"]) el(id).onchange = invalidate;
-for (let i=0;i<2;i++) {
-  el(`correction${i}`).onchange = () => { invalidate(); corrections[i] = null; };
-}
 const captures = createCaptureLibrary({status, activeCorrection:i=>corrections[i], changed:(i,capture)=>{
   invalidate(); pair[i] = capture?.scan || null; corrections[i] = capture?.correction || null;
   matches = null; el(`correction${i}`).value = "";
 }});
+let labelReads = 0;
+const labelRequests = new WeakMap();
+for (let i=0;i<2;i++) el(`correction${i}`).onchange = () => action(async () => {
+  const scan = captures.activeScan(i), file = el(`correction${i}`).files[0];
+  if (!file) return;
+  if (!scan) throw new Error("Choose the active capture before importing labels.");
+  const ticket = Symbol(); labelRequests.set(scan, ticket);
+  labelReads++; invalidate();
+  try {
+    const correction = await correctionFile(file);
+    if (labelRequests.get(scan) !== ticket) return;
+    validateCaptureCorrection(scan, correction);
+    captures.setCorrection(i, scan, correction);
+    status(`Labels retained for ${scan.filename}. Fit again to update estimates.`);
+  } finally { labelReads--; }
+});
 el("caseArch").onchange = () => captures.archChanged();
 function renderFrame() {
   if (!motion) return;
@@ -66,6 +79,7 @@ function mount(preview) {
   })); renderFrame();
 }
 el("fitVisits").onclick = () => action(async () => {
+  if (labelReads) throw new Error("Wait for label import to finish.");
   if (!el("unitsConfirmed").checked) throw new Error("Confirm the scale used by both scans first.");
   if (pending) throw new Error("Wait for the current fit to stop.");
   const controller = new AbortController(); pending = controller;
@@ -95,6 +109,7 @@ el("resetView").onclick = () => viewer.setView("front");
 el("zoomIn").onclick = () => viewer.zoom(1.25); el("zoomOut").onclick = () => viewer.zoom(0.8);
 async function listCases() { const names = await caseStore("getAllKeys"); el("savedCases").replaceChildren(...names.map(n => new Option(n,n))); }
 el("saveCase").onclick = () => action(async () => {
+  if (labelReads) throw new Error("Wait for label import to finish.");
   if (pending || captures.busy()) throw new Error("Wait for fitting or capture import to finish.");
   pair = captures.scans();
   corrections = await Promise.all([0,1].map(i => el(`correction${i}`).files[0] ? correctionFile(el(`correction${i}`).files[0]) : corrections[i]));

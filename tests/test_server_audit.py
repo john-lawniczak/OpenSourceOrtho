@@ -9,6 +9,7 @@ from orthoplan.server import Handler
 @pytest.mark.parametrize("error", [BrokenPipeError, ConnectionResetError])
 def test_cancelled_scan_response_does_not_attempt_second_response(error):
     handler = object.__new__(Handler)
+    handler.headers = {}
     handler.path = "/"
     handler.send_response = Mock()
     handler.send_header = Mock()

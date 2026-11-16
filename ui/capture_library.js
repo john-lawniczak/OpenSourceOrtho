@@ -1,7 +1,8 @@
 // Captures belong to one endpoint visit and arch; selecting one never adds a week.
 import { el, scanFile, orientation } from "./progress_inputs.js";
 export function createCaptureLibrary({ changed, status, activeCorrection }) {
-  let groups = [[],[]], active = [null,null], loading = false;
+  let groups = [[],[]], active = [null,null], generation = 0;
+  const loading = [false, false], reservedBytes = [0, 0];
   const field = (name,i) => el(`${name}${i}`);
   function current(i) { return groups[i].find(c=>c.id===active[i] && c.scan.arch===el("caseArch").value); }
   function stash(i) {
@@ -27,37 +28,49 @@ export function createCaptureLibrary({ changed, status, activeCorrection }) {
       <p id="imported${i}"></p><label>Damage or capture notes <textarea id="damage${i}" maxlength="2000"></textarea></label>`;
     field("scan",i).closest("fieldset").append(box); field("scan",i).multiple = true;
     field("scan",i).onchange = async () => {
-      if (loading) return;
-      loading = true; const arch = el("caseArch").value;
+      if (loading[i]) return;
+      loading[i] = true; field("scan",i).disabled = true;
+      const arch = el("caseArch").value, version = generation;
       try {
         stash(i);
         const files = [...field("scan",i).files];
+        const date = field("date",i).value, rotation = orientation(i);
         if (groups[i].length + files.length > 8) throw new Error("Keep at most eight captures per visit.");
-        const bytes = groups.flat().reduce((n,c)=>n+c.scan.bytes.byteLength,0) + files.reduce((n,f)=>n+f.size,0);
+        reservedBytes[i] = files.reduce((n,f)=>n+f.size,0);
+        const bytes = groups.flat().reduce((n,c)=>n+c.scan.bytes.byteLength,0) + reservedBytes[0] + reservedBytes[1];
         if (bytes > 180*1024*1024) throw new Error("This local case is limited to 180 MB of capture data.");
         const scans = await Promise.all(files.map(file=>scanFile(file,i)));
+        if (generation !== version) throw new Error("Case or arch changed during import. Select the scans again.");
         for (const scan of scans) if (!groups[i].some(c=>c.id===`${arch}:${scan.sha256}`)) groups[i].push({
-          id:`${arch}:${scan.sha256}`, scan:{...scan, arch, date:field("date",i).value, rotation:orientation(i)}, acquired:"", model:"", damage:"", imported_at:new Date().toISOString(), correction:null});
+          id:`${arch}:${scan.sha256}`, scan:{...scan, arch, date, rotation}, acquired:"", model:"", damage:"", imported_at:new Date().toISOString(), correction:null});
         if (!current(i) && scans.length === 1) active[i] = `${arch}:${scans[0].sha256}`;
         render(i); changed(i,current(i));
         status(`${groups[i].length} captures retained for this visit. Choose the active capture for fitting.`);
       } catch(error) { status(error.message); }
-      finally { loading = false; field("scan",i).value = ""; }
+      finally { loading[i] = false; reservedBytes[i] = 0; field("scan",i).value = ""; field("scan",i).disabled = false; }
     };
     for (const name of ["acquired","model","damage","date","orientation"]) field(name,i).addEventListener("input",()=>stash(i));
     field("activeCapture",i).onchange = () => { stash(i); active[i] = field("activeCapture",i).value || null; render(i); changed(i,current(i)); };
   }
   return {
-    busy:()=>loading,
+    busy:()=>loading.some(Boolean),
+    activeScan:i=>current(i)?.scan,
+    setCorrection(i, scan, correction) {
+      const capture = groups[i].find(c=>c.scan === scan);
+      if (!capture) throw new Error("The case changed. Import these labels again.");
+      capture.correction = correction;
+      if (current(i) === capture) changed(i,capture);
+    },
     snapshot() { [0,1].forEach(stash); return {groups, active}; },
     restore(record) {
+      generation++;
       groups = record.captures?.groups || record.pair.map((scan,i)=>[{id:`${scan.arch}:${scan.sha256}`,scan,acquired:"",model:"",damage:"",correction:record.corrections[i]}]);
       active = record.captures?.active || groups.map(g=>g[0]?.id || null);
       [0,1].forEach(render);
     },
-    archChanged() { [0,1].forEach(i=>{ render(i); changed(i,current(i)); }); },
+    archChanged() { generation++; [0,1].forEach(i=>{ render(i); changed(i,current(i)); }); },
     scans() {
-      if (loading) throw new Error("Wait for capture import to finish.");
+      if (loading.some(Boolean)) throw new Error("Wait for capture import to finish.");
       [0,1].forEach(stash);
       return [0,1].map(i=>{const capture=current(i); if(!capture)throw new Error("Choose an active capture for each visit.");return capture.scan;});
     },

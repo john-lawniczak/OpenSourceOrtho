@@ -10,6 +10,7 @@ export function archiveCase(record) {
 export async function restoreArchive(record) {
   if (!["ortho-two-visit-archive-v1","ortho-two-visit-archive-v2"].includes(record?.schema)
       || typeof record.name !== "string" || !record.name.trim() || !["mm","cm","in"].includes(record.units)
+      || (record.unitsConfirmed !== undefined && typeof record.unitsConfirmed !== "boolean")
       || record.corrections?.length !== 2 || !["active","surface-graph"].includes(record.segmenter || "active")) throw new Error("Invalid case archive.");
   let pair, captures;
   if (record.schema.endsWith("v2")) {
