@@ -135,6 +135,9 @@ def test_draft_edit_lists_blockers_and_keeps_preview_in_current_step(server_url,
             page.locator("#sampleLaunch").click()
             page.locator('[data-gstep-nav="details"]').click()
             expect(page.locator("#sampleReloadPainting")).to_be_enabled(timeout=90000)
+            # Public installs can fall back to baseline scans with declared mm.
+            # Exercise the unverified-unit blocker independently of that fallback.
+            page.locator("#scanUnits").evaluate("el => { el.value='unverified'; el.dispatchEvent(new Event('input', {bubbles:true})); }")
             page.locator('.viewer-tooth-numbers [data-select-tooth="11"]').click()
             page.locator("#holdSelectedTooth").check()
             status = page.locator("#guidedEditStatus")
