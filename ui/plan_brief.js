@@ -1,11 +1,12 @@
 import { el, state } from "./state.js";
+import { profileKey } from "./profile_context.js";
 import { addNoteFocusTeeth, seedSampleFocus } from "./plan_focus.js";
 
 const drafts = new Map();
 let mounted = false;
 let focusTimer, pendingFocus;
 const key = () => state.sample.active ? "sample:USER_ONE" : `personal:${el("planId").value || "draft-001"}`;
-const storageKey = context => `orthoplan-plan-brief-v1:${context}`;
+const storageKey = context => profileKey(`orthoplan-plan-brief-v1:${context}`);
 
 function flushFocusTags() {
   clearTimeout(focusTimer);

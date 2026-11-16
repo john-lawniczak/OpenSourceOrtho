@@ -15,6 +15,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
+from orthoplan.profile_storage import current_profile
 
 
 class GeometryBusy(ValueError):
@@ -34,7 +35,7 @@ class GeometryJobs:
         self.monitor.start()
 
     def start(self, operation, payload, *, workspace, ui_dir):
-        if operation not in ("evaluate", "segment", "motion", "contact"):
+        if operation not in ("evaluate", "segment", "motion", "contact", "sample-refit", "sample-benchmark"):
             raise ValueError("Unsupported geometry operation")
         if not isinstance(payload, dict):
             raise ValueError("Geometry payload must be an object")
@@ -56,6 +57,7 @@ class GeometryJobs:
                         payload=payload,
                         workspace=str(workspace),
                         ui_dir=str(ui_dir),
+                        profile_id=current_profile.get(),
                     )
                 )
             )
@@ -77,13 +79,14 @@ class GeometryJobs:
                 started=time.monotonic(),
                 status="running",
                 error=None,
+                profile_id=current_profile.get(),
             )
             return {"ok": True, "job_id": key, "status": "running"}
 
     def get(self, key, *, cancel=False):
         with self.lock:
             job = self.jobs.get(key)
-            if job is None:
+            if job is None or job.get("profile_id", "default") != current_profile.get():
                 return {"ok": False, "status": "missing", "errors": ["Job expired or not found."]}
             if cancel:
                 if job["status"] == "running":

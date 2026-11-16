@@ -15,7 +15,7 @@ from test_boundary_intake import surface, export  # noqa: E402
 from test_surface_repair import fixture_files  # noqa: E402
 
 
-def test_trim_protects_teeth_then_previews_undoes_and_reopens(server_url, tmp_path):  # noqa: F811
+def test_trim_apply_approves_painted_selection_then_undoes_and_reopens(server_url, tmp_path):  # noqa: F811
     stl = surface(tmp_path)
     count = stl.read_text().count("facet normal")
     labels = tmp_path / "labels.json"
@@ -36,12 +36,10 @@ def test_trim_protects_teeth_then_previews_undoes_and_reopens(server_url, tmp_pa
             page.locator("#trimPanel summary").click()
             page.locator('[data-review-mode="trim"]').click()
             canvas = page.locator("#regionCanvas canvas")
-            canvas.click()
-            expect(page.locator("#trimApply")).to_be_disabled()
-            expect(page.locator("#trimStatus")).to_contain_text("0 faces selected")
-            page.locator("#trimAllowPainted").check()
+            expect(page.locator("#trimAllowPainted")).to_have_count(0)
             canvas.click()
             expect(page.locator("#trimApply")).to_be_enabled()
+            expect(page.locator("#trimStatus")).to_contain_text("painted)")
             # A selection is only a preview: exporting still returns every face.
             assert export(page, tmp_path, "selected.json")["face_count"] == count
             canvas.screenshot(path=str(tmp_path / "red-trim-selection.png"))

@@ -1,4 +1,6 @@
 import { createChatState } from "./chat_defaults.js";
+import { profileHeaders } from "./profile_context.js";
+export { savePlanVersion, listCaseVersions } from "./case_versions.js";
 import { geometryJob } from "./geometry_jobs.js";
 import { scanUploadContentType } from "./scan_formats.js";
 
@@ -257,30 +259,11 @@ export async function requestSetupComparison(payload) {
   return response.json();
 }
 
-export async function savePlanVersion(payload) {
-  const response = await fetch("/api/plan/version", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    const detail = await response.json().catch(() => ({}));
-    throw new Error((detail.errors || ["save failed"]).join("; "));
-  }
-  return response.json();
-}
-
-export async function listCaseVersions(caseId) {
-  const response = await fetch(`/api/cases/${encodeURIComponent(caseId)}`);
-  if (!response.ok) return { ok: false, versions: [] };
-  return response.json();
-}
-
 export async function askPlanAssistant(payload, signal) {
   const response = await fetch("/api/chat", {
     signal,
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...profileHeaders() },
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
@@ -294,7 +277,7 @@ export async function streamPlanAssistant(payload, { onDelta, onDone }, signal) 
   const response = await fetch("/api/chat/stream", {
     signal,
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...profileHeaders() },
     body: JSON.stringify(payload),
   });
   if (!response.ok || !response.body) {

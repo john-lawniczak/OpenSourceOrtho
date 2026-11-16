@@ -44,7 +44,7 @@ def test_uploaded_scan_readiness_and_resolution_link(intake_server, tmp_path):
             page.locator('#stlFile').set_input_files(scan)
             page.locator('#scanUnits').select_option('unverified')
             page.locator('[data-step="review"]').click()
-            page.locator('.viewer-diagnostics > summary').click()
+            page.locator('.viewer-diagnostics > summary').filter(has_text="Scan details & checks").click()
             details = page.locator('#intakeReadinessDetails')
             expect(details).to_be_attached()
             details.locator('summary').click()

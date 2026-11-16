@@ -9,6 +9,8 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from orthoplan.sample_reviews import save_tooth_review
+from orthoplan.sample_history_surface import local_history_surface
 from orthoplan.geometry_jobs import GeometryBusy, jobs
 from orthoplan.evaluation.motion_review import motion_review_payload
 from orthoplan.goal_preview import preview_goal_payload
@@ -17,7 +19,7 @@ from orthoplan.ai_chat_stream import send_chat_stream
 from orthoplan.api import evaluate_plan_payload, print_package_payload
 from orthoplan.case_api import case_versions_payload, list_cases_payload, save_plan_version_payload
 from orthoplan.case_review import case_review_payload
-from orthoplan.cases import default_case_store
+from orthoplan.profile_storage import handler_case_store, profile_request
 from orthoplan.cbct_workflow import cbct_proposal_payload, cbct_review_payload
 from orthoplan.generation import generate_plan_payload
 from orthoplan.datasets import resolve_published_asset
@@ -51,7 +53,7 @@ _CONTENT_TYPES = {
 }
 
 JSON_POST_ENDPOINTS = {
-    "/api/region-corrections", "/api/sample-teeth",
+    "/api/region-corrections", "/api/sample-teeth", "/api/tooth-review",
     "/api/evaluate", "/api/preview-goal", "/api/chat", "/api/chat/stream", "/api/generate-plan",
     "/api/plan/version", "/api/print-package", "/api/case-review",
     "/api/setup-compare", "/api/cbct/propose-anatomy", "/api/cbct/review-anatomy",
@@ -89,9 +91,7 @@ class Handler(BaseHTTPRequestHandler):
         raw = os.environ.get("ORTHOPLAN_MESH_WORKSPACE")
         return Path(raw) if raw else default_mesh_workspace()
 
-    def _case_store(self) -> Path:
-        raw = os.environ.get("ORTHOPLAN_CASE_STORE")
-        return Path(raw) if raw else default_case_store()
+    _case_store = handler_case_store
 
     def _content_length(self) -> int | None:
         """Parsed Content-Length, or None if the header is missing/malformed."""
@@ -103,12 +103,19 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:
             return None
 
+    @profile_request
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
-            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload}
+            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload,
+                     "/api/sample-history/lower-cleaned": local_history_surface}
             if path in notes:
                 self._send_json(200, notes[path]())
+                return
+            if path.startswith("/api/sample-refits/"):
+                from orthoplan.sample_refit import refit_status, open_refit
+                identity = path.rsplit("/", 1)[-1]
+                self._send_json(200, refit_status(identity) if identity in {"upper", "lower"} else open_refit(identity))
                 return
             if path.startswith("/api/region-corrections/"):
                 query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
@@ -133,13 +140,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(body)
                 return
             if path == "/api/ai/connectors":
-                self._send_json(
-                    200,
-                    {
-                        "ok": True,
-                        "connectors": [connector.model_dump(mode="json") for connector in connector_catalog()],
-                    },
-                )
+                self._send_json(200, {"ok": True, "connectors": [c.model_dump(mode="json") for c in connector_catalog()]})
                 return
             if path == "/api/cases":
                 self._send_json(200, list_cases_payload(store_path=self._case_store()))
@@ -164,11 +165,10 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 
+    @profile_request
     def do_POST(self) -> None:  # noqa: N802 - stdlib naming
         try:
-            # A foreign page can send a simple POST to localhost even though
-            # CORS blocks reading the response. Reject it before any provider,
-            # upload or plan mutation; explicit non-browser clients have no Origin.
+            # Reject foreign pages before provider/upload/plan mutations; CLI clients have no Origin.
             origin = self.headers.get("Origin")
             host = self.headers.get("Host", "")
             if (origin is not None and origin not in {f"http://{host}", f"https://{host}"}) or self.headers.get("Sec-Fetch-Site") == "cross-site":
@@ -204,6 +204,8 @@ class Handler(BaseHTTPRequestHandler):
                 send_chat_stream(self, payload)
                 return
             self._send_json(200, _dispatch_json_post(self, path, payload))
+        except (BrokenPipeError, ConnectionResetError):
+            return
         except Exception:  # noqa: BLE001 - never leak a traceback / drop the connection
             self._send_json(500, {"ok": False, "errors": ["internal server error"]})
 
@@ -212,6 +214,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
+    if path == "/api/tooth-review":
+        return save_tooth_review(payload)
     if path == "/api/sample-teeth":
         return sample_teeth_payload(payload, workspace=handler._mesh_workspace())
     if path == "/api/region-corrections":

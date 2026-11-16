@@ -2,6 +2,7 @@ import { parseStlGeometry } from "./stl.js";
 export const el = id => document.getElementById(id);
 export async function scanFile(file, index) {
   if (!file) throw new Error("Choose both endpoint scans.");
+  if (file.size > 100*1024*1024) throw new Error("Scan exceeds the 100 MB import limit.");
   const bytes = await file.arrayBuffer();
   const geometry = parseStlGeometry(bytes); geometry.dispose();
   const hash = await crypto.subtle.digest("SHA-256", bytes);

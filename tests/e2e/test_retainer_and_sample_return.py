@@ -51,8 +51,10 @@ def test_history_survives_guided_steps_and_retainer_preparation(server_url, tmp_
                 page.locator('button[data-sample-view="observed"]').click()
                 expect(page.locator("#sampleComparison")).to_be_visible()
                 expect(page.locator("#sampleComparison")).to_have_attribute("data-week", "7")
+            page.locator("#themeToggle").click()
             page.locator("#createRetainer").click()
             flow = page.frame_locator('iframe[title="Retainer reference preparation"]')
+            expect(flow.locator('body')).to_have_attribute('data-theme', 'dark')
             flow.locator("#retainerFile").set_input_files(stl)
             flow.locator("#retainerArch").select_option("lower")
             flow.locator("#retainerCurrent").check()
@@ -77,5 +79,35 @@ def test_history_survives_guided_steps_and_retainer_preparation(server_url, tmp_
             expect(page.locator("#sampleComparison")).to_be_visible()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-week", "7")
             assert not errors
+        finally:
+            browser.close()
+
+
+def test_retainer_theme_follows_workspace_and_standalone_mobile(server_url, tmp_path):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1000})
+        try:
+            page.goto(server_url)
+            expect(page.locator('.sidebar [data-step-target="photos"]')).to_have_count(0)
+            expect(page.locator('#reviewTierBanner')).to_have_count(0)
+            assert page.locator('#createRetainer').evaluate(
+                "el => el.previousElementSibling.dataset.stepTarget === 'glossary'")
+            page.locator("#createRetainer").click()
+            flow = page.frame_locator('iframe[title="Retainer reference preparation"]')
+            expect(flow.locator("body")).to_have_attribute("data-theme", "light")
+            expect(flow.locator("#retainerBack")).to_be_hidden()
+            page.screenshot(path=str(tmp_path / "retainer-light.png"))
+            page.locator("#retainerWorkspaceBack").click()
+            page.locator("#themeToggle").click()
+            page.locator("#createRetainer").click()
+            expect(flow.locator("body")).to_have_attribute("data-theme", "dark")
+            page.screenshot(path=str(tmp_path / "retainer-dark.png"))
+            page.goto(server_url + "/retainer.html")
+            page.set_viewport_size({"width": 390, "height": 844})
+            expect(page.locator("body")).to_have_attribute("data-theme", "dark")
+            expect(page.locator("#retainerBack")).to_be_visible()
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            page.screenshot(path=str(tmp_path / "retainer-mobile.png"), full_page=True)
         finally:
             browser.close()

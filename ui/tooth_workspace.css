@@ -5,20 +5,24 @@
 #guided .single-viewer { display: block; }
 #guided .viewer3d { height: clamp(360px, 54vh, 660px); }
 .tooth-workspace { margin-top: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; }
-.tooth-selection-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; align-items: center; }
-.tooth-selection-heading h4 { margin: 0; }
 #toothSelectionStatus { font-size: 12px; color: var(--muted); }
-#guidedTeeth { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 6px; max-height: 180px; overflow: auto; margin: 12px 0; }
-.tooth-pick { background: var(--panel-alt); color: var(--ink); border: 1px solid var(--line); font-family: inherit; display: flex; align-items: center; text-align: left; gap: 8px; min-width: 0; padding: 8px; border-radius: 8px; }
-.tooth-pick strong { font-size: 16px; }
-.tooth-pick span { font-size: 11px; line-height: 1.3; }
-.tooth-pick.is-held { background: #526d7a; color: white; }
-.tooth-pick[aria-pressed="true"] { border-color: #ce9228; background: #f5cb70; color: #34280c; }
-.tooth-workspace .guided-edit-card { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding: 12px 0 0; background: transparent; border: 0; box-shadow: none; }
+.tooth-number-finder { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.tooth-number-finder summary { cursor: pointer; }
+.tooth-number-finder form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 12px 0; }
+.tooth-number-finder label { display: grid; gap: 6px; }
+.tooth-number-finder input { max-width: 100px; }
+.tooth-number-finder :is(button, input, select) { border-radius: 8px; }
+.tooth-number-finder button { padding: 9px 12px; border: 1px solid var(--line); background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
+.tooth-workspace .guided-edit-card { display: grid; grid-template-columns: minmax(0, 1fr) 164px; gap: 12px 20px; padding: 0; background: transparent; border: 0; box-shadow: none; }
 .tooth-workspace .guided-edit-top { grid-column: 1 / -1; }
-.tooth-workspace .guided-edit-status { margin: 0; align-self: center; }
-.tooth-workspace .guided-nudge-pad { grid-column: 2; grid-row: 2 / span 3; width: 128px; }
-.tooth-workspace .guided-edit-actions { flex-wrap: wrap; }
+.tooth-workspace .guided-edit-status { grid-column: 1; margin: 0; align-self: center; }
+.tooth-workspace .guided-nudge-pad { grid-column: 2; grid-row: 2 / span 4; width: auto; align-self: center; }
+.tooth-workspace .guided-edit-actions { display: flex; flex-wrap: wrap; grid-column: 1; }
+.tooth-workspace .guided-edit-actions button { flex: none; border-radius: 8px; padding: 8px 12px; }
+.tooth-workspace #guidedEditReadout:empty { display: none; }
+.tooth-workspace :is(.hold-tooth, #selectedRegionReview) { display: flex; grid-column: 1; align-items: center; gap: 10px; font-size: 13px; }
+.tooth-workspace :is(.hold-tooth, #selectedRegionReview) input { width: 18px; min-height: 18px; height: 18px; flex: 0 0 18px; margin: 0; accent-color: var(--accent); }
+.tooth-workspace .guided-nudge-pad button { border-radius: 8px; }
 .tooth-workspace .guided-help { grid-column: 1 / -1; }
 .hold-tooth, .chat-edit-mode { display: flex; align-items: center; gap: 8px; font-size: 12px; }
 .hold-tooth input, .chat-edit-mode input { width: auto; }
@@ -32,7 +36,6 @@
 @media (max-width: 600px) {
   .tooth-workspace { padding: 10px; }
   .tooth-workspace .guided-edit-card { display: flex; flex-direction: column; }
-  #guidedTeeth { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #guided .viewer3d { height: 360px; }
 }
 .guided-viewer-host .viewer-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 0; }
@@ -73,3 +76,12 @@
 #focusTeethForm button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
 .viewer-tooth-row button.is-plan-focus { background: #2563eb; color: white; }
 .viewer-tooth-row button.is-plan-focus[aria-pressed="true"] { border: 3px solid #e9ab36; }
+
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) { grid-column: 1 / -1; }
+.tooth-workspace #toothReviewDetails label { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.tooth-workspace #toothReviewDetails :is(input:not([type="checkbox"]), textarea) { flex: 1; min-width: 0; }
+.tooth-workspace #toothReviewUncertain { width: 18px; height: 18px; min-height: 18px; accent-color: var(--accent); }
+.tooth-workspace .guided-edit-top h4 { flex: 1; }
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) summary { color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; }
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) button { margin-top: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-alt); color: var(--ink); font: inherit; cursor: pointer; }
+.tooth-workspace :is(#editSessionDetails, #toothReviewDetails) p { color: var(--muted); font-size: 13px; }

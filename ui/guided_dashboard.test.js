@@ -38,6 +38,7 @@ test("guidedReviewDashboard surfaces edit diffs and warnings", () => {
   assert.ok(dashboard.highlights.includes("Movement cap markers"));
   assert.ok(dashboard.highlights.includes("Root/bone unavailable badge"));
   assert.ok(!dashboard.highlights.includes("Print readiness badge"));
+  assert.ok(!JSON.stringify(dashboard).includes("STL surface only"));
 });
 
 test("guidedReviewDashboard does not count info/notice findings as warnings", () => {

@@ -1,3 +1,4 @@
+import { profileFetch } from "./profile_context.js";
 import { listEditNotes } from "./progress_case_store.js";
 
 const list = document.getElementById("paintingNotesList");
@@ -22,7 +23,7 @@ async function refresh() {
   status.textContent = "Loading saved painting notes…";
   const results = await Promise.allSettled([
     listEditNotes(),
-    fetch("/api/painting-notes").then(response => {
+    profileFetch("/api/painting-notes").then(response => {
       if (!response.ok) throw new Error("Could not read sample notes.");
       return response.json();
     }),

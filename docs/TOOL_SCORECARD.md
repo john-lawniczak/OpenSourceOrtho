@@ -1,4 +1,8 @@
-# Research tool scorecard after the improvement phases
+# Historical research tool scorecard
+
+These subjective ratings are retired and retained only as historical context.
+They are not current progress targets. Use [local research workflows](LOCAL_RESEARCH_WORKFLOWS.md)
+and reproducible evidence reports to assess current behavior and remaining gaps.
 
 These are engineering assessments, not measured dental accuracy or clinical
 validation. Two decimal places follow the requested format; they do not imply
@@ -23,10 +27,9 @@ The previous scores are from the November 11 review.
 | Local assistant / fit explanation | 6.75 | 7.00 | Bounded factual fit summaries, evidence references and review ordering, with finding lint before display. This improves local help; it does not establish external-model reasoning quality. |
 | Shell/export QA | 6.50 | 6.75 | Full inner/outer surface separation supplements vertex sampling and downgrades incomplete or sub-feature checks. Manufacturing fit, containment and physical use are not established. |
 
-All listed **research workflow** assessments now meet the requested 6.00 floor.
-That statement must not be extended to trained-model accuracy, tooth identity
-accuracy, root/bone segmentation accuracy or actual weekly motion: those remain
-unverified. Features and synthetic tests cannot establish those scores.
+The historical ratings describe workflow availability, not trained-model,
+tooth-identity, root/bone or weekly-motion accuracy. Those outcomes require
+independent evidence; features and synthetic tests cannot establish them.
 
 ## Evidence and reproducibility
 
