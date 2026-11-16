@@ -15,10 +15,8 @@ export function renderMotionControls(motion, selected, frame, error = "") {
   el("comparisonEndpointFit").hidden = frame.week !== 7 || !motion;
   el("comparisonEndpointFit").setAttribute("aria-pressed", String(frame.kind === "estimated"));
   el("comparisonEndpointFit").textContent = frame.kind === "estimated" ? "Show recorded week 7" : "Inspect estimated endpoint";
-  el("comparisonEstimateNote").hidden = !motion;
-  el("comparisonEstimateNote").textContent = frame.kind === "estimated"
-    ? "SIMULATED ESTIMATE · Assumed timing between the two scans. Tooth boundaries and matches are automatic drafts."
-    : "Weeks 2–6 simulate motion fitted to the endpoint scans. Tooth boundaries and matches are automatic drafts.";
+  el("comparisonEstimateNote").hidden = !motion || frame.kind !== "estimated";
+  el("comparisonEstimateNote").textContent = "SIMULATED ESTIMATE · Draft tooth matches";
   el("comparisonMotionRetry").hidden = !error;
   const detail = el("comparisonMatchDetail");
   if (!motion) { detail.textContent = error; return; }

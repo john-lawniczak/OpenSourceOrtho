@@ -293,9 +293,10 @@ export function createViewer(container, { schematicOnly = false } = {}) {
   scanViews.hidden = true;
 
   function resize() {
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    if (!w || !h) return;
     needsRender = true;
-    const w = container.clientWidth || 1;
-    const h = container.clientHeight || 1;
     // updateStyle must stay on (the default): with it off the canvas keeps no
     // CSS size and renders at its drawing-buffer pixel size, which is
     // pixelRatio x larger than the container. On a retina display the canvas
@@ -872,12 +873,14 @@ export function createViewer(container, { schematicOnly = false } = {}) {
     clearProximity();
     scaleBar.dispose();
     scanViews.remove(); navigation.dispose();
-    window.removeEventListener("resize", resize);
+    resizeObserver.disconnect();
     controls.dispose();
     renderer.dispose(); renderer.domElement.remove();
   }
 
-  window.addEventListener("resize", resize);
+  // Chat and mode changes resize the host without a window resize event.
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(container);
   return {
     update, resize, dispose, loadMeshes, loadToothFragments, loadScanSources, loadUploadedScans,
     fragmentError: () => fragments.error,

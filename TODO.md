@@ -1,6 +1,6 @@
 # Development TODO
 
-Updated: November 12, 2026. This backlog belongs to private development in
+Updated: November 15, 2026. This backlog belongs to private development in
 `john-lawniczak/OpenSourceOrtho-dev`. Follow
 [the private development and release workflow](docs/PRIVATE_DEVELOPMENT.md).
 Keep personal scans, CBCT pixels, and unpublished annotations out of public
@@ -9,6 +9,33 @@ release trees unless publication is explicitly authorized.
 OpenSource Ortho is a clear-aligner planning safety playground and research
 toolkit. The roadmap deepens measurement, exploratory simulation, and review;
 completing it does not establish clinical equivalence or authorize physical use.
+
+This file lists remaining work only. Implemented workflows and the November 15
+week-18 display changes are documented in
+[local research workflows](docs/LOCAL_RESEARCH_WORKFLOWS.md) and
+[scan history](docs/SCAN_HISTORY.md). Commit history retains prior work records.
+
+## Next USER_ONE work
+
+- [ ] Build a reproducible H4/H6 capture-consistency report with exact source/label
+  hashes, configuration, per-tooth apparent movement, residuals, coverage, and
+  explicit unmatched regions. Repeat with different registration choices and
+  surface samples; keep unknown scale in scan units. No H4/H6 report has been run.
+- [ ] Review the same small intact tooth subset in original H4 and H6, save each
+  painting and notes separately, and map the suspected FDI 32 chip surface and
+  protruding H6 material. The
+  contributor confirmed on November 15 that the physical model was unchanged
+  between H4/H6 and the chip predated both. See the [review steps](docs/LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
+- [ ] Review the prepared edited-H6 painting, especially suspected model chip
+  FDI 32, partial FDI 41 coverage and protruding material; refine cleanup and save.
+  Keep this six-trim variant distinct from original H6 in repeatability reports.
+- [ ] Inspect the trimmed H4 margin around draft FDI 43, where cleanup removed
+  28 labeled faces. Display selection does not establish boundary accuracy.
+- [ ] Add source-bound week-18 endpoint fitting using the selected captures and
+  available corrections; keep weak/unmatched regions visible and intermediate
+  poses estimated. The approximate bite display supplies no motion/bite truth.
+- [ ] Add surface-area-weighted agreement and boundary-distance scoring to the
+  contributor agreement report, with unknown surfaces distinct from reviewed gum.
 
 ## Primary input — each user's own model
 
@@ -23,9 +50,6 @@ impression/model making, scanning, segmentation and registration separately.
   capture when available; record units, dates, bite alignment, model/impression
   identities and repeat captures. Repeated scans of one cast measure scanner
   repeatability; independent casts also test model-making variability.
-- [ ] Keep week-18 variants in one model-series group. The November 10 upper/bottom
-  test pair and H4/H6 are alternate attempts, not new treatment visits. Preserve
-  per-file damage reports and the confirmed H4/H6 shared physical lower model.
 - [ ] Assess complementary intact donor regions before attempting any composite.
   Require compatible observation time, arch, scale and registration; retain
   source hashes, per-region provenance, defect masks and the original files.
@@ -47,34 +71,15 @@ criteria; feature availability and evidence quality must be reported separately.
 | Automatic segmentation | Local drafts and model adapter exist; trained dental model evaluation pending | Held-out boundary/identity/coverage comparison and correction effort |
 | Registration and correspondence | Fit and ambiguity diagnostics exist | Reference-frame sensitivity, identity errors, repeat-scan false motion |
 | Motion preview | Estimated intermediate poses exist; real pose accuracy unknown | Translation/rotation errors where independent reference poses exist |
-| Multi-visit records | Two-visit UI; additional captures stored privately | Multi-capture visit import and save/reopen round trips |
-| Manual editing | Existing movement controls | Multi-tooth edits, local/world axes, undo/redo, saved alternative comparison |
-| Recovery and review | Local case persistence exists | Correction recovery, source-bound review export, stale-result invalidation |
+| Multi-visit records | Multiple captures per endpoint, active selection, and portable saves exist | Ordered multi-visit graph and tracking |
+| Manual editing | Movement controls, undo/redo, and bound session recovery exist | Multi-tooth edits, explicit axes/pivots, named alternative comparison |
+| Recovery and review | USER_ONE per-tooth reviews, source-bound refits, and invalidation exist | Independent review-package round trips and generalized uploaded-case reviews |
 | Anatomy, mechanics, and exports | Exploratory components; independent evidence incomplete | Input-specific geometry tests and separate physical experiments |
 
 Every result must state corpus/version, sample count, denominator, units, coverage,
 and unavailable metrics. Keep development annotations separate from held-out
 independent reference labels. One contributor's corrections improve a draft but
 do not establish anatomical ground truth or a population accuracy estimate.
-
-## Quality gaps this roadmap addresses
-
-The comparison with Invisalign highlights more than interface differences:
-
-| Gap | Required improvement | Phases |
-|---|---|---|
-| Demonstrated measurement quality | Independent tooth labels, identities, poses, repeat scans, and held-out evaluation | 1–3 |
-| Anatomical depth | Reviewed crown/root/bone geometry and independently checked registration | 2, 5 |
-| Longitudinal tracking | Additional observed visits compared with estimates and authored stages | 4 |
-| Editing and planning depth | Coupled tooth edits, arch-form controls, attachment/cut geometry, and interproximal spacing representation | 6 |
-| Motion and material behavior | Path contact checks and explicit model assumptions; separately validated mechanical experiments | 6–7 |
-| Review and operational reliability | Versioned cases, provenance, correction history, recovery, and review handoff | 1, 4, 8 |
-| Export and physical performance | Reproducible geometry checks plus separate material/manufacturing evidence | 7–8 |
-
-Official product descriptions document [ClinCheck editing and CBCT features](https://www.invisalign.com/provider/align-digital-platform/clincheck)
-and [Align's progress assessment and integrated material/staging platform](https://www.invisalign.com/provider/align-digital-platform).
-These identify comparison areas, not an independently measured accuracy advantage
-or a specification to reproduce proprietary implementations.
 
 ## Execution order and completion rules
 
@@ -88,7 +93,7 @@ do not rebuild implemented features.
 | 1 | Reproducible evidence and case contracts | Existing benchmark and case tools |
 | 2 | Measured segmentation and correction improvements | Phase 1 evaluation contracts |
 | 3 | Reliable reference frames and endpoint correspondence | Phases 1–2; reviewed masks can substitute for automatic masks |
-| 4 | Early multi-visit/multi-capture intake; later fitted tracking | Intake needs Phase 1 source contracts; comparisons need Phase 3 evidence |
+| 4 | Ordered multi-visit intake and fitted tracking | Extend existing multi-capture saves; comparisons need Phase 3 evidence |
 | 5 | Reviewed root/bone geometry and opposing-arch registration | Phases 1 and 3; can proceed alongside Phase 4 |
 | 6 | Early basic editing; later coupled/path geometry checks | Basic edits need explicit frames and revisions; anatomy-dependent checks need Phases 3–5 |
 | 7 | Evaluated simulation models and export geometry | Phase 6 |
@@ -127,13 +132,11 @@ and [lower](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-l
   tooth identification, per-tooth IoU/precision/recall, boundary distances, gum
   leakage and coverage. Declare units and unavailable correction-time measures;
   do not infer an anatomical accuracy percentage from connectivity.
-- [ ] **Refit the week 1–7 exploratory preview using corrected baseline regions.**
-  Review endpoint identities/boundaries as needed, preserve the previous fit,
-  and bind regenerated results to both scan and annotation hashes. Compare
-  endpoint residuals, ambiguity and unmatched regions; residuals alone do not
-  establish motion accuracy. Keep weeks 2–6 explicitly estimated and separate
-  from authored treatment-plan data. Existing fits have not incorporated this
-  latest painting.
+- [ ] **Independently evaluate the saved week 1–7 refits.** Review endpoint
+  identities/boundaries and compare against independent evidence. The local
+  corrected-label refits have already run; lower residuals and fewer weak fits
+  do not establish motion accuracy. Keep weeks 2–6 estimated and separate from
+  authored treatment-plan data.
 - [ ] **Expand to other independently reviewed cases.** Obtain appropriately
   licensed/consented scans from different people, split development and held-out
   evaluation by person, and measure generalization and correction effort. Keep
@@ -154,15 +157,17 @@ and [lower](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-l
   record which teeth/surfaces were inspected, uncertainty, annotator role, and
   time where available; do not invent missing historical correction times.
   Keep contributor labels distinct from independently reviewed reference labels.
-- [ ] Add per-tooth/partial review records, unknown-boundary and model-defect masks,
-  and source-bound comments; a single whole-scan checkbox cannot express partial
-  review. Preserve original meshes and distinguish damage from tooth anatomy.
-- [ ] Verify USER_ONE scale; record unknown units until supporting evidence exists.
+- [ ] Extend existing USER_ONE per-tooth reviews to uploaded cases and independent
+  reviewers; add explicit unknown-boundary/model-defect masks and surface-level
+  review scope. Preserve originals and distinguish model damage from anatomy.
+- [ ] Bind the contributor-reported JMStudio millimetre export setting to exact
+  USER_ONE files and add dimensional calibration evidence; retain unknown scale
+  for files without unit confirmation.
 - [ ] Separate development, held-out, and repeat-scan cohorts. Split by subject for
   multi-subject data; label any USER_ONE-only evaluation as case-specific.
-- [ ] Extend benchmark reports with boundary IoU/precision/recall, gum leakage,
-  identity errors, translation/rotation errors, false motion, coverage, correction
-  time, runtime, and peak memory. Declare denominators and unavailable metrics.
+- [ ] Connect the existing agreement and motion scorers to independently reviewed
+  cases; add gum leakage on reviewed context, measured correction time, segmentation
+  runtime, and peak memory. Declare denominators and unavailable metrics.
 - [ ] Obtain independently reviewed labels, endpoint correspondences/reference
   poses, and repeat acquisitions with no intended movement. Keep synthetic
   resampling and actual repeat acquisitions in separate result categories.
@@ -172,7 +177,8 @@ and [lower](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/annotations/initial-l
 **Code completion:** fixtures reject mismatched hashes, frames, units, or stale
 reviews; identical inputs reproduce reports; missing truth reports unknown.
 **Evidence completion:** the reviewed subset has traceable annotations and a
-baseline report; unavailable repeat scans and poses remain explicit gaps.
+baseline report; unverified repeat conditions and missing reference poses remain
+explicit gaps.
 
 Existing synthetic stress results show false motion in **2 of 6** independently
 resampled no-motion cases at **0.05 synthetic-mm or 1 degree**. This is a sampling
@@ -190,10 +196,10 @@ sensitivity result, not a patient error rate. Preserve
   detection, FDI proposals, and defect handling using measured failure cases.
 - [ ] Improve existing brush/split/merge/numbering correction where measured effort
   is highest; retain undo and source-bound edits after save/reload.
-- [ ] Improve collaborative annotation with a selected-tooth legend/highlight,
-  isolation/context toggle, visible-surface brush feedback, and saved viewpoints.
-  Prototype contour-to-surface labeling only after brush effort is measured;
-  screen-space lines must not silently label hidden or opposite surfaces.
+- [ ] Add isolation/context toggles and saved viewpoints to the existing tooth
+  selection/highlight and visible-surface brush workflow. Measure correction effort
+  before prototyping contour-to-surface labeling; screen-space lines must not
+  silently label hidden or opposite surfaces.
 - [ ] Profile inference and correction costs before adding caching, workers, or
   mesh reduction; measure any accuracy loss from reduced geometry.
 
@@ -227,10 +233,6 @@ identity errors, repeat-scan false motion, and pose errors where truth is availa
   reported treatment week, units, and source provenance; handle missing arches.
   Begin this intake work alongside Phases 1–3; fitting evidence is not required
   to retain or inspect an original observation.
-- [ ] Support multiple captures per visit/arch, with separate capture IDs, hashes,
-  acquisition versus contribution dates, and explicit active-input selection.
-  Retain alternatives without treating same-week captures as extra visits or
-  automatically replacing one with the newest or densest mesh.
 - [ ] Record whether repeat captures share a physical model and document model
   damage/repair history. Same-model repeats can test capture consistency but
   cannot establish undamaged anatomy or independent tooth-motion accuracy.
@@ -273,7 +275,8 @@ for their respective real-case claims. See [local CBCT review](docs/LOCAL_CBCT_R
 ## Phase 6 — add coupled editing and motion-path geometry checks
 
 - [ ] Extend existing manual controls with multi-tooth selection, explicit local/world
-  axes, pivots, arch-form edits, undo/redo, and deterministic regeneration.
+  axes, pivots, arch-form edits, and deterministic regeneration; preserve the
+  implemented undo/redo and source-bound recovery.
   Start basic editing alongside Phases 1–4; do not wait for CBCT or mechanics.
 - [ ] Save and compare alternative authored revisions without overwriting observed
   scans, boundary annotations, or inferred scan-history motion.
@@ -315,8 +318,11 @@ interpolation or successful file export does not establish physical performance.
 
 - [ ] Build on Phase 1 provenance with durable case revisions, review comments,
   result invalidation, audit history, and reproducible exports of reviewed versions.
-- [ ] Test storage migrations, interrupted saves, corruption detection, backup/restore,
-  concurrent edits, and large-case limits before adding shared case collaboration.
+- [ ] Add a complete portable profile backup/restore with original scans, painting,
+  notes and settings; verify restoration into a fresh browser independently of USER_ONE.
+- [ ] Extend profile recovery checks to interrupted writes, corrupted snapshots,
+  later schema migrations and large-case limits. Local profile switching, legacy
+  upload retention, failed saves and stale workspace revisions are covered.
 - [ ] Add access controls and conflict handling if shared storage is introduced;
   retain private-data boundaries in exports and public release preparation.
 - [ ] Connect guidance and glossary entries to correction tasks. Keep assistant
@@ -339,20 +345,19 @@ inspect estimated motion → compare with observations → save and reopen**.
 1. Start a small USER_ONE contributor annotation session using the current editor.
    Save source-bound corrections and record partial coverage/uncertainty; leave
    the whole-scan reviewed checkbox off until the whole scan has been checked.
-2. Add review-package round trips, stale-result detection, and measured benchmark
-   reports. Obtain independent annotations and scale evidence alongside coding.
-3. Bring multi-visit/multi-capture intake, private local access, and recovery forward.
-   Do not expand public dataset allowlists to expose private contributions.
+2. Add independent review-package round trips and the H4/H6 report; extend the
+   existing invalidation checks to imported reviews. Obtain scale evidence.
+3. Extend current two-endpoint/multi-capture saves to an ordered visit graph.
+   Keep private local access separate from public dataset allowlists.
 4. Improve basic editing and annotation usability while comparing segmentation
    candidates and registration choices against the same frozen reviewed corpus.
 5. Keep anatomy-dependent checks, mechanics, and manufacturing experiments later,
    with their own data requirements and evidence milestones.
 
-**First acceptance demonstration:** reopen the exact original scan with saved
-labels; preserve tooth IDs, unreviewed areas, contributor provenance, and source
-hashes; reject corrections for a different capture. A renamed identical STL must
-retain valid labels. Missing truth stays unknown and does not disable exploratory
-previews. Do not raise accuracy claims based only on features or synthetic tests.
+**Next acceptance demonstration:** reopen an H4/H6 report with its exact source
+and label versions; reproduce the measurements and distinguish registration/
+sampling sensitivity from physical changes. Missing truth stays unknown and
+must not disable exploratory previews.
 
 ## What a contributor can provide now
 
@@ -370,35 +375,12 @@ previews. Do not raise accuracy claims based only on features or synthetic tests
   evaluation cases from tuning and report contributor-only results as such.
 
 Use [the current boundary-review workflow](docs/REGION_CORRECTIONS.md) to begin.
-The editor supports surface painting today; automatic closed-contour filling,
-per-tooth review status, and explicit uncertainty/defect layers remain backlog work.
+The editor supports painting, tooth selection/highlighting, and undo/redo.
+USER_ONE per-tooth contributor reviews are available in Explore individual teeth;
+independent review exchange, contour filling, and spatial uncertainty/defect
+layers remain open.
 
 Related records: [implementation phases](docs/TOOL_IMPROVEMENT_PHASES.md),
 [prior research workflow scorecard](docs/TOOL_SCORECARD.md),
 [two-visit workflow](docs/TWO_VISIT_WORKFLOW.md), and
 [boundary corrections](docs/REGION_CORRECTIONS.md).
-
-## Completed follow-up: endpoint assignment reliability
-
-- [x] Exclude infeasible candidates before one-to-one assignment; provide explicit
-  unmatched choices so invalid edges cannot displace valid matches.
-- [x] Record competing assignment costs and flag nearly tied identities as uncertain
-  without disabling best-effort motion previews.
-- [x] Initialize match review from the actual independent candidate rather than
-  assuming equal FDI numbers across independently segmented visits.
-- [x] Refresh USER_ONE artifacts and expose ambiguity in selected-tooth details.
-
-These changes improve the matcher and its inspectability. They do not establish
-anatomical identity accuracy or replace the independently reviewed benchmark.
-
-## Completed follow-up: import views and painting guidance
-
-- [x] Fit imported surfaces using an estimated display view; provide explicit
-  face-on, above, side, flip, roll, and fit camera controls without changing meshes.
-- [x] Open an uploaded surface directly in the source-bound correction editor.
-- [x] Add numbered tooth selection, active-tooth highlighting, brush footprint,
-  move/paint/erase guidance, arch-aware defaults, and one-stroke undo/redo.
-
-These are usability improvements, not new boundary-accuracy evidence. Automatic
-contour filling, isolation, per-tooth review, uncertainty layers, and measured
-correction-effort comparisons remain open.

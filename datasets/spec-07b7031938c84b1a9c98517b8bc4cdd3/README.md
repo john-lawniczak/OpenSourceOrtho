@@ -123,6 +123,13 @@ sequence is clinically correct.
 original upper/lower pair and both Fusion H4/H6 lower captures. Public publication
 was authorized on November 12, 2026; the existing week 1–7 motion fit is unchanged.
 
+The November 15 history display uses the cleaned upper and, when locally present,
+the contributor-selected trimmed H4 lower. Public installations without that
+private trim use original H4. Placement is explicitly approximate and supplies
+no measured bite or week-18 motion. Painting still opens the source-bound working
+captures. See [scan history](../../docs/SCAN_HISTORY.md#observed-week-18) and
+[H4/H6 review steps](../../docs/LOCAL_RESEARCH_WORKFLOWS.md#prepare-an-h4h6-repeatability-check).
+
 ## Dentition and baseline annotation
 
 The current [lower checkpoint](annotations/initial-lower-fragment-cleanup-2026-11-12T195642Z.json)

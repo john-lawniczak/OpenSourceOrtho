@@ -80,9 +80,18 @@ The additional captures have a separate [comparative evaluation](captures/qualit
 [surface views](captures/mesh-views.png). H4 contains 581,144 triangles; H6 contains
 587,840. Both preserve every source byte. Acquisition date, scale, capture method,
 and anatomical registration remain unverified for both. The contributor confirms
-H4 and H6 share the same physical lower model, with a small chip on an unidentified
-front tooth. The chip location, timing, and any repair/trimming history are not
-yet mapped. This reports model damage, not actual tooth damage.
+H4 and H6 share the same physical lower model, with a small lower-front model chip.
+On November 15, 2026 the contributor confirmed no physical changes between H4
+and H6 and that the chip was already present in both. A subsequent visual report
+tentatively identifies FDI 32 as the main visible difference, notes protruding
+model material in H6, and describes the other teeth as relatively accurate.
+These are contributor observations, not independently verified surface fidelity.
+Exact chip surfaces and any earlier repair/trimming history remain unverified.
+The contributor also reports that JMStudio exports in millimetres; source
+metadata retains this report separately from exact-file settings and independent
+dimensional calibration. No source geometry is rescaled.
+This reports model damage, not actual tooth damage. Later digital trimming of H4
+is separate from these physical-model observations.
 
 Both binary STLs have valid declared record lengths and no non-finite face
 records. H4 is 29,057,284 bytes; H6 is 29,392,084 bytes. These are file checks,

@@ -124,7 +124,7 @@ def test_guided_build_review_and_print_status_happy_path(server_url: str) -> Non
             page.click('[data-sample-view="simulation"]')
             page.click('[data-gstep-nav="plan"]')
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active', timeout=15000)
-            page.wait_for_selector('#guidedTeeth [data-select-tooth="11"]', timeout=90000)
+            page.wait_for_selector('.viewer-tooth-numbers [data-select-tooth="11"]', timeout=90000)
             page.locator('#samplePaintedVisit').select_option('initial')
             expect(page.locator('#sampleReloadPainting')).to_be_enabled(timeout=90000)
             page.click("#guidedBuild")

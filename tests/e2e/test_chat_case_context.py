@@ -67,3 +67,28 @@ def test_composer_expands_on_focus_and_keeps_collapsed_draft(server_url, tmp_pat
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         finally:
             browser.close()
+
+
+def test_offline_tooth_comparison_explains_context_and_answers_question(server_url):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page()
+        try:
+            page.goto(server_url)
+            page.locator("#topbarAskAI").click()
+            expect(page.locator("#chatConnection")).to_contain_text("no AI model connected")
+            page.locator("#chatCaseSource").select_option("workspace")
+            page.locator("#chatInput").fill("IS TOOTH 23 BIGGER THAN say 13, should it be fied down?")
+            page.locator("#sendChat").click()
+            answer = page.locator(".chat-message.assistant").last
+            expect(answer).to_contain_text("select USER_ONE")
+            expect(answer).to_contain_text("Enamel removal is irreversible")
+            page.locator("#chatCaseSource").select_option("user_one")
+            page.locator("#chatInput").fill("Is 23 bigger than 13?")
+            page.locator("#sendChat").click()
+            expect(page.locator(".chat-message.assistant")).to_have_count(2)
+            expect(answer).to_contain_text("USER_ONE's scan inventory")
+            expect(answer).to_contain_text("Label face counts are not tooth sizes")
+            expect(answer).not_to_contain_text("stage(s)")
+        finally:
+            browser.close()

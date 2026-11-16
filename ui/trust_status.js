@@ -41,7 +41,6 @@ export function trustStatusItems(state) {
   }
 
   return [
-    item("Review tier", tier.label || "Not evaluated", "reviewTierBanner", tier.label ? "known" : "unknown"),
     item("Units", state.scanUnits === "mm" ? "Confirmed mm" : "Unverified", "scanUnits", state.scanUnits === "mm" ? "known" : "attention"),
     item("Geometry", hasScan ? (state.useDemoMeshes ? "Bundled demo" : "Uploaded scan") : "No scan", "scanMetadata", hasScan ? "known" : "unknown"),
     item("Segmentation", appliedCount ? `Applied draft · ${appliedCount}` : (segmentationBusy ? "Processing locally…" : (hasProposal ? "Awaiting review" : "Not proposed")), "segmentList", appliedCount ? "known" : ((segmentationBusy || hasProposal) ? "attention" : "unknown")),

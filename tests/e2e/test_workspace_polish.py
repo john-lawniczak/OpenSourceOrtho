@@ -39,7 +39,7 @@ def test_header_profile_and_sample_number_controls(server_url, tmp_path):  # noq
                 numbers = page.locator('.viewer-tooth-numbers')
                 expect(numbers).to_be_visible()
                 numbers.locator('[data-select-tooth="31"]').click()
-                expect(page.locator('#guidedTeeth [data-select-tooth="31"]')).to_have_attribute('aria-pressed', 'true')
+                expect(page.locator('.viewer-tooth-numbers [data-select-tooth="31"]')).to_have_attribute('aria-pressed', 'true')
                 page.locator('#toothLabelToggle').click()
                 expect(numbers).to_be_hidden()
                 page.locator('#toothLabelToggle').click()

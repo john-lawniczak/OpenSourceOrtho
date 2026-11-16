@@ -1,10 +1,12 @@
+import { validateCaptureCorrection } from "./capture_archive.js";
+import { createCaptureLibrary } from "./capture_library.js";
 import { fitConsistencyText } from "./fit_consistency.js";
 import { bindFitReview } from "./progress_fit_review.js";
 import { createScanComparison } from "./scan_comparison_viewer.js";
 import { validateMotionPreview } from "./scan_motion_data.js";
 import { geometryJob } from "./geometry_jobs.js";
 import { caseStore } from "./progress_case_store.js";
-import { el, scanFile, correctionFile, upload, orientation } from "./progress_inputs.js";
+import { el, correctionFile, upload, orientation } from "./progress_inputs.js";
 import { simulationFraction } from "./scan_history.js";
 import { proximitySummary } from "./proximity_summary.js";
 import { archiveCase, restoreArchive, downloadJson } from "./progress_case_archive.js";
@@ -24,10 +26,27 @@ function invalidate() {
   el("frameLabel").textContent = ""; status("Inputs changed. Fit again to update estimates.");
 }
 for (const id of ["caseSegmenter", "caseArch", "caseUnits", "unitsConfirmed", "referenceTeeth", "date0", "date1", "orientation0", "orientation1"]) el(id).onchange = invalidate;
-for (let i=0;i<2;i++) {
-  el(`scan${i}`).onchange = () => { invalidate(); pair[i] = null; corrections[i] = null; matches=null; el(`correction${i}`).value = ""; };
-  el(`correction${i}`).onchange = () => { invalidate(); corrections[i] = null; };
-}
+const captures = createCaptureLibrary({status, activeCorrection:i=>corrections[i], changed:(i,capture)=>{
+  invalidate(); pair[i] = capture?.scan || null; corrections[i] = capture?.correction || null;
+  matches = null; el(`correction${i}`).value = "";
+}});
+let labelReads = 0;
+const labelRequests = new WeakMap();
+for (let i=0;i<2;i++) el(`correction${i}`).onchange = () => action(async () => {
+  const scan = captures.activeScan(i), file = el(`correction${i}`).files[0];
+  if (!file) return;
+  if (!scan) throw new Error("Choose the active capture before importing labels.");
+  const ticket = Symbol(); labelRequests.set(scan, ticket);
+  labelReads++; invalidate();
+  try {
+    const correction = await correctionFile(file);
+    if (labelRequests.get(scan) !== ticket) return;
+    validateCaptureCorrection(scan, correction);
+    captures.setCorrection(i, scan, correction);
+    status(`Labels retained for ${scan.filename}. Fit again to update estimates.`);
+  } finally { labelReads--; }
+});
+el("caseArch").onchange = () => captures.archChanged();
 function renderFrame() {
   if (!motion) return;
   const frame = { week, fraction: simulationFraction(week, motion.simulation, el("caseTiming").value), index: week === 1 ? 0 : week === 7 ? 1 : 2 };
@@ -60,13 +79,15 @@ function mount(preview) {
   })); renderFrame();
 }
 el("fitVisits").onclick = () => action(async () => {
+  if (labelReads) throw new Error("Wait for label import to finish.");
   if (!el("unitsConfirmed").checked) throw new Error("Confirm the scale used by both scans first.");
   if (pending) throw new Error("Wait for the current fit to stop.");
   const controller = new AbortController(); pending = controller;
   el("fitVisits").disabled = true; el("cancelFit").disabled = false; status("Loading scans and fitting draft regions…");
   try {
+    const activeScans = captures.scans();
     const loaded = await Promise.all([0,1].map(async i => {
-      const scan = pair[i] || await scanFile(el(`scan${i}`).files[0], i);
+      const scan = activeScans[i];
       return { ...scan, arch: el("caseArch").value, rotation: orientation(i), date: el(`date${i}`).value };
     }));
     const edited = await Promise.all([0,1].map(i => el(`correction${i}`).files[0] ? correctionFile(el(`correction${i}`).files[0]) : corrections[i]));
@@ -88,22 +109,28 @@ el("resetView").onclick = () => viewer.setView("front");
 el("zoomIn").onclick = () => viewer.zoom(1.25); el("zoomOut").onclick = () => viewer.zoom(0.8);
 async function listCases() { const names = await caseStore("getAllKeys"); el("savedCases").replaceChildren(...names.map(n => new Option(n,n))); }
 el("saveCase").onclick = () => action(async () => {
-  if (!motion || pending) throw new Error("Complete a fit before saving.");
+  if (labelReads) throw new Error("Wait for label import to finish.");
+  if (pending || captures.busy()) throw new Error("Wait for fitting or capture import to finish.");
+  pair = captures.scans();
+  corrections = await Promise.all([0,1].map(i => el(`correction${i}`).files[0] ? correctionFile(el(`correction${i}`).files[0]) : corrections[i]));
+  corrections.forEach((correction,i)=>validateCaptureCorrection(pair[i],correction));
   const name = el("caseName").value.trim(); if (!name) throw new Error("Name the case.");
-  await caseStore("put", { name, pair, corrections, motion: { ...motion, faceLabels: undefined },
+  await caseStore("put", { name, pair, captures:captures.snapshot(), corrections, motion: motion ? { ...motion, faceLabels: undefined } : null, unitsConfirmed:el("unitsConfirmed").checked,
     segmenter: el("caseSegmenter").value, timing: el("caseTiming").value, reference: el("referenceTeeth").value, units: el("caseUnits").value });
-  await listCases(); el("savedCases").value = name; status("Case saved locally, including source scans, corrections, and fit.");
+  await listCases(); el("savedCases").value = name; status("Case saved locally, including all captures, active selections, corrections, and any fit.");
 });
 el("openCase").onclick = () => action(async () => {
   if (pending) throw new Error("Cancel fitting before opening another case.");
   const record = await caseStore("get", el("savedCases").value); if (!record) throw new Error("Choose a saved case.");
-  pair = record.pair; corrections = record.corrections; matches = record.motion.match_overrides || null;
-  el("caseArch").value = pair[0].arch; el("caseUnits").value = record.units; el("unitsConfirmed").checked = true;
+  pair = record.pair; corrections = record.corrections; matches = record.motion?.match_overrides || null;
+  el("caseArch").value = pair[0].arch; el("caseUnits").value = record.units; el("unitsConfirmed").checked = record.unitsConfirmed ?? Boolean(record.motion);
   el("referenceTeeth").value = record.reference; el("caseName").value = record.name;
   for (let i=0;i<2;i++) { el(`orientation${i}`).value=JSON.stringify(pair[i].rotation); el(`date${i}`).value=pair[i].date; el(`scan${i}`).value=""; el(`correction${i}`).value=""; }
   el("caseSegmenter").value = record.segmenter || "active";
   el("caseTiming").value = record.timing || "uniform";
-  mount(record.motion); status(`Opened ${record.name}: ${pair.map(s=>s.filename).join(" → ")}`);
+  captures.restore(record);
+  if (record.motion) mount(record.motion); else invalidate();
+  status(`Opened ${record.name}: ${pair.map(s=>s.filename).join(" → ")}`);
 });
 for (let i=0;i<2;i++) el(`exportRegions${i}`).onclick = () => action(() => {
   if (!motion) throw new Error("Fit scans first.");

@@ -19,7 +19,7 @@
     "source_model_damage": {
       "status": "contributor-reported",
       "recorded_on": "2026-11-12",
-      "description": "Both additional captures are scans of the same physical lower model. Contributor reports a small slight chip on a lower front tooth; tooth number is unknown.",
+      "description": "Both additional captures are scans of the same physical lower model with a small lower-front model chip. Contributor tentatively identifies FDI 32 on 2026-11-15; exact surface location remains unmapped.",
       "physical_model_id": "user-one-week-18-lower-h4-h6",
       "same_physical_model_confirmed": true,
       "affected_arches": [
@@ -28,14 +28,43 @@
       "affected_region_reported": "lower front tooth",
       "affected_tooth_number": null,
       "reference_damage_map_available": false,
-      "timing_relative_to_scanning": "Not confirmed",
-      "scope_note": "Model defect reported by contributor; not evidence of a defect in the actual tooth. On 2026-11-12 the contributor clarified that the November 10 pair and H4/H6 belong to the same reported week-18 model-making series. Exact physical-cast relationships across those attempts are not separately specified; H4/H6 themselves share one physical lower model."
+      "timing_relative_to_scanning": "Contributor confirms the chip was already present before both H4/H6 captures (2026-11-15).",
+      "scope_note": "Model defect reported by contributor; not evidence of a defect in the actual tooth. On 2026-11-12 the contributor clarified that the November 10 pair and H4/H6 belong to the same reported week-18 model-making series. Exact physical-cast relationships across those attempts are not separately specified; H4/H6 themselves share one physical lower model.",
+      "repeat_capture_confirmation": {
+        "recorded_on": "2026-11-15",
+        "status": "contributor-confirmed",
+        "captures": [
+          "fusion-h-4",
+          "fusion-h-6"
+        ],
+        "physical_model_unchanged_between_captures": true,
+        "chip_present_before_both_captures": true,
+        "independently_verified": false,
+        "provenance": "Contributor replied: No physical changes between scans; chip was already there.",
+        "scope_note": "Applies to the physical lower model during H4/H6 acquisition, not subsequent digital trimming. FDI 32 is tentatively identified in the separate visual comparison report; exact defect location and acquisition dates remain unverified. No inference about the November 10 pair."
+      },
+      "visual_comparison_report": {
+        "recorded_on": "2026-11-15",
+        "status": "contributor-reported",
+        "suspected_fdi": 32,
+        "tooth_identity_confirmed": false,
+        "description": "Contributor suspects the model chip near FDI 32 is the main visible difference between H4 and H6; H6 also shows protruding model material. Other teeth look relatively accurate to the contributor.",
+        "independently_verified": false,
+        "scope_note": "Visual comparison of model scans, not evidence of actual tooth damage or independently established surface accuracy. Physical model was reported unchanged between captures; exact defect surface remains unmapped."
+      }
     }
   },
   "units": {
     "declared_in_stl": false,
     "confirmed": false,
-    "manifest_units": "unverified"
+    "manifest_units": "unverified",
+    "export_units_report": {
+      "recorded_on": "2026-11-15",
+      "value": "mm",
+      "status": "contributor-reported",
+      "provenance": "Contributor states: JMStudio saves exports in millimetres.",
+      "scope_note": "Reported export convention; no rescaling applied. Exact-file export settings and independent dimensional calibration have not been supplied."
+    }
   },
   "coordinate_frame": {
     "shared_occlusion_frame_verified": false,
@@ -81,13 +110,12 @@
   },
   "missing_data": [
     "confirmed acquisition date",
-    "confirmed scale",
+    "exact-file export-unit confirmation and dimensional calibration",
     "reviewed surface fidelity",
     "validated opposing-arch and cross-time registration",
     "capture method",
-    "exact chipped tooth and surface location",
-    "chip timing relative to each capture",
-    "repair or trimming history"
+    "reviewed FDI 32 chip attribution and exact surface location",
+    "physical-model repair or trimming history before the H4/H6 capture pair"
   ],
   "prior_sharing_scope": {
     "destination": "john-lawniczak/OpenSourceOrtho-dev",

@@ -124,7 +124,7 @@ export function createRegionEditor(host, scan, { onPaint, brushSettings, onSurfa
     if (drawing) { onStrokeStart(); renderer.domElement.setPointerCapture(event.pointerId); paint(event); }
   }, true);
   renderer.domElement.addEventListener("pointermove", event => paint(event, Boolean(drawing && event.buttons)));
-  function finishStroke() { if (drawing) onStrokeEnd(); drawing = false; controls.enabled = true; }
+  function finishStroke() { screenBrush.endStroke(); if (drawing) onStrokeEnd(); drawing = false; controls.enabled = true; }
   renderer.domElement.addEventListener("pointerup", event => {
     if (!drawing && event.button === 0 && pointerStart && navigating()
       && Math.hypot(event.clientX - pointerStart[0], event.clientY - pointerStart[1]) < 5) {

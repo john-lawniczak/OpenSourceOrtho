@@ -9,6 +9,7 @@ from pathlib import Path
 from orthoplan.datasets import SAMPLE_CASE_DIR, SAMPLE_URL_ROOT
 from orthoplan.io.mesh_import import read_mesh_geometry
 from orthoplan.region_corrections import baseline_source, load_baseline_corrections, validate_corrections
+from orthoplan.sample_reviews import reviews_for
 from orthoplan.segmentation.heuristic import ToothSegment
 from orthoplan.segmentation.mesh_export import export_proposal_rows
 
@@ -82,9 +83,10 @@ def sample_teeth_payload(payload: dict, *, workspace=None, root: Path | None = N
             asset, vertices = read_mesh_geometry(SAMPLE_CASE_DIR / source['filename'])
             parts = painted_segments(vertices, record)
             proposed, meshes, tooth_links = export_proposal_rows(parts, arch=anatomical, workspace=workspace)
+            bindings, reviews = reviews_for(record)
             for link in tooth_links:
-                link.reviewed = False
-                link.notes = 'Contributor-painted region; identity/boundary review is still required.'
+                link.reviewed = reviews.get(str(link.tooth.value), {}).get("status") == "checked"
+                link.notes = 'Contributor checked this region for exploratory edits.' if link.reviewed else 'Contributor-painted region; identity/boundary review is still required.'
             teeth.extend(t.model_dump(mode='json') for t in proposed)
             assets.extend({**m.model_dump(mode='json'), 'units': source['units']} for m in meshes)
             links.extend(link.model_dump(mode='json') for link in tooth_links)
@@ -95,7 +97,8 @@ def sample_teeth_payload(payload: dict, *, workspace=None, root: Path | None = N
                             'asset': metadata, 'displayArchStack': visit == 'progress-01'})
             annotations.append({'arch': arch, 'origin': origin, 'source_sha256': source['sha256'],
                                 'labels_sha256': hashlib.sha256(base64.b64decode(record['labels_base64'])).hexdigest(),
-                                'tooth_ids': [p.tooth_value for p in parts], 'reviewed': record['reviewed']})
+                                'tooth_ids': [p.tooth_value for p in parts], 'reviewed': record['reviewed'],
+                                'tooth_bindings': bindings, 'tooth_reviews': reviews})
         return {'ok': True, 'visit': visit, 'scan_sources': sources, 'teeth': teeth, 'annotations': annotations,
                 'requires_review': True, 'plan_fragment': {'mesh_assets': assets, 'tooth_meshes': links}}
     except (ValueError, OSError, KeyError, TypeError, AttributeError) as exc:

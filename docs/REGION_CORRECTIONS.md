@@ -309,14 +309,23 @@ material to mark it red; **Deselect removal** deselects faces and **Clear select
 cancels the preview. Use [ and ] to change brush size, and Rotate/Pan to inspect
 the selection. **Apply trim** creates a separate surface with those faces removed.
 It does not cap the resulting edges. Gray does not necessarily mean non-tooth:
-unpainted teeth can be gray too. Painted faces are protected unless **Allow
-removing painted tooth surfaces** is explicitly checked. Removing the entire scan
-is refused. There is no automatic deletion of all unlabeled material.
+unpainted teeth can be gray too. **Apply trim is the sole approval** for removing
+everything marked red, including faces carrying tooth labels. The selection count
+shows how many marked faces are painted; there is no separate painted-surface
+checkbox. Removing the entire scan is refused. Material outside the red selection
+is not automatically removed.
 
 The removal circle remains visible over empty background so it can sweep across
-small disconnected specks without first hitting a triangle. Selection uses a
-depth-tested screen pass to pick only visible face IDs inside the circle; hidden
-surfaces behind the model stay protected. It does not select through the arch.
+small disconnected specks without first hitting a triangle. A depth-tested face-ID
+pass is supplemented with projected triangle centers, including triangles smaller
+than a screen pixel. Front-surface depth checks include a one-drawing-buffer-pixel
+band in view space to catch closely overlapping rough surface fragments. This
+band scales with zoom; deeper occluded geometry remains excluded rather than
+selecting through the arch. Sweeping covers the
+path between pointer events so a fast drag does not leave gaps. Separate strokes
+remain separate. There is no opacity or fractional deletion: Apply removes every
+selected triangle completely. Remaining hidden layers require rotating the view
+and another selection; open edges are not residual opacity.
 The screen circle has a six-pixel minimum for small-fragment selection. Deselect
 removal only clears red selection marks; it neither restores already removed
 faces nor fills holes. Use Undo surface edit to reverse an accepted trim.
@@ -361,8 +370,11 @@ Reconstruction from an earlier scan remains a separate future feature.
 The contributor's November 13 lower cleanup is archived privately at
 `private/surface-edits/week-18-lower-cleaned/` with a complete repair bundle and
 reproducible audit. It removes 66,640 faces, of which 28 carried the draft label 43
-(about 0.34% of its labeled surface area). It remains an unreviewed optional copy;
-the original suggested scan and observed history are unchanged.
+(about 0.34% of its labeled surface area). On November 15 the contributor selected
+this exact unreviewed trim for the local week-18 history display. Its FDI 43 margin
+still needs inspection. Original H4 and its painting remain unchanged; history's
+selection does not transfer review or generate motion. See
+[the display workflow](LOCAL_RESEARCH_WORKFLOWS.md#november-15-2026--week-18-observed-display).
 
 Week 18 painting offers only the **Cleaned upper** and **Fusion H4 lower** working
 surfaces. The initial color sweep is an unreviewed automatic draft transferred

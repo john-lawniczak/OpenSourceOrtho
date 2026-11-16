@@ -1,10 +1,11 @@
 import { el, state } from "./state.js";
+import { profileKey } from "./profile_context.js";
 import { parseToothMentions, parseToothSelection } from "./tooth_selection.js";
 
 const drafts = new Map();
 let mounted = false, shownContext = "", redraw = () => {};
 const context = () => state.sample.active ? "sample:USER_ONE" : `personal:${el("planId").value || "draft-001"}`;
-const storageKey = key => `orthoplan-focus-teeth-v1:${key}`;
+const storageKey = key => profileKey(`orthoplan-focus-teeth-v1:${key}`);
 function entry(key = context()) {
   if (!drafts.has(key)) {
     let value = { teeth: [], enabled: false, edited: false, notice: "" };

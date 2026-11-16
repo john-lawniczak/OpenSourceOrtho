@@ -21,7 +21,7 @@ body[data-sample-view="observed"][data-chat-collapsed="1"] .ai-rail { display: n
 .sample-view-modes button:focus-visible, #sampleComparison button:focus-visible { outline: 2px solid #0f766e; outline-offset: 2px; }
 #sampleComparison button:disabled { opacity: .5; cursor: default; }
 .sample-view-modes [aria-pressed="true"] { background: #0f766e; color: white; border-color: #0f766e; }
-#sampleSimulationNote { flex-basis: 100%; color: #9a4d0b; margin: 4px 0; }
+#sampleSimulationNote { color: var(--muted); margin: 8px 0; }
 #sampleComparison { min-width: 0; }
 .comparison-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
 .comparison-toolbar { margin: 12px 0; }

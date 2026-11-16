@@ -111,7 +111,7 @@ def correct_and_restore(page, tmp_path):
     page.locator("#openCase").click()
     expect(page.locator("#caseStatus")).to_contain_text("(import 1)")
     corrupt = json.loads(backup.read_text())
-    corrupt["pair"][0]["sha256"] = "0" * 64
+    corrupt["captures"]["groups"][0][0]["scan"]["sha256"] = "0" * 64
     backup.write_text(json.dumps(corrupt))
     page.locator("#restoreCase").set_input_files(backup)
     expect(page.locator("#caseStatus")).to_contain_text("hash mismatch")

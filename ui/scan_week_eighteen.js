@@ -1,6 +1,6 @@
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 
-// Painting entry points use the selected working surfaces; observations keep originals.
+// Painting uses these working captures; history selects its surfaces separately.
 export function suggestedPaintingCapture(arch, visit) {
   return visit === "progress-02" ? (arch === "upper" ? "upper-clean" : "fusion-h-4") : "original";
 }

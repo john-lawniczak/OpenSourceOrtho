@@ -8,6 +8,12 @@ of notes per annotation. It excludes raw face labels, scan bytes and unsaved
 browser edits. Notes remain untrusted data. External sharing still requires the
 existing explicit consent; loading newer labels does not regenerate motion fits.
 
+Local profile selection scopes chat session storage and the server-side saved
+annotation/research context. A profile switch reloads the workspace, clearing
+in-memory credentials and provider permissions. Profile snapshots exclude those
+credentials and pending model requests. Bundled USER_ONE source facts remain
+explicit sample context; profiles are local workspaces, not authenticated users.
+
 ## Role
 
 OpenAI-backed agents are advisory reviewers only. They may summarize plan data, identify configured-rule findings already present in the report, and suggest follow-up questions under declared data limitations.
@@ -97,6 +103,22 @@ exists. Manual web setup includes that extra too. OpenAI continues to use the
 Responses API, as in the [official Python quickstart](https://developers.openai.com/api/docs/quickstart).
 
 ## Chat Connector Use
+
+The offline helper is explicitly labeled as having no AI model connected. Its
+tooth-size/reshaping response addresses the comparison, distinguishes width,
+height and prominence, and explains the missing measurements and irreversible
+nature of enamel removal without recommending it. It recognizes the reported
+"fied down" typo. Other offline replies disclose their built-in summary behavior
+instead of presenting a generic timeline suggestion as an answer to any question.
+External chat prompts likewise prioritize the actual question and useful
+educational explanation over boilerplate, while retaining consent and linting.
+They request plain paragraphs or simple lists to match the text-only renderer;
+Markdown emphasis and pipe tables otherwise appear literally in the transcript.
+Scan-axis bounding-box extents can describe labeled regions, but must not be
+presented as anatomical crown dimensions or justification for reshaping.
+USER_ONE context declares FDI numbering and the absence of individual crown
+dimensions; face counts must never be treated as tooth size. Workspace-only
+requests guide users to select USER_ONE explicitly without silently sharing it.
 
 Beyond the `advise` pipeline, the adapter also backs the live AI chat layer. The
 chat path (`orthoplan/ai_chat.py` + `orthoplan/ai_connectors.py`) builds an
@@ -222,6 +244,12 @@ working plan unchanged; **Undo** restores the previous rows after applying.
 In-flight results are rejected when the working plan changes. Model provenance
 is retained on applied movement rows. This is geometric intent editing, not
 an autonomous treatment recommendation from an uploaded scan.
+
+Tooth selection uses the number rows around the viewer or a crown click, with
+an optional FDI/US number lookup. The compact edit panel lists all unmet local
+prerequisites together (units, region review and hold). A preview stays in the
+current guided step and selects the sample's proposed-stage view, avoiding an
+unexpected return to recorded scan history. Apply/Discard and Undo are unchanged.
 
 ### Structured workspace context
 

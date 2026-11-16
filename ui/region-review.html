@@ -53,8 +53,7 @@
 <details id="trimPanel"><summary>Clean up model surface</summary>
 <p>Brush unwanted scan or mold material to mark it red, then apply the trim. Gray areas can include unpainted teeth: inspect your selection before removing it. The original scan is preserved.</p>
 <div class="controls"><button type="button" data-review-mode="trim" aria-pressed="false">Brush to remove</button><button type="button" data-review-mode="untrim" aria-pressed="false">Deselect removal</button></div>
-<p>The circle works over empty space too: sweep across visible specks to select them. Surfaces hidden behind the model stay protected. Use [ and ] to adjust size. Deselect removal only clears red selections; it does not fill holes.</p>
-<label class="repair-toggle"><input id="trimAllowPainted" type="checkbox"> Allow removing painted tooth surfaces</label>
+<p>Sweep the circle over unwanted material, including tiny specks and closely overlapping surface fragments. Apply trim removes everything marked red, including painted tooth surfaces, in one step. There is no brush opacity. Rotate to reach deeper hidden layers. Use [ and ] to adjust size. Deselect removal clears red marks; Undo surface edit restores an applied trim.</p>
 <div class="controls"><button id="trimApply" type="button" disabled>Apply trim</button><button id="trimClear" type="button" disabled>Clear selection</button></div>
 <p id="trimStatus" role="status">Brush unwanted model material to select it.</p>
 </details>
@@ -100,4 +99,4 @@
 <details id="reviewSaveDetails" open><summary>Notes &amp; saved file</summary><label>Notes<textarea id="reviewNotes" rows="6" maxlength="4000"></textarea></label><p id="reviewSavePath"></p><p>Save each visit and arch separately. Find them again in <strong>My Notes</strong> in the main sidebar, or reopen this scan. Loading the same scan resumes its latest local save. Draft annotations remain separate from fitted motion.</p></details>
 </section>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-<script type="module" src="./region_review.js"></script></main></body></html>
+<script type="module" src="./profile_editor_identity.js"></script><script type="module" src="./region_review.js"></script></main></body></html>
