@@ -66,5 +66,5 @@ the complete Apache-2.0 terms, with project attribution in NOTICE. Sources:
 - 3D Slicer extensions can carry GPL — not a dependency; referenced only.
 - Blender and PyMeshLab/MeshLab are GPL — keep them as external workflow tools
   unless the project intentionally accepts GPL obligations.
-- Trademarks (Invisalign/ClinCheck/SmartTrack): nominative reference only, never
+- Commercial product trademarks: nominative reference only, never
   in code identifiers or UI labels.

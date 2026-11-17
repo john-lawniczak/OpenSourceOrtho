@@ -93,7 +93,7 @@ path.
 
 ## Safety boundary (applies to mobile exactly as to the rest of the repo)
 
-OpenSource Ortho is **not** a medical device, an Invisalign clone, a clinical
+OpenSource Ortho is **not** a medical device, a commercial clear-aligner product clone, a clinical
 approval tool, an autonomous treatment planner, or complete treatment-planning
 software. The mobile lite apps must carry the same disclaimers and must never
 present a plan, generated package, or appliance as safe, approved, cleared, or
