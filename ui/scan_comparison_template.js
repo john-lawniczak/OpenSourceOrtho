@@ -52,12 +52,13 @@ export const comparisonTemplate = `
     <button id="comparisonFocusTooth" type="button" disabled>Focus selected tooth</button>
     <button id="comparisonEndpointFit" type="button" aria-pressed="false" hidden>Inspect estimated endpoint</button>
   </div>
-  <p class="comparison-help">Compare two scans opens a separate tool for uploading two visits and estimating positions between them. Return here to continue this sample.</p>
-  <details><summary>Proximity hints</summary><p id="comparisonProximity" class="comparison-help"></p></details>
-  <p id="comparisonMatchDetail" class="comparison-help" aria-live="polite"></p>
+  <details id="comparisonDiagnostics" class="viewer-diagnostics">
+    <summary>Scan details &amp; match quality</summary>
+    <p id="comparisonMatchDetail" class="comparison-help"></p>
+    <p id="comparisonProximity" class="comparison-help"></p>
+    <p id="comparisonRecordDetail" class="comparison-help"></p>
+  </details>
   <button id="comparisonMotionRetry" type="button" hidden>Retry motion preview</button>
-  <p id="comparisonHelp" class="comparison-help">Drag to rotate; scroll or pinch to zoom.
-    Double-click a crown to focus. The camera stays in place when changing weeks.</p>
   <p id="comparisonStatus" role="status" aria-live="polite">Loading original scan pair…</p>
   <button id="comparisonRetry" type="button" hidden>Retry scan loading</button>
 `;

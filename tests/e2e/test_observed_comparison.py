@@ -138,7 +138,7 @@ def test_failed_visit_does_not_display_partial_pair_and_can_retry(server_url):  
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             page.locator('[data-sample-view="simulation"]').click()
             expect(page.locator("#sampleComparison")).not_to_be_visible()
-            expect(page.locator("#sampleSimulationNote")).to_be_visible()
+            expect(page.locator("#sampleSimulationNote")).to_be_hidden()
             expect(page.locator("#stageSlider")).to_be_visible()
             page.locator('[data-sample-view="observed"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)

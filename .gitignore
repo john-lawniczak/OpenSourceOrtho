@@ -9,6 +9,7 @@ build/
 *.egg-info/
 .orthoplan-meshes/
 .orthoplan-cases.json
+.orthoplan-profiles/
 datasets/**/.local/
 datasets/**/records/
 datasets/**/local-cbct-record.json
@@ -27,3 +28,6 @@ tools/publish_snapshot.sh
 
 # User-painted labels stay local until explicitly incorporated into a dataset.
 .orthoplan-region-corrections/
+
+# Private research fits, reports and per-tooth reviews.
+.orthoplan-research/

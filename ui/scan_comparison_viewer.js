@@ -27,6 +27,7 @@ export function createScanComparison(host, { onFocus = () => {}, onTooth = () =>
   const light = new THREE.DirectionalLight(0xffffff, 2.2);
   light.position.set(20, 65, 35); scene.add(light);
   let entries = [], selected = "", activeIndex = 0, arch = "upper", span = 40, width = 1, height = 1, disposed = false;
+  let baselineSpan = 40, observedSpan = 40;
 
   function render() {
     if (disposed || !host.clientWidth || !host.clientHeight) return;
@@ -72,6 +73,7 @@ export function createScanComparison(host, { onFocus = () => {}, onTooth = () =>
     entries.forEach(entry => scene.add(entry.group));
     arch = entries.length > 1 ? "both" : entries[0].arch;
     span = arrangeComparisonArches(entries);
+    baselineSpan = span; observedSpan = span;
     host.dataset.archCount = String(entries.length);
     renderer.domElement.setAttribute("aria-label", `${entries.length > 1 ? "Upper and lower teeth together" : `${arch} teeth`}; drag to rotate, scroll to zoom, double-click a crown to focus`);
     resize(); setView();
@@ -106,13 +108,20 @@ export function createScanComparison(host, { onFocus = () => {}, onTooth = () =>
     setObservedVisit(scans) {
       entries.forEach(entry => {
         entry.addObservedVisit(scans.find(scan => scan.arch === entry.arch));
-        // Align crown-facing display edges; this is not an occlusion registration.
-        if (entries.length > 1) entry.meshes[2].position.y = entry.meshes[0].geometry.boundingBox.max.y - entry.meshes[2].geometry.boundingBox.max.y;
       });
-      span = arrangeComparisonArches(entries); resize();
+      const bounds = new THREE.Box3();
+      // Precise vertex bounds avoid the oversized box produced by rotating an
+      // already axis-aligned cast box, which makes the pair appear too small.
+      entries.forEach(entry => bounds.union(new THREE.Box3().setFromObject(entry.meshes[2], true)));
+      const sphere = bounds.getBoundingSphere(new THREE.Sphere());
+      observedSpan = Math.max(sphere.radius + sphere.center.length(), 5) * 1.08;
+      // Keep earlier visits' framing; week 18 gets room for its own model bounds.
+      render();
     },
     setFrame(frame) {
       activeIndex = frame.index;
+      const nextSpan = frame.index === 3 ? observedSpan : baselineSpan;
+      if (span !== nextSpan) { span = nextSpan; resize(); }
       entries.forEach(entry => entry.simulation?.setFraction(frame.fraction));
       controls.enabled = frame.index !== null; render();
     },

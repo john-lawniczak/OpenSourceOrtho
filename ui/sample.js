@@ -1,3 +1,4 @@
+import { profileFetch } from "./profile_context.js";
 import { sampleAssetUrl, sampleDataset } from "./sample-dataset.js";
 // Sample test case: isolated observed history plus a separately selected
 // simulated planning walkthrough that reuses the guided wizard.
@@ -33,6 +34,7 @@ export function sampleActive() {
 
 export function enterSample() {
   if (saved) return;
+  document.dispatchEvent?.(new Event("workspace-before-sample"));
   saved = {
     state: {},
     fields: {},
@@ -136,7 +138,7 @@ export async function prepareSampleSegmentation({ visit = state.sample.visit || 
   seg.busy = true;
   seg.status = "Loading saved USER_ONE tooth regions…";
   try {
-    const response = await fetch("/api/sample-teeth", { method: "POST", headers: { "Content-Type": "application/json" },
+    const response = await profileFetch("/api/sample-teeth", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ visit, allow_baseline_fallback: allowFallback }) });
     const result = await response.json();
     if (!state.sample.active || state.segmentation !== seg) return false;
@@ -153,7 +155,7 @@ export async function prepareSampleSegmentation({ visit = state.sample.visit || 
     state.rows = Array.from({ length: 4 }, (_, stage) => teeth.map(tooth =>
       ({ stage, tooth, x: 0, y: 0, z: 0, tip: 0, torque: 0, rotation: 0 }))).flat();
     state.demoInitialOffsets = {}; state.manualEdit = { selectedTooth: teeth[0] || null, status: "", undoStack: [] };
-    state.availability = { ...state.availability, segmented_teeth: false };
+    state.availability = { ...state.availability, segmented_teeth: seg.applied.tooth_meshes.every(link => link.reviewed) };
     state.caseRecords = []; state.fixtureMeshAssets = []; state.registrations = []; state.derivedAnatomy = null;
     state.availability = { ...state.availability, cbct: false, roots: false };
     state.view = "current"; state.activeStep = "review";

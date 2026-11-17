@@ -29,7 +29,7 @@ def test_optional_workflows_start_collapsed_and_links_reveal_controls(server_url
             expect(page.locator("#saveVersion")).not_to_be_visible()
             expect(page.locator("#proposeSegment")).not_to_be_visible()
             expect(page.locator("#planJson")).not_to_be_visible()
-            page.locator(".viewer-diagnostics > summary").click()
+            page.get_by_text("Scan details & checks", exact=True).click()
             # Trust-strip links expose the requested section before navigation.
             page.locator('a[href="#segmentList"]').first.click()
             expect(page.locator("#proposeSegment")).to_be_visible()

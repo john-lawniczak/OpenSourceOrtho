@@ -1,10 +1,10 @@
 # Tool improvement phases
 
-This work addresses the tools rated below 7/10 in the November 11 review.
-Ratings are engineering judgments; implementation tests do not establish
-patient-specific accuracy. A 6/10 research tool should execute its intended
-workflow, preserve provenance, expose failures, and have meaningful independent
-known-geometry tests. Real anatomical performance remains a separate criterion.
+This is a historical implementation record. Subjective numerical ratings are
+retired as progress criteria. Assess current work by implemented behavior,
+reproducible tests, and separately obtained real-data evidence. See
+[current local workflows](LOCAL_RESEARCH_WORKFLOWS.md) for subsequent changes,
+including saved-label refits, capture alternatives, recovery, and week-18 display.
 
 ## Phase 1 — surface segmentation and learned adapters
 
@@ -133,8 +133,9 @@ enclose its root voxels; the new mask validator exposed that old fixture error.
 ## Phase 7 — refreshed sample evidence and continuous regression coverage
 
 Regenerated both USER_ONE endpoint previews with reverse-cycle and resampling
-metrics, preserving the original endpoint hashes and unreviewed status. No week
-18 molds or local CBCT pixels entered the public asset catalog. CI now runs on
+metrics, preserving the original endpoint hashes and unreviewed status. Week-18
+models were not used in those fits; authorized week-18 captures were subsequently
+added to the public catalog. Local CBCT pixels remain private. CI runs on
 private development branch patterns and exercises the actual ONNX contract,
 imaging adapters, topology, contact and stress tests with their optional stacks.
 The learned extra includes its topology dependency; an unconfigured model no
@@ -143,10 +144,10 @@ model sessions disable runtime telemetry.
 
 Existing fixture-import lint annotations and planning-demo browser selectors
 were corrected so the full lint/browser checks can run against the current UI.
-See [the scorecard](TOOL_SCORECARD.md) for scope-specific reassessment rather than
-an unsupported claim of measured anatomical accuracy.
+The [historical scorecard](TOOL_SCORECARD.md) retains the earlier assessment;
+current progress requires measured results rather than subjective scores.
 
-Final local validation: full Python/browser suite **804 passed, 8 skipped**;
+Validation recorded for those implementation phases: Python/browser suite **804 passed, 8 skipped**;
 additional registration-import browser regression **1 passed**; JavaScript suite
 **156 passed**. Ruff, strict maintainability, generated catalog verification and
 `git diff --check` passed. Optional dependency tests were exercised locally with

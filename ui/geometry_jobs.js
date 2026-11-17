@@ -1,10 +1,11 @@
+import { profileFetch } from "./profile_context.js";
 // A cancelled browser request must also stop the CPU worker on the local server.
 export async function geometryJob(operation, payload, { signal } = {}) {
   let jobId;
   const cancel = () => {
     // Drain the response so Chromium completes the keepalive request rather
     // than leaving cleanup pending after the geometry operation finishes.
-    if (jobId) void fetch('/api/geometry-jobs/cancel', {
+    if (jobId) void profileFetch('/api/geometry-jobs/cancel', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job_id: jobId }), keepalive: true,
     }).then(response => response.json()).catch(() => {});
@@ -24,7 +25,7 @@ export async function geometryJob(operation, payload, { signal } = {}) {
     const admissionDeadline = Date.now() + 15000;
     do {
       signal?.throwIfAborted();
-      const response = await fetch('/api/geometry-jobs', {
+      const response = await profileFetch('/api/geometry-jobs', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation, payload }),
       });
@@ -42,7 +43,7 @@ export async function geometryJob(operation, payload, { signal } = {}) {
     const deadline = Date.now() + 135000;
     while (Date.now() < deadline) {
       signal?.throwIfAborted();
-      const status = await check(await fetch(`/api/geometry-jobs/${jobId}`, { signal }));
+      const status = await check(await profileFetch(`/api/geometry-jobs/${jobId}`, { signal }));
       if (status.status === 'complete') return status.result;
       await new Promise(resolve => setTimeout(resolve, 250));
     }

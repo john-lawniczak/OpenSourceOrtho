@@ -3,6 +3,7 @@ import pytest
 pytest.importorskip("playwright.sync_api")
 from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from test_chat_workspace import server_url  # noqa: E402,F401
+from test_observed_comparison import canvas_snapshot  # noqa: E402
 
 
 def reopen_week_eighteen_notes(page, editor):
@@ -14,6 +15,21 @@ def reopen_week_eighteen_notes(page, editor):
     expect(editor.locator("#reviewSource")).to_contain_text("week 18", timeout=60000)
     expect(editor.locator("#reviewArch")).to_have_value("lower")
     expect(editor.locator("#reviewNotes")).to_have_value("Inspect week 18 model chip tomorrow", timeout=60000)
+
+
+def check_history_placement(page, requests, canvas, baseline, tmp_path):
+    assert any(url.endswith("progress-02-upper-clean.stl") for url in requests)
+    assert any(url.endswith("fusion-h-4.stl") for url in requests)
+    assert not any(url.endswith("progress-02-upper.stl") for url in requests)
+    expect(page.locator("#comparisonVisit")).to_contain_text("approximate bite display")
+    canvas.evaluate("el => el.scrollIntoView({block: 'center'})")
+    canvas.screenshot(path=str(tmp_path / "week-18-both.png"))
+    for view in ["left", "right"]:
+        page.locator(f'[data-comparison-view="{view}"]').click()
+        canvas.screenshot(path=str(tmp_path / f"week-18-{view}.png"))
+    page.locator('[data-comparison-view="front"]').click()
+    page.locator('[data-comparison-week="1"]').click()
+    assert canvas_snapshot(page.locator("#comparisonCanvas canvas"), path=str(tmp_path / "baseline-after.png")) == baseline
 
 
 def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monkeypatch):  # noqa: F811
@@ -41,13 +57,14 @@ def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monke
             page.locator("#sampleLaunch").click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=60000)
             assert not any("progress-02" in url and url.endswith(".stl") for url in requests)
+            canvas = page.locator("#comparisonCanvas")
+            baseline = canvas_snapshot(page.locator("#comparisonCanvas canvas"), path=str(tmp_path / "baseline-before.png"))
             page.locator('[data-comparison-week="18"]').click()
-            expect(page.locator("#comparisonStatus")).to_contain_text("Week 18 original scans", timeout=60000)
+            expect(page.locator("#comparisonStatus")).to_contain_text("Week 18 observed surfaces", timeout=60000)
             expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "observed")
             expect(page.locator("#comparisonTooth")).to_be_disabled()
             expect(page.locator("#comparisonVisit")).to_contain_text("Acquisition date unknown")
-            page.locator("#comparisonCanvas").evaluate("el => el.scrollIntoView({block: 'center'})")
-            page.locator("#comparisonCanvas").screenshot(path=str(tmp_path / "week-18-both.png"))
+            check_history_placement(page, requests, canvas, baseline, tmp_path)
             page.locator('[data-comparison-week="12"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "unavailable")
             expect(page.locator("#comparisonCanvas")).not_to_be_visible()
@@ -84,16 +101,16 @@ def test_failed_week_eighteen_preserves_earlier_fit_and_retries(server_url):  # 
             page.goto(server_url)
             page.locator("#sampleLaunch").click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=60000)
-            page.route("**/progress-02-upper.stl", lambda route: route.fulfill(status=503, body="Unavailable"))
+            page.route("**/progress-02-upper-clean.stl", lambda route: route.fulfill(status=503, body="Unavailable"))
             page.locator('[data-comparison-week="18"]').click()
             expect(page.locator("#comparisonStatus")).to_contain_text("HTTP 503")
             expect(page.locator("#comparisonCanvas")).not_to_be_visible()
             page.locator('[data-comparison-week="4"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "estimated")
-            page.unroute("**/progress-02-upper.stl")
+            page.unroute("**/progress-02-upper-clean.stl")
             page.locator('[data-comparison-week="18"]').click()
             page.locator("#comparisonRetry").click()
-            expect(page.locator("#comparisonStatus")).to_contain_text("Week 18 original scans", timeout=60000)
+            expect(page.locator("#comparisonStatus")).to_contain_text("Week 18 observed surfaces", timeout=60000)
             expect(page.locator("#comparisonCanvas")).to_be_visible()
         finally:
             browser.close()
@@ -141,6 +158,30 @@ def test_clean_upper_painting_save_switch_and_reopen(server_url, tmp_path, monke
             card.get_by_role('link', name='Open painting & notes').click()
             expect(editor.locator("#reviewSource")).to_contain_text("progress-02-upper-clean.stl", timeout=60000)
             expect(editor.locator("#reviewNotes")).to_have_value("Unsaved change", timeout=60000)
+            assert not errors
+        finally:
+            browser.close()
+
+
+def test_week_eighteen_single_arch_and_original_h4_fallback(server_url, tmp_path):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        try:
+            page.route("**/api/sample-history/lower-cleaned", lambda route: route.fulfill(
+                content_type="application/json", body='{"available":false}'))
+            page.goto(server_url)
+            page.locator("#sampleLaunch").click()
+            expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=60000)
+            page.locator('[data-comparison-week="18"]').click()
+            expect(page.locator("#comparisonStatus")).to_contain_text("original H4 lower", timeout=60000)
+            for arch, description in [("upper", "cleaned upper"), ("lower", "original H4 lower")]:
+                page.locator(f'[data-comparison-arch="{arch}"]').click()
+                expect(page.locator("#comparisonStatus")).to_contain_text(description, timeout=60000)
+                expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "observed")
+                page.locator("#comparisonCanvas").screenshot(path=str(tmp_path / f"week-18-{arch}.png"))
             assert not errors
         finally:
             browser.close()

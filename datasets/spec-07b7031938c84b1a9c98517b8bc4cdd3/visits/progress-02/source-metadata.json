@@ -38,7 +38,14 @@
   "units": {
     "declared_in_stl": false,
     "confirmed": false,
-    "manifest_units": "unverified"
+    "manifest_units": "unverified",
+    "export_units_report": {
+      "recorded_on": "2026-11-15",
+      "value": "mm",
+      "status": "contributor-reported",
+      "provenance": "Contributor states: JMStudio saves exports in millimetres.",
+      "scope_note": "Reported export convention; no rescaling applied. Exact-file export settings and independent dimensional calibration have not been supplied."
+    }
   },
   "coordinate_frame": {
     "shared_occlusion_frame_verified": false,
@@ -89,7 +96,7 @@
   },
   "missing_data": [
     "confirmed acquisition date",
-    "confirmed scan scale",
+    "exact-file export-unit confirmation and dimensional calibration",
     "capture materials and steps",
     "reviewed surface fidelity",
     "validated upper/lower and cross-time registration",
@@ -155,6 +162,28 @@
     "cross_attempt_physical_cast_identity_note": "The clarification groups the attempts at the same reported week. Exact impression, pour, rescan, repair and physical-cast relationships between the November 10 pair and H4/H6 are not separately specified.",
     "intact_donor_regions_verified": false,
     "fusion_performed": false,
-    "evaluation_scope_note": "Existing per-file quality/damage assessments retain their scope; membership in one model series does not establish identical defects or recover missing surfaces."
+    "evaluation_scope_note": "Existing per-file quality/damage assessments retain their scope; membership in one model series does not establish identical defects or recover missing surfaces.",
+    "repeat_capture_confirmation": {
+      "recorded_on": "2026-11-15",
+      "status": "contributor-confirmed",
+      "captures": [
+        "fusion-h-4",
+        "fusion-h-6"
+      ],
+      "physical_model_unchanged_between_captures": true,
+      "chip_present_before_both_captures": true,
+      "independently_verified": false,
+      "provenance": "Contributor replied: No physical changes between scans; chip was already there.",
+      "scope_note": "Applies to the physical lower model during H4/H6 acquisition, not subsequent digital trimming. FDI 32 is tentatively identified in the separate visual comparison report; exact defect location and acquisition dates remain unverified. No inference about the November 10 pair."
+    },
+    "visual_comparison_report": {
+      "recorded_on": "2026-11-15",
+      "status": "contributor-reported",
+      "suspected_fdi": 32,
+      "tooth_identity_confirmed": false,
+      "description": "Contributor suspects the model chip near FDI 32 is the main visible difference between H4 and H6; H6 also shows protruding model material. Other teeth look relatively accurate to the contributor.",
+      "independently_verified": false,
+      "scope_note": "Visual comparison of model scans, not evidence of actual tooth damage or independently established surface accuracy. Physical model was reported unchanged between captures; exact defect surface remains unmapped."
+    }
   }
 }

@@ -46,7 +46,7 @@ def open_supplied_sample(page):
     expect(page.locator('#sampleBanner')).to_contain_text('STL')
     # Keep the lower scan from occluding the upper crown during pixel picking.
     page.locator('#scanArchFilter').select_option('maxillary')
-    tooth = page.locator('#guidedTeeth [data-select-tooth="11"]')
+    tooth = page.locator('.viewer-tooth-numbers [data-select-tooth="11"]')
     expect(tooth).to_be_visible(timeout=90000)
     # Expose the movable crown instead of a sliver behind the whole-scan overlay.
     page.locator('[data-view="planned"]').click()
@@ -64,7 +64,7 @@ def pick_selected_crown(page, unselected, tmp_path):
     page.locator('#guidedClearSelection').click()
     page.locator('#viewer3d canvas').click(position=point)
     page.locator('#viewer3d canvas').screenshot(path=str(tmp_path / 'picked-crown.png'))
-    print('Crown pick:', point, page.locator('#guidedTeeth [aria-pressed="true"]').all_text_contents())
+    print('Crown pick:', point, page.locator('.viewer-tooth-numbers [aria-pressed="true"]').all_text_contents())
 
 
 def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path):  # noqa: F811 - pytest fixture injection
@@ -76,10 +76,11 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
         try:
             page.goto(server_url, wait_until='networkidle')
             unselected = open_supplied_sample(page)
-            tooth = page.locator('#guidedTeeth [data-select-tooth="11"]')
+            tooth = page.locator('.viewer-tooth-numbers [data-select-tooth="11"]')
             tooth.click()
             expect(tooth).to_have_attribute('aria-pressed', 'true')
             page.locator('#reviewSelectedRegion').check()
+            expect(page.locator('#toothWorkspace [data-manual-nudge="x+"]')).to_be_enabled()
             before = json.loads(page.locator('#planJson').input_value())
             (tmp_path / "before.json").write_text(json.dumps(before))
             assert not before['fixed_teeth']
@@ -87,7 +88,7 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             assert tooth.bounding_box()['y'] > viewer.bounding_box()['y']
             pick_selected_crown(page, unselected, tmp_path)
             expect(tooth).to_have_attribute('aria-pressed', 'true')
-            page.locator('[data-manual-nudge="x+"]').first.click()
+            page.locator('#toothWorkspace [data-manual-nudge="x+"]').first.click()
             expect(page.locator('#applyGoalPreview')).to_be_enabled(timeout=60000)
             assert json.loads(page.locator('#planJson').input_value()) == before
             expect(page.locator('#goalPreviewText')).to_contain_text('Tooth 11')
@@ -112,15 +113,52 @@ def test_reviewed_scan_tooth_preview_apply_discard_and_undo(server_url, tmp_path
             page.locator('#guidedEditUndo').click()
             assert json.loads(page.locator('#planJson').input_value()) == before
             page.locator('#holdSelectedTooth').check()
-            expect(page.locator('[data-manual-nudge="x+"]').first).to_be_disabled()
+            expect(page.locator('#toothWorkspace [data-manual-nudge="x+"]').first).to_be_disabled()
             assert json.loads(page.locator('#planJson').input_value())['fixed_teeth'][0]['tooth']['value'] == '11'
             page.locator('#holdSelectedTooth').uncheck()
             page.locator('#viewerBlock').screenshot(path=str(tmp_path/'tooth-workspace.png'))
-            page.get_by_role('button', name='Open the imaging and photos guide').click()
-            expect(page.locator('#imagingViewerHost #viewer3d canvas')).to_be_visible()
-            expect(page.locator('#imagingScanList')).to_contain_text('initial-upper.stl')
+            expect(page.locator('.sidebar [data-step-target="photos"]')).to_have_count(0)
             page.set_viewport_size({"width": 390, "height": 844})
             assert page.locator('#viewerBlock').evaluate('el => el.scrollWidth <= el.clientWidth')
             assert not errors
+        finally:
+            browser.close()
+
+
+def test_draft_edit_lists_blockers_and_keeps_preview_in_current_step(server_url, tmp_path):  # noqa: F811
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 1100})
+        try:
+            page.goto(server_url)
+            page.locator("#themeToggle").click()
+            page.locator("#sampleLaunch").click()
+            page.locator('[data-gstep-nav="details"]').click()
+            expect(page.locator("#sampleReloadPainting")).to_be_enabled(timeout=90000)
+            # Public installs can fall back to baseline scans with declared mm.
+            # Exercise the unverified-unit blocker independently of that fallback.
+            page.locator("#scanUnits").evaluate("el => { el.value='unverified'; el.dispatchEvent(new Event('input', {bubbles:true})); }")
+            page.locator('.viewer-tooth-numbers [data-select-tooth="11"]').click()
+            page.locator("#holdSelectedTooth").check()
+            status = page.locator("#guidedEditStatus")
+            for reason in ["confirm scan units", "check the tooth number", "release this tooth's hold"]:
+                expect(status).to_contain_text(reason)
+            expect(page.locator('#toothWorkspace [data-manual-nudge="x+"]')).to_be_disabled()
+            expect(page.locator("#toothNumberForm")).to_be_hidden()
+            expect(page.locator("#guidedTeeth")).to_have_count(0)
+            page.locator("#toothWorkspace").screenshot(path=str(tmp_path / "compact-tooth-controls.png"))
+            page.locator("#samplePaintedVisit").select_option("initial")
+            expect(page.locator("#sampleReloadPainting")).to_be_enabled(timeout=90000)
+            page.locator("#holdSelectedTooth").uncheck()
+            page.locator("#reviewSelectedRegion").check()
+            page.locator('#toothWorkspace [data-manual-nudge="x+"]').click()
+            expect(page.locator("#applyGoalPreview")).to_be_enabled(timeout=60000)
+            expect(page.locator('.gstep[data-gstep="details"]')).to_have_class("gstep is-active")
+            expect(page.locator("#sampleComparison")).to_be_hidden()
+            expect(page.locator("#viewer3d canvas")).to_be_visible()
+            page.locator("#discardGoalPreview").click()
+            page.set_viewport_size({"width": 390, "height": 844})
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            page.locator("#toothWorkspace").screenshot(path=str(tmp_path / "compact-tooth-controls-mobile.png"))
         finally:
             browser.close()

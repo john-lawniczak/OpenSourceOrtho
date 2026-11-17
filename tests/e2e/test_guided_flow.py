@@ -61,7 +61,7 @@ def test_sample_guided_flow_stays_focused_and_progressively_disclosed(server_url
             page.wait_for_selector('#guided .gstep[data-gstep="plan"].is-active')
             assert page.locator("#guidedBuild").inner_text() == "Regenerate sample stages"
             assert "Rebuilding is optional" in page.locator("#guidedBuildStatus").inner_text()
-            page.locator(".viewer-diagnostics > summary").click()
+            page.get_by_text("Scan details & checks", exact=True).click()
             trust_text = page.locator("#trustStatusStrip").inner_text()
             scan_text = page.locator("#scanRenderStatus").inner_text()
             if "Segmenting individual teeth" in scan_text:

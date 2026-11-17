@@ -20,6 +20,9 @@ def test_tooth_estimate_selection_and_week_progress(server_url, tmp_path):  # no
             page.locator('[data-comparison-arch="upper"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-ready", "true", timeout=30000)
             expect(page.locator("#comparisonTooth")).to_be_enabled()
+            expect(page.locator("#comparisonStatus")).to_be_hidden()
+            expect(page.locator("#comparisonMatchDetail")).to_be_hidden()
+            expect(page.locator("#comparisonProximity")).to_be_hidden()
             page.locator("#comparisonTooth").select_option("11")
             page.locator("#comparisonFocusTooth").click()
             page.locator("#comparisonZoomIn").click()
@@ -32,7 +35,7 @@ def test_tooth_estimate_selection_and_week_progress(server_url, tmp_path):  # no
             assert canvas_snapshot(canvas) != third, "Timing selection must change actual estimated poses"
             page.locator("#comparisonTiming").select_option("uniform")
             assert canvas_snapshot(canvas) == third
-            page.locator("#sampleComparison details summary").click()
+            page.locator("#comparisonDiagnostics > summary").click()
             expect(page.locator("#comparisonProximity")).to_contain_text("Absence does not establish clearance")
             page.locator('[data-comparison-week="5"]').click()
             assert canvas_snapshot(canvas) != third

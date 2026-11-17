@@ -24,10 +24,11 @@ const panel = setupReviewControls({ selectTooth: selectionChanged, changeMode: (
 const fragments = setupFragmentReview(() => ({ scan, edits, viewer }), id => {
   el("reviewTo").value = id; el("reviewTool").value = "orbit"; selectionChanged(); viewer?.updateBrush();
 });
-const repair = setupSurfaceRepair(() => ({ scan, edits, viewer }), (nextScan, labels, token, notes = el("reviewNotes").value) => {
+const repair = setupSurfaceRepair(() => ({ scan, edits, viewer }), (nextScan, labels, token, notes = el("reviewNotes").value, provenance = "user-corrected") => {
   const sameSource = nextScan.repair?.sourceSha256 === (scan?.repair?.sourceSha256 || scan?.sha256) || nextScan.sha256 === scan?.repair?.sourceSha256;
   const pose = sameSource ? viewer?.navigationPose() : null;
   generation++; scan = nextScan; edits = new RegionEdits(labels, scan.arch);
+  edits.provenance = provenance;
   mount(true); if (pose) viewer.restoreNavigation(pose); saving.setSaved({ saved_at: token, notes }); saving.markDirty();
   const url = new URL(location.href); for (const key of ["baseline", "visit", "capture", "edit"]) url.searchParams.delete(key);
   history.replaceState(null, "", url);

@@ -1,3 +1,5 @@
+import { initializeProfiles } from "./profile_switcher.js";
+import { pushEditUndo, travelEdit, saveEditSession } from "./edit_sessions.js";
 import "./precision_workspace.js";
 import { registerUploadedScans } from "./upload_registration.js";
 import { newScanDates, matchScanDates } from "./scan_dates.js";
@@ -442,11 +444,7 @@ document.body.addEventListener("click", (event) => {
     renderAll();
   }
   if (button?.id === "guidedEditUndo") {
-    const previous = state.manualEdit.undoStack?.pop();
-    if (previous) {
-      state.rows = previous;
-      renderAll();
-    }
+    if (travelEdit("undo")) { renderAll(); void saveEditSession(); }
   }
   if (button?.dataset.guidedView) {
     state.view = button.dataset.guidedView;
@@ -831,8 +829,7 @@ async function exportCaseReview() {
     const review = result.review;
     downloadJson(`orthoplan-case-review-${safeDownloadToken(review.case_id || review.plan_id || "case")}.json`, review);
     if (status) {
-      const tier = review.review_tier?.label || review.review_tier?.tier || "review";
-      status.textContent = `Exported ${tier} (read-only on mobile). Open on a device: ${review.handoff.qr_payload}`;
+      status.textContent = `Exported case review (read-only on mobile). Open on a device: ${review.handoff.qr_payload}`;
     }
     renderCaseHandoff(review);
   } catch (error) {
@@ -865,9 +862,7 @@ function renderCaseHandoff(review) {
 }
 
 function pushManualUndo() {
-  const stack = state.manualEdit.undoStack || [];
-  stack.push(state.rows.map((row) => ({ ...row })));
-  state.manualEdit.undoStack = stack.slice(-20);
+  pushEditUndo();
 }
 
 async function applyManualNudge(direction) {
@@ -1224,8 +1219,8 @@ function restoreClinicalControls(snapshot) {
 renderGlossaryTerms();
 renderAvailability();
 renderAll();
-restoreStoredUploads();
-restoreStoredSegmentation();
+await initializeProfiles({ state, render: () => { renderAvailability(); renderAll(); }, leaveSample: exitSample, restoreLegacy: async () => { await restoreStoredUploads(); restoreStoredSegmentation(); } });
+resumeUploadRegistration();
 loadVersions();
 
 function resumeUploadRegistration() {

@@ -1,5 +1,6 @@
 import { sameScanFile } from "./scan_dates.js";
-const DB_NAME = "opensource-ortho";
+import { profileKey } from "./profile_context.js";
+const DB_NAME = profileKey("opensource-ortho");
 const DB_VERSION = 1;
 const STORE = "uploads";
 const UPLOAD_KEY = "current-stl-files";
@@ -73,7 +74,7 @@ export async function clearUploadedFiles() {
 // without polluting the TreatmentPlan model. localStorage (small, synchronous)
 // suits this small JSON; failures (quota, disabled storage) are non-fatal.
 
-const SEG_REVIEW_PREFIX = "orthoplan-segreview:";
+const SEG_REVIEW_PREFIX = profileKey("orthoplan-segreview:");
 
 function reviewStore() {
   return typeof localStorage === "undefined" ? null : localStorage;
