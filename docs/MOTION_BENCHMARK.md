@@ -34,19 +34,32 @@ The Desktop IMGDATA CBCT is locally accessible: 825 DICOM objects, including an
 been repaired; raw identifiers and pixels remain outside Git. A baseline CBCT can supply anatomy and a registration reference
 once accessible, segmented, and reviewed; it cannot establish later weekly positions.
 
-**External `reviewed-real` truth source, cleared for use (verified November
-2026)**: a Zenodo record (DOI 10.5281/zenodo.11280343, CC BY 4.0, open
-download, no access gate) publishes weekly STL scans across two patients'
-full clear-aligner treatments (T0 through T10), including planned
-aligner-cut surfaces and crown segmentations - the same longitudinal shape
-this benchmark's `reviewed-real` truth schema expects. Its companion
-peer-reviewed paper (Filippon et al., *Oral* 2024, 4(4), 487-504, DOI
-10.3390/oral4040039) states: ethics committee approval was waived under
-Swiss guidelines for a two-patient case study, written informed consent was
+**External data source, cleared for use, but not independent motion truth
+(verified November 2026)**: a Zenodo record (DOI 10.5281/zenodo.11280343, CC
+BY 4.0, open download, no access gate) publishes weekly STL scans across two
+patients' full clear-aligner treatments (T0 through T10), including planned
+aligner-cut surfaces and per-tooth crown meshes. Its companion peer-reviewed
+paper (Filippon et al., *Oral* 2024, 4(4), 487-504, DOI 10.3390/oral4040039)
+confirms ethics committee approval was appropriately waived under Swiss
+guidelines for a two-patient case study, written informed consent was
 obtained from both patients, and its Data Availability Statement names this
-exact Zenodo record as where the scan data is published. CC BY 4.0 permits
-commercial use and derivatives; using this data requires citing that paper
-(attribution). Caveats: n=2, so at most a starting fixture, not a substitute
-for independently reviewed USER_ONE labels or a population test set; three of
-six authors disclose ties to the company that supplied the study's aligners
-(Bottmedical AG) - noted for transparency, not a licensing or consent issue.
+exact Zenodo record. CC BY 4.0 permits commercial use and derivatives; citing
+that paper is required (attribution).
+
+Checked the authors' own analysis code
+(github.com/unibas-bmc/toothMovementAnalysis): the per-tooth crown mesh at
+each visit is **not independently segmented or reviewed at that visit**. A
+human segmented teeth once, at the final visit; the authors' own pipeline
+(non-rigid ICP, then a rigid fit per tooth) propagates that single
+segmentation backward to every earlier visit. So the per-visit tooth
+positions here are the *output of a specific published registration
+algorithm*, not independently measured ground truth. Using them as this
+benchmark's `reviewed-real` truth would mean comparing our pipeline against
+another automated method's answer, not against verified reality - a real but
+more modest form of validation (cross-method agreement), not a substitute for
+an independently reviewed case. The one human-labeled timepoint (the final
+visit's crown segmentation) remains a legitimate independently-reviewed
+boundary label for two more real people, useful for segmentation-benchmark
+work, separately from any motion claim. Caveats: n=2; three of six authors
+disclose ties to the company that supplied the study's aligners (Bottmedical
+AG) - noted for transparency, not a licensing or consent issue.
