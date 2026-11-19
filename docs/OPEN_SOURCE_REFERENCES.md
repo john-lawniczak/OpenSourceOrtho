@@ -84,6 +84,12 @@ MeshLab / CloudCompare
   derived root/bone landmarks; raw DICOM remains local/ignored because source
   identifier tags are present. Do not check in third-party or PHI-bearing patient
   scans without de-identification and redistribution rights.
+- **Public dental dataset survey (2026-11-19)**: nearly every public dental
+  dataset found (3D intraoral scans, CBCT volumes, panoramic X-rays) falls into
+  this same trap - a permissive-looking paper abstract or code license, paired
+  with a non-commercial or no-derivatives dataset license, or no stated license
+  at all. See `SOURCES_AND_RECOMMENDED_SOFTWARE.md` for the specific datasets
+  checked and their confirmed terms.
 
 ## Source Links To Recheck During Implementation
 

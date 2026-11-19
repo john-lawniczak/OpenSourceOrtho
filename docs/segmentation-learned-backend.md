@@ -77,6 +77,14 @@ Sources: github.com/Tai-Hsien/MeshSegNet (+ its MIT LICENSE), arXiv:2109.11941,
 crns-smartvision.github.io/teeth3ds, 3dteethseg.grand-challenge.org,
 arXiv:2305.18277, DilatedToothSegNet (Springer 10.1007/s10278-024-01061-6).
 
+**Re-checked November 2026**: a broader public-dataset survey found no new
+license-clear alternative for 3D intraoral mesh (crown surface) segmentation.
+Teeth3DS+ remains CC BY-NC-ND 4.0. CBCT datasets like ToothFairy2 are a
+different data modality (volumetric, not surface meshes) and are
+non-commercially licensed anyway (CC BY-NC-SA 4.0 - see
+`docs/cbct-evaluation.md`), so they would not apply here even if the modality
+matched. The status quo (ship no data, user-supplied weights only) stands.
+
 ## Candidate approaches (in rough order of effort)
 
 1. **Export the MIT MeshSegNet PyTorch weights to ONNX** (dev-time, torch only

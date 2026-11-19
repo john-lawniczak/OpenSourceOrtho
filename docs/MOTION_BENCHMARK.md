@@ -33,3 +33,14 @@ The Desktop IMGDATA CBCT is locally accessible: 825 DICOM objects, including an
 824-slice 900×900 primary stack at 0.2 mm spacing. Its ignored local pointer has
 been repaired; raw identifiers and pixels remain outside Git. A baseline CBCT can supply anatomy and a registration reference
 once accessible, segmented, and reviewed; it cannot establish later weekly positions.
+
+**External candidate for `reviewed-real` truth (found November 2026)**: a
+Zenodo record (DOI 10.5281/zenodo.11280343, CC BY 4.0, open download, no
+access gate) publishes weekly STL scans across two patients' full
+clear-aligner treatments (T0 through T10), including planned aligner-cut
+surfaces and crown segmentations - the same longitudinal shape this
+benchmark's `reviewed-real` truth schema expects. The page states no
+consent/ethics statement, so treat it as pending the same PHI/consent/
+commercial-use declaration the real-scan corpus manifest already requires
+elsewhere, not as auto-usable. n=2, so at most a starting fixture, not a
+substitute for independently reviewed USER_ONE labels.

@@ -2,7 +2,7 @@
 
 This file is the living source ledger for OpenSource Ortho. Use it to track external references, license posture, implementation ideas, and changes that may affect product direction.
 
-Last recorded source review: 2026-06-13.
+Last recorded source review: 2026-11-19.
 
 ## How To Use This File
 
@@ -26,6 +26,10 @@ Last recorded source review: 2026-06-13.
 | pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Optional `dicom` extra for local CBCT/DICOM structural metadata parsing. | License, API changes, DICOM parsing/security guidance. |
 | Clear aligner staging reference | https://pmc.ncbi.nlm.nih.gov/articles/PMC8388591/ | Literature reference for conservative movement-cap heuristics. | Updated literature, movement efficacy estimates, limitations. |
 | Clear aligner staging reference | https://www.mdpi.com/2076-3417/14/15/6690 | Literature reference for movement planning and aligner biomechanics. | Updated review data, staging recommendations, limitations. |
+| Teeth3DS+ / 3DTeethSeg'22 dataset | https://3dteethseg.grand-challenge.org/ | Re-confirmed CC BY-NC-ND 4.0 (non-commercial, no derivatives). Not usable for training a shipped crown-segmentation model. | Any commercial licensing offer from the dataset owner; new license-clear alternatives. |
+| ToothFairy2 CBCT dataset | https://ditto.ing.unimore.it/toothfairy2/ | Confirmed CC BY-NC-SA 4.0, account-gated download. Not usable for training a shipped CBCT segmentation model. | Future ToothFairy releases changing NC terms. |
+| DENTEX panoramic dataset | https://huggingface.co/datasets/ibrahimhamamci/DENTEX | License conflict: originating arXiv paper states CC-BY, current maintained dataset card states CC-BY-NC-SA. Treat as NOT usable until resolved directly with current maintainers. | Dataset card updates resolving the conflict. |
+| Aligner tooth-movement dataset (2 patients) | https://zenodo.org/records/11280343 (DOI 10.5281/zenodo.11280343) | Confirmed CC BY 4.0, open download, no access gate. STL scans/crown segmentations/planned aligner-cut surfaces across T0-T10 for 2 patients. Candidate external "reviewed-real" truth source for `MOTION_BENCHMARK.md` - page states no consent/ethics statement, so treat as pending the same PHI/consent/commercial-use manifest review as any other real-scan fixture, not auto-usable. | Whether a consent/ethics statement is published; whether the cohort grows beyond 2 patients. |
 
 ## Recommended Software To Evaluate
 
