@@ -196,9 +196,15 @@ sensitivity result, not a patient error rate. Preserve
   was invisible to the synthetic measurement lab (fixture mismatch, see
   `docs/segmentation-learned-backend.md`). Added real-scan test coverage
   (`tests/test_surface_graph_segmenter.py`) and measured it: it already beats
-  the hybrid's compactness on 3 of 4 metrics on the bundled scans - not yet
-  promoted as the active backend. Remaining in this item: investigate the one
-  regressed metric (upper-arch min compactness) and decide on promotion.
+  the hybrid's compactness on 3 of 4 metrics on the bundled scans. Fixed its
+  confidence value (was a flat ~0.5 placeholder; now reflects per-region
+  compactness, capped by the upstream draft's own confidence). Investigated
+  the one regressed metric (upper-arch min compactness): it is a pre-existing
+  weak spot SHARED by the hybrid (same worst tooth, 27, in both) - inherited
+  from the hybrid draft, not something to patch narrowly here; left open,
+  documented in `docs/segmentation-learned-backend.md`. Remaining in this
+  item: decide whether to promote `SurfaceGraphSegmenter` to the active
+  backend (`load_local_segmenter()` still returns the hybrid).
 - [ ] Integrate a compatible trained dental model with documented weights, license,
   provenance, and input/output contract through the existing plug-in interface.
   The tested ONNX adapter is infrastructure, not an installed dental model.

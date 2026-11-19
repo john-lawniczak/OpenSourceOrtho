@@ -181,6 +181,23 @@ The realistic synthetic harness added in this branch is the gate:
   — a real, modest improvement on the exact "wedge slab" failure mode this
   effort targets. It is not yet the active backend (`load_local_segmenter()`
   still returns the hybrid): promotion is a deliberate decision, not automatic.
+- **Confidence was a flat placeholder, now reflects region quality** (fixed
+  November 2026): `SurfaceGraphSegmenter` previously hardcoded confidence to
+  `min(draft.confidence, 0.5)` - effectively always ~0.5, regardless of how
+  the region actually turned out. It now derives per-tooth confidence from the
+  same compactness signal used to gate the candidate (how cleanly a region
+  separated from its neighbours - the documented meaning of confidence
+  everywhere else in this codebase), still capped by the upstream draft's own
+  confidence so refinement cannot manufacture certainty the draft never had.
+  Confidences on the bundled scans now range ~0.26-0.57 (upper) and
+  ~0.36-0.53 (lower) instead of a flat 0.5.
+- **Known, shared weak spot (not fixed, documented instead):** both the
+  hybrid and the surface-graph candidate score their WORST compactness on the
+  same back-molar region (tooth 27 on the bundled upper scan, for both). This
+  looks like a pre-existing upstream hybrid-draft boundary issue in that
+  region, inherited rather than introduced by the surface-graph refinement -
+  fixing it needs separate investigation into the hybrid draft itself, not a
+  narrow patch here.
 - **Production-candidate gates** (`segmentation/quality.py`, surfaced by
   `/api/segment` and `orthoplan validation-benchmark`): tooth count,
   compactness, and confidence are checked separately for "reviewable" vs.

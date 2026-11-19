@@ -154,3 +154,30 @@ def test_real_scan_compactness_does_not_regress(filename: str, arch: str) -> Non
     assert score.min_compactness >= floor["min"], (
         f"{arch} min compactness regressed: {score.min_compactness} < {floor['min']}"
     )
+
+
+@pytest.mark.parametrize(
+    "filename,arch",
+    [("initial-upper.stl", "maxillary"), ("initial-lower.stl", "mandibular")],
+)
+def test_real_scan_confidence_reflects_region_quality(filename: str, arch: str) -> None:
+    """Confidence must vary with how cleanly each region separated, not be a flat
+    placeholder (it was hardcoded to ~0.5 for every tooth before this fix)."""
+
+    path = _SCAN_DIR / filename
+    if not path.is_file():
+        pytest.skip(f"bundled scan not present: {path}")
+
+    _asset, vertices = read_stl_geometry(path)
+    segments = SurfaceGraphSegmenter().segment(vertices, arch=arch)
+    confidences = [s.confidence for s in segments]
+
+    assert max(confidences) - min(confidences) > 0.1, (
+        f"{arch}: confidences barely vary ({min(confidences)}-{max(confidences)}) "
+        "- looks like a flat placeholder again"
+    )
+    # A tighter region should score a higher confidence than a looser one.
+    by_tooth = {s.tooth_value: s.confidence for s in segments}
+    compactness = score_compactness(segments, expected_count=len(default_arch_order(arch)))
+    assert 0.0 < compactness.min_compactness <= compactness.mean_compactness
+    assert min(by_tooth.values()) <= compactness.mean_compactness
