@@ -46,6 +46,20 @@ Everything already routes through one small contract, so the model is a drop-in:
 **Implication:** no API, payload, plan-model, or UI changes are required to swap
 the algorithm. This doc is about the model + its packaging, not the wiring.
 
+## Goal: a model trained on our own data
+
+No public dataset currently carries a license clear enough to train and ship a
+crown-segmentation model for this project (see "Model availability" below and
+`SOURCES_AND_RECOMMENDED_SOFTWARE.md` for the survey). The goal is therefore
+**not** to find or license an external dataset - it is to train a model on a
+self-collected, independently reviewed corpus built from contributor scans and
+painted labels, which the project fully owns and can license however it
+chooses. `TODO.md`'s "Immediate next steps - USER_ONE segmentation benchmark"
+and "What a contributor can provide now" sections describe the current path to
+that corpus. Until that corpus is large and reviewed enough to train on, the
+geometry/rule-based (code-only) segmentation path is the near-term improvement
+route - it needs no dataset at all and is not blocked by any of this.
+
 ## Model availability (checked June 2026)
 
 There is **no turnkey, license-clear ONNX tooth-segmenter** to drop in. What

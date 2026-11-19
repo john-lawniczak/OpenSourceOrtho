@@ -187,6 +187,11 @@ sensitivity result, not a patient error rate. Preserve
 
 ## Phase 2 — improve segmentation and reduce correction effort
 
+- [ ] **The code-only path is fully open and improvable right now.** No public
+  dataset is license-clear enough to train and ship a crown-segmentation model
+  (see `docs/segmentation-learned-backend.md`), so keep improving the
+  dependency-free heuristic/hybrid/surface-graph segmenter as the near-term
+  route - it needs no external dataset and is not blocked by this.
 - [ ] Integrate a compatible trained dental model with documented weights, license,
   provenance, and input/output contract through the existing plug-in interface.
   The tested ONNX adapter is infrastructure, not an installed dental model.
