@@ -162,7 +162,25 @@ The realistic synthetic harness added in this branch is the gate:
   the flat synthetic arch understates the mode — it has crowns but no deep gum skirt
   below them — so the case is a LOOSE tracking floor. A small **labelled real-scan
   fixture** (PHI-free or consented, kept out of git or behind a flag) is the honest
-  benchmark and remains future work.
+  benchmark for LABEL accuracy and remains future work — but compactness needs no
+  labels, so it CAN already be measured on the bundled real scans today (see next).
+- **`SurfaceGraphSegmenter` (code-only candidate, no ML) now has real test
+  coverage** (`tests/test_surface_graph_segmenter.py`, added November 2026):
+  a connected-mesh unit test pins down the seed-propagation logic itself, and a
+  real-scan compactness/sanity suite runs it directly against the bundled
+  scans. **Why it had none before:** the synthetic arch in `synthetic_arch.py`
+  places one tiny, isolated triangle per sample point with no shared edges
+  between neighbours — the measurement lab's `load_local_segmenter()` cases
+  never exercise this candidate (it is not the active backend), and even if
+  they did, that fixture has no real topology for `topology.propagate_seeds`
+  to traverse. **Do not try to make this candidate pass on that fixture** —
+  extend the fixture or use a connected mesh instead, as the new test does.
+  **Measured result on the bundled scans (2026-11-19):** the candidate already
+  beats the hybrid's compactness on 3 of 4 metrics (upper: mean 0.397 vs.
+  0.353, min 0.257 vs. 0.271; lower: mean 0.438 vs. 0.393, min 0.358 vs. 0.296)
+  — a real, modest improvement on the exact "wedge slab" failure mode this
+  effort targets. It is not yet the active backend (`load_local_segmenter()`
+  still returns the hybrid): promotion is a deliberate decision, not automatic.
 - **Production-candidate gates** (`segmentation/quality.py`, surfaced by
   `/api/segment` and `orthoplan validation-benchmark`): tooth count,
   compactness, and confidence are checked separately for "reviewable" vs.
