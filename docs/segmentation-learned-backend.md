@@ -198,6 +198,46 @@ The realistic synthetic harness added in this branch is the gate:
   region, inherited rather than introduced by the surface-graph refinement -
   fixing it needs separate investigation into the hybrid draft itself, not a
   narrow patch here.
+- **Structural guarantee, tested (November 2026):** refinement can only
+  reshuffle WHICH faces belong to a tooth the hybrid draft already
+  identified - `refine_draft_labels`'s seeds, and every label
+  `propagate_seeds` can assign, come strictly from the existing draft's own
+  tooth values, so it can never invent an FDI number the hybrid did not
+  already propose. Confirmed on both bundled scans: the candidate's produced
+  label SET is identical to the hybrid's (`test_real_scan_labels_never_diverge_from_the_hybrid_draft`).
+  This bounds the real risk of using this candidate: the worst case is
+  boundary drift between two already-correctly-identified neighbours, never a
+  wrong tooth number.
+
+## Promotion decision (2026-11-19): not yet the active backend
+
+`SurfaceGraphSegmenter` is NOT wired into `load_local_segmenter()` as the
+default, despite its measured compactness win. Reason: compactness answers
+"how spatially tight is each region", not "did the boundary land on the right
+anatomical line" - that second question is region PURITY / label accuracy,
+and the only harness that measures it (`segmentation_full_arch_accuracy` and
+friends in `orthoplan/validation/segmentation_cases.py`) cannot gate this
+candidate at all, because the synthetic arch it runs on has no real
+shared-edge topology (see above). We have positive evidence on one quality
+axis (compactness) and a structural guarantee that bounds the failure mode
+(never a wrong tooth number), but genuinely no measurement on the other axis
+(boundary/purity accuracy) that the existing accuracy gates provide for every
+other backend. Changing the default on compactness evidence alone would risk
+an accuracy regression this project currently has no way to detect.
+
+**What would unblock a real promotion decision** (either is sufficient):
+1. A synthetic arch fixture with genuine shared-edge topology (a stitched
+   surface, not `synthetic_arch.py`'s disconnected micro-triangle cloud), so
+   the existing purity/label-accuracy cases could meaningfully gate this
+   candidate too; or
+2. An independently labelled real-scan fixture (the long-standing "future
+   work" noted above), scored via
+   `orthoplan/validation/segmentation_real_corpus.py` / `tools/compare_local_segmenters.py`.
+
+Until then, `SurfaceGraphSegmenter` remains an explicit, opt-in candidate
+(already reachable via the longitudinal two-visit API's `segmenter:
+"surface-graph"` parameter, and via `tools/compare_local_segmenters.py`),
+not a silent default change.
 - **Production-candidate gates** (`segmentation/quality.py`, surfaced by
   `/api/segment` and `orthoplan validation-benchmark`): tooth count,
   compactness, and confidence are checked separately for "reviewable" vs.

@@ -25,6 +25,7 @@ pytest.importorskip("scipy")
 
 from orthoplan.datasets import SAMPLE_CASE_DIR  # noqa: E402
 from orthoplan.io.stl_import import read_stl_geometry  # noqa: E402
+from orthoplan.segmentation.auto import HybridArchSegmenter  # noqa: E402
 from orthoplan.segmentation.heuristic import ToothSegment, default_arch_order  # noqa: E402
 from orthoplan.segmentation.surface_graph import (  # noqa: E402
     SurfaceGraphSegmenter,
@@ -181,3 +182,34 @@ def test_real_scan_confidence_reflects_region_quality(filename: str, arch: str) 
     compactness = score_compactness(segments, expected_count=len(default_arch_order(arch)))
     assert 0.0 < compactness.min_compactness <= compactness.mean_compactness
     assert min(by_tooth.values()) <= compactness.mean_compactness
+
+
+@pytest.mark.parametrize(
+    "filename,arch",
+    [("initial-upper.stl", "maxillary"), ("initial-lower.stl", "mandibular")],
+)
+def test_real_scan_labels_never_diverge_from_the_hybrid_draft(filename: str, arch: str) -> None:
+    """Refinement can only reshuffle WHICH faces belong to a tooth the hybrid
+    draft already identified - it must never invent a different FDI number.
+
+    This bounds the real risk of promoting this candidate: without a labelled
+    real-scan fixture we cannot measure region PURITY here (see module
+    docstring), but this guarantees the worst case is boundary drift between
+    two already-correct neighbours, never a wrong tooth number - because
+    every label `refine_draft_labels` can assign comes from an existing draft
+    seed, it can never introduce one the hybrid did not already propose.
+    """
+
+    path = _SCAN_DIR / filename
+    if not path.is_file():
+        pytest.skip(f"bundled scan not present: {path}")
+
+    _asset, vertices = read_stl_geometry(path)
+    hybrid_labels = {s.tooth_value for s in HybridArchSegmenter().segment(vertices, arch=arch)}
+    surface_graph_labels = {
+        s.tooth_value for s in SurfaceGraphSegmenter().segment(vertices, arch=arch)
+    }
+    assert surface_graph_labels == hybrid_labels, (
+        f"{arch}: surface-graph labels {surface_graph_labels} diverged from "
+        f"the hybrid draft {hybrid_labels}"
+    )

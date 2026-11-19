@@ -202,9 +202,18 @@ sensitivity result, not a patient error rate. Preserve
   the one regressed metric (upper-arch min compactness): it is a pre-existing
   weak spot SHARED by the hybrid (same worst tooth, 27, in both) - inherited
   from the hybrid draft, not something to patch narrowly here; left open,
-  documented in `docs/segmentation-learned-backend.md`. Remaining in this
-  item: decide whether to promote `SurfaceGraphSegmenter` to the active
-  backend (`load_local_segmenter()` still returns the hybrid).
+  documented in `docs/segmentation-learned-backend.md`. Confirmed a
+  structural guarantee (tested): refinement can only reshuffle which faces
+  belong to a tooth the hybrid draft already identified, never invent a wrong
+  FDI number - bounds the risk even without labelled ground truth.
+  **Promotion decision: NOT promoted to the active backend.** Compactness
+  improved, but the only harness that measures region purity/label accuracy
+  cannot gate this candidate (fixture mismatch - see
+  `docs/segmentation-learned-backend.md`), so there is no accuracy evidence to
+  weigh against the compactness win. Stays available as an explicit opt-in
+  (longitudinal API `segmenter: "surface-graph"`, `compare_local_segmenters.py`)
+  until a connected-topology synthetic fixture or a labelled real-scan corpus
+  unblocks a real decision.
 - [ ] Integrate a compatible trained dental model with documented weights, license,
   provenance, and input/output contract through the existing plug-in interface.
   The tested ONNX adapter is infrastructure, not an installed dental model.
