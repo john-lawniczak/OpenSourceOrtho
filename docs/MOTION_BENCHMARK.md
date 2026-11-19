@@ -34,13 +34,19 @@ The Desktop IMGDATA CBCT is locally accessible: 825 DICOM objects, including an
 been repaired; raw identifiers and pixels remain outside Git. A baseline CBCT can supply anatomy and a registration reference
 once accessible, segmented, and reviewed; it cannot establish later weekly positions.
 
-**External candidate for `reviewed-real` truth (found November 2026)**: a
-Zenodo record (DOI 10.5281/zenodo.11280343, CC BY 4.0, open download, no
-access gate) publishes weekly STL scans across two patients' full
-clear-aligner treatments (T0 through T10), including planned aligner-cut
-surfaces and crown segmentations - the same longitudinal shape this
-benchmark's `reviewed-real` truth schema expects. The page states no
-consent/ethics statement, so treat it as pending the same PHI/consent/
-commercial-use declaration the real-scan corpus manifest already requires
-elsewhere, not as auto-usable. n=2, so at most a starting fixture, not a
-substitute for independently reviewed USER_ONE labels.
+**External `reviewed-real` truth source, cleared for use (verified November
+2026)**: a Zenodo record (DOI 10.5281/zenodo.11280343, CC BY 4.0, open
+download, no access gate) publishes weekly STL scans across two patients'
+full clear-aligner treatments (T0 through T10), including planned
+aligner-cut surfaces and crown segmentations - the same longitudinal shape
+this benchmark's `reviewed-real` truth schema expects. Its companion
+peer-reviewed paper (Filippon et al., *Oral* 2024, 4(4), 487-504, DOI
+10.3390/oral4040039) states: ethics committee approval was waived under
+Swiss guidelines for a two-patient case study, written informed consent was
+obtained from both patients, and its Data Availability Statement names this
+exact Zenodo record as where the scan data is published. CC BY 4.0 permits
+commercial use and derivatives; using this data requires citing that paper
+(attribution). Caveats: n=2, so at most a starting fixture, not a substitute
+for independently reviewed USER_ONE labels or a population test set; three of
+six authors disclose ties to the company that supplied the study's aligners
+(Bottmedical AG) - noted for transparency, not a licensing or consent issue.
