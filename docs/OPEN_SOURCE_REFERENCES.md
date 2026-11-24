@@ -77,18 +77,23 @@ MeshLab / CloudCompare
   anything linked with it.
 - **trimesh optional backends**: trimesh itself is MIT, but optional acceleration/format backends
   it can pull in carry varied licenses. Pin and audit only the backends actually imported.
-- **Trademarks**: "Invisalign", "ClinCheck", and "SmartTrack" are trademarks. Use them only as
+- **Trademarks**: Commercial product names may be trademarks. Use them only as
   nominative references in prose, never in code identifiers, UI labels, or product naming.
 - **Sample datasets**: STL/CBCT sample scans often carry patient-consent or dataset licenses.
   The canonical sample tracks STL shells plus redacted CBCT metadata and safe
   derived root/bone landmarks; raw DICOM remains local/ignored because source
   identifier tags are present. Do not check in third-party or PHI-bearing patient
   scans without de-identification and redistribution rights.
+- **Public dental dataset survey (2026-11-19)**: nearly every public dental
+  dataset found (3D intraoral scans, CBCT volumes, panoramic X-rays) falls into
+  this same trap - a permissive-looking paper abstract or code license, paired
+  with a non-commercial or no-derivatives dataset license, or no stated license
+  at all. See `SOURCES_AND_RECOMMENDED_SOFTWARE.md` for the specific datasets
+  checked and their confirmed terms.
 
 ## Source Links To Recheck During Implementation
 
 - BlueSkyPlan download/license page: https://www.blueskybio.digital/page/download-software
-- Commercial clear-aligner plan editor overview: https://www.invisalign.com/provider/align-digital-platform/clincheck
 - 3D Slicer: https://www.slicer.org/
 - 3D Slicer license docs: https://slicer.readthedocs.io/en/5.10/user_guide/about.html
 - SlicerCMF: https://cmf.slicer.org/

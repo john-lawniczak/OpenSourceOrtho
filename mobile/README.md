@@ -14,6 +14,14 @@ parallel**.
 > Neither target is wired for store release. See each platform README for what
 > still has to be built before a real build.
 
+## On-demand CI
+
+Native builds do not run on pushes or pull requests. To run them, choose
+**Actions → Native mobile checks → Run workflow**, select the branch, and choose
+`ios`, `android`, or `both`. Each job has a 25-minute limit; a newer run of the same
+branch/platform choice cancels an older one. Local build commands remain in the
+platform READMEs.
+
 ## Why two native projects (not a shared cross-platform codebase)
 
 The full app is already mostly a *thin client*: the [`ui/`](../ui) web prototype
@@ -93,7 +101,7 @@ path.
 
 ## Safety boundary (applies to mobile exactly as to the rest of the repo)
 
-OpenSource Ortho is **not** a medical device, an Invisalign clone, a clinical
+OpenSource Ortho is **not** a medical device, a commercial clear-aligner product clone, a clinical
 approval tool, an autonomous treatment planner, or complete treatment-planning
 software. The mobile lite apps must carry the same disclaimers and must never
 present a plan, generated package, or appliance as safe, approved, cleared, or

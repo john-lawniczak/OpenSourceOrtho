@@ -46,6 +46,7 @@ _CONTENT_TYPES = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".webm": "video/webm",
+    ".mp4": "video/mp4",
     ".vtt": "text/vtt; charset=utf-8",
     ".md": "text/plain; charset=utf-8",
     # Canonical point-cloud storage; served as text so the viewer can read it.
@@ -257,8 +258,14 @@ def _dispatch_json_post(handler: Handler, path: str, payload: dict) -> dict:
     return evaluate_plan_payload(payload, workspace=handler._mesh_workspace())
 
 
+class LocalHTTPServer(ThreadingHTTPServer):
+    # Browser module loads arrive in bursts; the default backlog of five can
+    # reset local connections before their scripts and styles are served.
+    request_queue_size = 128
+
+
 def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
-    httpd = ThreadingHTTPServer((host, port), Handler)
+    httpd = LocalHTTPServer((host, port), Handler)
     print(f"OpenSource Ortho dev server on http://{host}:{port} (Ctrl-C to stop)")
     try:
         httpd.serve_forever()

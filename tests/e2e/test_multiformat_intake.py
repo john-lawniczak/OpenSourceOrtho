@@ -9,14 +9,13 @@ from __future__ import annotations
 
 import struct
 import threading
-from http.server import ThreadingHTTPServer
 
 import pytest
 
 pytest.importorskip("playwright.sync_api")
 from playwright.sync_api import expect, sync_playwright  # noqa: E402
 
-from orthoplan.server import Handler  # noqa: E402
+from orthoplan.server import Handler, LocalHTTPServer  # noqa: E402
 
 # A wide, arch-scale triangle pair, so the scale/readiness copy behaves as it
 # would for a real scan rather than tripping the implausible-size note.
@@ -38,7 +37,7 @@ def _ply_ascii() -> str:
 @pytest.fixture
 def intake_server(tmp_path, monkeypatch):
     monkeypatch.setenv("ORTHOPLAN_MESH_WORKSPACE", str(tmp_path / "meshes"))
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    httpd = LocalHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
     try:

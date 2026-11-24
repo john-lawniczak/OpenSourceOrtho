@@ -1,3 +1,4 @@
+import { loadWeekTwentyOneScan } from "./scan_week_twenty_one.js";
 import { setupSurfaceRepair } from "./surface_repair.js";
 import { setupEmbeddedPrecision } from "./precision_embedded.js";
 import { loadBrowserPainting, browserSaveSummary } from "./region_browser_saves.js";
@@ -44,7 +45,7 @@ function mount(repairTransition = false) {
   el("reviewCaptureNote").hidden = scan.visit !== "progress-02";
   el("reviewWorkspaceLink").href = scan.visit ? "./?chat_case=user_one" : "./";
   panel.arch(scan.arch, scan.absentTeeth || []); edits.absentTeeth = scan.absentTeeth || []; el("reviewTool").value = "orbit";
-  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : "week 18 observed scan"} · ` : ""}${scan.repair ? scan.repair.patches.length ? "Estimated repaired surface · " : "Trimmed surface copy · " : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
+  el("reviewSource").textContent = `${scan.visit ? `USER_ONE ${scan.visit === "initial" ? "week 1 baseline" : scan.visit === "progress-01" ? "week 7 observed scan" : scan.visit === "progress-02" ? "week 18 observed scan" : "week 21 observed scan"} · ` : ""}${scan.repair ? scan.repair.patches.length ? "Estimated repaired surface · " : "Trimmed surface copy · " : ""}${scan.capture === "upper-clean" ? "cleaned version · " : ""}${scan.filename || "scan"} · ${scan.arch} · ${edits.labels.length.toLocaleString()} faces`;
   el("returnCorrections").hidden = true;
   viewer = createRegionEditor(el("regionCanvas"), scan, {
     brushSettings: () => ({ mode: el("reviewEditing").disabled ? "orbit" : el("reviewTool").value, radius: Math.max(0.1, Math.min(10, Number(el("reviewRadius").value) || 1)) }),
@@ -65,10 +66,10 @@ async function loadBaseline(arch, visit = el("reviewVisit").value, requestedCapt
   if (!saving.canReplace()) { el("reviewArch").value = scan?.arch || ""; el("reviewVisit").value = scan?.visit || "initial"; return; }
   const capture = requestedCapture || suggestedPaintingCapture(arch, visit);
   const current = ++generation, version = saving.revision();
-  el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : visit === "progress-01" ? 7 : 18} ${arch}…`;
+  el("reviewStatus").textContent = `Loading USER_ONE week ${visit === "initial" ? 1 : visit === "progress-01" ? 7 : visit === "progress-02" ? 18 : 21} ${arch}…`;
   el("reviewEditing").disabled = true; el("reviewSaveLocal").disabled = true; el("reviewExport").disabled = true;
   try {
-    const [pair, saved, caseData] = await Promise.all([visit === "progress-02" ? loadWeekEighteenScan(arch, { capture }).then(scan => [scan]) : loadObservedPair(arch), fetchBaselineSave(arch, visit, capture), loadBaselineCaseData(arch, visit)]);
+    const [pair, saved, caseData] = await Promise.all([visit === "progress-03" ? loadWeekTwentyOneScan(arch).then(scan => [scan]) : visit === "progress-02" ? loadWeekEighteenScan(arch, { capture }).then(scan => [scan]) : loadObservedPair(arch), fetchBaselineSave(arch, visit, capture), loadBaselineCaseData(arch, visit)]);
     const corrections = saved.saved ? saved.corrections : caseData.corrections;
     const motion = corrections || visit !== "initial" ? null : await loadMotionPreview(pair);
     if (current !== generation) return;
@@ -80,7 +81,7 @@ async function loadBaseline(arch, visit = el("reviewVisit").value, requestedCapt
       : new RegionEdits(motion ? motion.faceLabels.map(id => caseData.absentTeeth.includes(mapping[id]) ? 0 : mapping[id] || 0) : new Uint8Array(count), arch);
     scan = nextScan; edits = nextEdits; mount(); saving.setSaved(saved);
     el("reviewVisit").value = visit; void saving.refreshSummary();
-    if (!saved.saved && visit !== "initial") el("reviewSaveStatus").textContent = `Week ${visit === "progress-01" ? 7 : 18} · ${capture === "upper-clean" ? "unpainted cleaned surface" : "unpainted original surface"} · choose a tooth to begin`;
+    if (!saved.saved && visit !== "initial") el("reviewSaveStatus").textContent = `Week ${visit === "progress-01" ? 7 : visit === "progress-02" ? 18 : 21} · ${capture === "upper-clean" ? "unpainted cleaned surface" : "unpainted original surface"} · choose a tooth to begin`;
     if (!saved.saved && corrections) el("reviewSaveStatus").textContent = "Published draft · boundaries need review";
     const url = new URL(location.href); url.searchParams.delete("edit"); url.searchParams.set("baseline", arch); url.searchParams.set("visit", visit); url.searchParams.set("capture", capture);
     history.replaceState(null, "", url);
@@ -174,7 +175,7 @@ el("reviewVisit").onchange = () => {
 };
 const requestedVisit = new URLSearchParams(location.search).get("visit") || "initial";
 const requestedCapture = new URLSearchParams(location.search).get("capture") || null;
-if (["initial", "progress-01", "progress-02"].includes(requestedVisit)) el("reviewVisit").value = requestedVisit;
+if (["initial", "progress-01", "progress-02", "progress-03"].includes(requestedVisit)) el("reviewVisit").value = requestedVisit;
 void saving.refreshSummary();
 const requestedBaseline = new URLSearchParams(location.search).get("baseline");
 if (!transferId && ["upper", "lower"].includes(requestedBaseline)) void action(() => loadBaseline(requestedBaseline, requestedVisit, requestedCapture));

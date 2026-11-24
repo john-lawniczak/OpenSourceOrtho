@@ -66,6 +66,13 @@ It is not an exhaustive security audit or a verification of treatment outcomes.
 
 ## Publication disposition
 
+Update, 2026-11-20: the contributor explicitly authorized redistribution of
+USER_ONE's plan video. It is restored in the working dataset with its original
+hash and an explicit `consent.json` asset entry. The video remains an intended-plan
+reference, separate from observed scans and estimated motion. The disposition
+below describes the earlier snapshot; its video exclusion is superseded for
+future releases. This update does not itself publish a release.
+
 1. The reference video with unverified redistribution rights is omitted from the
    public snapshot. Metadata marks it unavailable. Original geometry, authorized
    source renderings, and case metadata remain within the existing consent scope.

@@ -1,50 +1,79 @@
 name: CI
 
 on:
-  push:
-    branches: [main, dev, 'data/**', 'work/**']
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Optional test suite (quick runs only the inexpensive checks)'
+        type: choice
+        default: quick
+        options: [quick, python, geometry, browser, all]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  python:
-    name: Python tests + maintainability
+  quick:
+    name: Quick checks
+    if: github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install
-        run: pip install -e ".[dev]"
-      - name: Tests
-        run: pytest -q
-      - name: Python lint and generated catalog
-        run: |
-          ruff check .
-          python tools/build_dataset_catalog.py --check
-      - name: Maintainability
-        run: python tools/check_maintainability.py --strict
-
-  js:
-    name: JS unit tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Core tests
+      - name: Install lightweight development dependencies
+        run: pip install -e ".[dev]"
+      - name: Lint, catalog, and maintainability
+        run: |
+          ruff check .
+          python tools/build_dataset_catalog.py --check
+          python tools/check_maintainability.py --strict
+      - name: JavaScript unit tests
         working-directory: ui
         run: node --test
 
-  mesh-processing:
-    name: Open3D robust shell tests
+  python:
+    name: Python tests
+    if: github.event_name == 'workflow_dispatch' && (inputs.suite == 'python' || inputs.suite == 'all')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Tests
+        run: pytest --ignore=tests/e2e -q
+
+  mesh-processing:
+    name: Open3D robust shell tests
+    if: github.event_name == 'workflow_dispatch' && (inputs.suite == 'geometry' || inputs.suite == 'all')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - name: Install mesh-processing extra
         run: pip install -e ".[dev,mesh-processing]"
       - name: Robust shell backend tests
@@ -52,12 +81,16 @@ jobs:
 
   motion-preview:
     name: Endpoint matching and motion preview
+    if: github.event_name == 'workflow_dispatch' && (inputs.suite == 'geometry' || inputs.suite == 'all')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - name: Install offline fitting tools
         run: pip install -e ".[dev,motion-preview,ml-seg,volume-review]" onnx
       - name: Fit known motions and verify sample artifacts
@@ -73,12 +106,16 @@ jobs:
 
   e2e:
     name: 3D viewer smoke (Playwright)
+    if: github.event_name == 'workflow_dispatch' && (inputs.suite == 'browser' || inputs.suite == 'all')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - name: Install
         run: pip install -e ".[dev,e2e,motion-preview]"
       - name: Install Chromium
@@ -92,6 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: browser-failure-screenshots
+          retention-days: 3
           path: |
             ${{ runner.temp }}/ortho-pick/**/*.png
             ${{ runner.temp }}/ortho-e2e/**/*.png

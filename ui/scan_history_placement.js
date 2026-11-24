@@ -4,6 +4,20 @@ import { historyFrames } from "./scan_history_frames.js";
 // Separate rigid inspection frames use draft crown rows, not cast/base outlines.
 // A small display gap keeps the arches distinct; it is not measured occlusion.
 export function placeHistoryObservation(mesh, group, scan) {
+  if (scan.preserveOcclusion) {
+    // Undo each geometry's independent centering, then center both with the
+    // same source-frame origin. No fitted bite, arch separation or scaling.
+    const offset = group.userData.historyCombined
+      ? mesh.geometry.userData.sourceCenter.clone().sub(new THREE.Vector3().fromArray(scan.sharedFrameCenter))
+      : new THREE.Vector3();
+    group.updateMatrixWorld(true);
+    const world = new THREE.Matrix4().makeTranslation(...offset.toArray());
+    if (!group.userData.historyCombined && scan.arch === "upper") world.makeRotationZ(Math.PI);
+    const local = group.matrixWorld.clone().invert().multiply(world);
+    local.decompose(mesh.position, mesh.quaternion, mesh.scale);
+    mesh.updateMatrixWorld(true);
+    return;
+  }
   if (!scan.historyDisplay) return;
   const frame = historyFrames.find(item => item.source_sha256 === scan.sha256 && item.arch === scan.arch);
   if (!frame) throw new Error("Week 18 inspection frame does not match this scan.");

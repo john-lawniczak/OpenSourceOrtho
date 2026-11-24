@@ -1,9 +1,13 @@
 import { loadWeekEighteenScan, suggestedPaintingCapture } from "./scan_week_eighteen.js";
+import { loadWeekTwentyOneScan } from "./scan_week_twenty_one.js";
 
 // History explicitly selects these captures; editor/source defaults stay source-bound.
-export async function loadHistoryObservation(arch, { signal } = {}) {
+export async function loadHistoryObservation(arch, { signal, week = 18 } = {}) {
+  if (week === 21) return loadWeekTwentyOneScan(arch, { signal });
+  if (week !== 18) throw new Error("Choose a recorded observation.");
   const scan = await loadWeekEighteenScan(arch, { signal, capture: suggestedPaintingCapture(arch, "progress-02") });
   scan.historyDisplay = true;
+  scan.reportedWeek = 18;
   scan.surfaceDescription = arch === "upper" ? "cleaned upper" : "original H4 lower";
   if (arch !== "lower") return scan;
   const response = await fetch("/api/sample-history/lower-cleaned", { signal });

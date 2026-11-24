@@ -6,7 +6,7 @@ The UUID is preserved across visits. No real-identity lookup is published.
 
 | Pseudonym | Specimen ID | Available scans | Scan pairs | CBCT metadata |
 | --- | --- | --- | ---: | --- |
-| [USER_ONE](spec-07b7031938c84b1a9c98517b8bc4cdd3/README.md) | `spec-07b7031938c84b1a9c98517b8bc4cdd3` | initial, progress | 3 | Redacted metadata only |
+| [USER_ONE](spec-07b7031938c84b1a9c98517b8bc4cdd3/README.md) | `spec-07b7031938c84b1a9c98517b8bc4cdd3` | initial, progress | 4 | Redacted metadata only |
 
 ## Layout and publication
 

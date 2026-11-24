@@ -58,6 +58,50 @@
       "kind": "export",
       "date": "2026-09-21",
       "provenance": "source XML export time; not acquisition date"
+    },
+    {
+      "event_id": "progress-02",
+      "kind": "progress-scan",
+      "date": null,
+      "provenance": "Contributor-created personal physical models and 3D scans; reported week 18, acquisition date unconfirmed.",
+      "reported_week": 18,
+      "sequence_index": 2,
+      "files": [
+        "visits/progress-02/progress-02-upper.stl",
+        "visits/progress-02/progress-02-lower.stl"
+      ],
+      "metadata": "visits/progress-02/source-metadata.json",
+      "manifest": "visits/progress-02/manifest.json",
+      "capture_variants": [
+        "upper-clean",
+        "fusion-h-4",
+        "fusion-h-6"
+      ],
+      "source_model_damage": "Contributor reports chips in both original stone models; model defects do not describe actual tooth damage.",
+      "publication_status": "authorized for public release; see consent.json",
+      "units": "unverified",
+      "cross_visit_registration": "not performed",
+      "motion_fit_status": "not fitted"
+    },
+    {
+      "event_id": "progress-03",
+      "kind": "progress-scan",
+      "date": "2026-11-23",
+      "provenance": "Source HTML and prescription PDF scan date; contributor-reported intraoral acquisition.",
+      "reported_week": 21,
+      "reported_week_provenance": "Contributor instruction on 2026-11-24; not elapsed calendar weeks.",
+      "sequence_index": 3,
+      "files": [
+        "visits/progress-03/progress-03-upper.stl",
+        "visits/progress-03/progress-03-lower.stl"
+      ],
+      "metadata": "visits/progress-03/source-metadata.json",
+      "manifest": "visits/progress-03/manifest.json",
+      "quality_assessment": "visits/progress-03/quality-assessment.md",
+      "publication_status": "authorized for public release 2026-11-24",
+      "units": "unverified",
+      "cross_visit_registration": "not performed",
+      "motion_fit_status": "not fitted"
     }
   ],
   "timing": {

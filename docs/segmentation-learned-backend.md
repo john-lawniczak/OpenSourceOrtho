@@ -12,8 +12,8 @@
 > is never a diagnosis, a treatment decision, or a statement that care is needed,
 > possible, safe, or complete.
 >
-> To start the model spike in a fresh chat, use the paste-ready prompt in
-> [segmentation-learned-backend-handoff.md](segmentation-learned-backend-handoff.md).
+> Before starting a model spike, review [model availability](#model-availability-checked-june-2026)
+> and the data-licensing constraints below.
 
 ## Why
 
@@ -46,6 +46,23 @@ Everything already routes through one small contract, so the model is a drop-in:
 **Implication:** no API, payload, plan-model, or UI changes are required to swap
 the algorithm. This doc is about the model + its packaging, not the wiring.
 
+## Goal: a model trained on our own data
+
+No public dataset currently carries a license clear enough to train and ship a
+crown-segmentation model for this project (see "Model availability" below and
+`SOURCES_AND_RECOMMENDED_SOFTWARE.md` for the survey). The goal is therefore
+**not** to find or license an external dataset - it is to train a model on a
+self-collected, independently reviewed corpus built from contributor scans and
+painted labels, with documented publication consent and explicit reuse rights
+for each asset. Contribution does not transfer ownership; follow the selected
+data license and preserve attribution where required. See the
+[patient donation guide](PATIENT_DATA_DONATION.md).
+`TODO.md`'s "Immediate next steps - USER_ONE segmentation benchmark"
+and "What a contributor can provide now" sections describe the current path to
+that corpus. Until that corpus is large and reviewed enough to train on, the
+geometry/rule-based (code-only) segmentation path is the near-term improvement
+route - it needs no dataset at all and is not blocked by any of this.
+
 ## Model availability (checked June 2026)
 
 There is **no turnkey, license-clear ONNX tooth-segmenter** to drop in. What
@@ -76,6 +93,14 @@ exists:
 Sources: github.com/Tai-Hsien/MeshSegNet (+ its MIT LICENSE), arXiv:2109.11941,
 crns-smartvision.github.io/teeth3ds, 3dteethseg.grand-challenge.org,
 arXiv:2305.18277, DilatedToothSegNet (Springer 10.1007/s10278-024-01061-6).
+
+**Re-checked November 2026**: a broader public-dataset survey found no new
+license-clear alternative for 3D intraoral mesh (crown surface) segmentation.
+Teeth3DS+ remains CC BY-NC-ND 4.0. CBCT datasets like ToothFairy2 are a
+different data modality (volumetric, not surface meshes) and are
+non-commercially licensed anyway (CC BY-NC-SA 4.0 - see
+`docs/cbct-evaluation.md`), so they would not apply here even if the modality
+matched. The status quo (ship no data, user-supplied weights only) stands.
 
 ## Candidate approaches (in rough order of effort)
 
@@ -140,7 +165,82 @@ The realistic synthetic harness added in this branch is the gate:
   the flat synthetic arch understates the mode — it has crowns but no deep gum skirt
   below them — so the case is a LOOSE tracking floor. A small **labelled real-scan
   fixture** (PHI-free or consented, kept out of git or behind a flag) is the honest
-  benchmark and remains future work.
+  benchmark for LABEL accuracy and remains future work — but compactness needs no
+  labels, so it CAN already be measured on the bundled real scans today (see next).
+- **`SurfaceGraphSegmenter` (code-only candidate, no ML) now has real test
+  coverage** (`tests/test_surface_graph_segmenter.py`, added November 2026):
+  a connected-mesh unit test pins down the seed-propagation logic itself, and a
+  real-scan compactness/sanity suite runs it directly against the bundled
+  scans. **Why it had none before:** the synthetic arch in `synthetic_arch.py`
+  places one tiny, isolated triangle per sample point with no shared edges
+  between neighbours — the measurement lab's `load_local_segmenter()` cases
+  never exercise this candidate (it is not the active backend), and even if
+  they did, that fixture has no real topology for `topology.propagate_seeds`
+  to traverse. **Do not try to make this candidate pass on that fixture** —
+  extend the fixture or use a connected mesh instead, as the new test does.
+  **Measured result on the bundled scans (2026-11-19):** the candidate already
+  beats the hybrid's compactness on 3 of 4 metrics (upper: mean 0.397 vs.
+  0.353, min 0.257 vs. 0.271; lower: mean 0.438 vs. 0.393, min 0.358 vs. 0.296)
+  — a real, modest improvement on the exact "wedge slab" failure mode this
+  effort targets. It is not yet the active backend (`load_local_segmenter()`
+  still returns the hybrid): promotion is a deliberate decision, not automatic.
+- **Confidence was a flat placeholder, now reflects region quality** (fixed
+  November 2026): `SurfaceGraphSegmenter` previously hardcoded confidence to
+  `min(draft.confidence, 0.5)` - effectively always ~0.5, regardless of how
+  the region actually turned out. It now derives per-tooth confidence from the
+  same compactness signal used to gate the candidate (how cleanly a region
+  separated from its neighbours - the documented meaning of confidence
+  everywhere else in this codebase), still capped by the upstream draft's own
+  confidence so refinement cannot manufacture certainty the draft never had.
+  Confidences on the bundled scans now range ~0.26-0.57 (upper) and
+  ~0.36-0.53 (lower) instead of a flat 0.5.
+- **Known, shared weak spot (not fixed, documented instead):** both the
+  hybrid and the surface-graph candidate score their WORST compactness on the
+  same back-molar region (tooth 27 on the bundled upper scan, for both). This
+  looks like a pre-existing upstream hybrid-draft boundary issue in that
+  region, inherited rather than introduced by the surface-graph refinement -
+  fixing it needs separate investigation into the hybrid draft itself, not a
+  narrow patch here.
+- **Structural guarantee, tested (November 2026):** refinement can only
+  reshuffle WHICH faces belong to a tooth the hybrid draft already
+  identified - `refine_draft_labels`'s seeds, and every label
+  `propagate_seeds` can assign, come strictly from the existing draft's own
+  tooth values, so it can never invent an FDI number the hybrid did not
+  already propose. Confirmed on both bundled scans: the candidate's produced
+  label SET is identical to the hybrid's (`test_real_scan_labels_never_diverge_from_the_hybrid_draft`).
+  This bounds the real risk of using this candidate: the worst case is
+  boundary drift between two already-correctly-identified neighbours, never a
+  wrong tooth number.
+
+## Promotion decision (2026-11-19): not yet the active backend
+
+`SurfaceGraphSegmenter` is NOT wired into `load_local_segmenter()` as the
+default, despite its measured compactness win. Reason: compactness answers
+"how spatially tight is each region", not "did the boundary land on the right
+anatomical line" - that second question is region PURITY / label accuracy,
+and the only harness that measures it (`segmentation_full_arch_accuracy` and
+friends in `orthoplan/validation/segmentation_cases.py`) cannot gate this
+candidate at all, because the synthetic arch it runs on has no real
+shared-edge topology (see above). We have positive evidence on one quality
+axis (compactness) and a structural guarantee that bounds the failure mode
+(never a wrong tooth number), but genuinely no measurement on the other axis
+(boundary/purity accuracy) that the existing accuracy gates provide for every
+other backend. Changing the default on compactness evidence alone would risk
+an accuracy regression this project currently has no way to detect.
+
+**What would unblock a real promotion decision** (either is sufficient):
+1. A synthetic arch fixture with genuine shared-edge topology (a stitched
+   surface, not `synthetic_arch.py`'s disconnected micro-triangle cloud), so
+   the existing purity/label-accuracy cases could meaningfully gate this
+   candidate too; or
+2. An independently labelled real-scan fixture (the long-standing "future
+   work" noted above), scored via
+   `orthoplan/validation/segmentation_real_corpus.py` / `tools/compare_local_segmenters.py`.
+
+Until then, `SurfaceGraphSegmenter` remains an explicit, opt-in candidate
+(already reachable via the longitudinal two-visit API's `segmenter:
+"surface-graph"` parameter, and via `tools/compare_local_segmenters.py`),
+not a silent default change.
 - **Production-candidate gates** (`segmentation/quality.py`, surfaced by
   `/api/segment` and `orthoplan validation-benchmark`): tooth count,
   compactness, and confidence are checked separately for "reviewable" vs.

@@ -30,7 +30,7 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
     frames = []
     for week in range(2, 7):
         page.locator("#comparisonNext").click()
-        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 18")
+        expect(page.locator("#comparisonWeekLabel")).to_have_text(f"Week {week} of 21")
         expect(page.locator("#comparisonMissing")).not_to_be_visible()
         expect(canvas).to_be_visible()
         expect(page.locator("#comparisonVisit")).to_contain_text("SIMULATED ESTIMATE")
@@ -58,9 +58,9 @@ def assert_week_navigation(page, canvas, requests, count_before, tmp_path):
 
 def assert_recorded_week_borders(page, tmp_path):
     expect(page.locator("#guidedHeading")).to_have_text("USER_ONE · sample case")
-    expect(page.locator('[data-scan-kind="observed"]')).to_have_count(3)
+    expect(page.locator('[data-scan-kind="observed"]')).to_have_count(4)
     for theme, color in [("light", "rgb(37, 99, 235)"), ("dark", "rgb(96, 165, 250)")]:
-        for week in [1, 7, 18]:
+        for week in [1, 7, 18, 21]:
             expect(page.locator(f'[data-comparison-week="{week}"]')).to_have_css("border-top-color", color)
         page.locator(".comparison-timeline").screenshot(path=str(tmp_path / f"recorded-weeks-{theme}.png"))
         page.locator("#themeToggle").click()

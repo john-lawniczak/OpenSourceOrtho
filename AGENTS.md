@@ -1,6 +1,6 @@
 # Codex Notes
 
-This repository is safety-boundary-first. Do not describe OpenSource Ortho as a medical device, Invisalign clone, clinical approval tool, autonomous treatment planner, complete treatment-planning system, or software that makes physical use safe. Preferred framing: clear-aligner planning safety playground and research toolkit.
+This repository is safety-boundary-first. Do not describe OpenSource Ortho as a medical device, commercial clear-aligner product clone, clinical approval tool, autonomous treatment planner, complete treatment-planning system, or software that makes physical use safe. Preferred framing: clear-aligner planning safety playground and research toolkit.
 
 When changing behavior, summarize it in your pull request description. When changing model-provider behavior, also update [docs/OpenAI_Agents.md](docs/OpenAI_Agents.md).
 
@@ -33,6 +33,11 @@ release branch based on public `main` → one public commit. Routine maintainer
 pushes go to `john-lawniczak/OpenSourceOrtho-dev` (`private`). Public contributors
 can use public forks and PRs. Never merge private ancestry into the public repo.
 Use `tools/prepare_public_release.py` and [docs/PRIVATE_DEVELOPMENT.md](docs/PRIVATE_DEVELOPMENT.md).
+
+The next public snapshot must carry the AGPL-3.0-only license transition after
+integration into private main, including prior Apache notices; see the license
+transition checklist in docs/PRIVATE_DEVELOPMENT.md. Keep docs/private/ excluded
+from public snapshots and do not publish private licensing rationale.
 
 Keep `TODO.md` on private branches; `public-release.json` excludes it from public
 snapshots even though it is tracked. Dataset publication also requires individual

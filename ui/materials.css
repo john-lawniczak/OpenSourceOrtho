@@ -1,0 +1,8 @@
+.materials-page .retainer-card { line-height: 1.65; }
+.materials-page h2 { font-size: 20px; margin: 0 0 14px; }
+.materials-page p + p { margin-top: 14px; }
+.materials-page dt { font-weight: 650; margin-top: 16px; }
+.materials-page dd { margin: 4px 0 16px; }
+.materials-page ul { padding-left: 24px; margin-bottom: 16px; }
+.materials-page li + li { margin-top: 8px; }
+.materials-page a { color: var(--accent); text-underline-offset: 3px; }

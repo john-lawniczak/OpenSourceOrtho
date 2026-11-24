@@ -100,7 +100,7 @@ def test_scan_highlight_toggle_and_compare_return_preserve_history(server_url, t
                 pending_navigation[0].continue_()
             tool.locator("#progressBack").click()
             expect(page.locator('dialog[aria-label="Compare two scans"]')).to_be_hidden()
-            expect(page.locator("#comparisonWeekLabel")).to_have_text("Week 7 of 18")
+            expect(page.locator("#comparisonWeekLabel")).to_have_text("Week 7 of 21")
             expect(page.locator("#openScanPair")).to_be_focused()
             page.locator("#openScanPair").click()
             expect(tool.locator("#caseName")).to_have_value("Keep this unfinished comparison")

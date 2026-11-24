@@ -40,6 +40,8 @@ def history(tmp_path):
     write(repo, "public-release.json", (ROOT / "public-release.json").read_text())
     write(repo, "TODO.md", "private notes")
     write(repo, "nested/todo.md", "also private")
+    write(repo, "docs/private/LICENSE_DECISION.md", "private license rationale")
+    write(repo, "docs/private/nested/review.md", "private review")
     write(repo, ".env", "synthetic secret")
     write(repo, "app.txt", "new")
     case = "datasets/spec-test/"

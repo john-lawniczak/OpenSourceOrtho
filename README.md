@@ -404,6 +404,12 @@ proxy teeth when no registered mesh can be loaded.
 
 ## Contribute Your Data
 
+**Patients are welcome to donate their own existing scans.** `USER_ONE` is our
+first tracked donor case. Follow the [patient donation guide](docs/PATIENT_DATA_DONATION.md)
+to request your records, prepare a privacy-reviewed bundle, and choose CC0 1.0
+or CC BY 4.0 using the [consent form](docs/DATA_DONATION_CONSENT.md).
+Start with a records-free contribution inquiry before uploading anything publicly.
+
 Modern clear-aligner planning systems succeed partly because they learn from a
 large base of scans, planned setups, refinements, and outcomes. OpenSource Ortho
 needs an open, privacy-preserving version of that evidence base. For a general
@@ -425,7 +431,8 @@ user, the most helpful contributions are, from most to least useful:
 6. **Optional imaging-derived anatomy**: reviewed CBCT/DICOM-derived root/bone
    records only when you have the right to share them and PHI has been removed.
 
-Privacy is enforced in code, not just requested. The manifest model
+The manifest has privacy checks, but they do not de-identify scan files or
+guarantee anonymity. The manifest model
 (`orthoplan/model/dataset.py`) stores redacted metadata only (never mesh bytes),
 reduces filenames to a basename, forbids unknown fields, and has **no** name,
 date-of-birth, contact, or record-number fields by construction (locked by a
@@ -456,3 +463,19 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch
 and pull-request conventions, the contribution-type tags, the safety rules that
 are enforced by code and review, and how to run the same checks CI runs. Commit
 history is the canonical record of changes (`git log`).
+
+## License
+
+This version of OpenSource Ortho is licensed as a whole under the
+[GNU Affero General Public License, version 3 only](LICENSE) (`AGPL-3.0-only`).
+Commercial use is allowed subject to its terms. Distribution of covered software
+carries source-sharing obligations; modified versions that support remote network
+interaction must prominently offer their corresponding source to those users
+under section 13. This summary does not replace the license.
+
+The next public snapshot incorporating this change transitions the project from
+Apache-2.0 to AGPL-3.0-only. Previously released Apache-2.0 versions retain their
+original permissions. Existing Apache-covered portions retain their notices and
+terms in [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt); this does not offer the
+new version as a whole under Apache-2.0. Third-party code, datasets, and reference
+media retain their respective terms and publication scope; see [NOTICE](NOTICE).

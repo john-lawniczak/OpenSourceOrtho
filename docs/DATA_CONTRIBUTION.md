@@ -1,5 +1,10 @@
 # Contributing Data
 
+**Donating your own patient records?** Start with the
+[patient donation guide](PATIENT_DATA_DONATION.md) and
+[publication consent and license form](DATA_DONATION_CONSENT.md). They explain
+requesting existing records, privacy review, CC0/CC BY choices, and submission.
+
 OpenSource Ortho improves as more real scans and results are tested against the
 engine. You can help by contributing privacy-safe case bundles: scans, plan
 intent, refinements, and outcomes that can be compared over time. This page
@@ -38,7 +43,12 @@ Do not contribute proprietary treatment-planning files, screenshots, assets, or
 exports unless you are certain the license allows redistribution. When in doubt,
 contribute your own scan files plus an OpenSource Ortho plan JSON instead.
 
-## Privacy Posture (enforced, not just advised)
+## Manifest Privacy Checks
+
+These checks constrain metadata; they do not anonymize meshes, images, DICOM,
+or free text. Removing identifying fields cannot guarantee that dental anatomy
+or a longitudinal case will never be linked back to a person. Review the actual
+files before sharing them.
 
 Identity is a random UUID, never anything derived from the patient. The manifest
 model (`orthoplan/model/dataset.py`) enforces this:
@@ -275,8 +285,9 @@ Before opening a pull request or sending a data drop, check:
 - Any `plan-summary.json` or `outcome-notes.md` contains no names, dates of
   birth, appointment dates, email addresses, phone numbers, addresses, clinic
   names, chart numbers, or other identifiers.
-- You have the right to share the files under the repository's contribution
-  terms.
+- You have the right to share and license each file; new donations include the
+  completed consent form and a `DATA_LICENSE.md` identifying CC0 1.0 or CC BY 4.0
+  for each asset. The software license is not a substitute for data permission.
 
 ## Benchmark Use
 

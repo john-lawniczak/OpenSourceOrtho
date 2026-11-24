@@ -1,0 +1,182 @@
+{
+  "schema": "opensource-ortho-progress-source-metadata-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "progress_record_id": "progress-03",
+  "reported_week": 21,
+  "reported_week_provenance": "Contributor instruction on 2026-11-24; progress label, not elapsed calendar weeks.",
+  "scan_acquisition": {
+    "date": "2026-11-23",
+    "source": "HTML Scanning Date and visually inspected one-page prescription PDF Scan date; contributor reports dental-office intraoral scan.",
+    "independently_verified": false
+  },
+  "export": {
+    "timestamp_utc": "2026-11-24T16:45:51Z",
+    "format": "iTeroExport",
+    "versions": [
+      "3.0",
+      "5.0"
+    ],
+    "scanner_software_version": "2.22.0.51",
+    "caas_version": "1.0.0.49",
+    "procedure": "Study Model / iRecord",
+    "case_type": "Clear aligner + iRecord",
+    "case_type_note": "Generic description replaces brand label.",
+    "modeled": false,
+    "treatment_stage_code": "0",
+    "treatment_stage_note": "Unmapped source code, not a week or tray number.",
+    "scan_range_ada": {
+      "upper": [
+        1,
+        16
+      ],
+      "lower": [
+        17,
+        32
+      ]
+    },
+    "scan_range_note": "Export range only; not a verified inventory of present teeth.",
+    "scanner_model": "Element 5D",
+    "scanner_model_source": "Prescription PDF",
+    "source_status": "Completed",
+    "source_status_note": "Vendor workflow status, not a quality or treatment verdict.",
+    "prescription_notes": "Blank",
+    "prescription_type": "--"
+  },
+  "units": {
+    "declared_in_stl": false,
+    "confirmed": false,
+    "likely_convention": "mm"
+  },
+  "surfaces": [
+    {
+      "repo_filename": "progress-03-upper.stl",
+      "sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "size_bytes": 16864334,
+      "bytes_unchanged": true,
+      "stl_header": "80 ASCII spaces; no identifying text",
+      "arch": "maxillary"
+    },
+    {
+      "repo_filename": "progress-03-lower.stl",
+      "sha256": "ae8b310346465e3601ff9c11a3afa1afabc1cb5d0b5f746facf8820fde07ae8e",
+      "size_bytes": 13802584,
+      "bytes_unchanged": true,
+      "stl_header": "80 ASCII spaces; no identifying text",
+      "arch": "mandibular"
+    }
+  ],
+  "coordinate_frame": {
+    "export_label": "shell_occlusion",
+    "shared_occlusion_frame_verified": false,
+    "actual_used_transforms": [
+      [
+        -1.0,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        -1.0,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "transform_note": "Source arrays in XML order. Already-used export transforms; not reapplied. Matching arrays do not validate bite accuracy or cross-visit alignment.",
+    "separate_bite_stl_present": false,
+    "cross_visit_registration": "not performed"
+  },
+  "privacy": {
+    "publication_authorized_on": "2026-11-24",
+    "basis": "Contributor requests week 21 scans and relevant redacted PDF/JPG data for all future users.",
+    "excluded": "Identifying original PDF, XML and HTML; patient, order and provider identifiers; signatures and contact details.",
+    "pdf_review": "One-page original inspected; relevant non-identifying fields transcribed here. Original retained locally only."
+  },
+  "input_geometry_modified": false,
+  "images": [
+    {
+      "filename": "media/progress-03-front.jpg",
+      "sha256": "c10fbb6dd096caef0a05a1d76f1f961e521b1086e6f98cedf9f025645686e35b",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "content": "Source-rendered scan view, not a clinical photograph.",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-03-lower.jpg",
+      "sha256": "e3fd36c7aedd6be2cf061babbbd77ad7ded069c7b628a3455f772137ac3f38e1",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "content": "Source-rendered scan view, not a clinical photograph.",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-03-patientleft.jpg",
+      "sha256": "2d20bb7e36c9a40fd6a99f8ef4e77cf8aa19213d2b0e84416a18aa50f1d2c172",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "content": "Source-rendered scan view, not a clinical photograph.",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-03-patientright.jpg",
+      "sha256": "f4691ef3dc9e12fe3d2de165bcfd57e0d2218efc36ace1f6f7108f983bac8854",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "content": "Source-rendered scan view, not a clinical photograph.",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-03-upper.jpg",
+      "sha256": "8caeb90cb914c32dcb50d3eaacc8931e9977aac8ad5e1739aed326f22f053f83",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "content": "Source-rendered scan view, not a clinical photograph.",
+      "bytes_unchanged": true
+    },
+    {
+      "filename": "media/progress-03.jpg",
+      "sha256": "d46adba2ec80f8c652530e80dfd00ebd8b21c5f15d6ea50464665a2d267fde35",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "content": "Source-rendered scan view, not a clinical photograph.",
+      "bytes_unchanged": true
+    }
+  ]
+}

@@ -215,8 +215,11 @@
             </div>
             <p id="guidedDurationSummary" class="guided-hint"></p>
             <details class="guided-help">
-              <summary>What is a stage?</summary>
-              <p>A stage is one aligner tray. More movement usually means more stages and more total time.</p>
+              <summary>How much does a tooth move per aligner, and why?</summary>
+              <p>A stage is one planned step. Published aligner protocols describe programmed linear steps of about <strong>0.15–0.25 mm</strong> per aligner. This is a planned increment, not the average movement a tooth will achieve.</p>
+              <p>Aligners apply forces through the tissues around teeth; movement depends on periodontal-ligament response and bone remodeling over time. Tooth type, movement direction, tissue condition, aligner fit, and wear affect the result. Rotation and vertical movement need separate consideration.</p>
+              <p>This app starts with a configurable 0.25 mm linear review cap per stage. It splits geometric changes for exploration; it does not simulate tissue response or establish a safe limit. Timeline spacing is an assumption, not a wear prescription.</p>
+              <p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8388591/" target="_blank" rel="noopener noreferrer">Programmed versus achieved movement</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10126945/" target="_blank" rel="noopener noreferrer">Staging and tissue response research (animal study)</a></p>
             </details>
           </section>
 
@@ -273,6 +276,7 @@
           <section class="gstep" data-gstep="print">
             <h3>6 · Print or send your files</h3>
             <p>Build a printable handoff package with one stage model per step plus a manifest. These models are not trays or aligner shells unless the completed package explicitly lists reviewed shell artifacts.</p>
+            <p><a href="./materials.html" target="_blank" rel="noopener noreferrer">Retainer and aligner materials guide (opens a new tab)</a> · Compare intended uses and evidence before choosing a product.</p>
             <button class="primary-action" id="guidedPrint" type="button">Build printable package</button>
             <p id="guidedPrintStatus" class="guided-hint"></p>
             <div id="guidedPrintQa" class="print-qa" hidden></div>
@@ -417,6 +421,7 @@
           <div class="workflow-card">
             <h2>Step 3: Set Review Rules</h2>
             <p>Caps and clinical controls shape warnings; they do not approve treatment.</p>
+            <p>Per-stage caps are geometric review thresholds. The default 0.25 mm linear cap is a programmed increment, not measured average tooth movement or a safe biological limit. Actual movement depends on tissue response, movement type, fit, and wear. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8388591/" target="_blank" rel="noopener noreferrer">Read about planned versus achieved movement.</a></p>
           </div>
           <div class="field-grid">
             <label>Linear mm<input id="capLinear" type="number" min="0.01" step="0.01" value="0.25" /></label>
@@ -426,6 +431,7 @@
           </div>
           <div class="print-settings">
             <h2>Print Export</h2>
+            <p><a href="./materials.html" target="_blank" rel="noopener noreferrer">Retainer and aligner materials guide (opens a new tab)</a>. Material entries below record your selection; they do not validate it.</p>
             <label class="toggle">
               <span>Prepare print handoff metadata</span>
               <input id="printEnabled" type="checkbox" />

@@ -4,11 +4,15 @@
 > actual versions float within the `pyproject.toml` constraints. Re-run the
 > audit when adding or bumping a dependency (see CONTRIBUTING.md).
 
-**Project license:** Apache-2.0.
+**Project license:** AGPL-3.0-only (GNU Affero General Public License, version 3 only).
+License transition recorded: 2026-11-22; dependency versions below were not re-audited.
 
-All dependencies below are permissive (MIT / BSD / Apache-2.0 / PSF) and
-compatible with distributing this project under Apache-2.0. There are no
-copyleft (GPL/LGPL) dependencies.
+All dependencies below are permissive (MIT / BSD / Apache-2.0 / PSF). Their
+licenses are compatible with the project as a whole being distributed under
+AGPLv3; their own terms and notices continue to apply to their code. There are
+no copyleft dependencies in this table; the project itself is now copyleft.
+Previously Apache-covered project portions retain their terms in
+[LICENSES/Apache-2.0.txt](../LICENSES/Apache-2.0.txt).
 
 ## Runtime (installed by default)
 
@@ -54,10 +58,11 @@ BSD-3-Clause with additional component licenses.
 Three.js is vendored (not fetched from a CDN at runtime) so the UI works
 offline. The upstream header is retained in `three.module.js`, and the full r169 MIT
 permission notice is now included in [`ui/vendor/LICENSE.three`](../ui/vendor/LICENSE.three).
-Keep both notices and bump both files together. The root LICENSE now contains
-the complete Apache-2.0 terms, with project attribution in NOTICE. Sources:
+Keep both notices and bump both files together. The root LICENSE contains the
+complete GNU AGPLv3 terms, with project attribution and prior-license notices
+in NOTICE. Sources:
 [Three.js r169 license](https://github.com/mrdoob/three.js/blob/r169/LICENSE) and
-[Apache-2.0 text](https://www.apache.org/licenses/LICENSE-2.0.txt).
+[GNU AGPLv3 text](https://www.gnu.org/licenses/agpl-3.0.html).
 
 ## Traps watched (see OPEN_SOURCE_REFERENCES.md)
 
@@ -66,5 +71,16 @@ the complete Apache-2.0 terms, with project attribution in NOTICE. Sources:
 - 3D Slicer extensions can carry GPL — not a dependency; referenced only.
 - Blender and PyMeshLab/MeshLab are GPL — keep them as external workflow tools
   unless the project intentionally accepts GPL obligations.
-- Trademarks (Invisalign/ClinCheck/SmartTrack): nominative reference only, never
+- Commercial product trademarks: nominative reference only, never
   in code identifiers or UI labels.
+
+## Restricted dataset access update (2026-11-23)
+
+The Tsinghua / Beijing Stomatological Hospital paired-model dataset remains
+unimported and excluded from project imports and shipped models/artifacts under
+current terms. The access response requires an authorized institutional
+representative to sign and prohibits downstream commercial reuse. No separate
+permission for weights, aggregate statistics or derived transforms is established.
+The project's AGPL license does not supply missing third-party data rights. See
+the [source ledger](SOURCES_AND_RECOMMENDED_SOFTWARE.md) for provenance and
+reconsideration conditions.

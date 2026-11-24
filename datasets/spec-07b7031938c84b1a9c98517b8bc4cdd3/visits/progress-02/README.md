@@ -4,6 +4,14 @@ Published supplementary progress visit for the existing
 `spec-07b7031938c84b1a9c98517b8bc4cdd3` case. The contributor's `USER_1` reference
 maps to the established `USER_ONE` pseudonym; no new case identity was created.
 
+**Personal model-making and 3D-scanning experiment:** these are scans of
+contributor-made physical models. Both original stone models were reported chipped;
+the defects concern the models, not the actual teeth. Interactive scan history labels
+this provenance and offers downloads of the original upper/lower pair, cleaned upper,
+and H4/H6 lower captures. These files are individually authorized for public reuse
+in the case-root consent record; private development pushes still precede the filtered
+public release.
+
 ## Original November 10 pair
 
 **Relationship clarified November 12:** the contributor identifies

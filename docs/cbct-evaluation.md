@@ -199,6 +199,15 @@ the learned crown segmenter: code license, weight license, and dataset license a
 separate. Do not commit third-party patient volumes, model weights, or datasets
 without explicit permission and a reviewed license.
 
+**Checked November 2026**: ToothFairy2 (480 public CBCT volumes, MICCAI 2024,
+42-class anatomy annotation) is the largest public CBCT segmentation dataset
+found. Confirmed directly from its dataset page
+(ditto.ing.unimore.it/toothfairy2): **CC BY-NC-SA 4.0**, non-commercial, and
+account-gated download. CTooth+ and STS-Tooth are CC BY-NC-ND 4.0. No public
+CBCT dataset currently clears commercial-reuse licensing for training a model
+shipped in this project. See `SOURCES_AND_RECOMMENDED_SOFTWARE.md` for the full
+survey.
+
 ## Phase 5: Root/Bone-Aware Checks
 
 Goal: let the engine consume trusted CBCT-derived anatomy as constraints and

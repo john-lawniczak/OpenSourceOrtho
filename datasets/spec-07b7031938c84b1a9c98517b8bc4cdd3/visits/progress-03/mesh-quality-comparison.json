@@ -1,0 +1,229 @@
+{
+  "schema": "opensource-ortho-scan-topology-comparison-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "generator": "evaluate_comparison.py",
+  "method": "Exact-coordinate vertex deduplication, undirected edge incidence and vertex connectivity; float64 areas; all source triangles.",
+  "input_geometry_modified": false,
+  "scans": [
+    {
+      "filename": "initial-upper.stl",
+      "sha256": "76daf4068ec39fa2685607adc4ef50b254d275fb28d7a311af0f1dc9705e7166",
+      "finite_coordinates": true,
+      "face_count": 330309,
+      "unique_vertices": 165520,
+      "zero_area_faces": 0,
+      "duplicate_faces": 0,
+      "boundary_edges": 761,
+      "edges_with_more_than_two_incident_faces": 0,
+      "connected_component_vertex_counts": [
+        165520
+      ],
+      "reported_week": 1,
+      "arch": "maxillary",
+      "units": "mm",
+      "extent_source_units": [
+        62.823612213134766,
+        54.040639877319336,
+        17.083393454551697
+      ],
+      "surface_area_source_units_squared": 4059.1122729123854,
+      "triangle_area_percentiles": {
+        "p05": 0.003207297272197754,
+        "p50": 0.010132883481842297,
+        "p95": 0.028274692121685624
+      },
+      "edge_length_percentiles": {
+        "p05": 0.0772303298686263,
+        "p50": 0.1649638797191366,
+        "p95": 0.30482113585879705
+      },
+      "source_file": "initial-upper.stl"
+    },
+    {
+      "filename": "initial-lower.stl",
+      "sha256": "5e4b629904c481bf914393b4935f324599d74031c78c92f2ad2e36e637243a72",
+      "finite_coordinates": true,
+      "face_count": 286801,
+      "unique_vertices": 143782,
+      "zero_area_faces": 1,
+      "duplicate_faces": 0,
+      "boundary_edges": 766,
+      "edges_with_more_than_two_incident_faces": 1,
+      "connected_component_vertex_counts": [
+        143782
+      ],
+      "reported_week": 1,
+      "arch": "mandibular",
+      "units": "mm",
+      "extent_source_units": [
+        64.56451034545898,
+        50.676931381225586,
+        18.83464288711548
+      ],
+      "surface_area_source_units_squared": 3544.975939412202,
+      "triangle_area_percentiles": {
+        "p05": 0.003347024780541908,
+        "p50": 0.010343961245739507,
+        "p95": 0.027828246133152
+      },
+      "edge_length_percentiles": {
+        "p05": 0.07852349366255293,
+        "p50": 0.16678829588991317,
+        "p95": 0.3037409782001693
+      },
+      "source_file": "initial-lower.stl"
+    },
+    {
+      "filename": "progress-01-upper.stl",
+      "sha256": "8124d86cf52987f54f49adf0974ddfd03098404719beec2b4fd61717866f56ee",
+      "finite_coordinates": true,
+      "face_count": 332227,
+      "unique_vertices": 167208,
+      "zero_area_faces": 7,
+      "duplicate_faces": 0,
+      "boundary_edges": 2219,
+      "edges_with_more_than_two_incident_faces": 6,
+      "connected_component_vertex_counts": [
+        167208
+      ],
+      "reported_week": 7,
+      "arch": "maxillary",
+      "units": "unverified",
+      "extent_source_units": [
+        62.851192474365234,
+        52.26439094543457,
+        17.081485748291016
+      ],
+      "surface_area_source_units_squared": 4073.5526861393396,
+      "triangle_area_percentiles": {
+        "p05": 0.00347743597588785,
+        "p50": 0.01048625615243377,
+        "p95": 0.027066625033581877
+      },
+      "edge_length_percentiles": {
+        "p05": 0.07996141303376705,
+        "p50": 0.16753544041361157,
+        "p95": 0.29972224250949336
+      },
+      "source_file": "progress-01-upper.stl"
+    },
+    {
+      "filename": "progress-01-lower.stl",
+      "sha256": "7cfb95dad5ed8ce12fecaa6f7c03a277e54eead117e53094d189451f1eb241cb",
+      "finite_coordinates": true,
+      "face_count": 265329,
+      "unique_vertices": 133907,
+      "zero_area_faces": 0,
+      "duplicate_faces": 0,
+      "boundary_edges": 2513,
+      "edges_with_more_than_two_incident_faces": 0,
+      "connected_component_vertex_counts": [
+        133907
+      ],
+      "reported_week": 7,
+      "arch": "mandibular",
+      "units": "unverified",
+      "extent_source_units": [
+        63.68699264526367,
+        50.10063934326172,
+        16.376310348510742
+      ],
+      "surface_area_source_units_squared": 3219.349146959114,
+      "triangle_area_percentiles": {
+        "p05": 0.0033385884296424106,
+        "p50": 0.010229806869404492,
+        "p95": 0.02740759076255417
+      },
+      "edge_length_percentiles": {
+        "p05": 0.07834227259698807,
+        "p50": 0.16544396029239794,
+        "p95": 0.30164689505913433
+      },
+      "source_file": "progress-01-lower.stl"
+    },
+    {
+      "filename": "progress-03-upper.stl",
+      "sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "finite_coordinates": true,
+      "face_count": 337285,
+      "unique_vertices": 169009,
+      "zero_area_faces": 1,
+      "duplicate_faces": 0,
+      "boundary_edges": 772,
+      "edges_with_more_than_two_incident_faces": 1,
+      "connected_component_vertex_counts": [
+        169009
+      ],
+      "reported_week": 21,
+      "arch": "maxillary",
+      "units": "unverified",
+      "extent_source_units": [
+        63.06190872192383,
+        55.0390739440918,
+        18.819931864738464
+      ],
+      "surface_area_source_units_squared": 4324.804677614473,
+      "triangle_area_percentiles": {
+        "p05": 0.003464336541296117,
+        "p50": 0.010674947961286438,
+        "p95": 0.02913820672510982
+      },
+      "edge_length_percentiles": {
+        "p05": 0.07974516986915972,
+        "p50": 0.16939865295770234,
+        "p95": 0.3098995093052989
+      },
+      "source_file": "visits/progress-03/progress-03-upper.stl"
+    },
+    {
+      "filename": "progress-03-lower.stl",
+      "sha256": "ae8b310346465e3601ff9c11a3afa1afabc1cb5d0b5f746facf8820fde07ae8e",
+      "finite_coordinates": true,
+      "face_count": 276050,
+      "unique_vertices": 138428,
+      "zero_area_faces": 0,
+      "duplicate_faces": 0,
+      "boundary_edges": 820,
+      "edges_with_more_than_two_incident_faces": 0,
+      "connected_component_vertex_counts": [
+        138428
+      ],
+      "reported_week": 21,
+      "arch": "mandibular",
+      "units": "unverified",
+      "extent_source_units": [
+        65.5106201171875,
+        52.75582695007324,
+        17.097243547439575
+      ],
+      "surface_area_source_units_squared": 3565.96339492686,
+      "triangle_area_percentiles": {
+        "p05": 0.003390300284098805,
+        "p50": 0.010614251358034038,
+        "p95": 0.029965170097526046
+      },
+      "edge_length_percentiles": {
+        "p05": 0.07915858085845139,
+        "p50": 0.16880055526947696,
+        "p95": 0.31380549124906953
+      },
+      "source_file": "visits/progress-03/progress-03-lower.stl"
+    }
+  ],
+  "dependencies": {
+    "numpy": "2.4.6",
+    "matplotlib": "3.11.2"
+  },
+  "not_assessed": [
+    "self intersections",
+    "vertex manifoldness",
+    "winding consistency",
+    "scanner accuracy",
+    "verified anatomical completeness",
+    "physical scale",
+    "bite accuracy",
+    "cross-visit registration",
+    "tooth movement"
+  ],
+  "interpretation": "Open shell margins are expected; boundary counts and triangle density are not accuracy measures."
+}
