@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Iterator
-from http.server import ThreadingHTTPServer
 
 import pytest
 
@@ -10,12 +9,12 @@ pytest.importorskip("playwright.sync_api")
 
 from playwright.sync_api import Page, expect, sync_playwright  # noqa: E402
 
-from orthoplan.server import Handler  # noqa: E402
+from orthoplan.server import Handler, LocalHTTPServer  # noqa: E402
 
 
 @pytest.fixture(scope="module")
 def server_url() -> Iterator[str]:
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    httpd = LocalHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
     try:

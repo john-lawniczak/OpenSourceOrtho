@@ -1,0 +1,44 @@
+{
+  "purpose": "Subjective research-data usability; not a validated scanner-accuracy scale.",
+  "precision": "Quarter-point editorial judgments displayed with two decimals; not hundredth-point measurement precision.",
+  "rubric": [
+    {
+      "category": "File integrity and basic topology",
+      "maximum": 4,
+      "week_1": 3.75,
+      "week_7": 3.5,
+      "week_21": 3.75,
+      "basis": "Full-length finite connected meshes without duplicate faces. Small deductions for observed degeneracies/non-manifold edge incidence; no penalty merely for intentional open-shell boundaries."
+    },
+    {
+      "category": "Visible arch coverage and inspectability",
+      "maximum": 2,
+      "week_1": 1.75,
+      "week_7": 1.75,
+      "week_21": 1.75,
+      "basis": "Recognizable continuous-looking crown rows in overview renders. Fine completeness is unverified; no claim based on triangle counts."
+    },
+    {
+      "category": "Upper/lower coordinate relationship",
+      "maximum": 2,
+      "week_1": 1.5,
+      "week_7": 0.75,
+      "week_21": 1.5,
+      "basis": "Occlusion export labels provide stronger relationship evidence than separate teeth-up exports. Actual bite accuracy not validated."
+    },
+    {
+      "category": "Provenance and independent verification",
+      "maximum": 2,
+      "week_1": 1.5,
+      "week_7": 1.5,
+      "week_21": 1.5,
+      "basis": "Dates, hashes and source provenance available. No independent ground truth or repeatability benchmark; progress scales unverified. Baseline manifest mm retained but not revalidated."
+    }
+  ],
+  "scores": {
+    "week_1": 8.5,
+    "week_7": 7.5,
+    "week_21": 8.5
+  },
+  "finding_reference": "quality-findings.json"
+}

@@ -30,6 +30,20 @@ def check_history_placement(page, requests, canvas, baseline, tmp_path):
     page.locator('[data-comparison-view="front"]').click()
     page.locator('[data-comparison-week="1"]').click()
     assert canvas_snapshot(page.locator("#comparisonCanvas canvas"), path=str(tmp_path / "baseline-after.png")) == baseline
+    expect(page.locator("#comparisonWeek18Records")).not_to_be_visible()
+
+
+def check_personal_model_downloads(page, base_url):
+    expect(page.locator("#comparisonVisit")).to_contain_text("Acquisition date unknown")
+    expect(page.locator("#comparisonVisit")).to_contain_text("personal model scan")
+    records = page.locator("#comparisonWeek18Records")
+    expect(records).to_contain_text("model defects, not actual tooth damage")
+    records.locator("summary").click()
+    downloads = records.locator("a[download]")
+    expect(downloads).to_have_count(5)
+    for link in downloads.all():
+        response = page.request.get(base_url + link.get_attribute("href"))
+        assert response.ok and len(response.body()) > 10_000_000
 
 
 def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monkeypatch):  # noqa: F811
@@ -63,7 +77,7 @@ def test_header_toggle_button_and_lazy_week_eighteen(server_url, tmp_path, monke
             expect(page.locator("#comparisonStatus")).to_contain_text("Week 18 observed surfaces", timeout=60000)
             expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "observed")
             expect(page.locator("#comparisonTooth")).to_be_disabled()
-            expect(page.locator("#comparisonVisit")).to_contain_text("Acquisition date unknown")
+            check_personal_model_downloads(page, server_url)
             check_history_placement(page, requests, canvas, baseline, tmp_path)
             page.locator('[data-comparison-week="12"]').click()
             expect(page.locator("#sampleComparison")).to_have_attribute("data-frame-kind", "unavailable")

@@ -1,0 +1,61 @@
+{
+  "status": "ADVISORY - unverified",
+  "gate": "All model-generated interpretations passed lint_finding(); language check only.",
+  "findings": [
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Research-data quality ranking",
+      "message": "Subjective research-data scores: week 1 = 8.50/10.00, week 7 = 7.50/10.00, week 21 = 8.50/10.00. Weeks 1 and 21 tie. Scores describe file health, visible coverage, export coordinates and provenance, not anatomical accuracy, treatment progress or physical-use suitability. Two decimal places are formatting, not measurement precision.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Visual coverage",
+      "message": "The overview renders show continuous-looking crown rows and recognizable surface detail in all three visits. Week 7 has more irregular peripheral margins. Week 21 retains ragged soft-tissue scan edges. These are unverified visual impressions; complete anatomy, fine defects and attachment identities were not independently established.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Topology comparison",
+      "message": "Week 21 resembles week 1 in basic mesh health: one zero-area face and one edge with more than two incident faces across each pair. Week 7 has seven zero-area faces and six such edges, all in its upper scan. All six meshes have one vertex-connected component, zero duplicate triangles and finite coordinates. Open-shell boundary edges include intentional margins; lower counts alone do not prove better accuracy.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Coordinate and density limits",
+      "message": "Weeks 1 and 21 carry shell_occlusion export labels; week 7 carries shell_teethup labels. This makes the week 21 export more convenient for preserving the recorded upper/lower relationship, but matching source transformations do not validate bite accuracy. Triangle density is broadly similar across visits and does not establish a resolution or scanner-accuracy improvement.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Unmeasured accuracy",
+      "message": "Week 21 scale remains unverified, and no independent reference surface, repeat scan, self-intersection analysis or cross-visit registration was used. The scores cannot quantify true anatomical fidelity. Week 21 is an original observed scan, not an inferred pose or reviewed treatment plan.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    }
+  ]
+}

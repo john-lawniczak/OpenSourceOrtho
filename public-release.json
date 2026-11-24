@@ -4,6 +4,7 @@
     "TODO.md",
     "**/TODO.md",
     "docs/Dev_history.md",
+    "docs/private/*",
     "CLAUDE.local.md",
     ".githooks/*",
     ".env",

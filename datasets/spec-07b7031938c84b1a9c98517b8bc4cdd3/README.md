@@ -5,7 +5,7 @@ Published longitudinal research case used by the browser and mobile samples.
 - **Pseudonym:** `USER_ONE` (a display label, not a real-identity lookup)
 - **UUID:** `07b70319-38c8-4b1a-9c98-517b8bc4cdd3`
 - **Stable specimen ID:** `spec-07b7031938c84b1a9c98517b8bc4cdd3`
-- **Visits:** baseline and first progress scan, confirmed as week 7
+- **Visits:** week 1 baseline, week 7 progress, week 18 model captures; week 21 intraoral scan
 - **Publication scope:** [consent.json](consent.json)
 - **Browse all cases:** [dataset catalog](../README.md)
 
@@ -13,6 +13,17 @@ The UUID is the existing case identity, preserved across all records. The
 pseudonym does not replace it or identify a different participant. Original
 scan bytes are unchanged. Metadata references are relative to this case root,
 even when the referring JSON lives in `media/`, `derived/`, or `fixtures/`.
+
+## Week 21 intraoral observation
+
+The contributor authorized the November 23, 2026 intraoral scan for public reuse on
+November 24. The unchanged STL pair, redacted PDF/export metadata, six source-rendered
+JPGs and quality comparison are in [`visits/progress-03/`](visits/progress-03/README.md).
+Interactive history offers week 21, STL downloads, image previews and source-bound
+painting. Both arches keep their exported relative coordinates. Bite accuracy, scale
+and cross-visit registration remain unverified; earlier paintings and fits are unchanged.
+Identifying paperwork remains local. Public availability follows the filtered release
+process; a private dev push does not publish a new public snapshot.
 
 
 The case now includes a **first progress scan pair, reported as week 7**, under
@@ -78,8 +89,10 @@ Files:
   IPR history, and attachment context; exact dates retained at the user's request
 - `initial-upper.stl`: maxillary occlusion shell
 - `initial-lower.stl`: mandibular occlusion shell
-- `media/reference-media.json`: provenance metadata for a reference video whose
-  bytes are excluded from this public snapshot
+- [`media/reference-simulation.mp4`](media/reference-simulation.mp4): USER_ONE's
+  intended-plan animation; 19.5 seconds, frontal view, 38 observed stages
+- `media/reference-media.json`: video hash, provenance, limitations, and
+  contributor redistribution authorization
 - `source-export-metadata.json`: redacted source-export metadata showing that
   the sample STLs correspond to the iTero `shell_occlusion` upper/lower jaw
   surfaces, with no separate bite STL present in the local export
@@ -110,12 +123,15 @@ the app so the Sample Test Case can demonstrate the full registration,
 anatomical-frame, root/bone-review, and CBCT-boundary-prior pipeline. It is not a
 clinical segmentation, diagnosis, clearance, or treatment approval.
 
-The reference video is omitted from this public snapshot because redistribution
-rights remain unverified. Its descriptive metadata and explicitly unreviewed
-attachment transcription retain their provenance references, not downloadable
-video bytes. Earlier public Git history is unchanged. The reference is not an
-outcome record, treatment approval, or evidence that the educational stage
-sequence is clinically correct.
+The contributor explicitly authorized redistribution of the USER_ONE plan video
+on 2026-11-20. The original debranded/cropped file has been restored with its
+previously recorded SHA-256 and added to the case's public asset inventory.
+This authorization is contributor-supplied; it is not independent verification
+of any vendor rights or a new CC0/CC BY license. The video belongs to this case
+as an intended-plan reference, separate from observed scan history and inferred
+intermediate poses. Its partial attachment transcription remains unreviewed;
+the frontal video does not provide calibrated 3D tooth transforms. It is not an
+outcome record, treatment approval, or validation of the app's stage sequence.
 
 ## Reported week 18
 

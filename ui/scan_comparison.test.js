@@ -76,7 +76,7 @@ test("week navigation without an estimate never substitutes endpoint scans for m
     assert.deepEqual(historyFrame(week, pair), { week, index: null, scan: null,
       kind: "unavailable", fraction: (week - 1) / 6 });
   }
-  for (const week of [0, 19, 1.5, NaN, Infinity, "2"]) assert.throws(() => historyFrame(week, pair));
+  for (const week of [0, 22, 1.5, NaN, Infinity, "2"]) assert.throws(() => historyFrame(week, pair));
 });
 
 test("upper front/side camera is rolled so crowns point down; lower retains upright orientation", () => {

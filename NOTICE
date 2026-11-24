@@ -1,7 +1,18 @@
 OpenSource Ortho
 Copyright 2026 OpenSource Ortho contributors
+Copyright 2026 John Lawniczak and OpenSource Ortho contributors
+https://github.com/john-lawniczak/OpenSourceOrtho
 
-The project source is licensed under Apache-2.0; see LICENSE.
+This version of the project as a whole is licensed under the GNU Affero General
+Public License, version 3 only (AGPL-3.0-only); see LICENSE. Commercial use is
+permitted subject to that license's terms.
+
+The project includes code previously distributed under Apache-2.0. Those
+permissions and notices remain applicable to those portions; the original
+license is retained in LICENSES/Apache-2.0.txt. Previously released Apache-2.0
+versions remain available under their original terms. This notice does not
+license the new version as a whole under Apache-2.0.
+
 Vendored Three.js r169 code is licensed under MIT; see ui/vendor/LICENSE.three.
 Contributed datasets and reference media retain their documented publication
 scope and third-party rights limitations; see datasets/ and docs/DATA_CONTRIBUTION.md.

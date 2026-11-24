@@ -6,7 +6,7 @@ from orthoplan.region_corrections import load_baseline_corrections
 def painting_notes_payload() -> dict:
     entries, errors = [], []
     sources = [(visit, week, arch, "original")
-               for visit, week in [("initial", 1), ("progress-01", 7), ("progress-02", 18)]
+               for visit, week in [("initial", 1), ("progress-01", 7), ("progress-02", 18), ("progress-03", 21)]
                for arch in ("upper", "lower")]
     sources += [("progress-02", 18, "lower", capture) for capture in ("fusion-h-4", "fusion-h-6")]
     sources += [("progress-02", 18, "upper", "upper-clean")]

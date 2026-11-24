@@ -2,7 +2,7 @@
 
 This file is the living source ledger for OpenSource Ortho. Use it to track external references, license posture, implementation ideas, and changes that may affect product direction.
 
-Last recorded source review: 2026-06-13.
+Last recorded source review: 2026-11-23 (materials and paired-model access update).
 
 ## How To Use This File
 
@@ -17,8 +17,6 @@ Last recorded source review: 2026-06-13.
 | Source | URL | Current Use | Watch For |
 | --- | --- | --- | --- |
 | BlueSkyPlan download/license language | https://www.blueskybio.digital/page/download-software | Proprietary/freeware cautionary reference only. Do not fork or copy. | License terms, any explicit OSI-approved source license, product workflow changes. |
-| Commercial clear-aligner platform overview | https://www.invisalign.com/provider/align-digital-platform | Commercial full-workflow reference for connect/scan/diagnose/plan/treat/monitor/retain coverage. | Proprietary terminology, workflow claims, product scope changes, and features to describe only generically. |
-| Commercial clear-aligner plan-editing software | https://www.invisalign.com/provider/align-digital-platform/clincheck | Commercial workflow reference for review, staging, side-by-side comparison, 3D controls, live updates, CBCT integration, and provider handoff. | Proprietary terminology, UI/workflow changes, feature ideas to describe generically. |
 | 3D Slicer license/commercial-use notes | https://slicer.readthedocs.io/en/5.10/user_guide/about.html | License/regulatory reference for a possible host platform. | License notes, medical-device disclaimers, extension guidance. |
 | 3D Slicer platform | https://www.slicer.org/ | Open-source platform reference for imaging, segmentation, and possible extension hosting. | Platform roadmap, extension APIs, segmentation and DICOM workflows. |
 | SlicerCMF | https://cmf.slicer.org/ | Dental/craniofacial workflow reference inside 3D Slicer. | Extension status, algorithms, dependency/license updates. |
@@ -28,6 +26,12 @@ Last recorded source review: 2026-06-13.
 | pydicom MIT license | https://github.com/pydicom/pydicom/blob/main/LICENSE | Optional `dicom` extra for local CBCT/DICOM structural metadata parsing. | License, API changes, DICOM parsing/security guidance. |
 | Clear aligner staging reference | https://pmc.ncbi.nlm.nih.gov/articles/PMC8388591/ | Literature reference for conservative movement-cap heuristics. | Updated literature, movement efficacy estimates, limitations. |
 | Clear aligner staging reference | https://www.mdpi.com/2076-3417/14/15/6690 | Literature reference for movement planning and aligner biomechanics. | Updated review data, staging recommendations, limitations. |
+| Teeth3DS+ / 3DTeethSeg'22 dataset | https://3dteethseg.grand-challenge.org/ | Re-confirmed CC BY-NC-ND 4.0 (non-commercial, no derivatives). Not usable for training a shipped crown-segmentation model. | Any commercial licensing offer from the dataset owner; new license-clear alternatives. |
+| Tsinghua / Beijing Stomatological Hospital paired dental models | https://zenodo.org/records/11392406 | Dataset reviewed 2026-11-20; access update 2026-11-23; not imported. 1,060 pairs from 435 patients. The [paper's acquisition section](https://pmc.ncbi.nlm.nih.gov/articles/PMC11585566/) identifies the endpoints as clinician-designed target setups, not achieved outcome scans. Potential segmentation, correspondence, and target-geometry benchmark; not weekly motion or biological-limit evidence. Access requires a signed DUA; Zenodo states academic/noncommercial use. | Access update recorded 2026-11-23: an authorized institutional representative must sign; downstream commercial reuse is not allowed. Excluded from project imports and shipped models/artifacts under current terms. Weights, statistics and transforms have no separately established exception. Reconsider only with new written terms covering the intended use; metadata alone does not override the [DUA](https://github.com/lcshhh/TADPM/blob/main/Data-Use-Agreement.pdf) or access restrictions. |
+| Retainer/aligner materials evidence | [Review and primary sources](MATERIALS.md) | Reviewed 2026-11-23; educational guidance in the app. No preferred-polymer default or material-based readiness approval. | Product-specific indications, finished-appliance evidence, independent clinical comparisons, wear/degradation methods and batch traceability. |
+| ToothFairy2 CBCT dataset | https://ditto.ing.unimore.it/toothfairy2/ | Confirmed CC BY-NC-SA 4.0, account-gated download. Not usable for training a shipped CBCT segmentation model. | Future ToothFairy releases changing NC terms. |
+| DENTEX panoramic dataset | https://huggingface.co/datasets/ibrahimhamamci/DENTEX | License conflict: originating arXiv paper states CC-BY, current maintained dataset card states CC-BY-NC-SA. Treat as NOT usable until resolved directly with current maintainers. | Dataset card updates resolving the conflict. |
+| Aligner tooth-movement dataset (2 patients) | https://zenodo.org/records/11280343 (DOI 10.5281/zenodo.11280343) | **Cleared for use (verified 2026-11-19), but not independent motion truth.** CC BY 4.0, open download. Companion paper (Filippon et al., *Oral* 2024, DOI 10.3390/oral4040039) confirms IRB waived under Swiss guidelines for a 2-patient case study and written informed consent obtained. Checking the authors' own analysis code (github.com/unibas-bmc/toothMovementAnalysis) found the per-visit tooth positions are propagated by their own registration algorithm from one human-labeled timepoint, not independently re-verified per visit - usable as a cross-method comparison and as a segmentation reference (one real human-labeled timepoint per patient), not as `reviewed-real` motion truth. See `MOTION_BENCHMARK.md`. | Cohort growing beyond 2 patients; any future restriction added to the Zenodo record. |
 
 ## Recommended Software To Evaluate
 

@@ -173,7 +173,7 @@ Copy and adapt this request:
 > whether the files are downloadable meshes rather than a viewer link or PDF.
 
 For iTero, ask staff to confirm the workflow for their software and account.
-Do not insist that “iCast/non-Invisalign mode” is universally required or that
+Do not insist that a particular study-model export mode is universally required or that
 every existing case can be exported. A published [3M iTero export guide](https://multimedia.3m.com/mws/media/2319172O/attaching-a-digital-impression-for-3m-oral-care-portal-from-the-itero-intraoral-scanner.pdf)
 shows STL export with separate arches in their bite relationship. This supports
 asking for that output; it does not guarantee access under every current plan.

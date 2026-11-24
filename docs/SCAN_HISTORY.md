@@ -1,5 +1,29 @@
 # Endpoint-based weekly progress
 
+## Observed week 21
+
+USER_ONE's November 23, 2026 intraoral pair is available as reported week 21.
+History now offers weeks 1-21, with observations at 1, 7, 18 and 21. Week 21
+loads the exact hash-verified public `visits/progress-03/` surfaces on demand.
+Both arches share one rigid display transform, preserving their exported relative
+coordinates without the independent arch placement used by earlier displays.
+The label distinguishes exported bite coordinates from validated bite accuracy.
+Single-arch inspection changes display orientation only. Scale and cross-visit
+registration remain unverified.
+
+The week 21 source-record panel includes both STL downloads, all six source-rendered
+JPGs, redacted information extracted from the prescription PDF and export metadata,
+and the week 1/7/21 quality comparison. Original identifying PDF/XML/HTML records
+remain local. The contributor authorized these listed assets for public reuse on
+November 24, 2026; private development pushes still precede filtered public releases.
+
+Week 21 painting has separate hash-bound saves and notes for each arch. It starts
+without copied labels from previous visits and does not generate a motion fit.
+Weeks 8-17 and 19-20 are explicitly not fitted; the existing week 1-7 estimates
+are unchanged. These missing observations do not block a future best-effort endpoint
+fit. Such a fit must expose unmatched/weak regions and stay separate from reviewed
+treatment-plan data. Loading failures never substitute another week's observation.
+
 The application should use and improve existing tooth-segmentation tools to
 obtain usable endpoint matches and simulate the gaps between scans. Two visits
 are enough to attempt a **best-effort research preview**. Intermediate scans are
@@ -171,7 +195,13 @@ excludes these private recordings and annotations.
 
 ## Observed week 18
 
-The sample history exposes reported weeks 1–18. Week 18 loads the cleaned upper
+Week 18 is visibly labeled **personal model scan**. Its source-record section
+describes the contributor's physical model-making and 3D-scanning experiment and
+the reported model chips, with direct public-asset download links for the original
+upper/lower pair, cleaned upper, and both H4/H6 lower captures. These are variants
+of one reported visit; source model defects are separate from actual tooth condition.
+
+Week 18 is a separate observed visit in scan history. It loads the cleaned upper
 and Fusion H4 lower with SHA-256 verification. On the private development machine,
 the explicitly selected saved H4 cleanup replaces the untrimmed H4 display.
 Its exact hash and original H4 source are checked; only its surface bytes and

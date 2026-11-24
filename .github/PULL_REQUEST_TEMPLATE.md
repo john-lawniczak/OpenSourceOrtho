@@ -34,5 +34,6 @@ See CONTRIBUTING.md.
 - [ ] `python tools/check_maintainability.py --strict` passes.
 - [ ] `cd ui && node --test` passes.
 - [ ] New behavior and any fixed regression have tests.
-- [ ] No patient data; no verdict language; mechanics stay in deterministic rules.
+- [ ] No identifying or unconsented patient records; dataset additions have reviewed consent, rights, data-license terms, and explicit `consent.json` asset entries.
+- [ ] No verdict language; mechanics stay in deterministic rules.
 - [ ] Docs updated if behavior or provider behavior changed.

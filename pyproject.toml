@@ -14,7 +14,8 @@ version = "1.4.0"
 description = "Open-source orthodontic treatment-planning research toolkit for clear-aligner workflows."
 readme = "README.md"
 requires-python = ">=3.11"
-license = "Apache-2.0"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE", "NOTICE", "LICENSES/*.txt", "ui/vendor/LICENSE.three"]
 authors = [
   { name = "OpenSource Ortho contributors" }
 ]

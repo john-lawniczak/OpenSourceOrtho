@@ -39,8 +39,8 @@ def test_catalog_outputs_are_current_and_identity_is_preserved():
     entry = next(e for e in catalog["cases"] if e["specimen_id"] == SAMPLE_SPECIMEN_ID)
     assert entry["pseudonym"] == "USER_ONE"
     assert entry["uuid"] == "07b70319-38c8-4b1a-9c98-517b8bc4cdd3"
-    assert entry["scan_pair_count"] == 3
-    assert entry["scan_count"] == 9  # Includes the cleaned upper derivative, not a new visit.
+    assert entry["scan_pair_count"] == 4
+    assert entry["scan_count"] == 11  # Includes the cleaned upper derivative, not a new visit.
     assert "2026-" not in json.dumps(catalog)
 
 
@@ -85,7 +85,7 @@ def test_supplementary_visits_are_validated(tmp_path, damage):
 @pytest.mark.parametrize("relative", [
     ".local/secret.json", "records/volume.dcm", "private.json", "../index.json",
     "%2e%2e/index.json", "%252e%252e/index.json", "derived/../../manifest.json",
-    "derived//report.json", "derived\\report.json", "media/reference-simulation.mp4",
+    "derived//report.json", "derived\\report.json", "media/unlisted-reference.mp4",
 ])
 def test_only_explicit_published_assets_resolve(relative):
     assert resolve_published_asset(f"/datasets/{SAMPLE_SPECIMEN_ID}/{relative}") is None
@@ -126,6 +126,21 @@ def test_dataset_http_and_segmentation_use_the_same_allowlist():
     image = f"/datasets/{SAMPLE_SPECIMEN_ID}/media/progress-01-front.jpg"
     assert handler._resolve_static(image) == SAMPLE_CASE_DIR / "media/progress-01-front.jpg"
     assert _resolve_scan_path(image, ui_dir=ui_root, workspace=None) is None
+
+
+def test_user_one_plan_video_matches_provenance_and_is_served_only_as_media():
+    from orthoplan.segmentation_api import _resolve_scan_path
+    from orthoplan.server import Handler
+
+    record = json.loads((SAMPLE_CASE_DIR / "media/reference-media.json").read_text())["media"][0]
+    reference = f"/datasets/{SAMPLE_SPECIMEN_ID}/{record['filename']}"
+    path = resolve_published_asset(reference)
+    assert path == SAMPLE_CASE_DIR / record["filename"]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == record["sha256"]
+    assert record["included_in_public_snapshot"] is True
+    assert record["role"] == "external-treatment-simulation-reference"
+    assert Handler.__new__(Handler)._resolve_static(reference) == path
+    assert _resolve_scan_path(reference, ui_dir=DATASETS_ROOT.parent / "ui", workspace=None) is None
 
 
 @pytest.mark.parametrize("path", ["../secret", "/secret", ".local/secret", "records/file", "a//b"])

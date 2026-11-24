@@ -115,7 +115,9 @@ export function createScanComparison(host, { onFocus = () => {}, onTooth = () =>
       entries.forEach(entry => bounds.union(new THREE.Box3().setFromObject(entry.meshes[2], true)));
       const sphere = bounds.getBoundingSphere(new THREE.Sphere());
       observedSpan = Math.max(sphere.radius + sphere.center.length(), 5) * 1.08;
-      // Keep earlier visits' framing; week 18 gets room for its own model bounds.
+      // Full intraoral exports should fit at the initial zoom on narrow screens.
+      if (scans.every(scan => scan.preserveOcclusion)) observedSpan *= defaultZoom;
+      // Each later observation gets room for its own bounds.
       render();
     },
     setFrame(frame) {

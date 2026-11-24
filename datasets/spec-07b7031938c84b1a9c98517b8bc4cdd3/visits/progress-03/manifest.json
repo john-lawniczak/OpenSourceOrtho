@@ -1,0 +1,61 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "created_at": "2026-11-24T17:14:01.043195Z",
+  "engine_version": "1.4.0",
+  "scans": [
+    {
+      "filename": "progress-03-upper.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 1011855,
+      "face_count": 337285,
+      "bounds": {
+        "min_xyz": [
+          -29.32369613647461,
+          -51.039039611816406,
+          -1.499998927116394
+        ],
+        "max_xyz": [
+          33.73821258544922,
+          4.000034332275391,
+          17.31993293762207
+        ]
+      }
+    },
+    {
+      "filename": "progress-03-lower.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "ae8b310346465e3601ff9c11a3afa1afabc1cb5d0b5f746facf8820fde07ae8e",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 828150,
+      "face_count": 276050,
+      "bounds": {
+        "min_xyz": [
+          -32.01548767089844,
+          -49.346153259277344,
+          -13.40478229522705
+        ],
+        "max_xyz": [
+          33.49513244628906,
+          3.4096736907958984,
+          3.6924612522125244
+        ]
+      }
+    }
+  ],
+  "plan_summary": null,
+  "plan_summary_filename": null,
+  "outcome_notes_filename": null,
+  "outcome_notes_sha256": null,
+  "consent_acknowledged": true,
+  "phi_removed": true,
+  "notes": "Contributor-authorized public week 21 intraoral observation, recorded 2026-11-23; authorization 2026-11-24. Progress visit sequence 3. Original scan bytes preserved. Scale, bite accuracy and cross-visit registration unverified. Identifying original records excluded; relevant source information transcribed in redacted metadata."
+}

@@ -5,6 +5,23 @@ playground and research toolkit**, not a medical device and not complete
 treatment-planning software. Before contributing, read [docs/SAFETY.md](docs/SAFETY.md)
 and [docs/MAINTAINABILITY.md](docs/MAINTAINABILITY.md).
 
+## Patients: donate your own scans
+
+Patients can contribute their own existing scans to help develop and evaluate
+this clear-aligner planning safety playground and research toolkit. Before/after
+and progress scans are especially useful; a single scan pair also helps.
+`USER_ONE` is the first tracked donor case.
+
+Start with the [patient donation guide](docs/PATIENT_DATA_DONATION.md), including
+a records-request template and the [consent form](docs/DATA_DONATION_CONSENT.md).
+Choose **CC0 1.0 or CC BY 4.0** only for files you have authority to license.
+Review privacy and redistribution rights before any public upload. The guide
+explains how to propose a contribution without attaching health records, then
+submit a reviewed bundle. Raw CBCT/DICOM and identifying paperwork stay local.
+We work with donors on best-effort de-identification before publication; anonymity
+cannot be guaranteed. Private, unpublished donations can be withdrawn. Publicly
+released copies and valid open-license permissions cannot reliably be recalled.
+
 ## Setup
 
 ```bash
@@ -35,15 +52,34 @@ Run the app locally:
 orthoplan serve            # then open http://127.0.0.1:8000
 ```
 
-CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs all of the above
-on every push and pull request. PRs should be green before review.
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs one inexpensive
+Linux job on non-draft pull requests: Ruff, the generated catalog, maintainability,
+and JavaScript unit tests. It does not run on branch pushes or merges. Updates to
+an open non-draft PR still run that quick job; newer updates cancel obsolete runs.
+Draft PRs skip automatic jobs until marked ready for review.
+
+Python tests, Open3D, motion/ML/volume tests, and Playwright are **manual only**.
+In GitHub Actions, choose **CI → Run workflow**, select the branch, and choose
+`python`, `geometry`, `browser`, or `all`; the default `quick` runs only the cheap
+checks. Native mobile checks are separately manual with an iOS/Android/both choice.
+Manual dispatch becomes available once these workflow definitions reach the default
+branch. No schedules or automatic full-suite runs are configured.
+
+Run the relevant tests locally before requesting review. For releases, validate the
+full matrix locally or dispatch it explicitly; a green quick check alone does not
+mean the full suite ran. See [the release workflow](docs/PRIVATE_DEVELOPMENT.md).
 
 ## Non-negotiable rules
 
 These are enforced by code and review, not just convention:
 
-1. **No patient data, ever.** Fixtures and examples are synthetic. Uploaded STL
-   bytes are never stored or committed; only redacted metadata is kept.
+1. **No identifying or unconsented patient records.** Patient-derived datasets
+   require privacy review, documented publication consent, redistribution rights,
+   and individual `consent.json` asset entries. New donations also need explicit
+   data-license terms. Keep raw DICOM and identifying paperwork local/ignored.
+   Use synthetic reproductions in bug reports. Contribution registration writes
+   metadata locally; it does not upload scan bytes. See the
+   [data guide](docs/DATA_CONTRIBUTION.md).
 2. **No verdict language.** Findings must not state or imply a plan is "safe",
    "approved", "cleared", "acceptable", or that a patient is a "good candidate".
    `lint_finding()` is the single gate and scans every text field.
@@ -142,12 +178,17 @@ confirm:
 - [ ] `pytest -q`, `python tools/check_maintainability.py --strict`, and
       `cd ui && node --test` all pass locally.
 - [ ] New behavior and regressions have tests.
-- [ ] No patient data, no verdict language, mechanics stay in deterministic rules
-      (see Non-negotiable rules above).
+- [ ] No identifying or unconsented patient records; dataset additions have
+      reviewed consent, rights, and explicit asset scope.
+- [ ] No verdict language; mechanics stay in deterministic rules.
 - [ ] Docs updated if behavior or provider behavior changed.
 
 Maintainers may ask for changes to keep the codebase composable; small,
 well-scoped PRs are reviewed fastest.
+
+By submitting a contribution you agree it is licensed under the project's
+[GNU Affero General Public License, version 3 only](LICENSE)
+(`AGPL-3.0-only`). Retain existing copyright and third-party license notices.
 
 ## Releases and versioning
 

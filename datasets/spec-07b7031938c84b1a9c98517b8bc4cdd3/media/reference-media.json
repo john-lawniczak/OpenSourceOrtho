@@ -27,10 +27,16 @@
       "limitations": [
         "No side or occlusal views retained in this media file.",
         "No root, bone, periodontal, radiographic, or outcome-scan evidence.",
-        "Third-party treatment-planning simulation; redistribution rights must be confirmed before public data sharing."
+        "Third-party treatment-planning simulation included on the basis of explicit contributor redistribution authorization; it does not establish observed outcomes or calibrated 3D tooth transforms."
       ],
-      "included_in_public_snapshot": false,
-      "availability_note": "Video bytes are withheld pending redistribution-rights confirmation. Metadata describes a previously reviewed reference, not an available download."
+      "included_in_public_snapshot": true,
+      "availability_note": "Included in the USER_ONE dataset following explicit contributor redistribution authorization on 2026-11-20; original bytes restored with the recorded SHA-256.",
+      "redistribution_authorization": {
+        "date": "2026-11-20",
+        "basis": "Contributor identifies this as their USER_ONE data and explicitly approves all redistribution and dataset inclusion.",
+        "scope": "media/reference-simulation.mp4",
+        "verification": "Contributor authorization; vendor rights not independently verified. No new CC0/CC BY license inferred."
+      }
     }
   ]
 }

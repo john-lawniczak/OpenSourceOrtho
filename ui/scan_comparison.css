@@ -1,4 +1,5 @@
-.sample-observed > :not(#sampleComparison):not(#sampleViewModes) { display: none !important; }
+.sample-observed > :not(#sampleComparison):not(#sampleViewModes):not(#samplePlanReference) { display: none !important; }
+#samplePlanReference video { display: block; width: 100%; max-width: 900px; }
 body[data-sample-view="observed"] .gstep[data-gstep="plan"] > :not(.plan-brief-summary):not(h3),
 body[data-sample-view="observed"] #panel-review .panel-heading,
 body[data-sample-view="observed"] #panel-review .workflow-card,
@@ -82,3 +83,7 @@ body[data-theme="dark"] #sampleComparison:not(.estimate-highlights-off) .compari
 .comparison-motion-tools a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 /* The header assistant shortcut also works while inspecting observed history. */
 body[data-sample-view="observed"]:not([data-chat-collapsed="1"]) .ai-rail { display: block; position: fixed; z-index: 40; inset: 60px 0 0 auto; width: min(580px, 100%); padding: 12px; background: var(--bg); }
+
+.comparison-record-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; }
+.comparison-record-images a { display: grid; gap: .25rem; }
+.comparison-record-images img { width: 100%; height: auto; border-radius: .4rem; }

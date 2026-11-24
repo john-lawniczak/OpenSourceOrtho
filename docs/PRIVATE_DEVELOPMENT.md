@@ -56,6 +56,13 @@ local editing sessions remain outside release trees until incorporated into that
 
 ## 3. Prepare a public release worktree
 
+On **2026-11-24**, the contributor authorized USER_ONE week 21 original intraoral
+STLs, source-rendered JPGs, redacted PDF/export metadata and quality comparisons
+for all future users. These assets are individually inventoried under
+`visits/progress-03/` in the case's `consent.json`. Original identifying PDF/XML/HTML
+records and the personal Desktop archive remain excluded. Integration and filtered
+public release are still required; a push to the private dev branch is not publication.
+
 ```bash
 git fetch private
 git fetch origin
@@ -78,6 +85,20 @@ snapshot does not undo community contributions. Do not merge the previous privat
 release history into public main. Avoid the obsolete local `publish_snapshot.sh`:
 it created a new repository and exported every tracked file.
 
+## License transition in the next public release
+
+The next snapshot incorporating the 2026-11-22 license change must ship
+`AGPL-3.0-only` consistently in LICENSE, README, contribution terms, and package
+metadata. Include NOTICE and LICENSES/Apache-2.0.txt to preserve existing notices
+and Apache permissions. State the Apache-to-AGPL transition in the public release
+PR; previously released Apache versions retain their original terms. Integrate
+the revised license branch into private main before selecting the release source.
+Confirm contribution rights and inspect the exact staged snapshot's license files.
+
+`docs/private/` contains maintainer-only decisions and is excluded by
+`public-release.json`, alongside TODO.md. Verify both are absent from the release;
+private rationale must not be copied into public release notes.
+
 ## 4. Validate the exact staged release
 
 Inside the release worktree, install the relevant project extras and run:
@@ -94,8 +115,11 @@ node --test
 pytest tests/e2e -q
 ```
 
-Run the full CI dependency matrix, including mesh-processing, motion-preview,
-learned segmentation and volume-review extras. Review the complete diff, dataset
+Run the full dependency matrix locally, including mesh-processing, motion-preview,
+learned segmentation and volume-review extras. Alternatively, explicitly dispatch
+the CI workflow with `suite: all` on the reviewed source branch. Expensive suites
+are manual only; automatic PR checks cover lint, catalog, maintainability and JS.
+Record which full tests were run; a green quick job is not full-release validation. Review the complete diff, dataset
 scope, binary sizes and credentials, not just the test results. Fix browser failures
 before release. Keep fixes in private development and regenerate the snapshot when
 possible. Include behavior changes and validation in release notes/PR description;

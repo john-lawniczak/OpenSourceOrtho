@@ -25,15 +25,15 @@ def correction_store() -> Path:
 
 
 def baseline_source(arch: str, visit: str = "initial", capture: str = "original") -> dict:
-    if visit not in {"initial", "progress-01", "progress-02"}:
-        raise ValueError("Choose week 1, week 7 or week 18.")
+    if visit not in {"initial", "progress-01", "progress-02", "progress-03"}:
+        raise ValueError("Choose week 1, week 7, week 18 or week 21.")
     if arch not in {"upper", "lower"}:
         raise ValueError("Choose upper or lower arch.")
     alternatives = {"upper": {"upper-clean"}, "lower": {"fusion-h-4", "fusion-h-6"}}
     if capture != "original" and (visit != "progress-02" or capture not in alternatives[arch]):
         raise ValueError("Choose a valid capture for this visit and arch.")
     filename = f"{visit}-{arch}.stl"
-    folder = SAMPLE_CASE_DIR / "visits/progress-02" if visit == "progress-02" else SAMPLE_CASE_DIR
+    folder = SAMPLE_CASE_DIR / "visits" / visit if visit in {"progress-02", "progress-03"} else SAMPLE_CASE_DIR
     if capture != "original":
         folder = folder / "captures" / capture
         filename = "progress-02-upper-clean.stl" if capture == "upper-clean" else f"2026-11-12_USER_ONE_lower_week-18_{capture}.stl"
@@ -73,7 +73,7 @@ def validate_corrections(record: dict, arch: str, source: dict) -> dict:
 
 
 def _folder(root: Path, arch: str, visit: str, capture: str = "original") -> Path:
-    prefix = {"initial": "baseline", "progress-01": "week-7", "progress-02": "week-18"}[visit]
+    prefix = {"initial": "baseline", "progress-01": "week-7", "progress-02": "week-18", "progress-03": "week-21"}[visit]
     suffix = "" if capture == "original" else f"-{capture}"
     folder = root / "USER_ONE" / f"{prefix}-{arch}{suffix}"
     if any(path.is_symlink() for path in [root, folder.parent, folder]):

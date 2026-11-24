@@ -7,6 +7,7 @@ This directory holds the project docs that should evolve with the product.
 - [Getting 3D scans of your teeth](../GETTING_YOUR_TEETH_SCANNED.md) - acquisition options, costs, export request template, quality checks, and LLM guidance
 
 - [SAFETY.md](SAFETY.md) - capability boundary and safety language
+- [MATERIALS.md](MATERIALS.md) - retainer/aligner material evidence, Moses whitepaper review, and product-selection limits
 - [application maturity.md](application%20maturity.md) - 10-point maturity tracking for the four application surfaces
 - [NEW_USER_WORKFLOW_GAPS.md](NEW_USER_WORKFLOW_GAPS.md) - end-to-end first-time-user scorecard, weak areas, and prioritized improvement path
 - [INTAKE_READINESS.md](INTAKE_READINESS.md) - shared record evidence, workflow states, action links, and remaining intake limits

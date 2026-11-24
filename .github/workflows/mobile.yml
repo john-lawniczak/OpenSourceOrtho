@@ -1,16 +1,26 @@
 name: Native mobile checks
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Native build to run on demand'
+        type: choice
+        default: both
+        options: [ios, android, both]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.platform }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
   ios:
+    if: inputs.platform == 'ios' || inputs.platform == 'both'
     runs-on: macos-15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Core and full-scan parser tests
@@ -24,7 +34,9 @@ jobs:
           CODE_SIGNING_ALLOWED=NO build
 
   android:
+    if: inputs.platform == 'android' || inputs.platform == 'both'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
