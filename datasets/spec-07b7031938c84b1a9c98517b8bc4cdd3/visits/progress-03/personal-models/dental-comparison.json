@@ -1,0 +1,582 @@
+{
+  "schema": "opensource-ortho-personal-cast-comparison-v1",
+  "units": "unverified source units",
+  "input_geometry_modified": false,
+  "scans": [
+    {
+      "capture_id": "upper-1-c1",
+      "source_sha256": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5",
+      "reference_sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "dental_to_cast_rigid_transform": [
+        [
+          0.9724378801487296,
+          -0.018377143175998315,
+          0.23243676529443721,
+          -15.429132024440898
+        ],
+        [
+          0.10993474729709479,
+          0.9152629438717119,
+          -0.38756689088726615,
+          43.585164607906016
+        ],
+        [
+          -0.20561838582329114,
+          0.40243760284544433,
+          0.8920566435083864,
+          294.83285140817026
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "cast_to_dental_rigid_transform": [
+        [
+          0.9724378801487228,
+          0.10993474729709495,
+          -0.20561838582328987,
+          70.8354033755355
+        ],
+        [
+          -0.0183771431759975,
+          0.9152629438717019,
+          0.40243760284543917,
+          -158.8272553972489
+        ],
+        [
+          0.23243676529443394,
+          -0.3875668908872622,
+          0.8920566435083758,
+          -242.5291395482186
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "trimmed_fit_mean_squared_point_distance": 0.08541466372144761,
+      "dental_surface_to_cast": {
+        "median": 0.1612103059887886,
+        "p90": 1.412060010433197,
+        "p95": 2.8650387644767736,
+        "maximum": 8.254618644714355,
+        "fraction_within_0_25": 0.6583125,
+        "fraction_within_0_5": 0.809875,
+        "fraction_within_1": 0.8723125
+      },
+      "cast_surface_to_dental_including_cast_walls": {
+        "median": 0.14917384833097458,
+        "p90": 1.5158766984939591,
+        "p95": 2.6114786386489865,
+        "maximum": 5.565604209899902,
+        "fraction_within_0_25": 0.6910625,
+        "fraction_within_0_5": 0.820625,
+        "fraction_within_1": 0.868375
+      },
+      "status": "exploratory rigid surface alignment; not an anatomical validation"
+    },
+    {
+      "capture_id": "upper-1-c2",
+      "source_sha256": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760",
+      "reference_sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "dental_to_cast_rigid_transform": [
+        [
+          0.9724145318453756,
+          -0.019347807212526696,
+          0.2324556745102418,
+          -15.453692867886266
+        ],
+        [
+          0.11072142047536719,
+          0.915416206026692,
+          -0.38698053800111326,
+          43.586049260538964
+        ],
+        [
+          -0.20530646678529246,
+          0.4020433211729505,
+          0.8923062381247701,
+          294.8270784627384
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "cast_to_dental_rigid_transform": [
+        [
+          0.9724145318453712,
+          0.11072142047536686,
+          -0.20530646678529185,
+          70.73139202018642
+        ],
+        [
+          -0.019347807212525235,
+          0.9154162060266787,
+          0.40204332117295,
+          -158.73162871698122
+        ],
+        [
+          0.2324556745102364,
+          -0.3869805380011004,
+          0.8923062381247531,
+          -242.61678988893314
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "trimmed_fit_mean_squared_point_distance": 0.08608092400448904,
+      "dental_surface_to_cast": {
+        "median": 0.16148576140403748,
+        "p90": 1.408480978012086,
+        "p95": 2.8630463242530824,
+        "maximum": 8.23197078704834,
+        "fraction_within_0_25": 0.65625,
+        "fraction_within_0_5": 0.809375,
+        "fraction_within_1": 0.8723125
+      },
+      "cast_surface_to_dental_including_cast_walls": {
+        "median": 0.1559401899576187,
+        "p90": 1.6012223839759827,
+        "p95": 2.6836593747138973,
+        "maximum": 5.564692497253418,
+        "fraction_within_0_25": 0.676625,
+        "fraction_within_0_5": 0.814875,
+        "fraction_within_1": 0.8633125
+      },
+      "status": "exploratory rigid surface alignment; not an anatomical validation"
+    },
+    {
+      "capture_id": "upper-1-c3",
+      "source_sha256": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6",
+      "reference_sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "dental_to_cast_rigid_transform": [
+        [
+          0.9675309548193859,
+          -0.056014612289409405,
+          0.24646747184236104,
+          -3.500890644943619
+        ],
+        [
+          0.16813028693457502,
+          0.870734037646234,
+          -0.46211951084064257,
+          40.23228693658164
+        ],
+        [
+          -0.1887221716746469,
+          0.4885535783252061,
+          0.8518798876743454,
+          313.4281461260908
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "cast_to_dental_rigid_transform": [
+        [
+          0.9675309548193761,
+          0.1681302869345736,
+          -0.18872217167464514,
+          55.7737945226128
+        ],
+        [
+          -0.05601461228940867,
+          0.8707340376462258,
+          0.4885535783252015,
+          -188.35416501791116
+        ],
+        [
+          0.24646747184235698,
+          -0.4621195108406355,
+          0.8518798876743325,
+          -247.54815349027947
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "trimmed_fit_mean_squared_point_distance": 0.0832231486388972,
+      "dental_surface_to_cast": {
+        "median": 0.16049310564994812,
+        "p90": 0.6547725200653076,
+        "p95": 1.3760376572608943,
+        "maximum": 5.716598987579346,
+        "fraction_within_0_25": 0.6771875,
+        "fraction_within_0_5": 0.8673125,
+        "fraction_within_1": 0.92925
+      },
+      "cast_surface_to_dental_including_cast_walls": {
+        "median": 0.17599613219499588,
+        "p90": 2.060969781875611,
+        "p95": 3.099666559696197,
+        "maximum": 9.003405570983887,
+        "fraction_within_0_25": 0.628125,
+        "fraction_within_0_5": 0.783375,
+        "fraction_within_1": 0.835375
+      },
+      "status": "exploratory rigid surface alignment; not an anatomical validation"
+    },
+    {
+      "capture_id": "upper-2-c4",
+      "source_sha256": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3",
+      "reference_sha256": "c4ed14bd19f434ac8809ed84f80bbc7b02e93f7d0509b04cf048300e9d7a8775",
+      "dental_to_cast_rigid_transform": [
+        [
+          -0.8039479655870805,
+          0.3795109396949144,
+          0.45786364267135365,
+          6.868251094616941
+        ],
+        [
+          -0.5886269264292678,
+          -0.61755002986215,
+          -0.5216802680758429,
+          17.381019131436684
+        ],
+        [
+          0.0847703374467286,
+          -0.6889146589158451,
+          0.7198684481348129,
+          291.60074895995706
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "cast_to_dental_rigid_transform": [
+        [
+          -0.8039479655870744,
+          -0.5886269264292684,
+          0.08477033744672968,
+          -8.966441524850316
+        ],
+        [
+          0.3795109396949151,
+          -0.6175500298621546,
+          -0.6889146589158487,
+          209.0151029660295
+        ],
+        [
+          0.45786364267135604,
+          -0.5216802680758515,
+          0.7198684481348215,
+          -203.99156637379943
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "trimmed_fit_mean_squared_point_distance": 0.09679808135205054,
+      "dental_surface_to_cast": {
+        "median": 0.14632949233055115,
+        "p90": 1.9018998026847842,
+        "p95": 2.927079570293426,
+        "maximum": 6.664280414581299,
+        "fraction_within_0_25": 0.6515,
+        "fraction_within_0_5": 0.767375,
+        "fraction_within_1": 0.837375
+      },
+      "cast_surface_to_dental_including_cast_walls": {
+        "median": 0.11577340215444565,
+        "p90": 0.726920372247696,
+        "p95": 1.416158318519592,
+        "maximum": 4.1629767417907715,
+        "fraction_within_0_25": 0.7539375,
+        "fraction_within_0_5": 0.8671875,
+        "fraction_within_1": 0.922125
+      },
+      "status": "exploratory rigid surface alignment; not an anatomical validation"
+    },
+    {
+      "capture_id": "lower-1-c5",
+      "source_sha256": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23",
+      "reference_sha256": "ae8b310346465e3601ff9c11a3afa1afabc1cb5d0b5f746facf8820fde07ae8e",
+      "dental_to_cast_rigid_transform": [
+        [
+          0.9365459248771996,
+          0.17530043144445367,
+          -0.30356463781425036,
+          -7.23802618626458
+        ],
+        [
+          0.32495924953020006,
+          -0.7589340194562102,
+          0.5642877282528809,
+          -13.804964857520442
+        ],
+        [
+          -0.13146564851959727,
+          -0.6271275092414785,
+          -0.7677420598168982,
+          285.70985590343463
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "cast_to_dental_rigid_transform": [
+        [
+          0.9365459248772007,
+          0.3249592495302018,
+          -0.13146564851959852,
+          48.825826443577284
+        ],
+        [
+          0.17530043144445592,
+          -0.7589340194562189,
+          -0.6271275092414809,
+          169.968281943952
+        ],
+        [
+          -0.30356463781425314,
+          0.564287728252891,
+          -0.7677420598169055,
+          224.94423674163187
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "trimmed_fit_mean_squared_point_distance": 0.06762035970922511,
+      "dental_surface_to_cast": {
+        "median": 0.10162778571248055,
+        "p90": 0.5862447738647464,
+        "p95": 1.355265259742733,
+        "maximum": 3.9225308895111084,
+        "fraction_within_0_25": 0.7813125,
+        "fraction_within_0_5": 0.8859375,
+        "fraction_within_1": 0.9335625
+      },
+      "cast_surface_to_dental_including_cast_walls": {
+        "median": 0.148350790143013,
+        "p90": 3.7715811729431157,
+        "p95": 5.028670454025268,
+        "maximum": 8.494160652160645,
+        "fraction_within_0_25": 0.6058125,
+        "fraction_within_0_5": 0.6771875,
+        "fraction_within_1": 0.7303125
+      },
+      "status": "exploratory rigid surface alignment; not an anatomical validation"
+    },
+    {
+      "capture_id": "lower-2-c6",
+      "source_sha256": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854",
+      "reference_sha256": "ae8b310346465e3601ff9c11a3afa1afabc1cb5d0b5f746facf8820fde07ae8e",
+      "dental_to_cast_rigid_transform": [
+        [
+          -0.9433865597140181,
+          0.13134668450031028,
+          -0.30458142987011066,
+          -19.569339976703926
+        ],
+        [
+          -0.043142195217948265,
+          0.8618679701085373,
+          0.5052943232342572,
+          30.762944773558193
+        ],
+        [
+          0.3288777127485544,
+          0.48982818474620965,
+          -0.8074080749444554,
+          302.90258560302306
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "cast_to_dental_rigid_transform": [
+        [
+          -0.9433865597140227,
+          -0.043142195217949056,
+          0.3288777127485567,
+          -116.7521808863431
+        ],
+        [
+          0.13134668450031,
+          0.8618679701085363,
+          0.4898281847462082,
+          -172.3134525036099
+        ],
+        [
+          -0.3045814298701101,
+          0.5052943232342584,
+          -0.8074080749444565,
+          223.06119462566855
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "trimmed_fit_mean_squared_point_distance": 0.3275950475124202,
+      "dental_surface_to_cast": {
+        "median": 0.5258228480815887,
+        "p90": 1.534239971637726,
+        "p95": 2.0093851804733265,
+        "maximum": 6.6585588455200195,
+        "fraction_within_0_25": 0.238625,
+        "fraction_within_0_5": 0.4790625,
+        "fraction_within_1": 0.7876875
+      },
+      "cast_surface_to_dental_including_cast_walls": {
+        "median": 0.6219789385795593,
+        "p90": 2.5579702615737916,
+        "p95": 4.205140733718866,
+        "maximum": 13.009725570678711,
+        "fraction_within_0_25": 0.2088125,
+        "fraction_within_0_5": 0.414125,
+        "fraction_within_1": 0.668875
+      },
+      "status": "exploratory rigid surface alignment; not an anatomical validation",
+      "interpretation_caveat": "Two-piece cast held together with clay; relative fragment alignment unverified. Distances describe this assembly, not intact-arch accuracy or scanner performance."
+    }
+  ],
+  "repeat_scan_checks": [
+    {
+      "source": "upper-1-c1",
+      "target": "upper-1-c2",
+      "original_frame_note": "Nearest-vertex comparison before fitting; pose differences are not shape error.",
+      "exact_vertex_fraction": 0.9779175239806416,
+      "original_frame_distances": {
+        "median": 0.0,
+        "p90": 0.0,
+        "p95": 0.0,
+        "maximum": 0.292516665442104,
+        "fraction_within_0_25": 0.999985510186339,
+        "fraction_within_0_5": 1.0,
+        "fraction_within_1": 1.0
+      },
+      "source_to_target_rigid_transform": [
+        [
+          0.9999999909408732,
+          -0.00012973521140648034,
+          3.5875120092761546e-05,
+          -0.004177352130914742
+        ],
+        [
+          0.00012972624397460846,
+          0.9999999603725792,
+          0.00024985184627398556,
+          -0.0673738774241621
+        ],
+        [
+          -3.590753325208904e-05,
+          -0.0002498471900730131,
+          0.9999999681435149,
+          0.00916858125648338
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "aligned_source_surface_to_target": {
+        "median": 0.0032351254485547543,
+        "p90": 0.007716928655281663,
+        "p95": 0.009742361027747386,
+        "maximum": 0.014182738028466702,
+        "fraction_within_0_25": 1.0,
+        "fraction_within_0_5": 1.0,
+        "fraction_within_1": 1.0
+      },
+      "method": "Rigid 80%-trimmed ICP seeded by dental-reference fits; separate held-out samples against target triangles. No scaling."
+    },
+    {
+      "source": "upper-1-c1",
+      "target": "upper-1-c3",
+      "original_frame_note": "Nearest-vertex comparison before fitting; pose differences are not shape error.",
+      "exact_vertex_fraction": 0.0,
+      "original_frame_distances": {
+        "median": 14.403460406830964,
+        "p90": 18.662102755353335,
+        "p95": 19.364424854163587,
+        "maximum": 21.297119015216303,
+        "fraction_within_0_25": 0.0,
+        "fraction_within_0_5": 0.0,
+        "fraction_within_1": 0.0
+      },
+      "source_to_target_rigid_transform": [
+        [
+          0.9991509447445057,
+          -0.041064732885401925,
+          -0.003328262191250681,
+          14.659559607651081
+        ],
+        [
+          0.040558990055137786,
+          0.9945936038925703,
+          -0.09559566633324579,
+          25.724695098770358
+        ],
+        [
+          0.007235878790472355,
+          0.09537950937722611,
+          0.9954146830588202,
+          15.829873557508698
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "aligned_source_surface_to_target": {
+        "median": 0.03748044744133949,
+        "p90": 0.15059793442487718,
+        "p95": 0.32298993021249733,
+        "maximum": 3.9948794841766357,
+        "fraction_within_0_25": 0.938875,
+        "fraction_within_0_5": 0.9636875,
+        "fraction_within_1": 0.97975
+      },
+      "method": "Rigid 80%-trimmed ICP seeded by dental-reference fits; separate held-out samples against target triangles. No scaling."
+    }
+  ],
+  "method": "Deterministic area samples; 73 rigid initializations; 80%-trimmed nearest-point ICP; held-out 16000 dental samples measured against original cast triangles.",
+  "limitations": [
+    "Dental scan is a comparison reference, not independently measured ground truth.",
+    "No physical scale calibration, tooth segmentation, bite fit or nonrigid correction.",
+    "Lower C6 is a two-piece cast supported with clay; relative fragment alignment is unverified.",
+    "Whole-surface metrics include soft-tissue margins and cast walls; they do not isolate crown accuracy.",
+    "Distances conflate impression/casting/scanning differences and fitting error; these stages cannot be separated from these files alone."
+  ]
+}

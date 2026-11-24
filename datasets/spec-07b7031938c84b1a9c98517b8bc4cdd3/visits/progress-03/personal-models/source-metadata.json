@@ -1,0 +1,200 @@
+{
+  "schema": "opensource-ortho-personal-model-captures-v1",
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "progress_record_id": "progress-03",
+  "reported_week": 21,
+  "acquisition_date": "2026-11-23",
+  "date_provenance": "Contributor states casts/scans are from the same day as the dental intraoral scan; file modification dates are not acquisition dates.",
+  "imported_on": "2026-11-24",
+  "publication_status": "Contributor-authorized public reuse on 2026-11-24; individual assets in case consent.json",
+  "capture_method": "Contributor-made physical dental casts, digitized with a personal 3D scanning workflow; equipment and material not confirmed for this visit.",
+  "physical_model_count": 4,
+  "scan_count": 6,
+  "repeat_capture_provenance": "Contributor explicitly confirmed that Fusion_C_1, C_2 and C_3 are separate scans of the same upper cast.",
+  "source_model_damage": {
+    "status": "contributor-reported",
+    "description": "Some casts chipped. Upper Model 2 is identified as more chipped in its source folder. High-quality models remain difficult to produce despite contributor experience.",
+    "exact_chip_locations": "not independently confirmed",
+    "scope": "Damage to physical casts, not evidence of damage to actual teeth.",
+    "lower_model_2_update": {
+      "capture_id": "lower-2-c6",
+      "provenance": "Contributor clarification on 2026-11-24",
+      "fracture_piece_count": 2,
+      "support_material": "clay",
+      "description": "The lower cast broke into two parts; the contributor held them together with clay for this scan.",
+      "assembly_alignment": "unverified",
+      "interpretation_scope": "Reassembled specimen; not an intact-arch accuracy or scanner-performance reference."
+    },
+    "process_report": "Contributor reports good biting-surface impressions, fragile stone, chipping during demolding, and incomplete filling despite vibration. Specific causes and their contributions are not independently measured."
+  },
+  "dental_references": {
+    "upper": "visits/progress-03/progress-03-upper.stl",
+    "lower": "visits/progress-03/progress-03-lower.stl"
+  },
+  "shared_bite_frame": false,
+  "captures": [
+    {
+      "capture_id": "upper-1-c1",
+      "arch": "upper",
+      "model_id": "upper-model-1",
+      "capture_number": 1,
+      "filename": "upper-1-c1.stl",
+      "source_relative_path": "Upper-Personal-Model-1/Fusion_C_1.stl",
+      "sha256": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5",
+      "byte_count": 6840484,
+      "face_count": 136808,
+      "units": "unverified",
+      "bounds": {
+        "min_xyz": [
+          -42.21946716308594,
+          -10.828168869018555,
+          273.4715881347656
+        ],
+        "max_xyz": [
+          19.466949462890625,
+          44.55302429199219,
+          312.19110107421875
+        ]
+      },
+      "original_bytes_preserved": true
+    },
+    {
+      "capture_id": "upper-1-c2",
+      "arch": "upper",
+      "model_id": "upper-model-1",
+      "capture_number": 2,
+      "filename": "upper-1-c2.stl",
+      "source_relative_path": "Upper-Personal-Model-1/Fusion_C_2.stl",
+      "sha256": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760",
+      "byte_count": 6840484,
+      "face_count": 136808,
+      "units": "unverified",
+      "bounds": {
+        "min_xyz": [
+          -42.21946716308594,
+          -10.828168869018555,
+          273.4715881347656
+        ],
+        "max_xyz": [
+          19.466949462890625,
+          44.55302429199219,
+          312.19110107421875
+        ]
+      },
+      "original_bytes_preserved": true
+    },
+    {
+      "capture_id": "upper-1-c3",
+      "arch": "upper",
+      "model_id": "upper-model-1",
+      "capture_number": 3,
+      "filename": "upper-1-c3.stl",
+      "source_relative_path": "Upper-Personal-Model-1/Fusion_C_3.stl",
+      "sha256": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6",
+      "byte_count": 7802634,
+      "face_count": 156051,
+      "units": "unverified",
+      "bounds": {
+        "min_xyz": [
+          -29.68083953857422,
+          -12.762691497802734,
+          288.00091552734375
+        ],
+        "max_xyz": [
+          33.34453582763672,
+          43.73513412475586,
+          331.8354187011719
+        ]
+      },
+      "original_bytes_preserved": true
+    },
+    {
+      "capture_id": "upper-2-c4",
+      "arch": "upper",
+      "model_id": "upper-model-2",
+      "capture_number": 4,
+      "filename": "upper-2-c4.stl",
+      "source_relative_path": "Upper-Personal-Model-2-More-Chipped/Fusion_C_4.stl",
+      "sha256": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3",
+      "byte_count": 6017134,
+      "face_count": 120341,
+      "units": "unverified",
+      "bounds": {
+        "min_xyz": [
+          -23.710241317749023,
+          -5.164853572845459,
+          295.54638671875
+        ],
+        "max_xyz": [
+          31.3551082611084,
+          52.78791427612305,
+          338.000732421875
+        ]
+      },
+      "original_bytes_preserved": true
+    },
+    {
+      "capture_id": "lower-1-c5",
+      "arch": "lower",
+      "model_id": "lower-model-1",
+      "capture_number": 5,
+      "filename": "lower-1-c5.stl",
+      "source_relative_path": "Lower-Personal-Model-1/Fusion_C_5.stl",
+      "sha256": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23",
+      "byte_count": 7489784,
+      "face_count": 149794,
+      "units": "unverified",
+      "bounds": {
+        "min_xyz": [
+          -39.300018310546875,
+          -25.868473052978516,
+          282.12445068359375
+        ],
+        "max_xyz": [
+          28.364906311035156,
+          24.553600311279297,
+          329.36993408203125
+        ]
+      },
+      "original_bytes_preserved": true
+    },
+    {
+      "capture_id": "lower-2-c6",
+      "arch": "lower",
+      "model_id": "lower-model-2",
+      "capture_number": 6,
+      "filename": "lower-2-c6.stl",
+      "source_relative_path": "Lower-Personal-Model-2/Fusion_C_6.stl",
+      "sha256": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854",
+      "byte_count": 6789584,
+      "face_count": 135790,
+      "units": "unverified",
+      "bounds": {
+        "min_xyz": [
+          -51.03672409057617,
+          -16.962583541870117,
+          273.2520751953125
+        ],
+        "max_xyz": [
+          13.436992645263672,
+          31.487321853637695,
+          319.89605712890625
+        ]
+      },
+      "original_bytes_preserved": true,
+      "physical_state": "fractured in two parts and supported with clay during scanning",
+      "intact_arch_reference": false
+    }
+  ],
+  "documented_materials": {
+    "provenance": "Contributor referred to the existing how-to documentation; labels read from the published process photos. Exact week 21 batch/process not independently confirmed.",
+    "impression_putty": "MARK3 Fast Set VPS Putty Base and Catalyst, reorder #3005",
+    "casting_stone": "Dental Emporium Yellow Dental Buff Lab Stone, 5 lb bag",
+    "photo_references": [
+      "media/process/01-user-one-impression-putty.jpg",
+      "media/process/03-user-one-model-stone.jpg"
+    ],
+    "water_powder_ratio": "not recorded",
+    "demolding_time": "not recorded"
+  }
+}

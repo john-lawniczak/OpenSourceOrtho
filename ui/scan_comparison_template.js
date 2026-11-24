@@ -1,3 +1,4 @@
+import { personalModelTemplate } from "./scan_personal_model_records.js";
 import { weekTwentyOneRecords } from "./scan_visit_records.js";
 import { weekEighteenRecords } from "./scan_model_records.js";
 
@@ -59,6 +60,7 @@ export const comparisonTemplate = `
   </div>
   ${weekEighteenRecords}
   ${weekTwentyOneRecords}
+  ${personalModelTemplate}
   <details id="comparisonDiagnostics" class="viewer-diagnostics">
     <summary>Scan details &amp; match quality</summary>
     <p id="comparisonMatchDetail" class="comparison-help"></p>

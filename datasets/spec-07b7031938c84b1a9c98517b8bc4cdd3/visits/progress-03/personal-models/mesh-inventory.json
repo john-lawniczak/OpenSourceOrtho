@@ -1,0 +1,144 @@
+{
+  "schema": "opensource-ortho-cast-inventory-v1",
+  "input_geometry_modified": false,
+  "method": "Exact-coordinate vertex deduplication and edge incidence; original triangles.",
+  "scans": [
+    {
+      "filename": "upper-1-c1.stl",
+      "sha256": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5",
+      "finite_coordinates": true,
+      "face_count": 136808,
+      "unique_vertices": 69014,
+      "zero_area_faces": 5,
+      "duplicate_faces": 0,
+      "boundary_edges": 1222,
+      "edges_with_more_than_two_incident_faces": 5,
+      "connected_component_vertex_counts": [
+        69014
+      ],
+      "capture_id": "upper-1-c1",
+      "model_id": "upper-model-1",
+      "geometry_sha256": "15ce7ad44376a18b6b566866d7db1ad46e6231c4f332dae078da8fb25259d203",
+      "extent_source_units": [
+        61.68641662597656,
+        55.38119316101074,
+        38.719512939453125
+      ]
+    },
+    {
+      "filename": "upper-1-c2.stl",
+      "sha256": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760",
+      "finite_coordinates": true,
+      "face_count": 136808,
+      "unique_vertices": 69014,
+      "zero_area_faces": 5,
+      "duplicate_faces": 0,
+      "boundary_edges": 1222,
+      "edges_with_more_than_two_incident_faces": 5,
+      "connected_component_vertex_counts": [
+        69014
+      ],
+      "capture_id": "upper-1-c2",
+      "model_id": "upper-model-1",
+      "geometry_sha256": "5e65b205191eedca1f03bde5565c21cdf50bccbf4b7ba0a785ab7900da76ae0e",
+      "extent_source_units": [
+        61.68641662597656,
+        55.38119316101074,
+        38.719512939453125
+      ]
+    },
+    {
+      "filename": "upper-1-c3.stl",
+      "sha256": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6",
+      "finite_coordinates": true,
+      "face_count": 156051,
+      "unique_vertices": 78683,
+      "zero_area_faces": 2,
+      "duplicate_faces": 0,
+      "boundary_edges": 1313,
+      "edges_with_more_than_two_incident_faces": 2,
+      "connected_component_vertex_counts": [
+        78683
+      ],
+      "capture_id": "upper-1-c3",
+      "model_id": "upper-model-1",
+      "geometry_sha256": "bbe5c8282511609b6f789d02c6754f49b39f1ebb56a54558c381b4044e5d310c",
+      "extent_source_units": [
+        63.02537536621094,
+        56.497825622558594,
+        43.834503173828125
+      ]
+    },
+    {
+      "filename": "upper-2-c4.stl",
+      "sha256": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3",
+      "finite_coordinates": true,
+      "face_count": 120341,
+      "unique_vertices": 60784,
+      "zero_area_faces": 3,
+      "duplicate_faces": 0,
+      "boundary_edges": 1227,
+      "edges_with_more_than_two_incident_faces": 3,
+      "connected_component_vertex_counts": [
+        60784
+      ],
+      "capture_id": "upper-2-c4",
+      "model_id": "upper-model-2",
+      "geometry_sha256": "65e0767b8e03ff0698b57213f5622d6921f3699988be322127fd93c32f10873f",
+      "extent_source_units": [
+        55.06534957885742,
+        57.952767848968506,
+        42.454345703125
+      ]
+    },
+    {
+      "filename": "lower-1-c5.stl",
+      "sha256": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23",
+      "finite_coordinates": true,
+      "face_count": 149794,
+      "unique_vertices": 75631,
+      "zero_area_faces": 6,
+      "duplicate_faces": 0,
+      "boundary_edges": 1472,
+      "edges_with_more_than_two_incident_faces": 6,
+      "connected_component_vertex_counts": [
+        75631
+      ],
+      "capture_id": "lower-1-c5",
+      "model_id": "lower-model-1",
+      "geometry_sha256": "354dc1fb0b7ae844c02d59d01dea5075856cb61683d33590987e26537a193634",
+      "extent_source_units": [
+        67.66492462158203,
+        50.42207336425781,
+        47.2454833984375
+      ]
+    },
+    {
+      "filename": "lower-2-c6.stl",
+      "sha256": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854",
+      "finite_coordinates": true,
+      "face_count": 135790,
+      "unique_vertices": 68559,
+      "zero_area_faces": 5,
+      "duplicate_faces": 0,
+      "boundary_edges": 1332,
+      "edges_with_more_than_two_incident_faces": 5,
+      "connected_component_vertex_counts": [
+        68559
+      ],
+      "capture_id": "lower-2-c6",
+      "model_id": "lower-model-2",
+      "geometry_sha256": "644bd6da707408913a509f88da9d91c615dc1cb8ff868ca16f3a4a242c3b74dc",
+      "extent_source_units": [
+        64.47371673583984,
+        48.44990539550781,
+        46.64398193359375
+      ]
+    }
+  ],
+  "not_assessed": [
+    "self-intersections",
+    "anatomical accuracy",
+    "verified physical scale"
+  ]
+}

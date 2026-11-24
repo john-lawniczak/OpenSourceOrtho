@@ -3,7 +3,7 @@
   "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
   "consent_acknowledged": true,
   "phi_removed": true,
-  "authorization_basis": "Existing manifest acknowledgement and contributor instructions to publish the baseline and progress data, then reorganize the same case under its UUID and USER_ONE pseudonym. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly requested including USER_ONE week 18 STL scans and chipped-model metadata in the public OSS repository. Includes the original upper/lower pair, Fusion H4/H6 lower captures, and accompanying evaluations. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly authorized all USER_ONE contributed case data for public use as the main test case, including wisdom-tooth removal history and baseline annotations. Individual files remain inventoried below; this does not confer third-party media rights or publish application credentials. On 2026-11-12 the contributor requested adding their Desktop PROCESS photographs to the how-to guide after renaming and metadata removal. On 2026-11-12 the contributor also requested publication of their Sample-Painting screenshot and associated the process photographs with the reported week 18 scans. On 2026-11-13 the contributor requested adding the cleaned upper painting version. Its geometry is a verified triangle subset of the previously authorized week 18 upper scan, retained as a separate derivative with provenance; this does not extend authorization to unrelated contributions. On 2026-11-20 the contributor identified the USER_ONE plan video as their data, explicitly approved all redistribution, and requested its inclusion in the overall USER_ONE dataset. The original video hash is preserved. On 2026-11-24 the contributor explicitly requested connecting week 21 to interactive scan history and providing its STL scans and relevant PDF/JPG information to all future users. Original identifying paperwork remains excluded; redacted extracted metadata and reviewed source-rendered images are included.",
+  "authorization_basis": "Existing manifest acknowledgement and contributor instructions to publish the baseline and progress data, then reorganize the same case under its UUID and USER_ONE pseudonym. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly requested including USER_ONE week 18 STL scans and chipped-model metadata in the public OSS repository. Includes the original upper/lower pair, Fusion H4/H6 lower captures, and accompanying evaluations. This is a publication-scope record, not a signed consent form. On 2026-11-12 the contributor explicitly authorized all USER_ONE contributed case data for public use as the main test case, including wisdom-tooth removal history and baseline annotations. Individual files remain inventoried below; this does not confer third-party media rights or publish application credentials. On 2026-11-12 the contributor requested adding their Desktop PROCESS photographs to the how-to guide after renaming and metadata removal. On 2026-11-12 the contributor also requested publication of their Sample-Painting screenshot and associated the process photographs with the reported week 18 scans. On 2026-11-13 the contributor requested adding the cleaned upper painting version. Its geometry is a verified triangle subset of the previously authorized week 18 upper scan, retained as a separate derivative with provenance; this does not extend authorization to unrelated contributions. On 2026-11-20 the contributor identified the USER_ONE plan video as their data, explicitly approved all redistribution, and requested its inclusion in the overall USER_ONE dataset. The original video hash is preserved. On 2026-11-24 the contributor explicitly requested connecting week 21 to interactive scan history and providing its STL scans and relevant PDF/JPG information to all future users. Original identifying paperwork remains excluded; redacted extracted metadata and reviewed source-rendered images are included. On 2026-11-24 the contributor explicitly requested all raw personal-cast STL options be available to users as open-source research data. This authorizes the six week 21 cast scans, redacted provenance, comparisons and assessment under visits/progress-03/personal-models/, including the C6 two-piece/clay-support clarification.",
   "publication_scope": [
     "original scan geometry",
     "redacted case metadata",
@@ -15,7 +15,8 @@
     "saved baseline labels and reproducible draft corrections",
     "metadata-free contributor acquisition-process photographs for the how-to guide",
     "USER_ONE intended-plan reference video, explicitly authorized for redistribution on 2026-11-20",
-    "week 21 original intraoral STL pair, reviewed JPG renderings, redacted PDF/export metadata, and quality comparison"
+    "week 21 original intraoral STL pair, reviewed JPG renderings, redacted PDF/export metadata, and quality comparison",
+    "Week 21 personal casts: all six original STL exports, four-cast grouping, reported fracture/reassembly provenance and derived research assessments"
   ],
   "exact_dates_retained": true,
   "date_retention_basis": "Existing case-specific contributor request to retain acquisition and treatment dates; dates remain confined to case records, not the catalog.",
@@ -129,7 +130,24 @@
     "visits/progress-03/quality-findings.json",
     "visits/progress-03/quality-scores.json",
     "visits/progress-03/source-metadata.json",
-    "visits/progress-03/week-21-views.png"
+    "visits/progress-03/week-21-views.png",
+    "visits/progress-03/personal-models/README.md",
+    "visits/progress-03/personal-models/build_assessment.py",
+    "visits/progress-03/personal-models/cast-overview.png",
+    "visits/progress-03/personal-models/dental-comparison.json",
+    "visits/progress-03/personal-models/dental-comparison.png",
+    "visits/progress-03/personal-models/lower-1-c5.stl",
+    "visits/progress-03/personal-models/lower-2-c6.stl",
+    "visits/progress-03/personal-models/manifest.json",
+    "visits/progress-03/personal-models/mesh-inventory.json",
+    "visits/progress-03/personal-models/quality-assessment.md",
+    "visits/progress-03/personal-models/record-assets.json",
+    "visits/progress-03/personal-models/source-metadata.json",
+    "visits/progress-03/personal-models/summary.json",
+    "visits/progress-03/personal-models/upper-1-c1.stl",
+    "visits/progress-03/personal-models/upper-1-c2.stl",
+    "visits/progress-03/personal-models/upper-1-c3.stl",
+    "visits/progress-03/personal-models/upper-2-c4.stl"
   ],
   "third_party_reference_rights": "confirmed",
   "rights_note": "Redistribution of media/reference-simulation.mp4 was explicitly authorized by the contributor on 2026-11-20. The confirmed status records that contributor authorization, not independent verification of vendor rights or a new CC0/CC BY license. Earlier withholding is superseded for this specific video. Raw CBCT, private records, and identifying paperwork remain excluded. The video is an intended-plan reference, not observed motion or reviewed treatment-plan data."

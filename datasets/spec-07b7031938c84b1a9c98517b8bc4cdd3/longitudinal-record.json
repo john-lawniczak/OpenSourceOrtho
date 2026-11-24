@@ -101,7 +101,23 @@
       "publication_status": "authorized for public release 2026-11-24",
       "units": "unverified",
       "cross_visit_registration": "not performed",
-      "motion_fit_status": "not fitted"
+      "motion_fit_status": "not fitted",
+      "companion_casts": {
+        "manifest": "visits/progress-03/personal-models/manifest.json",
+        "metadata": "visits/progress-03/personal-models/source-metadata.json",
+        "physical_model_count": 4,
+        "scan_count": 6,
+        "capture_ids": [
+          "upper-1-c1",
+          "upper-1-c2",
+          "upper-1-c3",
+          "upper-2-c4",
+          "lower-1-c5",
+          "lower-2-c6"
+        ],
+        "role": "same-day companion observations; not additional weeks or motion estimates",
+        "lower_c6": "two-piece cast held together with clay; inter-fragment alignment unverified"
+      }
     }
   ],
   "timing": {

@@ -1,0 +1,21 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "progress_record_id": "progress-03",
+  "publication_scope": "Public companion downloads; individual publication scope in case consent.json",
+  "assets": {
+    "upper-1-c1.stl": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5",
+    "upper-1-c2.stl": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760",
+    "upper-1-c3.stl": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6",
+    "upper-2-c4.stl": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3",
+    "lower-1-c5.stl": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23",
+    "lower-2-c6.stl": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854",
+    "manifest.json": "59f301ce21ae6a5f430ed8f13f59118131fa339839d0ec088d17d8337410d589",
+    "source-metadata.json": "869c417022bb7f35a601bceddd5a83dbadab5b39d60ee26da6e3ce19b400a5a3",
+    "summary.json": "3ee2e83ea44c4900f43b08f6606d3d7b0d9a230d66bc0720564be14b4baef379",
+    "mesh-inventory.json": "07e68c3274c8afddf3f601a1b530de61d5be7ac7afbcb753fe355166d4386f48",
+    "cast-overview.png": "4902510b1821ca0a0697edc2da6730bee3c51933a7208d75500cb78a47d168c7",
+    "dental-comparison.json": "26e3e50ee92d9e60961d1c15386a75131f4cd9cdb8e096706f667037436451b5",
+    "dental-comparison.png": "4785d7c7c197045059eb51ebda9d87b2854e6eb67e6d8d0645f05a16db16419e",
+    "quality-assessment.md": "a9d02f9e15f82ecfc072dc6b04ff0b43356bd651d12cb4894f54c80ee44736eb"
+  }
+}

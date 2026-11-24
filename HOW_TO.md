@@ -140,6 +140,13 @@ tooth, which helps when choosing which teeth to move.
 
 **Materials → impressions → stone casts → scanning setup → STL upload**
 
+The documented materials are **MARK3 Fast Set VPS impression putty (base and
+catalyst, reorder #3005)** and **Dental Emporium Yellow Dental Buff Lab Stone**.
+The scanner packaging identifies a **3DMakerpro Fox**. These identify the
+photographed setup; exact batch ratios, mixing method and demolding times are not
+recorded. Week 21 Lower C6 was broken into two parts and supported with clay for
+scanning; see the [cast provenance and original STLs](datasets/spec-07b7031938c84b1a9c98517b8bc4cdd3/visits/progress-03/personal-models/README.md).
+
 These photos show USER_ONE's acquisition process. For acquisition options and
 limitations, see [Getting 3D scans of your teeth](GETTING_YOUR_TEETH_SCANNED.md).
 

@@ -1,3 +1,4 @@
+import { showPersonalModelRecords } from "./scan_personal_model_records.js";
 import { laterVisitDetail } from "./scan_visit_records.js";
 import { el, state } from "./state.js";
 import { prepareSampleSegmentation } from "./sample.js";
@@ -29,7 +30,7 @@ function setWeek(value) {
     visitRequest?.abort(); visitRequest = null; visitError = ""; visitWeek = null;
     if ([18, 21].includes(week)) { pair[2] = null; visitWeek = week; }
   }
-  el("comparisonWeek21Records").hidden = week !== 21;
+  el("comparisonWeek21Records").hidden = week !== 21; showPersonalModelRecords(week);
   el("comparisonWeek18Records").hidden = week !== 18;
   const frame = historyFrame(week, pair, motion, endpointEstimate, timing);
   el("comparisonWeekLabel").textContent = `Week ${week} of 21`;
