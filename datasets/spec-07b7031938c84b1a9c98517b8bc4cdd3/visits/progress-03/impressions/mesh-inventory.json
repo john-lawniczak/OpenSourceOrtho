@@ -1,0 +1,93 @@
+{
+  "filename": "upper-impression-1.stl",
+  "sha256": "40136020e7bc2ea06dba511191d765a7b05c7bf393230f075b780e86913d5f79",
+  "finite_coordinates": true,
+  "face_count": 216287,
+  "unique_vertices": 108980,
+  "zero_area_faces": 4,
+  "duplicate_faces": 0,
+  "boundary_edges": 1689,
+  "edges_with_more_than_two_incident_faces": 4,
+  "connected_component_vertex_counts": [
+    108980
+  ],
+  "bounds": {
+    "min_xyz": [
+      -24.282575607299805,
+      -32.20405578613281,
+      307.560546875
+    ],
+    "max_xyz": [
+      49.885643005371094,
+      35.883201599121094,
+      339.61846923828125
+    ]
+  },
+  "units": "unverified",
+  "input_geometry_modified": false,
+  "extent_source_units": [
+    74.1682186126709,
+    68.0872573852539,
+    32.05792236328125
+  ],
+  "boundary_components": [
+    {
+      "edge_count": 1305,
+      "length_source_units": 280.81752256791106,
+      "bounds": {
+        "min_xyz": [
+          -24.282575607299805,
+          -32.20405578613281,
+          310.1179504394531
+        ],
+        "max_xyz": [
+          49.885643005371094,
+          34.33097839355469,
+          330.4718933105469
+        ]
+      }
+    },
+    {
+      "edge_count": 373,
+      "length_source_units": 80.93970132803611,
+      "bounds": {
+        "min_xyz": [
+          -22.317426681518555,
+          -5.259814739227295,
+          328.2592468261719
+        ],
+        "max_xyz": [
+          23.882568359375,
+          35.883201599121094,
+          339.26959228515625
+        ]
+      }
+    },
+    {
+      "edge_count": 11,
+      "length_source_units": 3.689044894592286,
+      "bounds": {
+        "min_xyz": [
+          35.332672119140625,
+          8.719839096069336,
+          323.0271911621094
+        ],
+        "max_xyz": [
+          36.206214904785156,
+          9.585030555725098,
+          324.12335205078125
+        ]
+      }
+    }
+  ],
+  "method": "Exact-coordinate deduplication, edge incidence and connectivity; all triangles.",
+  "not_assessed": [
+    "self-intersections",
+    "winding consistency",
+    "anatomical accuracy",
+    "calibrated scale",
+    "complete cavity coverage",
+    "repeatability",
+    "registration to dental reference"
+  ]
+}

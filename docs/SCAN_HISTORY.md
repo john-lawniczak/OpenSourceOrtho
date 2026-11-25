@@ -17,6 +17,22 @@ and the week 1/7/21 quality comparison. Original identifying PDF/XML/HTML record
 remain local. The contributor authorized these listed assets for public reuse on
 November 24, 2026; private development pushes still precede filtered public releases.
 
+Six contributor-authorized original cast STLs from four physical casts accompany
+week 21. The `/api/sample-personal-models` panel reads the indexed public bundle
+under `visits/progress-03/personal-models/`. Downloads require individual case
+consent and matching hashes; findings pass `lint_finding()`. The resolver rejects
+traversal and symlinks and honors revoked asset consent. Missing companion records
+do not block dental history. Lower C6 was fractured into two pieces and held with
+clay during scanning; its fragment positions are unverified, so comparison distances
+describe that assembly rather than intact-arch accuracy or scanner performance.
+Companion casts do not replace the dental observation or change its bite coordinates,
+painting labels or motion estimates. Rigid comparison transforms live in the reports,
+separate from original geometry and reviewed treatment-plan data.
+
+The companion panel also exposes the [typed capture provenance review](CAPTURE_PROVENANCE.md):
+physical-object repeat groups, damage, unknown surface preparation and limits on
+using proxy surfaces as references. These reports leave exploratory inspection available.
+
 Week 21 painting has separate hash-bound saves and notes for each arch. It starts
 without copied labels from previous visits and does not generate a motion fit.
 Weeks 8-17 and 19-20 are explicitly not fitted; the existing week 1-7 estimates

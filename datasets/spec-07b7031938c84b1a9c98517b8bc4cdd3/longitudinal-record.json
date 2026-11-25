@@ -101,7 +101,55 @@
       "publication_status": "authorized for public release 2026-11-24",
       "units": "unverified",
       "cross_visit_registration": "not performed",
-      "motion_fit_status": "not fitted"
+      "motion_fit_status": "not fitted",
+      "companion_casts": {
+        "manifest": "visits/progress-03/personal-models/manifest.json",
+        "metadata": "visits/progress-03/personal-models/source-metadata.json",
+        "physical_model_count": 4,
+        "scan_count": 6,
+        "capture_ids": [
+          "upper-1-c1",
+          "upper-1-c2",
+          "upper-1-c3",
+          "upper-2-c4",
+          "lower-1-c5",
+          "lower-2-c6"
+        ],
+        "role": "same-day companion observations; not additional weeks or motion estimates",
+        "lower_c6": "two-piece cast held together with clay; inter-fragment alignment unverified"
+      },
+      "companion_impressions": {
+        "manifest": "visits/progress-03/impressions/manifest.json",
+        "metadata": "visits/progress-03/impressions/source-metadata.json",
+        "assessment": "visits/progress-03/impressions/quality-assessment.md",
+        "scan_count": 2,
+        "impression_date": "2026-11-23",
+        "capture_date": "2026-11-24",
+        "role": "negative-impression companion; not a direct tooth-motion observation",
+        "date_basis": "Contributor-reported one-day-later digitization",
+        "additional_captures": [
+          {
+            "arch": "mandibular",
+            "manifest": "visits/progress-03/impressions/lower/manifest.json",
+            "metadata": "visits/progress-03/impressions/lower/source-metadata.json",
+            "assessment": "visits/progress-03/impressions/lower/quality-assessment.md",
+            "impression_date": "2026-11-23",
+            "capture_date": "2026-11-24",
+            "date_basis": "Contributor explicitly confirms same dates, no coating or manual edits as upper"
+          }
+        ],
+        "bite_alignment": "No established shared bite frame between impression captures",
+        "photographs": {
+          "files": [
+            "visits/progress-03/impressions/upper-impression-photo.png",
+            "visits/progress-03/impressions/lower/lower-impression-photo.png"
+          ],
+          "same_condition_as_scans": true,
+          "confirmed_on": "2026-11-25",
+          "basis": "Contributor explicitly confirms exact same condition for both photographs and corresponding scans.",
+          "photographed_on": null
+        }
+      }
     }
   ],
   "timing": {

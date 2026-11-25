@@ -30,6 +30,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 from orthoplan import __version__
+from orthoplan.model.capture import CaptureProvenance
 from orthoplan.model.assets import (
     ArchName,
     BoundingBox,
@@ -166,6 +167,7 @@ class ContributedScan(BaseModel):
     vertex_count: int = Field(ge=0)
     face_count: int = Field(ge=0)
     bounds: BoundingBox | None = None
+    acquisition: CaptureProvenance | None = None
 
     @field_validator("filename")
     @classmethod

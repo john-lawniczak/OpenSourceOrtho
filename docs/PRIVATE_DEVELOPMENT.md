@@ -63,6 +63,13 @@ for all future users. These assets are individually inventoried under
 records and the personal Desktop archive remain excluded. Integration and filtered
 public release are still required; a push to the private dev branch is not publication.
 
+The contributor subsequently authorized all six original week 21 personal-cast STLs
+and their comparison/provenance records for users. These individually inventoried
+assets now live in `visits/progress-03/personal-models/`. C1/C2/C3 are separate scans
+of one upper cast. C6 is a lower cast fractured into two pieces and supported with
+clay for scanning, with unverified fragment alignment. This scope does not include
+unincorporated local painting sessions or identifying source documents.
+
 ```bash
 git fetch private
 git fetch origin

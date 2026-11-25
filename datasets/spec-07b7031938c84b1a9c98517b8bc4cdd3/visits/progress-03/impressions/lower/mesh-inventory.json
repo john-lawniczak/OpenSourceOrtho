@@ -1,0 +1,189 @@
+{
+  "filename": "lower-impression-1.stl",
+  "sha256": "a57ee3564fa08ce08fb5ed9dc591a74c86def63ea2f579256ed9f7f51f14fda4",
+  "finite_coordinates": true,
+  "face_count": 241043,
+  "unique_vertices": 121778,
+  "zero_area_faces": 12,
+  "duplicate_faces": 0,
+  "boundary_edges": 2533,
+  "edges_with_more_than_two_incident_faces": 12,
+  "connected_component_vertex_counts": [
+    121778
+  ],
+  "bounds": {
+    "min_xyz": [
+      -11.34212875366211,
+      -16.09258270263672,
+      272.75042724609375
+    ],
+    "max_xyz": [
+      73.60877227783203,
+      47.26650619506836,
+      305.73291015625
+    ]
+  },
+  "units": "unverified",
+  "input_geometry_modified": false,
+  "extent_source_units": [
+    84.95090103149414,
+    63.35908889770508,
+    32.98248291015625
+  ],
+  "boundary_components": [
+    {
+      "edge_count": 1703,
+      "length_source_units": 355.86832615342075,
+      "bounds": {
+        "min_xyz": [
+          -11.34212875366211,
+          -16.09258270263672,
+          273.03076171875
+        ],
+        "max_xyz": [
+          73.60877227783203,
+          47.26650619506836,
+          305.73291015625
+        ]
+      }
+    },
+    {
+      "edge_count": 280,
+      "length_source_units": 59.38787041442451,
+      "bounds": {
+        "min_xyz": [
+          6.832615852355957,
+          21.184539794921875,
+          281.87835693359375
+        ],
+        "max_xyz": [
+          13.841663360595703,
+          43.37132263183594,
+          292.48419189453125
+        ]
+      }
+    },
+    {
+      "edge_count": 142,
+      "length_source_units": 31.5380732177221,
+      "bounds": {
+        "min_xyz": [
+          46.06112289428711,
+          16.429903030395508,
+          276.0265808105469
+        ],
+        "max_xyz": [
+          49.38319778442383,
+          34.569244384765625,
+          281.0413818359375
+        ]
+      }
+    },
+    {
+      "edge_count": 127,
+      "length_source_units": 26.75272409663557,
+      "bounds": {
+        "min_xyz": [
+          8.145059585571289,
+          -0.18210433423519135,
+          290.19525146484375
+        ],
+        "max_xyz": [
+          13.487687110900879,
+          8.103780746459961,
+          294.853515625
+        ]
+      }
+    },
+    {
+      "edge_count": 87,
+      "length_source_units": 18.7287527223707,
+      "bounds": {
+        "min_xyz": [
+          15.028386116027832,
+          -6.8636627197265625,
+          290.3065490722656
+        ],
+        "max_xyz": [
+          20.34798812866211,
+          -2.2020225524902344,
+          293.71484375
+        ]
+      }
+    },
+    {
+      "edge_count": 73,
+      "length_source_units": 13.96444053756998,
+      "bounds": {
+        "min_xyz": [
+          49.13707733154297,
+          1.0639867782592773,
+          283.12127685546875
+        ],
+        "max_xyz": [
+          52.220069885253906,
+          6.119685173034668,
+          285.7388610839844
+        ]
+      }
+    },
+    {
+      "edge_count": 63,
+      "length_source_units": 14.075760597449325,
+      "bounds": {
+        "min_xyz": [
+          45.033172607421875,
+          14.82829475402832,
+          276.5791320800781
+        ],
+        "max_xyz": [
+          47.10282516479492,
+          24.799579620361328,
+          280.2910461425781
+        ]
+      }
+    },
+    {
+      "edge_count": 39,
+      "length_source_units": 7.823022002241841,
+      "bounds": {
+        "min_xyz": [
+          21.56121826171875,
+          -8.397612571716309,
+          291.20123291015625
+        ],
+        "max_xyz": [
+          24.359546661376953,
+          -6.989658832550049,
+          292.9139404296875
+        ]
+      }
+    },
+    {
+      "edge_count": 19,
+      "length_source_units": 3.970378377859799,
+      "bounds": {
+        "min_xyz": [
+          47.11141586303711,
+          13.938507080078125,
+          291.26904296875
+        ],
+        "max_xyz": [
+          47.869930267333984,
+          15.422357559204102,
+          292.15478515625
+        ]
+      }
+    }
+  ],
+  "method": "Exact-coordinate deduplication, edge incidence and connectivity; all triangles.",
+  "not_assessed": [
+    "self-intersections",
+    "winding consistency",
+    "anatomical accuracy",
+    "calibrated scale",
+    "complete cavity coverage",
+    "repeatability",
+    "registration to dental reference"
+  ]
+}

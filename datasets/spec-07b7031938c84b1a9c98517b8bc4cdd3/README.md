@@ -25,6 +25,22 @@ and cross-visit registration remain unverified; earlier paintings and fits are u
 Identifying paperwork remains local. Public availability follows the filtered release
 process; a private dev push does not publish a new public snapshot.
 
+Week 21 also includes an [original upper negative-impression scan](visits/progress-03/impressions/upper-impression-1.stl)
+and [quality review](visits/progress-03/impressions/quality-assessment.md), attached
+to interactive history alongside the six cast exports. The contributor reports
+November 23 impression-taking and November 24 digitization, with no coating or
+manual edits. This is a companion acquisition record, not another tooth-motion
+observation. Its 7.50/10.00 rating describes exploratory usability, not accuracy.
+The [lower impression](visits/progress-03/impressions/lower/lower-impression-1.stl)
+is attached alongside it with a [6.75/10.00 review](visits/progress-03/impressions/lower/quality-assessment.md)
+under the same rubric. The contributor confirms the same dates and absence of
+coating/manual edits. More wall openings make the lower the priority for a targeted
+repeat capture; neither impression has been registered to the dental reference.
+Both now include [upper](visits/progress-03/impressions/upper-impression-photo.png)
+and [lower](visits/progress-03/impressions/lower/lower-impression-photo.png)
+physical-impression photos, explicitly confirmed to show the same condition as
+their respective scans. Metadata-free copies are linked in the impression panel.
+
 
 The case now includes a **first progress scan pair, reported as week 7**, under
 the same specimen ID. See [the baseline/progress comparison and full case
