@@ -184,6 +184,9 @@ def _load_manifests(root: Path) -> list[DatasetManifest]:
         paths = []
     manifests: list[DatasetManifest] = []
     for path in paths:
+        if any(part.is_symlink() for part in (path, *path.parents)
+               if part == root or root in part.parents):
+            continue
         if root.is_dir() and any(part.startswith(".") or part == "private"
                                  for part in path.relative_to(root).parts):
             continue

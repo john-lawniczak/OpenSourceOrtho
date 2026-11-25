@@ -38,7 +38,8 @@ smoothing, so byte preservation does not establish unprocessed geometry.
 
 `orthoplan review-captures MANIFEST --out REVIEW.json` verifies every scan hash,
 rejects symlinked scan files, protects source scans/manifest from output overwrite,
-and emits deterministic, linted findings. It groups repeats by physical-object ID
+and emits deterministic, linted findings. Output aliases sharing a source inode
+are rejected; reports are replaced atomically instead of truncating existing files. It groups repeats by physical-object ID
 and reports distinct file hashes and recorded sessions without declaring independence.
 Legacy manifests remain valid and report unknown acquisition provenance.
 
@@ -81,6 +82,13 @@ photo links without hiding the underlying impression scans. EXIF orientation was
 applied and decoded RGB pixels saved losslessly without embedded metadata; original
 JPEGs remain local. The photos add physical context without changing scan scores
 or asserting a mapped cause for each mesh opening.
+Malformed or rejected companion bundles are isolated from other bundles and
+reported through generic API `issues` notices; invalid photo metadata does not
+hide its impression. The viewer shows these notices and exposes an explicit retry
+for loading/rendering failures. Photo validation compares summary and index hashes
+before streaming one content hash, without caching away consent checks.
+See the [November 25 audit](POST_IMPLEMENTATION_AUDIT_2026-11-25.md) for reproduced
+failures, applied fixes, and remaining limitations.
 
 ## Example: an impression capture
 

@@ -4,13 +4,15 @@ import { impressionTemplate, renderImpressionRecords, showImpressionRecords } fr
 const endpoint = "/api/sample-personal-models";
 const asset = name => `${endpoint}/assets/${name.split("/").map(encodeURIComponent).join("/")}`;
 
-export const personalModelTemplate = `<details id="comparisonWeek21Casts" class="viewer-diagnostics" hidden>
+export const personalModelTemplate = `<div id="companionLoadNotice" role="status" hidden>
+  <p id="companionLoadMessage"></p><button id="retryCompanionRecords" type="button">Retry companion records</button>
+</div><details id="comparisonWeek21Casts" class="viewer-diagnostics" hidden>
   <summary>Week 21 · same-day personal casts &amp; dental comparison</summary>
   <p id="personalCastStatus" role="status"></p>
   <div id="personalCastContent"></div>
 </details>${impressionTemplate}`;
 
-let loaded = false, pending = null;
+let loaded = false, pending = null, loadNotice = "";
 
 function link(name, label, download = false) {
   const node = document.createElement("a");
@@ -51,21 +53,45 @@ function render(data, container) {
   container.append(findings);
 }
 
+function currentWeek() {
+  return Number(document.getElementById("sampleComparison").dataset.week);
+}
+
+function showLoadNotice() {
+  document.getElementById("companionLoadMessage").textContent = loadNotice;
+  document.getElementById("companionLoadNotice").hidden = currentWeek() !== 21 || !loadNotice;
+  const retry = document.getElementById("retryCompanionRecords");
+  retry.disabled = Boolean(pending);
+  retry.onclick = () => {
+    if (pending) return;
+    loaded = false; loadNotice = "";
+    showPersonalModelRecords(currentWeek());
+  };
+}
+
 export function showPersonalModelRecords(week) {
-  showImpressionRecords(week);
+  showImpressionRecords(week); showLoadNotice();
   const panel = document.getElementById("comparisonWeek21Casts");
   panel.hidden = week !== 21 || panel.dataset.available !== "true";
-  if (week !== 21 || loaded || pending) return;
+  if (week !== 21 || loaded || pending || loadNotice) return;
   pending = fetch(endpoint).then(async response => {
     if (!response.ok) throw new Error(`Companion records unavailable (HTTP ${response.status}).`);
     const data = await response.json();
-    loaded = true; panel.dataset.available = String(Boolean(data.available));
     renderImpressionRecords(data.impressions, link);
-    showImpressionRecords(Number(document.getElementById("sampleComparison").dataset.week));
     if (data.available) {
       render(data, document.getElementById("personalCastContent"));
       document.getElementById("personalCastStatus").textContent = "Public companion records attached to this week 21 visit; original STL downloads available below.";
     }
-    panel.hidden = document.getElementById("sampleComparison").dataset.week !== "21" || !data.available;
-  }).catch(() => { loaded = false; }).finally(() => { pending = null; });
+    // Mark loaded only after rendering succeeds, so malformed responses can retry.
+    loaded = true; panel.dataset.available = String(Boolean(data.available));
+    loadNotice = data.issues?.length
+      ? "Some companion records could not be verified. Available records are shown below." : "";
+    showImpressionRecords(currentWeek());
+    panel.hidden = currentWeek() !== 21 || !data.available;
+  }).catch(() => {
+    loaded = false; panel.dataset.available = "false"; panel.hidden = true;
+    renderImpressionRecords(null, link); showImpressionRecords(currentWeek());
+    loadNotice = "Companion records could not be loaded. Retry to load casts and impressions; dental history remains available.";
+  }).finally(() => { pending = null; showLoadNotice(); });
+  showLoadNotice();
 }
