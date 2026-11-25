@@ -142,3 +142,14 @@ def test_declared_proxy_cannot_generate_numeric_tooth_tracking_error(tmp_path):
         metric, = longitudinal_outcome_reports(tmp_path)[0].tracking_errors
         assert metric.status == "proxy-or-damaged-capture"
         assert metric.value_mm is None
+
+
+def test_recursive_discovery_does_not_follow_manifest_symlinks(tmp_path):
+    from orthoplan.validation.longitudinal_benchmark import _load_manifests
+    hidden = tmp_path / "private" / "manifest.json"
+    hidden.parent.mkdir()
+    write_manifest(DatasetManifest(consent_acknowledged=True, phi_removed=True), hidden)
+    alias = tmp_path / "published" / "manifest.json"
+    alias.parent.mkdir()
+    alias.symlink_to(hidden)
+    assert _load_manifests(tmp_path) == []

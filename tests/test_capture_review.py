@@ -109,3 +109,23 @@ def test_symlink_scan_is_not_followed(manifest_path):
     path.rename(moved)
     path.symlink_to(moved)
     assert cmd_review_captures(argparse.Namespace(manifest=manifest_path, out=None)) == 2
+
+
+@pytest.mark.parametrize("filename", ["manifest.json", "capture.stl"])
+def test_review_cannot_overwrite_hardlinked_source(manifest_path, filename):
+    target = manifest_path.parent / filename
+    previous = target.read_bytes()
+    alias = target.with_name("report.json")
+    alias.hardlink_to(target)
+    assert cmd_review_captures(argparse.Namespace(manifest=manifest_path, out=alias)) == 2
+    assert target.read_bytes() == previous
+
+
+def test_review_replaces_existing_report_without_mutating_its_other_links(manifest_path):
+    report = manifest_path.parent / "report.json"
+    report.write_text("previous report")
+    backup = report.with_name("backup.json")
+    backup.hardlink_to(report)
+    assert cmd_review_captures(argparse.Namespace(manifest=manifest_path, out=report)) == 0
+    assert json.loads(report.read_text())["scan_hashes_verified"]
+    assert backup.read_text() == "previous report"

@@ -93,8 +93,9 @@ def test_model_verdict_is_rejected_before_summary_display_or_export(bundle):
                             "title": "Invalid conclusion", "message": "This cast is safe."}]
     (bundle / "summary.json").write_text(json.dumps(summary))
     index_bundle(bundle)
-    with pytest.raises(ValueError, match="banned verdict"):
-        records.personal_model_payload()
+    payload = records.personal_model_payload()
+    assert payload["issues"]
+    assert "safe" not in json.dumps(payload)
     with pytest.raises(ValueError, match="banned verdict"):
         records.personal_model_asset(records.ASSET_PREFIX + "summary.json")
 
@@ -104,8 +105,8 @@ def test_visit_identity_cannot_be_substituted(bundle):
     index = json.loads(path.read_text())
     index["progress_record_id"] = "progress-02"
     path.write_text(json.dumps(index))
-    with pytest.raises(ValueError, match="identity mismatch"):
-        records.personal_model_payload()
+    payload = records.personal_model_payload()
+    assert not payload["available"] and payload["issues"]
 
 
 def test_nested_capture_findings_are_linted_before_display_and_download(bundle):
@@ -116,8 +117,9 @@ def test_nested_capture_findings_are_linted_before_display_and_download(bundle):
          "title": "Invalid capture conclusion", "message": "This tray is safe."}]}]}
     path.write_text(json.dumps(summary))
     index_bundle(bundle)
-    with pytest.raises(ValueError, match="banned verdict"):
-        records.personal_model_payload()
+    payload = records.personal_model_payload()
+    assert payload["issues"]
+    assert "safe" not in json.dumps(payload)
     with pytest.raises(ValueError, match="banned verdict"):
         records.personal_model_asset(records.ASSET_PREFIX + "summary.json")
 
@@ -196,8 +198,9 @@ def test_impression_findings_and_namespace_are_checked(impression):
     index = json.loads(index_path.read_text())
     index["assets"][path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
     index_path.write_text(json.dumps(index))
-    with pytest.raises(ValueError, match="banned verdict"):
-        records.personal_model_payload()
+    payload = records.personal_model_payload()
+    assert payload["issues"]
+    assert "safe" not in json.dumps(payload)
     with pytest.raises(ValueError, match="banned verdict"):
         records.personal_model_asset(prefix + path.name)
 
@@ -233,7 +236,7 @@ def test_lower_namespace_is_independent_hash_bound_and_consent_bound(impression)
     assert records.impression_payload() is None
 
 
-@pytest.mark.parametrize("failure", ["revoked", "changed"])
+@pytest.mark.parametrize("failure", ["revoked", "changed", "summary-hash-mismatch", "null-hash", "empty-hash"])
 def test_photo_links_require_individual_consent_and_unchanged_bytes(impression, failure):
     name = "upper-impression-photo.png"
     (impression / name).write_bytes(b"synthetic photo")
@@ -259,6 +262,11 @@ def test_photo_links_require_individual_consent_and_unchanged_bytes(impression, 
     if failure == "revoked":
         consent["public_assets"].remove(f"{records.IMPRESSION_BUNDLE}/{name}")
         consent_path.write_text(json.dumps(consent))
-    else:
+    elif failure == "changed":
         (impression / name).write_bytes(b"changed")
+    else:
+        summary["photos"][0]["sha256"] = {"null-hash": None, "empty-hash": ""}.get(failure, "0" * 64)
+        summary_path.write_text(json.dumps(summary))
+        index["assets"]["summary.json"] = hashlib.sha256(summary_path.read_bytes()).hexdigest()
+        index_path.write_text(json.dumps(index))
     assert records.impression_payload()[0]["photos"] == []
