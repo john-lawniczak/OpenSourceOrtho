@@ -1,0 +1,186 @@
+{
+  "schema": "opensource-ortho-impression-assessment-v1",
+  "reported_week": 21,
+  "label": "Upper impression 1",
+  "score": 7.5,
+  "score_scope": "subjective exploratory scan usability; not anatomical accuracy",
+  "score_precision": "quarter-point editorial judgments, displayed to two decimals",
+  "capture_date": "2026-11-24",
+  "impression_date": "2026-11-23",
+  "photos": [
+    {
+      "filename": "upper-impression-photo.png",
+      "label": "Upper impression photograph",
+      "sha256": "5882ac339ebe2ed78c3654256d070fce2515ba36133cd33f50506b3ae2588dc4",
+      "source_sha256": "b6f89f19b484b957af0b29e81810bb0c5f3092904708a8e6d6f4987f6d953242",
+      "width": 3024,
+      "height": 4032,
+      "format": "PNG",
+      "processing": "EXIF orientation applied; decoded RGB pixels preserved losslessly in a fresh PNG with no embedded metadata. No crop, retouching, resizing or color enhancement.",
+      "same_condition_as_scan": true,
+      "condition_basis": "Contributor explicitly confirms the photographs show each impression in the exact same condition as its STL capture.",
+      "confirmed_on": "2026-11-25",
+      "photographed_on": null,
+      "photo_date_basis": "Not supplied; confirmation date is not photo acquisition date."
+    }
+  ],
+  "captures": [
+    {
+      "filename": "upper-impression-1.stl",
+      "sha256": "40136020e7bc2ea06dba511191d765a7b05c7bf393230f075b780e86913d5f79"
+    }
+  ],
+  "rubric": [
+    {
+      "category": "File integrity/basic topology",
+      "points": 1.75,
+      "maximum": 2
+    },
+    {
+      "category": "Visible arch/cavity coverage",
+      "points": 3.25,
+      "maximum": 4
+    },
+    {
+      "category": "Visible local detail",
+      "points": 1.75,
+      "maximum": 2
+    },
+    {
+      "category": "Provenance, calibration and repeat evidence",
+      "points": 0.75,
+      "maximum": 2
+    }
+  ],
+  "findings": [
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Same-condition photograph",
+      "message": "The contributor confirms the attached photograph shows this upper impression in the exact condition of the STL capture. Deep shadowed cavities and thin inter-cavity material are visible; dark recesses alone do not establish tears or missing material. Photos provide physical context, but no point-by-point photo-to-mesh mapping or dimensional validation was performed. The 7.50 score remains a provisional scan-usability judgment.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Coverage",
+      "message": "The six views show a connected upper-arch impression with recognizable anterior and posterior tooth cavities. Most open edges follow the outer/inner scan margins. This is useful exploratory acquisition data; a connected surface alone cannot establish complete cavity capture.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Local opening",
+      "message": "One small internal boundary has 11 edges near a posterior cavity: right side of the +Z image, left side of the -Z image. Its bounds span about 0.87 by 0.87 by 1.10 unverified source units. No anatomical left/right or tooth number is assigned. Whether the opening comes from occlusion during scanning, material damage, or processing is unresolved.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Detail limits",
+      "message": "Several grooves and transitions look rounded in the rendered mesh. Impression detail, optical capture and scanner reconstruction cannot be separated from this single export. The visible surface does not establish submillimeter accuracy, capture of every undercut, or agreement with the dental STL.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Rescan recommendation",
+      "message": "Retain this scan for exploratory comparison. One targeted second capture is worthwhile if studying the acquisition process: view the small posterior opening and deep cavity walls from additional oblique angles, without flexing or altering the impression. Keep it as a separate original export. Repeating the same view is unlikely to resolve occlusion; a physical tear cannot be recovered by rescanning.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Interpretation",
+      "message": "This is a negative-impression surface, not a direct observation of tooth crowns or a new treatment week. No dental-reference registration, calibrated accuracy measurement, or independent repeatability check was performed. Reversing normals alone does not recover missing geometry. The existing dental upper/lower bite coordinates and motion data are unchanged.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Provenance",
+      "message": "The contributor reports an original November 23 week 21 impression digitized one day later, without coating or manual alteration in JMStudio. The export header identifies JMStudio v2.4.19.0131. Physical condition, storage effects and internal fusion settings remain unverified; no raw scanner project was supplied.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    }
+  ],
+  "acquisition_review": {
+    "schema": "opensource-ortho-capture-review-v1",
+    "records": [
+      {
+        "filename": "upper-impression-1.stl",
+        "sha256": "40136020e7bc2ea06dba511191d765a7b05c7bf393230f075b780e86913d5f79",
+        "kind": "impression_scan",
+        "interpretation": "Negative impression",
+        "physical_object_id": "week-21-upper-impression-1",
+        "capture_session_id": "upper-impression-scan-1",
+        "intact_arch_reference": "excluded",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Negative impression",
+            "message": "A negative impression is not a positive tooth mesh. Flipping normals does not recover unseen recesses.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Specimen condition",
+            "message": "Physical condition has not been recorded; mesh connectivity does not establish an intact specimen.",
+            "code": "capture.condition",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      }
+    ],
+    "repeat_groups": [],
+    "scope": "Declared provenance and research interpretation only; geometry, parent artifacts and clinical use are not validated."
+  }
+}

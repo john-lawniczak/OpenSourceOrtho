@@ -1,0 +1,644 @@
+{
+  "schema": "opensource-ortho-personal-cast-summary-v1",
+  "date": "2026-11-23",
+  "reported_week": 21,
+  "models": [
+    {
+      "model_id": "upper-model-1",
+      "label": "Upper Model 1",
+      "score": 7.25,
+      "rubric_points": [
+        1.75,
+        3.0,
+        2.0,
+        0.5
+      ],
+      "preferred_inspection_capture": "upper-1-c3"
+    },
+    {
+      "model_id": "upper-model-2",
+      "label": "Upper Model 2",
+      "score": 6.0,
+      "rubric_points": [
+        1.75,
+        2.0,
+        1.75,
+        0.5
+      ],
+      "preferred_inspection_capture": "upper-2-c4"
+    },
+    {
+      "model_id": "lower-model-1",
+      "label": "Lower Model 1",
+      "score": 7.5,
+      "rubric_points": [
+        1.75,
+        3.25,
+        2.0,
+        0.5
+      ],
+      "preferred_inspection_capture": "lower-1-c5"
+    },
+    {
+      "model_id": "lower-model-2",
+      "label": "Lower Model 2",
+      "score": 5.25,
+      "rubric_points": [
+        1.75,
+        1.75,
+        1.25,
+        0.5
+      ],
+      "preferred_inspection_capture": "lower-2-c6"
+    }
+  ],
+  "captures": [
+    {
+      "capture_id": "upper-1-c1",
+      "model_id": "upper-model-1",
+      "arch": "upper",
+      "filename": "upper-1-c1.stl",
+      "sha256": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5"
+    },
+    {
+      "capture_id": "upper-1-c2",
+      "model_id": "upper-model-1",
+      "arch": "upper",
+      "filename": "upper-1-c2.stl",
+      "sha256": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760"
+    },
+    {
+      "capture_id": "upper-1-c3",
+      "model_id": "upper-model-1",
+      "arch": "upper",
+      "filename": "upper-1-c3.stl",
+      "sha256": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6"
+    },
+    {
+      "capture_id": "upper-2-c4",
+      "model_id": "upper-model-2",
+      "arch": "upper",
+      "filename": "upper-2-c4.stl",
+      "sha256": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3"
+    },
+    {
+      "capture_id": "lower-1-c5",
+      "model_id": "lower-model-1",
+      "arch": "lower",
+      "filename": "lower-1-c5.stl",
+      "sha256": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23"
+    },
+    {
+      "capture_id": "lower-2-c6",
+      "model_id": "lower-model-2",
+      "arch": "lower",
+      "filename": "lower-2-c6.stl",
+      "sha256": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854"
+    }
+  ],
+  "rubric": [
+    {
+      "category": "File integrity/basic topology",
+      "maximum": 2
+    },
+    {
+      "category": "Visible coverage/cast preservation",
+      "maximum": 4
+    },
+    {
+      "category": "Exploratory reference agreement",
+      "maximum": 3
+    },
+    {
+      "category": "Provenance and calibration",
+      "maximum": 1
+    }
+  ],
+  "overall_score": 6.5,
+  "score_scope": "subjective cast-scan research usability; not anatomical accuracy",
+  "findings": [
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Upper Model 1",
+      "message": "Upper Model 1: 7.25/10.00 for cast-scan research usability. Best upper cast in this set. C1/C2 retain recognizable crown surfaces; C3 adds coverage. Boundary losses and unverified scale remain. Three files represent one physical cast, not three independent cast specimens.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Upper Model 2",
+      "message": "Upper Model 2: 6.00/10.00 for cast-scan research usability. Much of the retained surface aligns closely, but anterior local losses are visible and the contributor labels this cast more chipped. Its low median distance does not capture the importance of missing local detail.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Lower Model 1",
+      "message": "Lower Model 1: 7.50/10.00 for cast-scan research usability. Strongest overall reference agreement of this set, with most sampled dental surface nearby after rigid fitting. Local mismatch patches remain; casting walls account for some reverse-direction differences.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Lower Model 2",
+      "message": "Lower Model 2: 5.25/10.00 for cast-scan research usability. Contributor confirms the cast broke into two pieces and was held together with clay during scanning. The score is retained only as a research-usability rating of this assembled specimen. Its fragment positions are unverified; the larger mismatch cannot establish intact-arch accuracy or scanner performance. Reassembly, damage, casting and scan/fitting effects are confounded.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Score interpretation",
+      "message": "The four physical casts average 6.50/10.00 with equal weight per cast. Scores are quarter-point editorial judgments displayed to two decimals, not measured anatomical accuracy or a rating of contributor skill. No new dental-scan score is assigned; the earlier 8.50 visit score used a different rubric.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Repeat-capture evidence",
+      "message": "The contributor confirms C1, C2 and C3 are separate scans of Upper Model 1. Nevertheless, C1 and C2 share 97.79% of exact vertex positions and identical face counts/bounds. Retain that provenance, but treat their exported surfaces as highly correlated. They do not supply independent repeatability evidence. C1 versus C3 has a fitted median surface difference of about 0.037 source units, with local outliers; this is same-cast consistency, not accuracy.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Comparison limits",
+      "message": "Reference-to-cast medians are about 0.16 for Upper Model 1, 0.15 for Upper Model 2, 0.10 for Lower Model 1 and 0.53 for Lower Model 2, in unverified source units. Whole-surface distances include soft-tissue boundaries and local missing surfaces. The dental scan is a useful comparison reference, not independently measured ground truth; rigid fitting can absorb pose differences but not prove anatomical fidelity.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "C6 fracture clarification",
+      "message": "Lower C6 is a two-piece cast supported with clay, per contributor clarification. Its original bytes and computed distances are preserved, but those distances describe an assembled specimen. A new scan of the same assembly cannot recover the original relative fragment positions or missing surfaces. Do not use C6 as an intact lower-arch reference.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    },
+    {
+      "severity": "notice",
+      "category": "data_gap",
+      "provenance": "MODEL",
+      "title": "Research value",
+      "message": "Same-day dental and cast scans reduce timing differences when studying the home acquisition workflow. Two physical casts per arch expose between-cast variability, while repeat captures of one cast help assess scanning/export consistency. Damaged models provide examples for detecting incomplete surfaces and reporting uncertainty. This is one contributor and four casts; it does not establish general performance or isolate each source of error.",
+      "code": null,
+      "data_gap": null,
+      "clinician_question": null,
+      "reference": null
+    }
+  ],
+  "gate": "All interpretations passed lint_finding; language check only.",
+  "acquisition_review": {
+    "schema": "opensource-ortho-capture-review-v1",
+    "records": [
+      {
+        "filename": "upper-1-c1.stl",
+        "sha256": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5",
+        "kind": "cast_scan",
+        "interpretation": "Cast-derived proxy",
+        "physical_object_id": "upper-model-1",
+        "capture_session_id": "upper-1-c1",
+        "intact_arch_reference": "not_established",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Cast-derived proxy",
+            "message": "Distances combine impression, casting, scanning and fitting effects.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Surface preparation",
+            "message": "Coating status is unknown or a coating was applied. Layer thickness and material compatibility are not measured by this report. Do not coat an appliance that will return to the mouth.",
+            "code": "capture.coating",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Specimen condition",
+            "message": "Physical condition has not been recorded; mesh connectivity does not establish an intact specimen.",
+            "code": "capture.condition",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Processing history",
+            "message": "Processing is recorded or unknown. Preserve source exports; smoothing, filling and scaling can change measured surfaces.",
+            "code": "capture.processing",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      },
+      {
+        "filename": "upper-1-c2.stl",
+        "sha256": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760",
+        "kind": "cast_scan",
+        "interpretation": "Cast-derived proxy",
+        "physical_object_id": "upper-model-1",
+        "capture_session_id": "upper-1-c2",
+        "intact_arch_reference": "not_established",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Cast-derived proxy",
+            "message": "Distances combine impression, casting, scanning and fitting effects.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Surface preparation",
+            "message": "Coating status is unknown or a coating was applied. Layer thickness and material compatibility are not measured by this report. Do not coat an appliance that will return to the mouth.",
+            "code": "capture.coating",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Specimen condition",
+            "message": "Physical condition has not been recorded; mesh connectivity does not establish an intact specimen.",
+            "code": "capture.condition",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Processing history",
+            "message": "Processing is recorded or unknown. Preserve source exports; smoothing, filling and scaling can change measured surfaces.",
+            "code": "capture.processing",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      },
+      {
+        "filename": "upper-1-c3.stl",
+        "sha256": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6",
+        "kind": "cast_scan",
+        "interpretation": "Cast-derived proxy",
+        "physical_object_id": "upper-model-1",
+        "capture_session_id": "upper-1-c3",
+        "intact_arch_reference": "not_established",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Cast-derived proxy",
+            "message": "Distances combine impression, casting, scanning and fitting effects.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Surface preparation",
+            "message": "Coating status is unknown or a coating was applied. Layer thickness and material compatibility are not measured by this report. Do not coat an appliance that will return to the mouth.",
+            "code": "capture.coating",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Specimen condition",
+            "message": "Physical condition has not been recorded; mesh connectivity does not establish an intact specimen.",
+            "code": "capture.condition",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Processing history",
+            "message": "Processing is recorded or unknown. Preserve source exports; smoothing, filling and scaling can change measured surfaces.",
+            "code": "capture.processing",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      },
+      {
+        "filename": "upper-2-c4.stl",
+        "sha256": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3",
+        "kind": "cast_scan",
+        "interpretation": "Damaged specimen / Cast-derived proxy",
+        "physical_object_id": "upper-model-2",
+        "capture_session_id": "upper-2-c4",
+        "intact_arch_reference": "excluded",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Cast-derived proxy",
+            "message": "Distances combine impression, casting, scanning and fitting effects.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Physical damage",
+            "message": "Missing surfaces or unverified fragment positions prevent interpreting this specimen as an intact-arch reference. Rescanning cannot restore missing anatomy.",
+            "code": "capture.damage",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Surface preparation",
+            "message": "Coating status is unknown or a coating was applied. Layer thickness and material compatibility are not measured by this report. Do not coat an appliance that will return to the mouth.",
+            "code": "capture.coating",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Processing history",
+            "message": "Processing is recorded or unknown. Preserve source exports; smoothing, filling and scaling can change measured surfaces.",
+            "code": "capture.processing",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      },
+      {
+        "filename": "lower-1-c5.stl",
+        "sha256": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23",
+        "kind": "cast_scan",
+        "interpretation": "Cast-derived proxy",
+        "physical_object_id": "lower-model-1",
+        "capture_session_id": "lower-1-c5",
+        "intact_arch_reference": "not_established",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Cast-derived proxy",
+            "message": "Distances combine impression, casting, scanning and fitting effects.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Surface preparation",
+            "message": "Coating status is unknown or a coating was applied. Layer thickness and material compatibility are not measured by this report. Do not coat an appliance that will return to the mouth.",
+            "code": "capture.coating",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Specimen condition",
+            "message": "Physical condition has not been recorded; mesh connectivity does not establish an intact specimen.",
+            "code": "capture.condition",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Processing history",
+            "message": "Processing is recorded or unknown. Preserve source exports; smoothing, filling and scaling can change measured surfaces.",
+            "code": "capture.processing",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      },
+      {
+        "filename": "lower-2-c6.stl",
+        "sha256": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854",
+        "kind": "cast_scan",
+        "interpretation": "Damaged specimen / Cast-derived proxy",
+        "physical_object_id": "lower-model-2",
+        "capture_session_id": "lower-2-c6",
+        "intact_arch_reference": "excluded",
+        "exploratory_inspection_permitted": true,
+        "findings": [
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Cast-derived proxy",
+            "message": "Distances combine impression, casting, scanning and fitting effects.",
+            "code": "capture.kind",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Physical damage",
+            "message": "Missing surfaces or unverified fragment positions prevent interpreting this specimen as an intact-arch reference. Rescanning cannot restore missing anatomy.",
+            "code": "capture.damage",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Surface preparation",
+            "message": "Coating status is unknown or a coating was applied. Layer thickness and material compatibility are not measured by this report. Do not coat an appliance that will return to the mouth.",
+            "code": "capture.coating",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Processing history",
+            "message": "Processing is recorded or unknown. Preserve source exports; smoothing, filling and scaling can change measured surfaces.",
+            "code": "capture.processing",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          },
+          {
+            "severity": "notice",
+            "category": "data_gap",
+            "provenance": "RULE",
+            "title": "Unverified scale",
+            "message": "Distances remain source-coordinate units until scale is independently established; this review does not change units.",
+            "code": "capture.units",
+            "data_gap": null,
+            "clinician_question": null,
+            "reference": null
+          }
+        ]
+      }
+    ],
+    "repeat_groups": [
+      {
+        "physical_object_id": "upper-model-1",
+        "filenames": [
+          "upper-1-c1.stl",
+          "upper-1-c2.stl",
+          "upper-1-c3.stl"
+        ],
+        "capture_count": 3,
+        "distinct_file_count": 3,
+        "recorded_session_count": 3,
+        "independence": "not_established",
+        "note": "Different hashes or session labels do not prove independent captures or anatomical accuracy."
+      }
+    ],
+    "scope": "Declared provenance and research interpretation only; geometry, parent artifacts and clinical use are not validated."
+  }
+}

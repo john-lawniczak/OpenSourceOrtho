@@ -9,6 +9,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from orthoplan.personal_model_records import ASSET_PREFIX, personal_model_asset, personal_model_payload
 from orthoplan.sample_reviews import save_tooth_review
 from orthoplan.sample_history_surface import local_history_surface
 from orthoplan.geometry_jobs import GeometryBusy, jobs
@@ -62,6 +63,23 @@ JSON_POST_ENDPOINTS = {
 }
 
 
+RECORD_ENDPOINTS = {"/api/sample-personal-models": personal_model_payload,
+    "/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload,
+    "/api/sample-history/lower-cleaned": local_history_surface}
+
+
+def _send_file(handler, target, *, private=False):
+    body = target.read_bytes()
+    handler.send_response(200)
+    handler.send_header("Content-Type", _CONTENT_TYPES.get(target.suffix, "application/octet-stream"))
+    handler.send_header("Content-Length", str(len(body)))
+    handler.send_header("X-Content-Type-Options", "nosniff")
+    if private:
+        handler.send_header("Cache-Control", "no-store")
+    handler.end_headers()
+    handler.wfile.write(body)
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "OrthoPlanDev/1.0"
     # Avoid a worker thread hanging on a client that declares a body but never sends it.
@@ -77,6 +95,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _resolve_static(self, url_path: str) -> Path | None:
+        if url_path.startswith(ASSET_PREFIX):
+            return personal_model_asset(url_path)
         if urllib.parse.unquote(url_path).startswith("/datasets/"):
             return resolve_published_asset(url_path)
         walkthrough = sample_walkthrough_path(url_path)
@@ -108,10 +128,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib naming
         try:
             path = self.path.split("?", 1)[0]
-            notes = {"/api/sample-plan-brief": sample_plan_brief_payload, "/api/painting-notes": painting_notes_payload,
-                     "/api/sample-history/lower-cleaned": local_history_surface}
-            if path in notes:
-                self._send_json(200, notes[path]())
+            if path in RECORD_ENDPOINTS:
+                self._send_json(200, RECORD_ENDPOINTS[path]())
                 return
             if path.startswith("/api/sample-refits/"):
                 from orthoplan.sample_refit import refit_status, open_refit
@@ -132,13 +150,7 @@ class Handler(BaseHTTPRequestHandler):
                 if target is None:
                     self._send_json(404, {"ok": False, "errors": ["mesh asset not found"]})
                     return
-                body = target.read_bytes()
-                self.send_response(200)
-                self.send_header("Content-Type", _CONTENT_TYPES.get(target.suffix, "application/octet-stream"))
-                self.send_header("Content-Length", str(len(body)))
-                self.send_header("X-Content-Type-Options", "nosniff")
-                self.end_headers()
-                self.wfile.write(body)
+                _send_file(self, target)
                 return
             if path == "/api/ai/connectors":
                 self._send_json(200, {"ok": True, "connectors": [c.model_dump(mode="json") for c in connector_catalog()]})
@@ -154,12 +166,7 @@ class Handler(BaseHTTPRequestHandler):
             if target is None:
                 self._send_json(404, {"ok": False, "errors": ["not found"]})
                 return
-            body = target.read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", _CONTENT_TYPES.get(target.suffix, "application/octet-stream"))
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            _send_file(self, target, private=path.startswith(ASSET_PREFIX))
         except (BrokenPipeError, ConnectionResetError):
             # A cancelled download closes the socket; do not send another response.
             return

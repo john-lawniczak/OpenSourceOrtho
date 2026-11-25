@@ -234,6 +234,14 @@ it into the mouth or onto an appliance that will return to the mouth. Restrict
 coating/casting experiments to discarded research specimens that will not be
 worn again. Coating thickness and cast removal can also alter measured geometry.
 
+## Capture provenance in the repository
+
+Use the [capture provenance workflow](docs/CAPTURE_PROVENANCE.md) to record
+physical-object IDs, repeat sessions, negative impressions, appliance surfaces,
+coatings and damage. `orthoplan review-captures` verifies source hashes and
+produces a research-only review without converting proxies into tooth observations.
+The guide also covers week 21 impression and retired-aligner bench experiments.
+
 ## Check the data before collecting more
 
 Use these checks to decide whether your files support the measurements and

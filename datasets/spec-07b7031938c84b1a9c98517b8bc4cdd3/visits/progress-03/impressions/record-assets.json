@@ -1,0 +1,15 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "progress_record_id": "progress-03",
+  "assets": {
+    "upper-impression-1.stl": "40136020e7bc2ea06dba511191d765a7b05c7bf393230f075b780e86913d5f79",
+    "manifest.json": "dee72412a552def43553b1b945280cf2c001332cbb2040cd3fbbe6f30fa98158",
+    "source-metadata.json": "8c60e3aaab30bd33b500cb64531b73644ca2851628c1af0b2e0b0b6c2d0a9722",
+    "summary.json": "6707756fc4999404776d43c9bed45a53025926fbc18eb7a9f6f6ba8afbb5b814",
+    "mesh-inventory.json": "2584b943b4c438056e860ccf7ce7e0290da10ccbed18b98e73ebf40bb1163dc6",
+    "scan-overview.png": "4efac9e42e3ef3b03b7d7505d4b504c7bda7c7d19936aaa935606b6707f36bfb",
+    "boundary-detail.png": "df15226df7c32e83f2ce0bf2e9cf1cef1d6bc35406c8cfd1b6602a1034506769",
+    "quality-assessment.md": "a7ab0dda516b9c7ff094431e52d5b49ac906541899d2400398ab479bf0e162b3",
+    "upper-impression-photo.png": "5882ac339ebe2ed78c3654256d070fce2515ba36133cd33f50506b3ae2588dc4"
+  }
+}

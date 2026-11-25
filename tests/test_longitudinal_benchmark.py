@@ -117,3 +117,28 @@ def test_longitudinal_outcome_reports_separate_unplanned_and_unknown(tmp_path: P
     assert report.refinement_prediction.status == "missing-plan-summary"
     assert report.refinement_prediction.unplanned_observed == 1
     assert report.refinement_prediction.missing_or_unknown == 1
+
+
+def test_discovery_ignores_local_and_private_import_manifests(tmp_path):
+    manifest = DatasetManifest(scans=[_scan("initial-upper.stl", "initial", "maxillary")],
+                               consent_acknowledged=True, phi_removed=True)
+    write_manifest(manifest, tmp_path / "manifest.json")
+    for folder in [".local/records/import", "private/visits/import"]:
+        write_manifest(manifest, tmp_path / folder / "manifest.json")
+    assert _metric_value(tmp_path, "longitudinal_manifest_cases") == 1
+    assert len(longitudinal_outcome_reports(tmp_path)) == 1
+
+
+def test_declared_proxy_cannot_generate_numeric_tooth_tracking_error(tmp_path):
+    from orthoplan.model.capture import CaptureProvenance
+    baseline = _scan("initial-upper.stl", "initial", "maxillary")
+    progress = _scan("progress-01-upper.stl", "progress", "maxillary", sequence_index=1, offset=.5)
+    for kind, condition in [("aligner_scan", "intact"), ("impression_scan", "intact"),
+                            ("cast_scan", "reassembled"), ("printed_model_scan", "intact"),
+                            ("intraoral_scan", "chipped")]:
+        progress.acquisition = CaptureProvenance(kind=kind, condition=condition)
+        manifest = DatasetManifest(scans=[baseline, progress], consent_acknowledged=True, phi_removed=True)
+        write_manifest(manifest, tmp_path / "manifest.json")
+        metric, = longitudinal_outcome_reports(tmp_path)[0].tracking_errors
+        assert metric.status == "proxy-or-damaged-capture"
+        assert metric.value_mm is None

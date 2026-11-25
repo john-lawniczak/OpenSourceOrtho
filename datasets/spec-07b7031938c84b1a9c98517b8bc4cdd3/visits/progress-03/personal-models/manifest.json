@@ -1,0 +1,227 @@
+{
+  "specimen_id": "spec-07b7031938c84b1a9c98517b8bc4cdd3",
+  "pseudonym": "USER_ONE",
+  "created_at": "2026-11-24T17:14:01.043195Z",
+  "engine_version": "1.4.0",
+  "scans": [
+    {
+      "filename": "upper-1-c1.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "cc0b8a8fc8e5f40dbe284d6a6879fc8bb2b54d6087964b57683e332630dd54e5",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 410424,
+      "face_count": 136808,
+      "bounds": {
+        "min_xyz": [
+          -42.21946716308594,
+          -10.828168869018555,
+          273.4715881347656
+        ],
+        "max_xyz": [
+          19.466949462890625,
+          44.55302429199219,
+          312.19110107421875
+        ]
+      },
+      "acquisition": {
+        "kind": "cast_scan",
+        "acquired_on": "2026-11-23",
+        "physical_object_id": "upper-model-1",
+        "capture_session_id": "upper-1-c1",
+        "surface": "dentition",
+        "condition": "unknown",
+        "coating": "unknown",
+        "processing": [
+          "unknown"
+        ]
+      }
+    },
+    {
+      "filename": "upper-1-c2.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "d0255354cc56342f50aab874e294956506281fc66b362e33d76247815bc28760",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 410424,
+      "face_count": 136808,
+      "bounds": {
+        "min_xyz": [
+          -42.21946716308594,
+          -10.828168869018555,
+          273.4715881347656
+        ],
+        "max_xyz": [
+          19.466949462890625,
+          44.55302429199219,
+          312.19110107421875
+        ]
+      },
+      "acquisition": {
+        "kind": "cast_scan",
+        "acquired_on": "2026-11-23",
+        "physical_object_id": "upper-model-1",
+        "capture_session_id": "upper-1-c2",
+        "surface": "dentition",
+        "condition": "unknown",
+        "coating": "unknown",
+        "processing": [
+          "unknown"
+        ]
+      }
+    },
+    {
+      "filename": "upper-1-c3.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "453cb61ff59555d5c3b650f442735776b0c273bc3b2bdad5540fdde81cf160e6",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 468153,
+      "face_count": 156051,
+      "bounds": {
+        "min_xyz": [
+          -29.68083953857422,
+          -12.762691497802734,
+          288.00091552734375
+        ],
+        "max_xyz": [
+          33.34453582763672,
+          43.73513412475586,
+          331.8354187011719
+        ]
+      },
+      "acquisition": {
+        "kind": "cast_scan",
+        "acquired_on": "2026-11-23",
+        "physical_object_id": "upper-model-1",
+        "capture_session_id": "upper-1-c3",
+        "surface": "dentition",
+        "condition": "unknown",
+        "coating": "unknown",
+        "processing": [
+          "unknown"
+        ]
+      }
+    },
+    {
+      "filename": "upper-2-c4.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "21ac92e5476c8e8f23e9a272d08325fb2c477c18c6f813137672fee7bc32f6a3",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "maxillary",
+      "vertex_count": 361023,
+      "face_count": 120341,
+      "bounds": {
+        "min_xyz": [
+          -23.710241317749023,
+          -5.164853572845459,
+          295.54638671875
+        ],
+        "max_xyz": [
+          31.3551082611084,
+          52.78791427612305,
+          338.000732421875
+        ]
+      },
+      "acquisition": {
+        "kind": "cast_scan",
+        "acquired_on": "2026-11-23",
+        "physical_object_id": "upper-model-2",
+        "capture_session_id": "upper-2-c4",
+        "surface": "dentition",
+        "condition": "chipped",
+        "coating": "unknown",
+        "processing": [
+          "unknown"
+        ]
+      }
+    },
+    {
+      "filename": "lower-1-c5.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "2ac93ed4f821ab494509c2223a30bd073032b184fb3960d683bbbef497d73a23",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 449382,
+      "face_count": 149794,
+      "bounds": {
+        "min_xyz": [
+          -39.300018310546875,
+          -25.868473052978516,
+          282.12445068359375
+        ],
+        "max_xyz": [
+          28.364906311035156,
+          24.553600311279297,
+          329.36993408203125
+        ]
+      },
+      "acquisition": {
+        "kind": "cast_scan",
+        "acquired_on": "2026-11-23",
+        "physical_object_id": "lower-model-1",
+        "capture_session_id": "lower-1-c5",
+        "surface": "dentition",
+        "condition": "unknown",
+        "coating": "unknown",
+        "processing": [
+          "unknown"
+        ]
+      }
+    },
+    {
+      "filename": "lower-2-c6.stl",
+      "role": "progress",
+      "sequence_index": 3,
+      "sha256": "85474db14b8033ef35fa40d4fbb5807f4aaf2d60e44e9d7d4f87461f50382854",
+      "units": "unverified",
+      "provenance": "patient-derived",
+      "arch": "mandibular",
+      "vertex_count": 407370,
+      "face_count": 135790,
+      "bounds": {
+        "min_xyz": [
+          -51.03672409057617,
+          -16.962583541870117,
+          273.2520751953125
+        ],
+        "max_xyz": [
+          13.436992645263672,
+          31.487321853637695,
+          319.89605712890625
+        ]
+      },
+      "acquisition": {
+        "kind": "cast_scan",
+        "acquired_on": "2026-11-23",
+        "physical_object_id": "lower-model-2",
+        "capture_session_id": "lower-2-c6",
+        "surface": "dentition",
+        "condition": "reassembled",
+        "coating": "unknown",
+        "processing": [
+          "unknown"
+        ],
+        "fragment_count": 2,
+        "support_material": "clay"
+      }
+    }
+  ],
+  "plan_summary": null,
+  "plan_summary_filename": null,
+  "outcome_notes_filename": null,
+  "outcome_notes_sha256": null,
+  "consent_acknowledged": true,
+  "phi_removed": true,
+  "notes": "Six original cast-scan exports from four physical casts at reported week 21; contributor-authorized public reuse 2026-11-24. Separate captures are not additional visits. Lower C6 is a two-piece cast held together with clay: relative fragment alignment is unverified. No bite or motion inference. See source-metadata.json."
+}

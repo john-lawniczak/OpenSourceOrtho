@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-
 from pydantic import BaseModel, Field
 from orthoplan.datasets import DATASETS_ROOT
 
 from orthoplan.model.dataset import DatasetManifest, read_manifest
 from orthoplan.validation.benchmark_models import BenchmarkMetric
+from orthoplan.evaluation.capture_review import review_capture
 
 
 class OutcomeErrorMetric(BaseModel):
@@ -44,7 +44,7 @@ class LongitudinalOutcomeReport(BaseModel):
 def longitudinal_case_metrics(root: str | Path | None = None) -> list[BenchmarkMetric]:
     """Report readiness metrics for privacy-safe longitudinal contribution bundles."""
 
-    manifests = _load_manifests(Path(root) if root else _default_manifest_root())
+    manifests = _load_manifests(Path(root) if root else DATASETS_ROOT)
     if not manifests:
         return [_metric("longitudinal_manifest_cases", 0.0, "no-manifests")]
 
@@ -83,7 +83,7 @@ def longitudinal_outcome_reports(root: str | Path | None = None) -> list[Longitu
     deterministic proxy and mark missing timing/geometry explicitly.
     """
 
-    manifests = _load_manifests(Path(root) if root else _default_manifest_root())
+    manifests = _load_manifests(Path(root) if root else DATASETS_ROOT)
     return [_outcome_report(manifest) for manifest in manifests]
 
 
@@ -184,6 +184,9 @@ def _load_manifests(root: Path) -> list[DatasetManifest]:
         paths = []
     manifests: list[DatasetManifest] = []
     for path in paths:
+        if root.is_dir() and any(part.startswith(".") or part == "private"
+                                 for part in path.relative_to(root).parts):
+            continue
         try:
             manifest = read_manifest(path)
         except (OSError, ValueError):
@@ -241,6 +244,12 @@ def _bounds_delta_metric(
             status="unverified-or-unsupported-units",
             notes="Both scan scales must be confirmed in mm before reporting a mm proxy.",
         )
+    if any(scan.acquisition and (scan.acquisition.kind != "intraoral_scan"
+           or review_capture(scan)["intact_arch_reference"] == "excluded")
+           for scan in (before, after)):
+        return OutcomeErrorMetric(
+            name=name, specimen_id=manifest.specimen_id, role=role, arch=arch, status="proxy-or-damaged-capture",
+            notes="Declared acquisition provenance describes a proxy or damaged specimen, not comparable intraoral observations.")
     return OutcomeErrorMetric(
         name=name,
         specimen_id=manifest.specimen_id,
@@ -286,7 +295,3 @@ def _metric(name: str, value: float, case_id: str) -> BenchmarkMetric:
             "prediction benchmarks from consented non-PHI longitudinal bundles."
         ),
     )
-
-
-def _default_manifest_root() -> Path:
-    return DATASETS_ROOT
